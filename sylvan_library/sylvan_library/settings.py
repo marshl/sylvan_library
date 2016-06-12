@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
+from os import path
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -74,12 +75,12 @@ WSGI_APPLICATION = 'sylvan_library.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
 
 
 # Password validation
@@ -119,3 +120,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
+
+connection_file = path.join( path.dirname(__file__), "database_connections.py")
+exec(open(connection_file).read()) 
