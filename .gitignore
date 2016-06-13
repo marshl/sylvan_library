@@ -2,3 +2,5 @@ sylvan_env/
 /sylvan_library/sylvan_library/__pycache__
 /sylvan_library/sylvan_library/database_connections.py
 /.metadata
+sylvan_library/spellbook/migrations/
+sylvan_library/spellbook/__pycache__/
