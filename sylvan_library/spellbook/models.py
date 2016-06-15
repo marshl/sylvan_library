@@ -1,23 +1,25 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 # Create your models here.
 
 class Type(models.Model):
-    name = models.CharField(max_length = 50)
+    name = models.CharField(max_length = 50, unique = True)
     
 class Subtype(models.Model):
-    name = models.CharField(max_length = 50)
+    name = models.CharField(max_length = 50, unique = True)
 
 class Block(models.Model):
-    name = models.CharField(max_length = 200)
+    name = models.CharField(max_length = 200, unique = True)
+    release_date = models.DateField()
 
 class Set(models.Model):
-    code = models.CharField(max_length = 5)
+    code = models.CharField(max_length = 10, unique = True)
     release_date = models.DateField(blank = True)
-    name = models.CharField(max_length = 200)
+    name = models.CharField(max_length = 200, unique = True)
     
-    block = models.ForeignKey('Block')
+    block = models.ForeignKey('Block', null = True)
     
 class Card(models.Model):
     cost = models.CharField(max_length = 50, blank = True)
