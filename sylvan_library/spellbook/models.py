@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.utils.regex_helper import Choice
 
 # Create your models here.
 
@@ -16,39 +17,43 @@ class Block(models.Model):
 
 class Set(models.Model):
     code = models.CharField(max_length = 10, unique = True)
-    release_date = models.DateField(blank = True)
+    release_date = models.DateField(blank = True, null = True)
     name = models.CharField(max_length = 200, unique = True)
     
     block = models.ForeignKey('Block', null = True)
     
+class Rarity(models.Model):
+    symbol = models.CharField(max_length = 1, unique = True)
+    name = models.CharField(max_length = 15, unique = True)
+    display_order = models.IntegerField(unique = True)
+
 class Card(models.Model):
-    cost = models.CharField(max_length = 50, blank = True)
+    cost = models.CharField(max_length = 50, blank = True, null = True)
     cmc = models.IntegerField()
     colour = models.IntegerField()
     colour_identity = models.IntegerField()
     colour_count = models.IntegerField()
-    type = models.CharField(max_length = 100, blank = True)
-    subtype = models.CharField(max_length = 100, blank = True)
-    power = models.CharField(max_length = 20, blank = True)
-    num_power = models.IntegerField()
-    toughness = models.CharField(max_length = 20, blank = True)
-    num_toughness = models.IntegerField()
-    loyalty = models.CharField(max_length = 20, blank = True)
-    num_loyalty = models.IntegerField()
-    rules_text = models.CharField(max_length = 1000, blank = True)
+    type = models.CharField(max_length = 100, blank = True, null = True)
+    subtype = models.CharField(max_length = 100, blank = True, null = True)
+    power = models.CharField(max_length = 20, blank = True, null = True)
+    num_power = models.FloatField()
+    toughness = models.CharField(max_length = 20, blank = True, null = True)
+    num_toughness = models.FloatField()
+    loyalty = models.CharField(max_length = 20, blank = True, null = True)
+    num_loyalty = models.FloatField()
+    rules_text = models.CharField(max_length = 1000, blank = True, null = True)
     
 class CardPrinting(models.Model):
-    
-    rarity = models.CharField(max_length = 1)
-    flavour_text = models.CharField(max_length = 350)
+    flavour_text = models.CharField(max_length = 350, blank = True, null = True)
     artist = models.CharField(max_length = 100)
-    collector_number = models.IntegerField(blank = True)
-    collector_letter = models.CharField(max_length = 1, blank = True)
-    original_text = models.CharField(max_length = 1000, blank = True)
-    original_type = models.CharField(max_length = 200, blank = True)
+    collector_number = models.IntegerField(blank = True, null = True)
+    collector_letter = models.CharField(max_length = 1, blank = True, null = True)
+    original_text = models.CharField(max_length = 1000, blank = True, null = True)
+    original_type = models.CharField(max_length = 200, blank = True, null = True)
     
     set = models.ForeignKey('Set')
     card = models.ForeignKey('Card')
+    rarity = models.ForeignKey('Rarity')
     
 class CardPrintingLanguage(models.Model):
     
