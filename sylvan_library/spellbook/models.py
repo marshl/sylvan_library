@@ -55,12 +55,18 @@ class CardPrinting(models.Model):
     card = models.ForeignKey('Card')
     rarity = models.ForeignKey('Rarity')
     
+    class Meta:
+        unique_together = ("set", "card", "collector_number", "collector_letter")
+    
 class CardPrintingLanguage(models.Model):
     
     language = models.CharField(max_length = 50)
     card_name = models.CharField(max_length = 200)
     
     card_printing = models.ForeignKey('CardPrinting')
+    
+    class Meta:
+        unique_together = ("language", "card_name", "card_printing")
     
 class UserOwnedCard(models.Model):
     
@@ -69,8 +75,12 @@ class UserOwnedCard(models.Model):
     card_printing_language = models.ForeignKey('CardPrintingLanguage')
     owner = models.ForeignKey(User)
     
+    class Meta:
+        unique_together = ("card_printing_language", "owner")
+    
 class UserCardChange(models.Model):
     
+    date = models.DateTimeField()
     difference = models.IntegerField()
     
     card_printing_language = models.ForeignKey('CardPrintingLanguage')
