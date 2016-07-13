@@ -55,6 +55,7 @@ class CardPrintingLanguage(models.Model):
     
     language = models.CharField(max_length = 50)
     card_name = models.CharField(max_length = 200)
+    multiverse_id = models.IntegerField(blank = True, null = True)
     
     card_printing = models.ForeignKey('CardPrinting')
     
