@@ -34,6 +34,7 @@ class Card(models.Model):
     loyalty = models.CharField(max_length = 20, blank = True, null = True)
     num_loyalty = models.FloatField()
     rules_text = models.CharField(max_length = 1000, blank = True, null = True)
+    layout = models.CharField(max_length=20)
     
 class CardPrinting(models.Model):
     flavour_text = models.CharField(max_length = 350, blank = True, null = True)
