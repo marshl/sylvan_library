@@ -83,6 +83,8 @@ class CardLink(models.Model):
     card_from = models.ForeignKey('Card', related_name = 'cardFrom')
     card_to = models.ForeignKey('Card', related_name = 'cardTo')
     
+    class Meta:
+        unique_together = ("card_from", "card_to")
     
 class CardRuling(models.Model):
     
@@ -90,6 +92,9 @@ class CardRuling(models.Model):
     text = models.CharField(max_length = 4000)
     
     card = models.ForeignKey('Card')
+    
+    class Meta:
+        unique_together = ("date", "text", "card")
     
 class CardTag(models.Model):
     
