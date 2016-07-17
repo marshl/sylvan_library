@@ -1,7 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.utils import timezone
-from django.utils.regex_helper import Choice
 
 class Block(models.Model):
     name = models.CharField(max_length = 200, unique = True)
