@@ -83,7 +83,6 @@ class CardLink(models.Model):
     card_from = models.ForeignKey('Card', related_name = 'cardFrom')
     card_to = models.ForeignKey('Card', related_name = 'cardTo')
     
-    type = models.CharField(max_length = 1)
     
 class CardRuling(models.Model):
     
