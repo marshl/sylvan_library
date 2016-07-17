@@ -87,7 +87,7 @@ class CardLink(models.Model):
 class CardRuling(models.Model):
     
     date = models.DateField()
-    text = models.CharField(max_length = 1000)
+    text = models.CharField(max_length = 4000)
     
     card = models.ForeignKey('Card')
     
