@@ -4,3 +4,6 @@ sylvan_env/
 /.metadata
 sylvan_library/spellbook/migrations/
 sylvan_library/spellbook/__pycache__/
+/sylvan_library/spellbook/static
+sylvan_library/sylvan_library/settings/secrets.json
+sylvan_library/sylvan_library/settings/__pycache__/
