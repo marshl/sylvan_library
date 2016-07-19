@@ -5,7 +5,6 @@ from .base import *
 
 
 DEBUG = False
-TEMPLATE_DEBUG = DEBUG
 JIRA_ISSUE_COLLECTOR = False
 ENABLE_VIRUS_SCAN = False
 

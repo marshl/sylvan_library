@@ -3,7 +3,6 @@ from __future__ import absolute_import
 from .base import *
 
 DEBUG = True
-TEMPLATE_DEBUG = DEBUG
 #JIRA_ISSUE_COLLECTOR = False
 ENABLE_VIRUS_SCAN = False
 
@@ -65,28 +64,6 @@ LOGGING = {
         },
     }
 }
-
-#===============================================================================
-# DEBUG_TOOLBAR_PANELS = [
-#     'debug_toolbar.panels.versions.VersionsPanel',
-#     'debug_toolbar.panels.timer.TimerPanel',
-#     'debug_toolbar.panels.settings.SettingsPanel',
-#     'debug_toolbar.panels.headers.HeadersPanel',
-#     'debug_toolbar.panels.request.RequestPanel',
-#     'debug_toolbar.panels.sql.SQLPanel',
-#     'debug_toolbar.panels.staticfiles.StaticFilesPanel',
-#     'debug_toolbar.panels.templates.TemplatesPanel',
-#     'debug_toolbar.panels.cache.CachePanel',
-#     'debug_toolbar.panels.signals.SignalsPanel',
-#     'debug_toolbar.panels.logging.LoggingPanel',
-#     'debug_toolbar.panels.redirects.RedirectsPanel',
-#     'template_timings_panel.panels.TemplateTimings.TemplateTimings',
-# ]
-#===============================================================================
-
-# Use explicit django-debug-config by defining the following setting to False.
-# This helps ensure that we don't get any circular dependencies.
-#DEBUG_TOOLBAR_PATCH_SETTINGS = False
 
 # djang-debug-toolbar doesnt allow wildcards in the INTERNAL_IPS settings which
 # is not very useful when running with vagrant as the host can change IP.
