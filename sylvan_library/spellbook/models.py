@@ -18,6 +18,8 @@ class Rarity(models.Model):
     display_order = models.IntegerField(unique = True)
 
 class Card(models.Model):
+    
+    name = models.CharField(max_length = 200, unique=True)
     cost = models.CharField(max_length = 50, blank = True, null = True)
     cmc = models.IntegerField()
     colour = models.IntegerField()
