@@ -43,7 +43,6 @@ class Card(models.Model):
     loyalty = models.CharField(max_length = 20, blank = True, null = True)
     num_loyalty = models.FloatField()
     rules_text = models.CharField(max_length = 1000, blank = True, null = True)
-    layout = models.CharField(max_length=20)
     
     def __str__(self):
         return self.name
@@ -76,32 +75,45 @@ class CardPrintingLanguage(models.Model):
     
     class Meta:
         unique_together = ("language", "card_name", "card_printing")
+        
+    def __str__(self):
+        return self.language + ' ' + self.card_printing
+    
+class PhysicalCard(models.Model):
+    
+    layout = models.CharField(max_length=20)
+    
+class PhysicalCardLink(models.Model):
+    
+    card_printing = models.ForeignKey('CardPrintingLanguage')
+    physical_card = models.ForeignKey('PhysicalCard')
+    
+    def __str__(self):
+        return self.card_printing + ' ' + self.physical_card
     
 class UserOwnedCard(models.Model):
     
     count = models.IntegerField()
     
-    card_printing_language = models.ForeignKey('CardPrintingLanguage')
+    physical_card = models.ForeignKey('PhysicalCard')
     owner = models.ForeignKey(User)
     
     class Meta:
-        unique_together = ("card_printing_language", "owner")
+        unique_together = ("physical_card", "owner")
+    
+    def __str__(self):
+        return self.count + ' of ' + self.physical_card
     
 class UserCardChange(models.Model):
     
     date = models.DateTimeField()
     difference = models.IntegerField()
     
-    card_printing_language = models.ForeignKey('CardPrintingLanguage')
+    physical_card = models.ForeignKey('PhysicalCard')
     owner = models.ForeignKey(User)
     
-class CardLink(models.Model):
-    
-    card_from = models.ForeignKey('Card', related_name = 'cardFrom')
-    card_to = models.ForeignKey('Card', related_name = 'cardTo')
-    
-    class Meta:
-        unique_together = ("card_from", "card_to")
+    def __str__(self):
+        return self.date + ' ' + self.difference + ' ' + self.physical_card
     
 class CardRuling(models.Model):
     
