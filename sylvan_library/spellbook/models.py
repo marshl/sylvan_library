@@ -4,6 +4,9 @@ from django.contrib.auth.models import User
 class Block(models.Model):
     name = models.CharField(max_length = 200, unique = True)
     release_date = models.DateField()
+    
+    def __str__(self):
+        return self.name
 
 class Set(models.Model):
     code = models.CharField(max_length = 10, unique = True)
@@ -12,10 +15,16 @@ class Set(models.Model):
     
     block = models.ForeignKey('Block', null = True)
     
+    def __str__(self):
+        return self.name
+    
 class Rarity(models.Model):
     symbol = models.CharField(max_length = 1, unique = True)
     name = models.CharField(max_length = 15, unique = True)
     display_order = models.IntegerField(unique = True)
+    
+    def __str__(self):
+        return self.name
 
 class Card(models.Model):
     
@@ -36,6 +45,9 @@ class Card(models.Model):
     rules_text = models.CharField(max_length = 1000, blank = True, null = True)
     layout = models.CharField(max_length=20)
     
+    def __str__(self):
+        return self.name
+    
 class CardPrinting(models.Model):
     flavour_text = models.CharField(max_length = 350, blank = True, null = True)
     artist = models.CharField(max_length = 100)
@@ -50,6 +62,9 @@ class CardPrinting(models.Model):
     
     class Meta:
         unique_together = ("set", "card", "collector_number", "collector_letter")
+        
+    def __str__(self):
+        return self.card + ' in ' + self.set.name
     
 class CardPrintingLanguage(models.Model):
     
@@ -97,15 +112,24 @@ class CardRuling(models.Model):
     
     class Meta:
         unique_together = ("date", "text", "card")
+        
+    def __str__(self):
+        return self.text + ' ' + self.card
     
 class CardTag(models.Model):
     
     name = models.CharField(max_length = 200)
     
+    def __str__(self):
+        return self.name
+    
 class CardTagLink(models.Model):
     
     tag = models.ForeignKey('CardTag')
     card = models.ForeignKey('Card')
+    
+    def __str__(self):
+        return self.tag + ' on ' + self.card
     
 class Deck(models.Model):
     
@@ -115,10 +139,16 @@ class Deck(models.Model):
     name = models.CharField(max_length = 200)
     owner = models.ForeignKey(User)
     
+    def __str__(self):
+        return self.name
+    
 class DeckCard(models.Model):
     
     count = models.IntegerField()
     
     card = models.ForeignKey('Card')
     deck = models.ForeignKey('Deck')
+    
+    def __str__(self):
+        return self.card + ' in ' + self.deck
     
