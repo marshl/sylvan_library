@@ -73,7 +73,7 @@ class CardPrintingLanguage(models.Model):
 
     card_printing = models.ForeignKey('CardPrinting')
     
-    physical_card = models.ForeignKey('PhysicalCard')
+    physical_card = models.ForeignKey('PhysicalCard', blank=True, null=True)
     
     class Meta:
         unique_together = ("language", "card_name", "card_printing")
