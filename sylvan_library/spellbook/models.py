@@ -70,8 +70,10 @@ class CardPrintingLanguage(models.Model):
     language = models.CharField(max_length = 50)
     card_name = models.CharField(max_length = 200)
     multiverse_id = models.IntegerField(blank = True, null = True)
-    
+
     card_printing = models.ForeignKey('CardPrinting')
+    
+    physical_card = models.ForeignKey('PhysicalCard')
     
     class Meta:
         unique_together = ("language", "card_name", "card_printing")
@@ -83,13 +85,8 @@ class PhysicalCard(models.Model):
     
     layout = models.CharField(max_length=20)
     
-class PhysicalCardLink(models.Model):
-    
-    card_printing = models.ForeignKey('CardPrintingLanguage')
-    physical_card = models.ForeignKey('PhysicalCard')
-    
     def __str__(self):
-        return self.card_printing + ' ' + self.physical_card
+        return self.id
     
 class UserOwnedCard(models.Model):
     
