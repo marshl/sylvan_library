@@ -12,6 +12,7 @@ class Set(models.Model):
     code = models.CharField(max_length = 10, unique = True)
     release_date = models.DateField(blank = True, null = True)
     name = models.CharField(max_length = 200, unique = True)
+    mci_code = models.CharField(max_length = 10, unique = True, blank = True, null = True)
     
     block = models.ForeignKey('Block', null = True)
     
@@ -55,6 +56,8 @@ class CardPrinting(models.Model):
     original_text = models.CharField(max_length = 1000, blank = True, null = True)
     original_type = models.CharField(max_length = 200, blank = True, null = True)
     
+    mci_number = models.IntegerField(blank = True, null = True)
+    
     set = models.ForeignKey('Set')
     card = models.ForeignKey('Card')
     rarity = models.ForeignKey('Rarity')
@@ -67,7 +70,7 @@ class CardPrinting(models.Model):
     
 class CardPrintingLanguage(models.Model):
     
-    language = models.CharField(max_length = 50)
+    language = models.ForeignKey('Language')
     card_name = models.CharField(max_length = 200)
     multiverse_id = models.IntegerField(blank = True, null = True)
 
@@ -166,4 +169,9 @@ class DeckCard(models.Model):
     
     def __str__(self):
         return self.card + ' in ' + self.deck
+    
+class Language(models.Model):
+    
+    name = models.CharField(max_length=50, unique = True)
+    mci_code = models.CharField(max_length=10, unique = True, blank = True, null = True)
     
