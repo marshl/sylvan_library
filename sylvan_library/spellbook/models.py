@@ -12,7 +12,7 @@ class Set(models.Model):
     code = models.CharField(max_length = 10, unique = True)
     release_date = models.DateField(blank = True, null = True)
     name = models.CharField(max_length = 200, unique = True)
-    mci_code = models.CharField(max_length = 10, unique = True, blank = True, null = True)
+    mci_code = models.CharField(max_length = 10, blank = True, null = True)
     
     block = models.ForeignKey('Block', null = True)
     
@@ -47,6 +47,14 @@ class Card(models.Model):
     
     def __str__(self):
         return self.name
+    
+class CardLink(models.Model):
+    
+    card_from = models.ForeignKey('Card', related_name = 'cardFrom+')
+    card_to = models.ForeignKey('Card', related_name = 'cardTo')
+    
+    class Meta:
+        unique_together = ("card_from", "card_to")
     
 class CardPrinting(models.Model):
     flavour_text = models.CharField(max_length = 350, blank = True, null = True)
