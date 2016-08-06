@@ -43,6 +43,4 @@ STATIC_ROOT = '/srv/www/recruitmentstatic/'
 # Example: "http://media.lawrence.com/static/"
 STATIC_URL = '/static/'
 
-#SOCIAL_AUTH_GOOGLE_WHITELISTED_DOMAINS = ['fivium.com', 'fivium.co.uk', 'fivium.com.au']
-
 GOOGLE_ANALYTICS_TRACKING_ID = get_secret('GOOGLE_ANALYTICS_TRACKING_ID')
