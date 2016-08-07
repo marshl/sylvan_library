@@ -1,0 +1,29 @@
+<h1>{{ card.name }}</h1>
+<p>{{ card.type }}</p>
+{% if card.subtype %}
+	<p>{{ card.subtype }}</p>
+{% endif %}
+{{ card.rules_text }}
+{% comment %}
+<ul>
+{% for printing in card.cardprinting_set.all %}
+	<li>{{ printing.set.name }}
+		<ul>
+		{% for lang in printing.cardprintinglanguage_set.all %}
+		<li>
+			{{ lang.card_name }}
+			{{ lang.language.name }}
+			<ul>
+			{% for link in lang.physicalcardlink_set.all %}
+				{% for own in link.physical_card.userownedcard_set.all %}
+					<p>{{ own.owner }} owns {{ own.count }}</p>
+				{% endfor %}
+			{% endfor %}
+			</ul>
+		</li>
+		{% endfor %}
+		</ul>
+	</li>
+{% endfor %}
+</ul>
+{% endcomment %}
