@@ -74,7 +74,7 @@ class CardPrinting(models.Model):
         unique_together = ("set", "card", "collector_number", "collector_letter")
         
     def __str__(self):
-        return self.card + ' in ' + self.set.name
+        return self.card.name + ' in ' + self.set.name
     
 class CardPrintingLanguage(models.Model):
     
@@ -88,7 +88,7 @@ class CardPrintingLanguage(models.Model):
         unique_together = ("language", "card_name", "card_printing")
         
     def __str__(self):
-        return self.language + ' ' + self.card_printing
+        return self.language.name + ' ' + str(self.card_printing)
     
 class PhysicalCardLink(models.Model):
     
@@ -98,12 +98,15 @@ class PhysicalCardLink(models.Model):
     class Meta:
         unique_together = ('printing_language', 'physical_card')
     
+    def __str__(self):
+        return str(self.printing_language) + ' ' + self.physical_card.layout
+    
 class PhysicalCard(models.Model):
     
     layout = models.CharField(max_length=20)
     
     def __str__(self):
-        return self.id
+        return 'physical for ' + str(self.physicalcardlink_set.first().printing_language)
     
 class UserOwnedCard(models.Model):
     
@@ -116,7 +119,7 @@ class UserOwnedCard(models.Model):
         unique_together = ("physical_card", "owner")
     
     def __str__(self):
-        return self.count + ' of ' + self.physical_card
+        return self.owner.name + ' owns ' + str(self.count) + ' of ' + str(self.physical_card)
     
 class UserCardChange(models.Model):
     
@@ -127,7 +130,7 @@ class UserCardChange(models.Model):
     owner = models.ForeignKey(User)
     
     def __str__(self):
-        return self.date + ' ' + self.difference + ' ' + self.physical_card
+        return self.date + ' ' + self.difference + ' ' + str(self.physical_card)
     
 class CardRuling(models.Model):
     
@@ -155,7 +158,7 @@ class CardTagLink(models.Model):
     card = models.ForeignKey('Card')
     
     def __str__(self):
-        return self.tag + ' on ' + self.card
+        return self.tag + ' on ' + str(self.card)
     
 class Deck(models.Model):
     
@@ -176,10 +179,13 @@ class DeckCard(models.Model):
     deck = models.ForeignKey('Deck')
     
     def __str__(self):
-        return self.card + ' in ' + self.deck
+        return self.card._str__() + ' in ' + str(self.deck)
     
 class Language(models.Model):
     
     name = models.CharField(max_length=50, unique = True)
     mci_code = models.CharField(max_length=10, unique = True, blank = True, null = True)
+    
+    def __str__(self):
+        return self.name
     
