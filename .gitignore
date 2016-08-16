@@ -6,3 +6,5 @@ sylvan_library/spellbook/__pycache__/
 sylvan_library/sylvan_library/settings/secrets.json
 sylvan_library/sylvan_library/settings/__pycache__/
 sylvan_library/spellbook/migrations/__pycache__/
+sylvan_library/spellbook/data/
+*.pyc
