@@ -4,6 +4,7 @@ import requests
 import json
 from os import path
 from . import _paths
+from . import _query
 
 def parse_json_data():
     f = open(_paths.json_data_path, 'r', encoding="utf8")
@@ -16,11 +17,13 @@ class Command(BaseCommand):
     
     def handle(self, *args, **options):
         
-        stream = requests.get(_paths.json_zip_download_url)
-        
-        print('Downloading to ', path.abspath(_paths.json_zip_path))
         if path.isfile(_paths.json_data_path):
-            print('Zip file already exists, overwriting')
+            overwrite = _query.query_yes_no(_paths.json_zip_path + ' already exists, overwrite?')
+            
+            if not overwrite:
+                return
+            
+        stream = requests.get(_paths.json_zip_download_url)
         
         with open(_paths.json_zip_path, 'wb') as output:
             output.write(stream.content)
@@ -36,3 +39,4 @@ class Command(BaseCommand):
                            separators=(',', ': ')))
         
         pretty_file.close()
+        
