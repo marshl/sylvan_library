@@ -3,14 +3,7 @@ import zipfile
 import requests
 import json
 from os import path
-from . import _paths
-from . import _query
-
-def parse_json_data():
-    f = open(_paths.json_data_path, 'r', encoding="utf8")
-    json_data = json.load(f, encoding='UTF-8')
-    f.close()
-    return json_data
+from . import _paths, _query, _parse
 
 class Command(BaseCommand):
     help = 'Downloads the MtG JSON data file'
@@ -31,7 +24,7 @@ class Command(BaseCommand):
         json_zip_file = zipfile.ZipFile(_paths.json_zip_path)
         json_zip_file.extractall(_paths.output_data_folder)
 
-        json_data = parse_json_data()
+        json_data = _parse.parse_json_data()
         pretty_file = open(_paths.pretty_json_path, 'w', encoding='utf8')
         pretty_file.write(json.dumps(json_data,
                            sort_keys=True,
