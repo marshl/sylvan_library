@@ -6,7 +6,7 @@ from ...models import Card, CardPrinting, CardPrintingLanguage, PhysicalCard
 from ...models import PhysicalCardLink, UserOwnedCard, UserCardChange, DeckCard
 from ...models import Deck, CardTagLink, CardTag, CardRuling, Rarity, Block
 from ...models import Set, Language
-from . import _query, _parse, _rarity, _paths
+from . import _query, _parse, _paths
 
 class Command(BaseCommand):
     help = 'Downloads the MtG JSON data file'
@@ -26,18 +26,21 @@ class Command(BaseCommand):
         self.update_physical_cards(json_data)
 
     def update_rarity_table(self):
-        rarity_list = _rarity.rarity_list()
 
-        for r in rarity_list:
+        f = open(_paths.rarity_json_path, 'r', encoding="utf8")
+        rarities = json.load(f, encoding='UTF-8')
+        f.close()
+
+        for r in rarities:
 
             obj = None
             try:
-                obj = Rarity.objects.get(symbol=r.sym)
-                obj.name = r.name
-                obj.display_order = r.display_order
+                obj = Rarity.objects.get(symbol=r['symbol'])
+                obj.name = r['name']
+                obj.display_order = r['display_order']
 
             except Rarity.DoesNotExist:
-                obj = Rarity(symbol=r.sym, name=r.name, display_order=r.display_order)
+                obj = Rarity(symbol=r['symbol'], name=r['name'], display_order=r['display_order'])
 
             obj.save()
 
@@ -77,8 +80,7 @@ class Command(BaseCommand):
 
             except Block.DoesNotExist:
                 obj = Block(name=set_data['block'], release_date=set_data['releaseDate'])
-
-            obj.save()
+                obj.save()
 
     def update_set_information(self, set_list):
 
@@ -94,9 +96,7 @@ class Command(BaseCommand):
             except Set.DoesNotExist:
 
                 b = Block.objects.filter(name=set_data.get('block')).first()
-
                 obj = Set(code=set_code, name=set_data['name'], release_date=set_data['releaseDate'], block=b, mci_code=set_data.get('magicCardsInfoCode'))
-
                 obj.save()
 
 
