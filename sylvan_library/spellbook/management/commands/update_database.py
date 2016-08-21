@@ -73,8 +73,8 @@ class Command(BaseCommand):
             try:
                 obj = Block.objects.get(name=set_data['block'])
 
-            except Language.DoesNotExist:
-                obj = Language(name=set_data['block'], release_date=set_data['release_date'])
+            except Block.DoesNotExist:
+                obj = Block(name=set_data['block'], release_date=set_data['releaseDate'])
 
             obj.save()
 
