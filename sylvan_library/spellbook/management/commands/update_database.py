@@ -123,6 +123,12 @@ class Command(BaseCommand):
                 card_obj = self.update_card(card_data)
                 printing_obj = self.update_card_printing(card_obj, set_obj, card_data, default_cnum)
 
+                english = {'language': 'English', 'name': card_data['name'], 'multiverseid': card_data.get('multiverseid')}
+                cardlang_obj = self.update_card_printing_language(printing_obj, english)
+
+                if 'foreignNames' in set_data:
+                    for lang in set_data.get('foreignNames'):
+                        cardlang_obj = self.update_card_printing_language(printing_obj, lang)
 
     def update_card(self, card_data):
 
@@ -215,6 +221,32 @@ class Command(BaseCommand):
         printing.save()
 
         return printing
+
+    def update_card_printing_language(self, printing_obj, lang):
+
+        lang_obj = Language.objects.get(name=lang['language'])
+        # print(printing_obj)
+
+        try:
+            cardlang = CardPrintingLanguage.objects.get(card_printing=printing_obj, language=lang_obj)
+
+        except CardPrintingLanguage.DoesNotExist:
+            cardlang = CardPrintingLanguage(card_printing=printing_obj, language=lang_obj)
+
+        cardlang.multiverse_id = lang.get('multiverseid')
+        cardlang.card_name = lang['name']
+
+        cardlang.save()
+
+        return cardlang
+
+    def convert_to_number(self, val):
+        match = re.search('([\d.]+)', str(val))
+        if match:
+            return match.group()
+
+        return 0
+
     def update_ruling_table(self, set_list):
         pass
 
