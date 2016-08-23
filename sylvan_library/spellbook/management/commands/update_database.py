@@ -248,7 +248,30 @@ class Command(BaseCommand):
         return 0
 
     def update_ruling_table(self, set_list):
-        pass
+
+        CardRuling.objects.all().delete()
+
+        for s in set_list:
+
+            set_data = s[1]
+
+            for card_data in set_data['cards']:
+
+                if 'rulings' not in card_data:
+                    continue
+
+                card_obj = Card.objects.get(name=card_data['name'])
+
+                for ruling in card_data['rulings']:
+                    # print(ruling['text'])
+
+                    try:
+                        ruling_obj = CardRuling.objects.get(card=card_obj, text=ruling['text'], date=ruling['date'])
+
+                    except CardRuling.DoesNotExist:
+                        ruling_obj = CardRuling(card=card_obj, text=ruling['text'], date=ruling['date'])
+
+                    ruling_obj.save()
 
     def update_physical_cards(self, set_list):
         pass
