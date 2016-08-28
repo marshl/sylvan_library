@@ -1,19 +1,13 @@
 from django.core.management.base import BaseCommand
+
 import json
-from os import path
-import zipfile
-import json
-import requests
 import re
-import queue
-import threading
-import pprint
 
 from ...models import Card, CardPrinting, CardPrintingLanguage, PhysicalCard
-from ...models import PhysicalCardLink, UserOwnedCard, UserCardChange, DeckCard
-from ...models import Deck, CardTagLink, CardTag, CardRuling, Rarity, Block
+from ...models import PhysicalCardLink
+from ...models import CardRuling, Rarity, Block
 from ...models import Set, Language
-from . import _query, _parse, _paths, _colour
+from . import _parse, _paths, _colour
 
 class Command(BaseCommand):
     help = 'Downloads the MtG JSON data file'
@@ -54,7 +48,6 @@ class Command(BaseCommand):
 
     def update_language_table(self):
 
-        # print(path.abspath('languages.json'))
         f = open(_paths.language_json_path, 'r', encoding="utf8")
         languages = json.load(f, encoding='UTF-8')
         f.close()
@@ -102,10 +95,7 @@ class Command(BaseCommand):
             set_data = s[1]
             set_obj = None
 
-            try:
-                obj = Set.objects.get(code=set_code)
-
-            except Set.DoesNotExist:
+            if not Set.objects.filter(code=set_code).exists():
 
                 b = Block.objects.filter(name=set_data.get('block')).first()
                 set_obj = Set(code=set_code, name=set_data['name'], release_date=set_data['releaseDate'], block=b, mci_code=set_data.get('magicCardsInfoCode'))
@@ -132,17 +122,13 @@ class Command(BaseCommand):
                 printing_obj = self.update_card_printing(card_obj, set_obj, card_data, default_cnum)
 
                 english = {'language': 'English', 'name': card_data['name'], 'multiverseid': card_data.get('multiverseid')}
-                cardlang_obj = self.update_card_printing_language(printing_obj, english)
+                self.update_card_printing_language(printing_obj, english)
 
                 if 'foreignNames' in card_data:
 
-                    # print('foreign name detected;')
-
                     for lang in card_data['foreignNames']:
 
-                        # print('Language ' + lang['language'])
-
-                        cardlang_obj = self.update_card_printing_language(printing_obj, lang)
+                        self.update_card_printing_language(printing_obj, lang)
 
     def update_card(self, card_data):
 
@@ -228,7 +214,6 @@ class Command(BaseCommand):
     def update_card_printing_language(self, printing_obj, lang):
 
         lang_obj = Language.objects.get(name=lang['language'])
-        # print(printing_obj)
 
         try:
             cardlang = CardPrintingLanguage.objects.get(card_printing=printing_obj, language=lang_obj)
@@ -256,6 +241,10 @@ class Command(BaseCommand):
 
         for s in set_list:
 
+            set_code = s[0]
+            if not Set.objects.filter(code=set_code).exists():
+                continue
+
             set_data = s[1]
 
             for card_data in set_data['cards']:
@@ -266,31 +255,25 @@ class Command(BaseCommand):
                 card_obj = Card.objects.get(name=card_data['name'])
 
                 for ruling in card_data['rulings']:
-                    # print(ruling['text'])
 
                     try:
                         ruling_obj = CardRuling.objects.get(card=card_obj, text=ruling['text'], date=ruling['date'])
 
                     except CardRuling.DoesNotExist:
                         ruling_obj = CardRuling(card=card_obj, text=ruling['text'], date=ruling['date'])
-
-                    ruling_obj.save()
+                        ruling_obj.save()
 
     def update_physical_cards(self, set_list):
 
-        for set in set_list:
+        for s in set_list:
 
-            set_code = set[0]
-
-            if set_code != 'EMN':
-                continue
+            set_code = s[0]
+            set_data = s[1]
 
             if not Set.objects.filter(code=set_code).exists():
                 continue
 
-            set_data = set[1]
-
-            set_obj = Set.objects.get(code=set[0])
+            set_obj = Set.objects.get(code=set_code)
 
             default_cnum = 0
 
@@ -315,8 +298,6 @@ class Command(BaseCommand):
                         printlang_obj = CardPrintingLanguage.objects.get(card_printing=printing_obj, language=lang_obj)
                         self.update_physical_card(printlang_obj, card_data)
 
-
-
     def update_physical_card(self, printlang_obj, card_data):
 
         if card_data['layout'] == 'meld' and len(card_data['names']) == 3 and printlang_obj.card_printing.collector_letter == 'b':
@@ -336,12 +317,9 @@ class Command(BaseCommand):
                 if link_name == card_data['name']:
                     continue
 
-                # print('Link name "{0}" set:{1}'.format(link_name, printlang_obj.card_printing.set))
                 link_card = Card.objects.get(name=link_name)
 
                 print('Link: ' + link_name + ' cnum ' + card_data['number'])
-
-
 
                 link_print = CardPrinting.objects.get(card=link_card,
                                                       set=printlang_obj.card_printing.set)
@@ -352,16 +330,7 @@ class Command(BaseCommand):
 
                 link_print_lang = CardPrintingLanguage.objects.get(card_printing=link_print, language=printlang_obj.language)
 
-#                 try:
-#                     link_obj = PhysicalCardLink.objects.get(printing_language=link_print_lang)
-#
-#                 except PhysicalCardLink.DoesNotExist:
-#                     print('Card has no physical ID')
-#                     continue
-
                 linked_language_objs.append(link_print_lang)
-
-        # layout = 'meld-back' if card_data['layout'] == 'meld' and not 'manaCost' in card_data == 3 else card_data['layout']
 
         physical_card = PhysicalCard(layout=card_data['layout'])
         physical_card.save()
