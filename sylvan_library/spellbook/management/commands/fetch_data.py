@@ -22,7 +22,7 @@ class Command(BaseCommand):
             output.write(stream.content)
 
         json_zip_file = zipfile.ZipFile(_paths.json_zip_path)
-        json_zip_file.extractall(_paths.output_data_folder)
+        json_zip_file.extractall(_paths.data_folder)
 
         json_data = _parse.parse_json_data()
         pretty_file = open(_paths.pretty_json_path, 'w', encoding='utf8')
