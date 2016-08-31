@@ -329,7 +329,7 @@ class Command(BaseCommand):
                                          default_cnum)
 
                 card_obj = Card.objects.get(name=card_data['name'])
-                assert(card_obj is not None)
+
                 printing_obj = CardPrinting.objects.get(
                                     card=card_obj,
                                     set=set_obj,

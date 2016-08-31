@@ -1,16 +1,19 @@
 from django.core.management.base import BaseCommand
+
 from ...models import Card, CardPrinting, CardPrintingLanguage, PhysicalCard
 from ...models import PhysicalCardLink, UserOwnedCard, UserCardChange, DeckCard
 from ...models import Deck, CardTagLink, CardTag, CardRuling, Rarity, Block
 from ...models import Set, Language
 from . import _query
 
+
 class Command(BaseCommand):
     help = 'Downloads the MtG JSON data file'
 
     def handle(self, *args, **options):
 
-        confirm = _query.query_yes_no('Are you sure you want to delete all data in the database?', 'no')
+        confirm = _query.query_yes_no(
+          'Are you sure you want to delete all data in the database?', 'no')
 
         if not confirm:
             return
