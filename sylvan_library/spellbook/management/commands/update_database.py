@@ -137,7 +137,7 @@ class Command(BaseCommand):
 
                 english = {
                     'language': 'English',
-                    'name': card_data['name'],
+                    'name': self.get_card_name(card_data),
                     'multiverseid': card_data.get('multiverseid')
                 }
 
@@ -153,12 +153,14 @@ class Command(BaseCommand):
 
         card = None
 
+        card_name = self.get_card_name(card_data)
+
         try:
-            card = Card.objects.get(name=card_data['name'])
+            card = Card.objects.get(name=card_name)
 
         except Card.DoesNotExist:
 
-            card = Card(name=card_data['name'])
+            card = Card(name=card_name)
 
         card.cost = card_data.get('manaCost')
         card.cmc = card_data.get('cmc') or 0
@@ -290,7 +292,9 @@ class Command(BaseCommand):
                 if 'rulings' not in card_data:
                     continue
 
-                card_obj = Card.objects.get(name=card_data['name'])
+                card_name = self.get_card_name(card_data)
+
+                card_obj = Card.objects.get(name=card_name)
 
                 for ruling in card_data['rulings']:
 
@@ -328,7 +332,9 @@ class Command(BaseCommand):
                                          card_data,
                                          default_cnum)
 
-                card_obj = Card.objects.get(name=card_data['name'])
+                card_name = self.get_card_name(card_data)
+
+                card_obj = Card.objects.get(name=card_name)
 
                 printing_obj = CardPrinting.objects.get(
                                     card=card_obj,
@@ -415,6 +421,15 @@ class Command(BaseCommand):
                             physical_card=physical_card)
 
             link_obj.save()
+
+    def get_card_name(self, card_data):
+        if card_data['name'] == 'B.F.M. (Big Furry Monster)':
+            if 'cmc' in card_data:
+                return 'B.F.M. (Big Furry Monster) (right)'
+            else:
+                return 'B.F.M. (Big Furry Monster) (left)'
+
+        return card_data['name']
 
     def get_card_cnum(self, card_data, default_cnum):
 
