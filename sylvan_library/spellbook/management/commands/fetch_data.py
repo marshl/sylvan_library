@@ -1,7 +1,9 @@
 from django.core.management.base import BaseCommand
-import zipfile
-import requests
+
 import json
+import logging
+import requests
+import zipfile
 from os import path
 
 from . import _paths, _query, _parse
@@ -17,10 +19,16 @@ class Command(BaseCommand):
                 '{0} already exists, overwrite?'.format(_paths.json_zip_path))
 
             if not overwrite:
+                logging.info('The file {0} wasn''t overwritten'
+                             .format(_paths.json_zip_path))
                 return
 
+        logging.info('Downloading json file from {0}'
+                     .format(_paths.json_zip_download_url))
         stream = requests.get(_paths.json_zip_download_url)
 
+        logging.info('Writing json data to file {0}'
+                     .format(_paths.json_zip_path))
         with open(_paths.json_zip_path, 'wb') as output:
             output.write(stream.content)
 
