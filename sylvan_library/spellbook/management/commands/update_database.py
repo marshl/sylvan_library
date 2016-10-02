@@ -192,10 +192,17 @@ class Command(BaseCommand):
             card.num_loyalty = self.convert_to_number(card_data['loyalty'])
 
         if 'types' in card_data:
-            card.type = ' '.join(card_data['types'])
+
+            types = (card_data.get('supertypes') or []) + \
+                    (card_data['types'] or [])
+            card.type = ' '.join(types)
+        else:
+            card.type = None
 
         if 'subtypes' in card_data:
-            card.subtype = ' '.join(card_data['subtypes'])
+            card.subtype = ' '.join(card_data.get('subtypes'))
+        else:
+            card.subtype = None
 
         card.rules_text = card_data.get('text')
 
