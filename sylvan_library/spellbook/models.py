@@ -85,7 +85,7 @@ class CardPrinting(models.Model):
         )
 
     def __str__(self):
-        return self.card.name + ' in ' + self.set.name
+        return '{0} in {1}'.format(self.card, self.set)
 
 
 class CardPrintingLanguage(models.Model):
@@ -100,7 +100,7 @@ class CardPrintingLanguage(models.Model):
         unique_together = ("language", "card_name", "card_printing")
 
     def __str__(self):
-        return self.language.name + ' ' + str(self.card_printing)
+        return '{0} {1}'.format(self.language, self.card_printing)
 
 
 class PhysicalCardLink(models.Model):
@@ -122,7 +122,7 @@ class PhysicalCard(models.Model):
     layout = models.CharField(max_length=20)
 
     def __str__(self):
-        return 'physical for {0}'.format(
+        return 'Physical for {0}'.format(
                  self.physicalcardlink_set.first().printing_language)
 
 
@@ -169,7 +169,7 @@ class CardRuling(models.Model):
         unique_together = ("date", "text", "card")
 
     def __str__(self):
-        return self.text + ' ' + self.card
+        return 'Ruling for {0}: {1}'.format(self.card, self.text)
 
 
 class CardTag(models.Model):
@@ -186,7 +186,7 @@ class CardTagLink(models.Model):
     card = models.ForeignKey('Card')
 
     def __str__(self):
-        return self.tag + ' on ' + str(self.card)
+        return '{0} on {1}'.format(self.tag, self.card)
 
 
 class Deck(models.Model):
@@ -200,9 +200,6 @@ class Deck(models.Model):
     def __str__(self):
         return self.name
 
-    def __unicode__(self):
-        return self.name
-
 
 class DeckCard(models.Model):
 
@@ -212,7 +209,7 @@ class DeckCard(models.Model):
     deck = models.ForeignKey('Deck')
 
     def __str__(self):
-        return self.card._str__() + ' in ' + str(self.deck)
+        return '{0} in {1}'.format(self.card, self.deck)
 
 
 class Language(models.Model):
