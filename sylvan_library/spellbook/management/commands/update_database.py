@@ -352,7 +352,7 @@ class Command(BaseCommand):
                 logging.info('Ignoring set "%s"', set_data['name'])
                 continue
 
-            logging.info('Updating ruligns in "%s"', set_data['name'])
+            logging.info('Updating rulings in "%s"', set_data['name'])
 
             for card_data in set_data['cards']:
 
