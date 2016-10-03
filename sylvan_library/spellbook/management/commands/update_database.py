@@ -268,8 +268,8 @@ class Command(BaseCommand):
 
         try:
             printing = CardPrinting.objects.get(
-                        card=card_obj,
-                        set=set_obj,
+                        card_id=card_obj.id,
+                        set_id=set_obj.id,
                         collector_number=cnum,
                         collector_letter=cnum_letter)
             logging.info('Updating card printing "%s"', printing)
@@ -311,22 +311,22 @@ class Command(BaseCommand):
 
         lang_obj = Language.objects.get(name=lang['language'])
 
-        try:
-            cardlang = CardPrintingLanguage.objects.get(
-                        card_printing=printing_obj,
-                        language=lang_obj)
+        cardlang = CardPrintingLanguage.objects.filter(
+                                           card_printing_id=printing_obj.id,
+                                           language_id=lang_obj.id).first()
 
-            logging.info('Updating printing language %s', cardlang)
+        if cardlang is not None:
+            logging.info('Card printing language "%s" already exists',
+                         cardlang)
+            return cardlang
 
-        except CardPrintingLanguage.DoesNotExist:
-            cardlang = CardPrintingLanguage(
-                        card_printing=printing_obj,
-                        language=lang_obj)
+        cardlang = CardPrintingLanguage(
+                    card_printing=printing_obj,
+                    language=lang_obj,
+                    card_name=lang['name'],
+                    multiverse_id=lang.get('multiverseid'))
 
-            logging.info('Creating new printing language "%s"', cardlang)
-
-        cardlang.multiverse_id = lang.get('multiverseid')
-        cardlang.card_name = lang['name']
+        logging.info('Created new printing language "%s"', cardlang)
 
         cardlang.save()
 
