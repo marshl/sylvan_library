@@ -207,7 +207,7 @@ class Command(BaseCommand):
         card.cmc = card_data.get('cmc') or 0
 
         if 'colors' in card_data:
-            card.card_colour = _colour.get_colour_flags_from_names(
+            card.colour = _colour.get_colour_flags_from_names(
                                    card_data['colors'])
         else:
             card.colour = 0
