@@ -281,7 +281,7 @@ class Command(BaseCommand):
                             set=set_obj,
                             collector_number=cnum,
                             collector_letter=cnum_letter)
-            logging.info('Created new card priting "%s"', printing)
+            logging.info('Created new card printing "%s"', printing)
 
         printing.artist = card_data['artist']
 
