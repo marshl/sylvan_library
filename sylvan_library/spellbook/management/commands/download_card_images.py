@@ -1,13 +1,11 @@
 from django.core.management.base import BaseCommand
 
-import logging
 import requests
 import queue
 import threading
 from os import path
 
-from . import _paths, _query, _parse
-from ...models import CardPrintingLanguage
+from spellbook.models import CardPrintingLanguage
 
 
 class Command(BaseCommand):

@@ -1,10 +1,10 @@
 from django.core.management.base import BaseCommand
 
-from ...models import Card, CardPrinting, CardPrintingLanguage, PhysicalCard
-from ...models import PhysicalCardLink, UserOwnedCard, UserCardChange, DeckCard
-from ...models import Deck, CardTagLink, CardTag, CardRuling, Rarity, Block
-from ...models import Set, Language
-from . import _query
+from spellbook.models import Card, CardPrinting, CardPrintingLanguage
+from spellbook.models import PhysicalCard, PhysicalCardLink, UserOwnedCard
+from spellbook.models import UserCardChange, DeckCard, Deck, CardTagLink
+from spellbook.models import CardTag, CardRuling, Rarity, Block, Set, Language
+from spellbook.management.commands import _query
 
 
 class Command(BaseCommand):

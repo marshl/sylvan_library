@@ -4,11 +4,11 @@ import re
 
 from django.core.management.base import BaseCommand
 
-from ...models import Card, CardPrinting, CardPrintingLanguage, PhysicalCard
-from ...models import PhysicalCardLink
-from ...models import CardRuling, Rarity, Block
-from ...models import Set, Language
-from . import _parse, _paths, _colour
+from spellbook.models import Card, CardPrinting, CardPrintingLanguage
+from spellbook.models import PhysicalCard, PhysicalCardLink
+from spellbook.models import CardRuling, Rarity, Block
+from spellbook.models import Set, Language
+from spellbook.management.commands import _parse, _paths, _colour
 
 
 class Command(BaseCommand):
