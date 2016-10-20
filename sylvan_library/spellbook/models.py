@@ -1,3 +1,5 @@
+from os import path
+
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -101,6 +103,12 @@ class CardPrintingLanguage(models.Model):
 
     def __str__(self):
         return '{0} {1}'.format(self.language, self.card_printing)
+
+    def get_image_path(self):
+        return path.join('spellbook',
+                         'static',
+                         'card_images',
+                         str(self.multiverse_id) + '.jpg')
 
 
 class PhysicalCardLink(models.Model):
