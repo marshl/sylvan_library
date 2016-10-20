@@ -16,7 +16,7 @@ class Command(BaseCommand):
         image_download_queue = queue.Queue()
 
         for cpl in CardPrintingLanguage.objects.all():
-            image_download_queue.put(cpl.multiverse_id)
+            image_download_queue.put(cpl)
             # download_image_for_card(cpl.multiverse_id)
 
         for i in range(1, 8):
@@ -34,25 +34,26 @@ class imageDownloadThread(threading.Thread):
 
     def run(self):
         while True:
-            multiverse_id = self.queue.get()
-            download_image_for_card(multiverse_id)
+            printing_language = self.queue.get()
+            download_image_for_card(printing_language)
             self.queue.task_done()
 
 
-def download_image_for_card(multiverse_id):
+def download_image_for_card(printing_language):
 
-    image_path = path.join('spellbook', 'static', 'card_images', str(multiverse_id) + '.jpg')
+    image_path = printing_language.get_image_path()
 
     if(path.exists(image_path)):
-        print('Skipping {0}'.format(multiverse_id))
+        print('Skipping {0}'.format(printing_language.multiverse_id))
         return
 
-    print('Downloading {0}'.format(multiverse_id))
+    print('Downloading {0}'.format(printing_language.multiverse_id))
 
     image_download_url = 'http://gatherer.wizards.com' + \
                          '/Handlers/Image.ashx?multiverseid={0}&type=card'
 
-    stream = requests.get(image_download_url.format(multiverse_id))
+    stream = requests.get(
+              image_download_url.format(printing_language.multiverse_id))
 
     with open(image_path, 'wb') as output:
         output.write(stream.content)
