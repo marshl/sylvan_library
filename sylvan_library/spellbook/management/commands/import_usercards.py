@@ -1,13 +1,9 @@
-from os import path
-
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 
 from spellbook.models import Card, CardPrinting, CardPrintingLanguage
 from spellbook.models import UserOwnedCard, Set, Language
-from spellbook.models import PhysicalCard, PhysicalCardLink
-
-from . import _paths, _query, _parse
+from spellbook.models import PhysicalCardLink
 
 
 class Command(BaseCommand):
@@ -38,7 +34,6 @@ class Command(BaseCommand):
             for line in f:
 
                 (name, number, setcode) = line.rstrip().split('\t')
-                # print('Card: {0} Set: {1} Number: {2}'.format(name, setcode, number))
 
                 card = Card.objects.get(name=name)
                 print('Card ID: {0}'.format(card.id))
