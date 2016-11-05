@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from spellbook.models import Card, CardPrinting, CardPrintingLanguage
 from spellbook.models import PhysicalCard, PhysicalCardLink
 from spellbook.models import CardRuling, Rarity, Block
-from spellbook.models import Set, Language
+from spellbook.models import Set, Language, CardLink
 from spellbook.management.commands import _parse, _paths, _colour
 
 
@@ -28,6 +28,7 @@ class Command(BaseCommand):
         self.update_card_list(json_data)
         self.update_ruling_list(json_data)
         self.update_physical_card_list(json_data)
+        self.update_card_links(json_data)
 
     def update_rarity_list(self):
 
@@ -450,8 +451,8 @@ class Command(BaseCommand):
 
             return
 
-        if (PhysicalCardLink.objects.filter(printing_language=printlang_obj)
-           .exists()):
+        if (PhysicalCardLink.objects.filter(
+                printing_language=printlang_obj).exists()):
             logging.info('Physical link already exists for "%s"',
                          printlang_obj)
 
@@ -497,6 +498,48 @@ class Command(BaseCommand):
                             physical_card=physical_card)
 
             link_obj.save()
+
+    def update_card_links(self, set_list):
+
+        for s in set_list:
+
+            set_code = s[0]
+            set_data = s[1]
+
+            if not Set.objects.filter(code=set_code).exists():
+                logging.info('Skipping set "%s"', set_data['name'])
+                continue
+
+            cards = set_data['cards']
+
+            for card_data in [x for x in cards if 'names' in x]:
+
+                card_name = self.get_card_name(card_data)
+                card_obj = Card.objects.get(name=card_name)
+
+                print('Finding card links for {0}'.format(card_name))
+
+                links = card_data['names']
+
+                for link_name in [x for x in links if x != card_name]:
+
+                    if card_name == 'B.F.M. (Big Furry Monster) (left)':
+                        link_name = 'B.F.M. (Big Furry Monster) (right)'
+                    elif card_name == 'B.F.M. (Big Furry Monster) (right)':
+                        link_name = 'B.F.M. (Big Furry Monster) (left)'
+
+                    link_card = Card.objects.get(name=link_name)
+
+                    if CardLink.objects.filter(
+                           card_from=card_obj,
+                           card_to=link_card).exists():
+                        continue
+
+                    link_obj = CardLink(
+                                card_from=card_obj,
+                                card_to=link_card)
+
+                    link_obj.save()
 
     def get_card_name(self, card_data):
         if card_data['name'] == 'B.F.M. (Big Furry Monster)':
