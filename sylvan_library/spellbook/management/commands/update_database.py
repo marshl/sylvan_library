@@ -517,7 +517,7 @@ class Command(BaseCommand):
                 card_name = self.get_card_name(card_data)
                 card_obj = Card.objects.get(name=card_name)
 
-                print('Finding card links for {0}'.format(card_name))
+                logging.info('Finding card links for {0}'.format(card_name))
 
                 links = card_data['names']
 
