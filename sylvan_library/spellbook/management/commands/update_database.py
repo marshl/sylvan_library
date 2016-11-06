@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from spellbook.models import Card, CardPrinting, CardPrintingLanguage
 from spellbook.models import PhysicalCard, PhysicalCardLink
 from spellbook.models import CardRuling, Rarity, Block
-from spellbook.models import Set, Language, CardLink
+from spellbook.models import Set, Language
 from spellbook.management.commands import _parse, _paths, _colour
 
 
@@ -530,16 +530,8 @@ class Command(BaseCommand):
 
                     link_card = Card.objects.get(name=link_name)
 
-                    if CardLink.objects.filter(
-                           card_from=card_obj,
-                           card_to=link_card).exists():
-                        continue
-
-                    link_obj = CardLink(
-                                card_from=card_obj,
-                                card_to=link_card)
-
-                    link_obj.save()
+                    card_obj.links.add(link_card)
+                    card_obj.save()
 
     def get_card_name(self, card_data):
         if card_data['name'] == 'B.F.M. (Big Furry Monster)':
