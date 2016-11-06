@@ -51,17 +51,10 @@ class Card(models.Model):
     num_loyalty = models.FloatField()
     rules_text = models.CharField(max_length=1000, blank=True, null=True)
 
+    links = models.ManyToManyField('self')
+
     def __str__(self):
         return self.name
-
-
-class CardLink(models.Model):
-
-    card_from = models.ForeignKey('Card', related_name='cardFrom+')
-    card_to = models.ForeignKey('Card', related_name='cardTo')
-
-    class Meta:
-        unique_together = ("card_from", "card_to")
 
 
 class CardPrinting(models.Model):
