@@ -438,23 +438,23 @@ class Command(BaseCommand):
 
                         self.update_physical_card(printlang_obj, card_data)
 
-    def update_physical_card(self, printlang_obj, card_data):
+    def update_physical_card(self, printlang, card_data):
 
-        logging.info('Updating physical cards for "%s"', printlang_obj)
+        logging.info('Updating physical cards for "%s"', printlang)
 
         if (card_data['layout'] == 'meld' and
                 len(card_data['names']) == 3 and
-                printlang_obj.card_printing.collector_letter == 'b'):
+                printlang.card_printing.collector_letter == 'b'):
 
             logging.info('Will not create card link for meld card "%s',
-                         printlang_obj)
+                         printlang)
 
             return
 
         if (PhysicalCardLink.objects.filter(
-                printing_language=printlang_obj).exists()):
+                printing_language=printlang).exists()):
             logging.info('Physical link already exists for "%s"',
-                         printlang_obj)
+                         printlang)
 
             return
 
@@ -470,10 +470,12 @@ class Command(BaseCommand):
                 link_card = Card.objects.get(name=link_name)
                 link_print = CardPrinting.objects.get(
                                   card=link_card,
-                                  set=printlang_obj.card_printing.set)
+                                  set=printlang.card_printing.set,
+                                  collector_number=printlang.collector_number,
+                                  collector_letter=printlang.collector_number)
 
                 if (card_data['layout'] == 'meld' and
-                        printlang_obj.card_printing.collector_letter != 'b' and
+                        printlang.card_printing.collector_letter != 'b' and
                         link_print.collector_letter != 'b'):
 
                     logging.info('Won''t link %s to %s as they separate cards',
@@ -483,14 +485,14 @@ class Command(BaseCommand):
 
                 link_print_lang = CardPrintingLanguage.objects.get(
                                        card_printing=link_print,
-                                       language=printlang_obj.language)
+                                       language=printlang.language)
 
                 linked_language_objs.append(link_print_lang)
 
         physical_card = PhysicalCard(layout=card_data['layout'])
         physical_card.save()
 
-        linked_language_objs.append(printlang_obj)
+        linked_language_objs.append(printlang)
 
         for link_lang in linked_language_objs:
             link_obj = PhysicalCardLink(
