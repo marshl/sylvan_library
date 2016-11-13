@@ -18,13 +18,13 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         filename = options.get('filename')[0]
-
+        username = options.get('username')[0]
         english = Language.objects.get(name='English')
 
         try:
-            user = User.objects.get(username=options.get('username')[0])
+            user = User.objects.get(username=username)
         except User.DoesNotExist:
-            print('Cannot find user with name "{0}"'.format(options.get('username')[0]))
+            print('Cannot find user with name "{0}"'.format(username))
             return
 
         user.userownedcard_set.all().delete()
