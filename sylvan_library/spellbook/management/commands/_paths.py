@@ -1,4 +1,5 @@
 from os import path
+from datetime import datetime
 import logging
 
 json_zip_download_url = "http://mtgjson.com/json/AllSets-x.json.zip"
@@ -10,7 +11,9 @@ pretty_json_path = path.join(data_folder, 'AllSets-x-pretty.json')
 language_json_path = path.join(data_folder, 'languages.json')
 rarity_json_path = path.join(data_folder, 'rarities.json')
 
-log_file_path = path.abspath('spellbook.log')
+log_file_path = path.abspath('spellbook' +
+                             datetime.now().strftime('%Y_%m_%d-%H_%M_%S') +
+                             '.log')
 
 logging.basicConfig(filename=log_file_path,
                     level=logging.DEBUG,
