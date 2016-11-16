@@ -2,6 +2,10 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from spellbook.models import Card, Set
 from django.shortcuts import get_object_or_404
+from django.http import HttpResponseRedirect
+import random
+
+from spellbook.models import CardPrintingLanguage, UserOwnedCard
 
 
 def index(request):
@@ -19,3 +23,9 @@ def set_detail(request, set_code):
     set_obj = get_object_or_404(Set, code=set_code)
     context = {'set': set_obj}
     return render(request, 'spellbook/set.html', context)
+
+def random_card(request):
+
+    card = random.choice(Card.objects.all())
+
+    return HttpResponseRedirect('../card/{0}'.format(card.id))
