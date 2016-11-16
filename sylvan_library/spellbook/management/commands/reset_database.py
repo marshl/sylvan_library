@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 
 from spellbook.models import Card, CardPrinting, CardPrintingLanguage
-from spellbook.models import PhysicalCard, PhysicalCardLink, UserOwnedCard
+from spellbook.models import PhysicalCard, UserOwnedCard
 from spellbook.models import UserCardChange, DeckCard, Deck, CardTagLink
 from spellbook.models import CardTag, CardRuling, Rarity, Block, Set, Language
 from spellbook.management.commands import _query
@@ -38,9 +38,6 @@ class Command(BaseCommand):
 
         print('Truncating UserOwnedCards...')
         UserOwnedCard.objects.all().delete()
-
-        print('Truncating PhysicalCardLinks...')
-        PhysicalCardLink.objects.all().delete()
 
         print('Truncating PhysicalCards...')
         PhysicalCard.objects.all().delete()

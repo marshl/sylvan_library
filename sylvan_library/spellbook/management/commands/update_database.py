@@ -4,8 +4,9 @@ import re
 
 from django.core.management.base import BaseCommand
 
+import spellbook
 from spellbook.models import Card, CardPrinting, CardPrintingLanguage
-from spellbook.models import PhysicalCard, PhysicalCardLink
+from spellbook.models import PhysicalCard
 from spellbook.models import CardRuling, Rarity, Block
 from spellbook.models import Set, Language
 from spellbook.management.commands import _parse, _paths, _colour
@@ -451,14 +452,14 @@ class Command(BaseCommand):
 
             return
 
-        if (PhysicalCardLink.objects.filter(
-                printing_language=printlang).exists()):
+        if (printlang.physical_cards.exists()):
             logging.info('Physical link already exists for "%s"',
                          printlang)
-
             return
 
         linked_language_objs = []
+
+        cp = printlang.card_printing
 
         if 'names' in card_data:
 
@@ -468,11 +469,16 @@ class Command(BaseCommand):
                     continue
 
                 link_card = Card.objects.get(name=link_name)
-                link_print = CardPrinting.objects.get(
-                                  card=link_card,
-                                  set=printlang.card_printing.set,
-                                  collector_number=printlang.collector_number,
-                                  collector_letter=printlang.collector_number)
+                try:
+                    link_print = CardPrinting.objects.get(
+                                      card=link_card,
+                                      set=cp.set,)
+                except CardPrinting.DoesNotExist:
+                    logging.error('Could not find printing for link card {0} in set {1}'
+                                  .format(link_card,
+                                          cp.set,
+                                          cp.collector_number))
+                    raise
 
                 if (card_data['layout'] == 'meld' and
                         printlang.card_printing.collector_letter != 'b' and
@@ -495,11 +501,7 @@ class Command(BaseCommand):
         linked_language_objs.append(printlang)
 
         for link_lang in linked_language_objs:
-            link_obj = PhysicalCardLink(
-                            printing_language=link_lang,
-                            physical_card=physical_card)
-
-            link_obj.save()
+            link_lang.physical_cards.add(physical_card)
 
     def update_card_links(self, set_list):
 

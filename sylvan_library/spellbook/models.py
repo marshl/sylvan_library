@@ -91,6 +91,8 @@ class CardPrintingLanguage(models.Model):
 
     card_printing = models.ForeignKey('CardPrinting')
 
+    physical_cards = models.ManyToManyField('PhysicalCard')
+
     class Meta:
         unique_together = ("language", "card_name", "card_printing")
 
@@ -102,20 +104,6 @@ class CardPrintingLanguage(models.Model):
                          'static',
                          'card_images',
                          str(self.multiverse_id) + '.jpg')
-
-
-class PhysicalCardLink(models.Model):
-
-    printing_language = models.ForeignKey('CardPrintingLanguage')
-    physical_card = models.ForeignKey('PhysicalCard')
-
-    class Meta:
-        unique_together = ('printing_language', 'physical_card')
-
-    def __str__(self):
-        return '{0} {1}'.format(
-                            self.printing_language,
-                            self.physical_card.layout)
 
 
 class PhysicalCard(models.Model):
