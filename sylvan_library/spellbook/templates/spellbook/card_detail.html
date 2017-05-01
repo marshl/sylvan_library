@@ -4,15 +4,22 @@
 	<p>{{ card.subtype }}</p>
 {% endif %}
 {{ card.rules_text }}
-{% comment %}
+
+
+
 <ul>
+
 {% for printing in card.cardprinting_set.all %}
 	<li>{{ printing.set.name }}
 		<ul>
 		{% for lang in printing.cardprintinglanguage_set.all %}
 		<li>
-			{{ lang.card_name }}
+	      {{ lang.card_name }}
 			{{ lang.language.name }}
+             <form action="{% url 'spellbook:add_card' lang.id %}" method="post">
+			 {% csrf_token %}
+			 <input type="submit" value="Add Card"/>
+			</form>
 			<ul>
 			{% for link in lang.physicalcardlink_set.all %}
 				{% for own in link.physical_card.userownedcard_set.all %}
@@ -26,4 +33,3 @@
 	</li>
 {% endfor %}
 </ul>
-{% endcomment %}

@@ -24,6 +24,22 @@ def set_detail(request, set_code):
     context = {'set': set_obj}
     return render(request, 'spellbook/set.html', context)
 
+
+def usercard_form(request):
+    return render(request, 'spellbook/usercard_form.html')
+
+
+def add_card(request, printlang_id):
+
+    cardlang = CardPrintingLanguage.objects.get(id=printlang_id)
+    phys = cardlang.physicalcardlink_set.first().physical_card
+
+    uoc = UserOwnedCard(physical_card=phys, owner=request.user, count=1)
+    uoc.save()
+
+    return render(request, 'spellbook/add_card.html')
+
+
 def random_card(request):
 
     card = random.choice(Card.objects.all())
