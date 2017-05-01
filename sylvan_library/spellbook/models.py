@@ -1,3 +1,4 @@
+import random
 from os import path
 
 from django.db import models
@@ -52,6 +53,12 @@ class Card(models.Model):
     rules_text = models.CharField(max_length=1000, blank=True, null=True)
 
     links = models.ManyToManyField('self')
+
+    @staticmethod
+    def get_random_card():
+        last = Card.objects.count() - 1
+        index = random.randint(0, last)
+        return Card.objects.all()[index]
 
     def __str__(self):
         return self.name
