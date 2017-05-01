@@ -4,7 +4,6 @@ import re
 
 from django.core.management.base import BaseCommand
 
-import spellbook
 from spellbook.models import Card, CardPrinting, CardPrintingLanguage
 from spellbook.models import PhysicalCard
 from spellbook.models import CardRuling, Rarity, Block
@@ -474,7 +473,7 @@ class Command(BaseCommand):
                                       card=link_card,
                                       set=cp.set,)
                 except CardPrinting.DoesNotExist:
-                    logging.error('Could not find printing for link card {0} in set {1}'
+                    logging.error('Printing for link {0} in set {1} not found'
                                   .format(link_card,
                                           cp.set,
                                           cp.collector_number))
