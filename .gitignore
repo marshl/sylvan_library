@@ -8,3 +8,4 @@ sylvan_library/sylvan_library/settings/__pycache__/
 sylvan_library/spellbook/migrations/__pycache__/
 sylvan_library/spellbook/data/
 *.pyc
+sylvan_library/sylvan_library/database_connections.py
