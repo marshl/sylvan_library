@@ -1,14 +1,30 @@
 from django.core.management.base import BaseCommand
 
+from ../../.
 from spellbook.models import Card, CardPrinting, CardPrintingLanguage
 from spellbook.models import PhysicalCard, UserOwnedCard
 from spellbook.models import UserCardChange, DeckCard, Deck, CardTagLink
 from spellbook.models import CardTag, CardRuling, Rarity, Block, Set, Language
 from spellbook.management.commands import _query
+from django.db import connection
 
 
 class Command(BaseCommand):
     help = 'Downloads the MtG JSON data file'
+
+    def truncate_model(self, model_obj):
+
+        print('Truncating {0}... '.format(model_obj.__name__), end='')
+        model_obj.objects.all().delete()
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT setval(pg_get_serial_sequence('\"{0}\"','id'), 1, false);".format(
+                    model_obj.objects.model._meta.db_table
+                )
+            )
+
+        print('Done')
 
     def handle(self, *args, **options):
 
@@ -18,47 +34,18 @@ class Command(BaseCommand):
         if not confirm:
             return
 
-        print('Truncating DeckCards...')
-        DeckCard.objects.all().delete()
-
-        print('Truncating Decks...')
-        Deck.objects.all().delete()
-
-        print('Truncating CardTagLinks...')
-        CardTagLink.objects.all().delete()
-
-        print('Truncating CardTags...')
-        CardTag.objects.all().delete()
-
-        print('Truncating CardRulings...')
-        CardRuling.objects.all().delete()
-
-        print('Truncating UserCardChanges...')
-        UserCardChange.objects.all().delete()
-
-        print('Truncating UserOwnedCards...')
-        UserOwnedCard.objects.all().delete()
-
-        print('Truncating PhysicalCards...')
-        PhysicalCard.objects.all().delete()
-
-        print('Truncating CardPrintingLanguages...')
-        CardPrintingLanguage.objects.all().delete()
-
-        print('Truncating CardPrintings...')
-        CardPrinting.objects.all().delete()
-
-        print('Truncating Cards...')
-        Card.objects.all().delete()
-
-        print('Truncating Rarities...')
-        Rarity.objects.all().delete()
-
-        print('Truncating Sets...')
-        Set.objects.all().delete()
-
-        print('Truncating Blocks...')
-        Block.objects.all().delete()
-
-        print('Truncating Languages...')
-        Language.objects.all().delete()
+        self.truncate_model(DeckCard)
+        self.truncate_model(Deck)
+        self.truncate_model(CardTagLink)
+        self.truncate_model(CardTag)
+        self.truncate_model(CardRuling)
+        self.truncate_model(UserCardChange)
+        self.truncate_model(UserOwnedCard)
+        self.truncate_model(PhysicalCard)
+        self.truncate_model(CardPrintingLanguage)
+        self.truncate_model(CardPrinting)
+        self.truncate_model(Card)
+        self.truncate_model(Rarity)
+        self.truncate_model(Set)
+        self.truncate_model(Block)
+        self.truncate_model(Language)
