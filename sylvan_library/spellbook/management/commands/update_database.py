@@ -18,8 +18,8 @@ class Command(BaseCommand):
 
         json_data = _parse.parse_json_data()
         json_data = sorted(
-           json_data.items(),
-           key=lambda card_set: card_set[1]["releaseDate"])
+            json_data.items(),
+            key=lambda card_set: card_set[1]["releaseDate"])
 
         self.update_rarity_list()
         self.update_language_list()
@@ -53,9 +53,9 @@ class Command(BaseCommand):
                 logging.info('Creating new rarity %s', r['name'])
 
                 obj = Rarity(
-                     symbol=r['symbol'],
-                     name=r['name'],
-                     display_order=r['display_order'])
+                    symbol=r['symbol'],
+                    name=r['name'],
+                    display_order=r['display_order'])
 
             obj.save()
 
@@ -135,11 +135,11 @@ class Command(BaseCommand):
                 b = Block.objects.filter(name=set_data.get('block')).first()
 
                 set_obj = Set(
-                  code=set_code,
-                  name=set_data['name'],
-                  release_date=set_data['releaseDate'],
-                  block=b,
-                  mci_code=set_data.get('magicCardsInfoCode'))
+                    code=set_code,
+                    name=set_data['name'],
+                    release_date=set_data['releaseDate'],
+                    block=b,
+                    mci_code=set_data.get('magicCardsInfoCode'))
 
                 set_obj.save()
             else:
@@ -170,10 +170,10 @@ class Command(BaseCommand):
                 default_cnum += 1
                 card_obj = self.update_card(card_data)
                 printing_obj = self.update_card_printing(
-                                card_obj,
-                                set_obj,
-                                card_data,
-                                default_cnum)
+                    card_obj,
+                    set_obj,
+                    card_data,
+                    default_cnum)
 
                 english = {
                     'language': 'English',
@@ -184,9 +184,7 @@ class Command(BaseCommand):
                 self.update_card_printing_language(printing_obj, english)
 
                 if 'foreignNames' in card_data:
-
                     for lang in card_data['foreignNames']:
-
                         self.update_card_printing_language(printing_obj, lang)
 
         logging.info('Card list updated')
@@ -209,14 +207,14 @@ class Command(BaseCommand):
 
         if 'colors' in card_data:
             card.colour = _colour.get_colour_flags_from_names(
-                                   card_data['colors'])
+                card_data['colors'])
         else:
             card.colour = 0
 
         card.colour_identity = 0
         if 'colourIdentity' in card_data:
             card.colour_identity = _colour.get_colour_flags_from_codes(
-                                            card_data['colorIdentity'])
+                card_data['colorIdentity'])
         else:
             card.colour_identity = 0
 
@@ -269,19 +267,19 @@ class Command(BaseCommand):
 
         try:
             printing = CardPrinting.objects.get(
-                        card_id=card_obj.id,
-                        set_id=set_obj.id,
-                        collector_number=cnum,
-                        collector_letter=cnum_letter)
+                card_id=card_obj.id,
+                set_id=set_obj.id,
+                collector_number=cnum,
+                collector_letter=cnum_letter)
             logging.info('Updating card printing "%s"', printing)
 
         except CardPrinting.DoesNotExist:
 
             printing = CardPrinting(
-                            card=card_obj,
-                            set=set_obj,
-                            collector_number=cnum,
-                            collector_letter=cnum_letter)
+                card=card_obj,
+                set=set_obj,
+                collector_number=cnum,
+                collector_letter=cnum_letter)
             logging.info('Created new card printing "%s"', printing)
 
         printing.artist = card_data['artist']
@@ -298,8 +296,8 @@ class Command(BaseCommand):
 
         if 'mciNumber' in card_data:
             mci_match = re.search(
-              '^(/(?P<set>[^/]*)/(?P<lang>[^/]*)/)?(?P<num>[0-9]+)(\.html)?$',
-              card_data['mciNumber'])
+                '^(/(?P<set>[^/]*)/(?P<lang>[^/]*)/)?(?P<num>[0-9]+)(\.html)?$',
+                card_data['mciNumber'])
 
             if mci_match and 'num' not in card_data:
                 printing.mci_number = mci_match.group('num')
@@ -313,8 +311,8 @@ class Command(BaseCommand):
         lang_obj = Language.objects.get(name=lang['language'])
 
         cardlang = CardPrintingLanguage.objects.filter(
-                                           card_printing_id=printing_obj.id,
-                                           language_id=lang_obj.id).first()
+            card_printing_id=printing_obj.id,
+            language_id=lang_obj.id).first()
 
         if cardlang is not None:
             logging.info('Card printing language "%s" already exists',
@@ -322,10 +320,10 @@ class Command(BaseCommand):
             return cardlang
 
         cardlang = CardPrintingLanguage(
-                    card_printing=printing_obj,
-                    language=lang_obj,
-                    card_name=lang['name'],
-                    multiverse_id=lang.get('multiverseid'))
+            card_printing=printing_obj,
+            language=lang_obj,
+            card_name=lang['name'],
+            multiverse_id=lang.get('multiverseid'))
 
         logging.info('Created new printing language "%s"', cardlang)
 
@@ -369,15 +367,15 @@ class Command(BaseCommand):
 
                     try:
                         ruling_obj = CardRuling.objects.get(
-                                        card=card_obj,
-                                        text=ruling['text'],
-                                        date=ruling['date'])
+                            card=card_obj,
+                            text=ruling['text'],
+                            date=ruling['date'])
 
                     except CardRuling.DoesNotExist:
                         ruling_obj = CardRuling(
-                                        card=card_obj,
-                                        text=ruling['text'],
-                                        date=ruling['date'])
+                            card=card_obj,
+                            text=ruling['text'],
+                            date=ruling['date'])
                         ruling_obj.save()
 
         logging.info('Card rulings updated')
@@ -409,32 +407,31 @@ class Command(BaseCommand):
                 default_cnum += 1
 
                 (cnum, cnum_letter) = self.get_card_cnum(
-                                         card_data,
-                                         default_cnum)
+                    card_data,
+                    default_cnum)
 
                 printing_obj = CardPrinting.objects.get(
-                                    card=card_obj,
-                                    set=set_obj,
-                                    collector_number=cnum,
-                                    collector_letter=cnum_letter)
+                    card=card_obj,
+                    set=set_obj,
+                    collector_number=cnum,
+                    collector_letter=cnum_letter)
 
                 lang_obj = Language.objects.get(name='English')
                 printlang_obj = CardPrintingLanguage.objects.get(
-                                     card_printing=printing_obj,
-                                     language=lang_obj)
+                    card_printing=printing_obj,
+                    language=lang_obj)
 
                 self.update_physical_card(printlang_obj, card_data)
 
                 if 'foreignNames' in card_data:
 
                     for card_language in card_data['foreignNames']:
-
                         lang_obj = Language.objects.get(
-                                        name=card_language['language'])
+                            name=card_language['language'])
 
                         printlang_obj = CardPrintingLanguage.objects.get(
-                                             card_printing=printing_obj,
-                                             language=lang_obj)
+                            card_printing=printing_obj,
+                            language=lang_obj)
 
                         self.update_physical_card(printlang_obj, card_data)
 
@@ -443,9 +440,8 @@ class Command(BaseCommand):
         logging.info('Updating physical cards for "%s"', printlang)
 
         if (card_data['layout'] == 'meld' and
-                len(card_data['names']) == 3 and
-                printlang.card_printing.collector_letter == 'b'):
-
+                    len(card_data['names']) == 3 and
+                    printlang.card_printing.collector_letter == 'b'):
             logging.info('Will not create card link for meld card "%s',
                          printlang)
 
@@ -470,8 +466,8 @@ class Command(BaseCommand):
                 link_card = Card.objects.get(name=link_name)
                 try:
                     link_print = CardPrinting.objects.get(
-                                      card=link_card,
-                                      set=cp.set,)
+                        card=link_card,
+                        set=cp.set)
                 except CardPrinting.DoesNotExist:
                     logging.error('Printing for link {0} in set {1} not found'
                                   .format(link_card,
@@ -480,17 +476,16 @@ class Command(BaseCommand):
                     raise
 
                 if (card_data['layout'] == 'meld' and
-                        printlang.card_printing.collector_letter != 'b' and
-                        link_print.collector_letter != 'b'):
-
+                            printlang.card_printing.collector_letter != 'b' and
+                            link_print.collector_letter != 'b'):
                     logging.info('Won''t link %s to %s as they separate cards',
                                  card_data['name'], link_card.name)
 
                     continue
 
                 link_print_lang = CardPrintingLanguage.objects.get(
-                                       card_printing=link_print,
-                                       language=printlang.language)
+                    card_printing=link_print,
+                    language=printlang.language)
 
                 linked_language_objs.append(link_print_lang)
 
@@ -547,17 +542,15 @@ class Command(BaseCommand):
 
     def get_card_cnum(self, card_data, default_cnum):
 
-        if 'number' in card_data:
-            cnum_match = re.search(
-               '^(?P<special>[\D]+)?(?P<number>[\d]+)(?P<letter>[\D]+)?$',
-               card_data['number'])
-
-            cnum = cnum_match.group('number')
-            cnum_letter = (
-               cnum_match.group('special') or
-               cnum_match.group('letter'))
-
-            return (cnum, cnum_letter)
-
-        else:
+        if 'number' not in card_data:
             return (default_cnum, None)
+        cnum_match = re.search(
+            '^(?P<special>[\D]+)?(?P<number>[\d]+)(?P<letter>[\D]+)?$',
+            card_data['number'])
+
+        cnum = cnum_match.group('number')
+        cnum_letter = (
+            cnum_match.group('special') or
+            cnum_match.group('letter'))
+
+        return (cnum, cnum_letter)
