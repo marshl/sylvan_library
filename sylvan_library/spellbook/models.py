@@ -35,7 +35,6 @@ class Rarity(models.Model):
 
 
 class Card(models.Model):
-
     name = models.CharField(max_length=200, unique=True)
     cost = models.CharField(max_length=50, blank=True, null=True)
     cmc = models.IntegerField()
@@ -80,10 +79,10 @@ class CardPrinting(models.Model):
 
     class Meta:
         unique_together = (
-           "set",
-           "card",
-           "collector_number",
-           "collector_letter"
+            "set",
+            "card",
+            "collector_number",
+            "collector_letter"
         )
 
     def __str__(self):
@@ -91,7 +90,6 @@ class CardPrinting(models.Model):
 
 
 class CardPrintingLanguage(models.Model):
-
     language = models.ForeignKey('Language')
     card_name = models.CharField(max_length=200)
     multiverse_id = models.IntegerField(blank=True, null=True)
@@ -107,23 +105,29 @@ class CardPrintingLanguage(models.Model):
         return '{0} {1}'.format(self.language, self.card_printing)
 
     def get_image_path(self):
+        if self.multiverse_id is None:
+            raise AttributeError('Cannot find image path for card with no multiverse id')
+
+        ms = str(self.multiverse_id)
+        # Break up images over multiple folders to stop too many being placed in one folder
         return path.join('spellbook',
                          'static',
                          'card_images',
-                         str(self.multiverse_id) + '.jpg')
+                         ms[0:1],
+                         ms[0:2] if len(ms) >= 2 else '',
+                         ms[0:3] if len(ms) >= 3 else '',
+                         ms + '.jpg')
 
 
 class PhysicalCard(models.Model):
-
     layout = models.CharField(max_length=20)
 
     def __str__(self):
         return 'Physical for {0}'.format(
-                 self.physicalcardlink_set.first().printing_language)
+            self.physicalcardlink_set.first().printing_language)
 
 
 class UserOwnedCard(models.Model):
-
     count = models.IntegerField()
 
     physical_card = models.ForeignKey('PhysicalCard')
@@ -134,13 +138,12 @@ class UserOwnedCard(models.Model):
 
     def __str__(self):
         return '{0} owns {1} of {2}'.format(
-                                self.owner.name,
-                                self.count,
-                                self.physical_card)
+            self.owner.name,
+            self.count,
+            self.physical_card)
 
 
 class UserCardChange(models.Model):
-
     date = models.DateTimeField()
     difference = models.IntegerField()
 
@@ -149,13 +152,12 @@ class UserCardChange(models.Model):
 
     def __str__(self):
         return '{0} {1} {2}'.format(
-                                self.date,
-                                self.difference,
-                                self.physical_card)
+            self.date,
+            self.difference,
+            self.physical_card)
 
 
 class CardRuling(models.Model):
-
     date = models.DateField()
     text = models.CharField(max_length=4000)
 
@@ -169,7 +171,6 @@ class CardRuling(models.Model):
 
 
 class CardTag(models.Model):
-
     name = models.CharField(max_length=200)
 
     def __str__(self):
@@ -177,7 +178,6 @@ class CardTag(models.Model):
 
 
 class CardTagLink(models.Model):
-
     tag = models.ForeignKey('CardTag')
     card = models.ForeignKey('Card')
 
@@ -186,7 +186,6 @@ class CardTagLink(models.Model):
 
 
 class Deck(models.Model):
-
     date_created = models.DateField()
     last_modiifed = models.DateField()
 
@@ -198,7 +197,6 @@ class Deck(models.Model):
 
 
 class DeckCard(models.Model):
-
     count = models.IntegerField()
 
     card = models.ForeignKey('Card')
@@ -209,13 +207,12 @@ class DeckCard(models.Model):
 
 
 class Language(models.Model):
-
     name = models.CharField(max_length=50, unique=True)
     mci_code = models.CharField(
-                max_length=10,
-                unique=True,
-                blank=True,
-                null=True)
+        max_length=10,
+        unique=True,
+        blank=True,
+        null=True)
 
     def __str__(self):
         return self.name

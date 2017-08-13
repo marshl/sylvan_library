@@ -1,9 +1,9 @@
 from django.core.management.base import BaseCommand
 
+import os
 import requests
 import queue
 import threading
-from os import path
 
 from spellbook.models import CardPrintingLanguage
 
@@ -15,14 +15,14 @@ class Command(BaseCommand):
 
         image_download_queue = queue.Queue()
 
-        for cpl in CardPrintingLanguage.objects.all():
+        for cpl in CardPrintingLanguage.objects.filter(multiverse_id__isnull=False):
             image_download_queue.put(cpl)
             # download_image_for_card(cpl.multiverse_id)
 
         for i in range(1, 8):
-                thread = imageDownloadThread(image_download_queue)
-                thread.setDaemon(True)
-                thread.start()
+            thread = imageDownloadThread(image_download_queue)
+            thread.setDaemon(True)
+            thread.start()
 
         image_download_queue.join()
 
@@ -40,10 +40,10 @@ class imageDownloadThread(threading.Thread):
 
 
 def download_image_for_card(printing_language):
-
     image_path = printing_language.get_image_path()
+    os.makedirs(os.path.dirname(image_path), exist_ok=True)
 
-    if(path.exists(image_path)):
+    if os.path.exists(image_path):
         print('Skipping {0}'.format(printing_language.multiverse_id))
         return
 
@@ -53,7 +53,7 @@ def download_image_for_card(printing_language):
                          '/Handlers/Image.ashx?multiverseid={0}&type=card'
 
     stream = requests.get(
-              image_download_url.format(printing_language.multiverse_id))
+        image_download_url.format(printing_language.multiverse_id))
 
     with open(image_path, 'wb') as output:
         output.write(stream.content)
