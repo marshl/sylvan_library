@@ -5,7 +5,7 @@ import requests
 import queue
 import threading
 
-from spellbook.models import CardPrintingLanguage
+from spellbook.models import CardPrintingLanguage, Language
 
 
 class Command(BaseCommand):
@@ -15,9 +15,9 @@ class Command(BaseCommand):
 
         image_download_queue = queue.Queue()
 
-        for cpl in CardPrintingLanguage.objects.filter(multiverse_id__isnull=False):
+        for cpl in CardPrintingLanguage.objects.filter(multiverse_id__isnull=False).filter(
+                language=Language.objects.get(name='English')):
             image_download_queue.put(cpl)
-            # download_image_for_card(cpl.multiverse_id)
 
         for i in range(1, 8):
             thread = imageDownloadThread(image_download_queue)
