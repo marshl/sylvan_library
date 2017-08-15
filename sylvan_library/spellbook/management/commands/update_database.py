@@ -540,6 +540,7 @@ class Command(BaseCommand):
 
                 for link_name in [x for x in links if x != card_name]:
 
+                    # B.F.M. has the same name for both cards, so the link_name has to be manually set
                     if card_name == 'B.F.M. (Big Furry Monster) (left)':
                         link_name = 'B.F.M. (Big Furry Monster) (right)'
                     elif card_name == 'B.F.M. (Big Furry Monster) (right)':
@@ -551,11 +552,12 @@ class Command(BaseCommand):
                     card_obj.save()
 
     def get_card_name(self, card_data):
+        # B.F.M. has the same name for both "cards", so we rely on the image name to separate the two
         if card_data['name'] == 'B.F.M. (Big Furry Monster)':
-            if 'cmc' in card_data:
-                return 'B.F.M. (Big Furry Monster) (right)'
-            else:
+            if card_data['imageName'] == "b.f.m. 1":
                 return 'B.F.M. (Big Furry Monster) (left)'
+            elif card_data['imageName'] == "b.f.m. 2":
+                return 'B.F.M. (Big Furry Monster) (right)'
 
         return card_data['name']
 
