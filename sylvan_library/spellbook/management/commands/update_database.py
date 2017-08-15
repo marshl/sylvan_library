@@ -3,6 +3,7 @@ import logging
 import re
 
 from django.core.management.base import BaseCommand
+from django.db import transaction
 
 from spellbook.models import Card, CardPrinting, CardPrintingLanguage
 from spellbook.models import PhysicalCard
@@ -14,6 +15,17 @@ from spellbook.management.commands import _parse, _paths, _colour
 class Command(BaseCommand):
     help = 'Downloads the MtG JSON data file'
 
+    def add_arguments(self, parser):
+
+        parser.add_argument(
+            '--no-transaction',
+            action='store_true',
+            dest='no_transaction',
+            default=False,
+            help='Update the database without a transaction (unsafe)',
+        )
+
+    @transaction.atomic
     def handle(self, *args, **options):
 
         json_data = _parse.parse_json_data()
@@ -21,6 +33,13 @@ class Command(BaseCommand):
             json_data.items(),
             key=lambda card_set: card_set[1]["releaseDate"])
 
+        if options['no_transaction']:
+            self.update_database(json_data)
+        else:
+            with(transaction.atomic()):
+                self.update_database(json_data)
+
+    def update_database(self, json_data):
         self.update_rarity_list()
         self.update_language_list()
         self.update_block_list(json_data)
