@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand
 
-from ../../.
 from spellbook.models import Card, CardPrinting, CardPrintingLanguage
 from spellbook.models import PhysicalCard, UserOwnedCard
 from spellbook.models import UserCardChange, DeckCard, Deck, CardTagLink
@@ -13,7 +12,6 @@ class Command(BaseCommand):
     help = 'Downloads the MtG JSON data file'
 
     def truncate_model(self, model_obj):
-
         print('Truncating {0}... '.format(model_obj.__name__), end='')
         model_obj.objects.all().delete()
 
@@ -27,9 +25,8 @@ class Command(BaseCommand):
         print('Done')
 
     def handle(self, *args, **options):
-
         confirm = _query.query_yes_no(
-          'Are you sure you want to delete all data in the database?', 'no')
+            'Are you sure you want to delete all data in the database?', 'no')
 
         if not confirm:
             return
