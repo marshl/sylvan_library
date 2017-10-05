@@ -7,7 +7,7 @@ from spellbook.models import PhysicalCardLink
 
 
 class Command(BaseCommand):
-    help = 'Downloads the MtG JSON data file'
+    help = 'Imports a list of user owned cards from a csv file'
 
     def add_arguments(self, parser):
 
