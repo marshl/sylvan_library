@@ -57,26 +57,25 @@ class Command(BaseCommand):
         rarities = json.load(f, encoding='UTF-8')
         f.close()
 
-        for r in rarities:
+        for rarity in rarities:
+            rarity_obj = Rarity.objects.filter(symbol=rarity['symbol']).first()
+            if rarity_obj is not None:
+                rarity_obj = Rarity.objects.get(symbol=rarity['symbol'])
 
-            obj = None
-            try:
+                logging.info('Updating existing rarity %s', rarity_obj.name)
+                rarity_obj.name = rarity['name']
+                rarity_obj.display_order = rarity['display_order']
+                rarity_obj.save()
 
-                obj = Rarity.objects.get(symbol=r['symbol'])
+            else:
+                logging.info('Creating new rarity %s', rarity['name'])
 
-                logging.info('Updating rarity %s', obj.name)
-                obj.name = r['name']
-                obj.display_order = r['display_order']
+                rarity_obj = Rarity(
+                    symbol=rarity['symbol'],
+                    name=rarity['name'],
+                    display_order=rarity['display_order'])
 
-            except Rarity.DoesNotExist:
-                logging.info('Creating new rarity %s', r['name'])
-
-                obj = Rarity(
-                    symbol=r['symbol'],
-                    name=r['name'],
-                    display_order=r['display_order'])
-
-            obj.save()
+                rarity_obj.save()
 
         logging.info('Rarity update complete')
 
@@ -89,23 +88,19 @@ class Command(BaseCommand):
         f.close()
 
         for lang in languages:
-
-            obj = None
-            try:
-                obj = Language.objects.get(name=lang['name'])
+            language_obj = Language.objects.filter(name=lang['name']).first()
+            if language_obj is not None:
                 logging.info('Updating language: %s', lang['name'])
-                obj.mci_code = lang['code']
-
-            except Language.DoesNotExist:
+                language_obj.mci_code = lang['code']
+                language_obj.save()
+            else:
                 logging.info('Creating new language: %s', lang['name'])
-                obj = Language(name=lang['name'], mci_code=lang['code'])
-
-            obj.save()
+                language_obj = Language(name=lang['name'], mci_code=lang['code'])
+                language_obj.save()
 
         logging.info('Language update complete')
 
     def update_block_list(self, set_list):
-
         logging.info('Updating block list')
 
         for s in set_list:
@@ -117,23 +112,21 @@ class Command(BaseCommand):
                 logging.info('Ignoring %s', set_data['name'])
                 continue
 
-            obj = None
-            try:
-                obj = Block.objects.get(name=set_data['block'])
-                logging.info('Block %s already exists', obj.name)
+            block = Block.objects.filter(name=set_data['block']).first()
 
-            except Block.DoesNotExist:
-                obj = Block(
+            if block is not None:
+                logging.info('Block %s already exists', block.name)
+            else:
+                block = Block(
                     name=set_data['block'],
                     release_date=set_data['releaseDate'])
 
-                logging.info('Created block %s', obj.name)
-                obj.save()
+                logging.info('Created block %s', block.name)
+                block.save()
 
         logging.info('BLock list updated')
 
     def update_set_list(self, set_list):
-
         logging.info('Updating set list')
 
         for s in set_list:
@@ -146,18 +139,16 @@ class Command(BaseCommand):
                 logging.info('Ignoring set %s', set_data['name'])
                 continue
 
-            set_obj = None
-
             if not Set.objects.filter(code=set_code).exists():
 
                 logging.info('Creating set %s', set_data['name'])
-                b = Block.objects.filter(name=set_data.get('block')).first()
+                block = Block.objects.filter(name=set_data.get('block')).first()
 
                 set_obj = Set(
                     code=set_code,
                     name=set_data['name'],
                     release_date=set_data['releaseDate'],
-                    block=b,
+                    block=block,
                     mci_code=set_data.get('magicCardsInfoCode'))
 
                 set_obj.save()
@@ -168,7 +159,6 @@ class Command(BaseCommand):
         logging.info('Set list updated')
 
     def update_card_list(self, set_list):
-
         logging.info('Updating card list')
 
         for s in set_list:
@@ -209,15 +199,12 @@ class Command(BaseCommand):
         logging.info('Card list updated')
 
     def update_card(self, card_data):
-
-        card = None
         card_name = self.get_card_name(card_data)
-
-        try:
-            card = Card.objects.get(name=card_name)
+        card = Card.objects.filter(name=card_name).first()
+        if card is not None:
             logging.info('Updating existing card "%s"', card)
 
-        except Card.DoesNotExist:
+        else:
             card = Card(name=card_name)
             logging.info('Creating new card "%s"', card)
 
@@ -279,21 +266,17 @@ class Command(BaseCommand):
         return card
 
     def update_card_printing(self, card_obj, set_obj, card_data, default_cnum):
-
-        printing = None
-
         (cnum, cnum_letter) = self.get_card_cnum(card_data, default_cnum)
 
-        try:
-            printing = CardPrinting.objects.get(
-                card_id=card_obj.id,
-                set_id=set_obj.id,
-                collector_number=cnum,
-                collector_letter=cnum_letter)
+        printing = CardPrinting.objects.filter(
+            card_id=card_obj.id,
+            set_id=set_obj.id,
+            collector_number=cnum,
+            collector_letter=cnum_letter).first()
+
+        if printing is not None:
             logging.info('Updating card printing "%s"', printing)
-
-        except CardPrinting.DoesNotExist:
-
+        else:
             printing = CardPrinting(
                 card=card_obj,
                 set=set_obj,
@@ -326,7 +309,6 @@ class Command(BaseCommand):
         return printing
 
     def update_card_printing_language(self, printing_obj, lang):
-
         lang_obj = Language.objects.get(name=lang['language'])
 
         cardlang = CardPrintingLanguage.objects.filter(
@@ -345,9 +327,7 @@ class Command(BaseCommand):
             multiverse_id=lang.get('multiverseid'))
 
         logging.info('Created new printing language "%s"', cardlang)
-
         cardlang.save()
-
         return cardlang
 
     def convert_to_number(self, val):
@@ -358,7 +338,6 @@ class Command(BaseCommand):
         return 0
 
     def update_ruling_list(self, set_list):
-
         logging.info('Updating card rulings')
         CardRuling.objects.all().delete()
 
@@ -384,13 +363,12 @@ class Command(BaseCommand):
 
                 for ruling in card_data['rulings']:
 
-                    try:
-                        ruling_obj = CardRuling.objects.get(
-                            card=card_obj,
-                            text=ruling['text'],
-                            date=ruling['date'])
+                    ruling_obj = CardRuling.objects.filter(
+                        card=card_obj,
+                        text=ruling['text'],
+                        date=ruling['date']).first()
 
-                    except CardRuling.DoesNotExist:
+                    if ruling_obj is None:
                         ruling_obj = CardRuling(
                             card=card_obj,
                             text=ruling['text'],
@@ -400,7 +378,6 @@ class Command(BaseCommand):
         logging.info('Card rulings updated')
 
     def update_physical_card_list(self, set_list):
-
         logging.info('Updating physical card list')
 
         for s in set_list:
@@ -455,7 +432,6 @@ class Command(BaseCommand):
                         self.update_physical_card(printlang_obj, card_data)
 
     def update_physical_card(self, printlang, card_data):
-
         logging.info('Updating physical cards for "%s"', printlang)
 
         if (card_data['layout'] == 'meld' and
@@ -483,16 +459,12 @@ class Command(BaseCommand):
                     continue
 
                 link_card = Card.objects.get(name=link_name)
-                try:
-                    link_print = CardPrinting.objects.get(
-                        card=link_card,
-                        set=cp.set)
-                except CardPrinting.DoesNotExist:
-                    logging.error('Printing for link {0} in set {1} not found'
-                                  .format(link_card,
-                                          cp.set,
-                                          cp.collector_number))
-                    raise
+                link_print = CardPrinting.objects.filter(
+                    card=link_card,
+                    set=cp.set).first()
+                if link_print is None:
+                    logging.error(f'Printing for link {link_card} in set {cp.set} not found')
+                    raise LookupError()
 
                 if (card_data['layout'] == 'meld' and
                             printlang.card_printing.collector_letter != 'b' and
@@ -517,7 +489,6 @@ class Command(BaseCommand):
             link_lang.physical_cards.add(physical_card)
 
     def update_card_links(self, set_list):
-
         for s in set_list:
 
             set_code = s[0]
@@ -562,7 +533,6 @@ class Command(BaseCommand):
         return card_data['name']
 
     def get_card_cnum(self, card_data, default_cnum):
-
         if 'number' not in card_data:
             return (default_cnum, None)
         cnum_match = re.search(
