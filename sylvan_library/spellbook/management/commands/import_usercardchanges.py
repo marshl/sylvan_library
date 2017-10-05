@@ -11,7 +11,7 @@ from spellbook.models import PhysicalCardLink
 
 
 class Command(BaseCommand):
-    help = 'Imports user card changes from a tab separaed file'
+    help = 'Imports user card changes from a tab separated file'
 
     def add_arguments(self, parser):
 
