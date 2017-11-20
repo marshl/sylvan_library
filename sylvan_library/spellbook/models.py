@@ -19,7 +19,7 @@ class Set(models.Model):
     name = models.CharField(max_length=200, unique=True)
     mci_code = models.CharField(max_length=10, blank=True, null=True)
 
-    block = models.ForeignKey('Block', null=True)
+    block = models.ForeignKey(Block, null=True)
 
     def __str__(self):
         return self.name
@@ -73,9 +73,9 @@ class CardPrinting(models.Model):
 
     mci_number = models.IntegerField(blank=True, null=True)
 
-    set = models.ForeignKey('Set')
-    card = models.ForeignKey('Card')
-    rarity = models.ForeignKey('Rarity')
+    set = models.ForeignKey(Set)
+    card = models.ForeignKey(Card)
+    rarity = models.ForeignKey(Rarity)
 
     class Meta:
         unique_together = (
@@ -89,14 +89,22 @@ class CardPrinting(models.Model):
         return '{0} in {1}'.format(self.card, self.set)
 
 
+class PhysicalCard(models.Model):
+    layout = models.CharField(max_length=20)
+
+    def __str__(self):
+        return 'Physical for {0}'.format(
+            self.physicalcardlink_set.first().printing_language)
+
+
 class CardPrintingLanguage(models.Model):
     language = models.ForeignKey('Language')
     card_name = models.CharField(max_length=200)
     multiverse_id = models.IntegerField(blank=True, null=True)
 
-    card_printing = models.ForeignKey('CardPrinting')
+    card_printing = models.ForeignKey(CardPrinting)
 
-    physical_cards = models.ManyToManyField('PhysicalCard')
+    physical_cards = models.ManyToManyField(PhysicalCard)
 
     class Meta:
         unique_together = ("language", "card_name", "card_printing")
@@ -119,14 +127,6 @@ class CardPrintingLanguage(models.Model):
                          ms + '.jpg')
 
 
-class PhysicalCard(models.Model):
-    layout = models.CharField(max_length=20)
-
-    def __str__(self):
-        return 'Physical for {0}'.format(
-            self.physicalcardlink_set.first().printing_language)
-
-
 class UserOwnedCard(models.Model):
     count = models.IntegerField()
 
@@ -147,7 +147,7 @@ class UserCardChange(models.Model):
     date = models.DateTimeField()
     difference = models.IntegerField()
 
-    physical_card = models.ForeignKey('PhysicalCard')
+    physical_card = models.ForeignKey(PhysicalCard)
     owner = models.ForeignKey(User)
 
     def __str__(self):
@@ -161,7 +161,7 @@ class CardRuling(models.Model):
     date = models.DateField()
     text = models.CharField(max_length=4000)
 
-    card = models.ForeignKey('Card')
+    card = models.ForeignKey(Card)
 
     class Meta:
         unique_together = ("date", "text", "card")
@@ -178,8 +178,8 @@ class CardTag(models.Model):
 
 
 class CardTagLink(models.Model):
-    tag = models.ForeignKey('CardTag')
-    card = models.ForeignKey('Card')
+    tag = models.ForeignKey(CardTag)
+    card = models.ForeignKey(Card)
 
     def __str__(self):
         return '{0} on {1}'.format(self.tag, self.card)
@@ -199,8 +199,8 @@ class Deck(models.Model):
 class DeckCard(models.Model):
     count = models.IntegerField()
 
-    card = models.ForeignKey('Card')
-    deck = models.ForeignKey('Deck')
+    card = models.ForeignKey(Card)
+    deck = models.ForeignKey(Deck)
 
     def __str__(self):
         return '{0} in {1}'.format(self.card, self.deck)
