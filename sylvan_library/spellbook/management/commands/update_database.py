@@ -15,6 +15,12 @@ from spellbook.management.commands import _parse, _paths, _colour
 class Command(BaseCommand):
     help = 'Downloads the MtG JSON data file'
 
+    # Keep track of which sets are new, so that printing information for existing sets doesn't have to be parsed
+    new_sets = []
+
+    # Keep track of which cards have been updated, so that reprints don't trigger pointless updates
+    updated_cards = []
+
     def add_arguments(self, parser):
 
         parser.add_argument(
@@ -152,6 +158,7 @@ class Command(BaseCommand):
                     mci_code=set_data.get('magicCardsInfoCode'))
 
                 set_obj.save()
+                self.new_sets.append(set_code)
             else:
                 logging.info('Set %s already exists, no changes made',
                              set_data['name'])
@@ -167,7 +174,7 @@ class Command(BaseCommand):
             set_data = s[1]
             default_cnum = 0
 
-            if not Set.objects.filter(code=set_code).exists():
+            if set_code not in self.new_sets:
                 logging.info('Ignoring set "%s"', set_data['name'])
                 continue
 
@@ -178,6 +185,7 @@ class Command(BaseCommand):
             for card_data in set_data['cards']:
                 default_cnum += 1
                 card_obj = self.update_card(card_data)
+
                 printing_obj = self.update_card_printing(
                     card_obj,
                     set_obj,
@@ -203,10 +211,15 @@ class Command(BaseCommand):
         card = Card.objects.filter(name=card_name).first()
         if card is not None:
             logging.info('Updating existing card "%s"', card)
-
         else:
             card = Card(name=card_name)
             logging.info('Creating new card "%s"', card)
+
+        if card_name in self.updated_cards:
+            logging.info(f'{card} has already been updated')
+            return card
+
+        self.updated_cards.append(card_name)
 
         card.cost = card_data.get('manaCost')
         card.cmc = card_data.get('cmc') or 0
@@ -247,7 +260,6 @@ class Command(BaseCommand):
             card.num_loyalty = 0
 
         if 'types' in card_data:
-
             types = (card_data.get('supertypes') or []) + \
                     (card_data['types'] or [])
             card.type = ' '.join(types)
@@ -262,7 +274,6 @@ class Command(BaseCommand):
         card.rules_text = card_data.get('text')
 
         card.save()
-
         return card
 
     def update_card_printing(self, card_obj, set_obj, card_data, default_cnum):
@@ -345,7 +356,7 @@ class Command(BaseCommand):
 
             set_code = s[0]
             set_data = s[1]
-            if not Set.objects.filter(code=set_code).exists():
+            if set_code not in self.new_sets:
                 logging.info('Ignoring set "%s"', set_data['name'])
                 continue
 
@@ -385,7 +396,7 @@ class Command(BaseCommand):
             set_code = s[0]
             set_data = s[1]
 
-            if not Set.objects.filter(code=set_code).exists():
+            if set_code not in self.new_sets:
                 logging.info('Skipping set "%s"', set_data['name'])
                 continue
 
@@ -494,7 +505,7 @@ class Command(BaseCommand):
             set_code = s[0]
             set_data = s[1]
 
-            if not Set.objects.filter(code=set_code).exists():
+            if set_code not in self.new_sets:
                 logging.info('Skipping set "%s"', set_data['name'])
                 continue
 
