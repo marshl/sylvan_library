@@ -37,7 +37,7 @@ class Rarity(models.Model):
 class Card(models.Model):
     name = models.CharField(max_length=200, unique=True)
     cost = models.CharField(max_length=50, blank=True, null=True)
-    cmc = models.IntegerField()
+    cmc = models.FloatField()
     colour = models.IntegerField()
     colour_identity = models.IntegerField()
     colour_count = models.IntegerField()
