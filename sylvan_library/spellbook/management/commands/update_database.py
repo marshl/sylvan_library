@@ -16,10 +16,12 @@ class Command(BaseCommand):
     help = 'Downloads the MtG JSON data file'
 
     # Keep track of which sets are new, so that printing information for existing sets doesn't have to be parsed
-    new_sets = []
+    sets_to_update = []
 
     # Keep track of which cards have been updated, so that reprints don't trigger pointless updates
     updated_cards = []
+
+    force_update = False
 
     def add_arguments(self, parser):
 
@@ -31,6 +33,21 @@ class Command(BaseCommand):
             help='Update the database without a transaction (unsafe)',
         )
 
+        parser.add_argument(
+            '--update-all',
+            action='store_true',
+            dest='force_update',
+            default=False,
+            help='Forces an update of sets that already exist, and cards that have already been added',
+        )
+
+        parser.add_argument(
+            '--update-set',
+            dest='force_update_sets',
+            nargs='*',
+            help='Forces an update of the given sets'
+        )
+
     @transaction.atomic
     def handle(self, *args, **options):
 
@@ -38,6 +55,9 @@ class Command(BaseCommand):
         json_data = sorted(
             json_data.items(),
             key=lambda card_set: card_set[1]["releaseDate"])
+
+        self.sets_to_update += options['force_update_sets']
+        self.force_update = options['force_update']
 
         if options['no_transaction']:
             self.update_database(json_data)
@@ -66,8 +86,6 @@ class Command(BaseCommand):
         for rarity in rarities:
             rarity_obj = Rarity.objects.filter(symbol=rarity['symbol']).first()
             if rarity_obj is not None:
-                rarity_obj = Rarity.objects.get(symbol=rarity['symbol'])
-
                 logging.info('Updating existing rarity %s', rarity_obj.name)
                 rarity_obj.name = rarity['name']
                 rarity_obj.display_order = rarity['display_order']
@@ -158,10 +176,13 @@ class Command(BaseCommand):
                     mci_code=set_data.get('magicCardsInfoCode'))
 
                 set_obj.save()
-                self.new_sets.append(set_code)
+                self.sets_to_update.append(set_code)
             else:
                 logging.info('Set %s already exists, no changes made',
                              set_data['name'])
+
+                if self.force_update:  # use the set anyway during a force update
+                    self.sets_to_update.append(set_code)
 
         logging.info('Set list updated')
 
@@ -174,7 +195,7 @@ class Command(BaseCommand):
             set_data = s[1]
             default_cnum = 0
 
-            if set_code not in self.new_sets:
+            if set_code not in self.sets_to_update:
                 logging.info('Ignoring set "%s"', set_data['name'])
                 continue
 
@@ -215,7 +236,7 @@ class Command(BaseCommand):
             card = Card(name=card_name)
             logging.info('Creating new card "%s"', card)
 
-        if card_name in self.updated_cards:
+        if not self.force_update and card_name in self.updated_cards:
             logging.info(f'{card} has already been updated')
             return card
 
@@ -356,7 +377,7 @@ class Command(BaseCommand):
 
             set_code = s[0]
             set_data = s[1]
-            if set_code not in self.new_sets:
+            if set_code not in self.sets_to_update:
                 logging.info('Ignoring set "%s"', set_data['name'])
                 continue
 
@@ -396,7 +417,7 @@ class Command(BaseCommand):
             set_code = s[0]
             set_data = s[1]
 
-            if set_code not in self.new_sets:
+            if set_code not in self.sets_to_update:
                 logging.info('Skipping set "%s"', set_data['name'])
                 continue
 
@@ -505,7 +526,7 @@ class Command(BaseCommand):
             set_code = s[0]
             set_data = s[1]
 
-            if set_code not in self.new_sets:
+            if set_code not in self.sets_to_update:
                 logging.info('Skipping set "%s"', set_data['name'])
                 continue
 
