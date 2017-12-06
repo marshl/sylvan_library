@@ -1,4 +1,3 @@
-
 colour_name_to_flag = {
     'white': 1,
     'blue': 2,
@@ -16,7 +15,7 @@ colour_code_to_flag = {
 }
 
 
-def get_colour_flags_from_names(colour_names):
+def colour_names_to_flags(colour_names):
     flags = 0
     for colour in colour_names:
         flags |= colour_name_to_flag[colour.lower()]
@@ -24,7 +23,7 @@ def get_colour_flags_from_names(colour_names):
     return flags
 
 
-def get_colour_flags_from_codes(colour_codes):
+def colour_codes_to_flags(colour_codes):
     flags = 0
     for colour in colour_codes:
         flags |= colour_code_to_flag[colour.lower()]
