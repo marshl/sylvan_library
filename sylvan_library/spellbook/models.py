@@ -64,7 +64,7 @@ class Card(models.Model):
 
 
 class CardPrinting(models.Model):
-    flavour_text = models.CharField(max_length=350, blank=True, null=True)
+    flavour_text = models.CharField(max_length=500, blank=True, null=True)
     artist = models.CharField(max_length=100)
     collector_number = models.IntegerField()
     collector_letter = models.CharField(max_length=1, blank=True, null=True)
