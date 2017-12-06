@@ -57,7 +57,8 @@ class Command(BaseCommand):
             json_data.items(),
             key=lambda card_set: card_set[1]["releaseDate"])
 
-        self.sets_to_update += options['force_update_sets']
+        if options['force_update_sets']:
+            self.sets_to_update += options['force_update_sets']
         self.force_update = options['force_update']
 
         if options['no_transaction']:
