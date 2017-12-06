@@ -253,7 +253,7 @@ class Command(BaseCommand):
             card.colour = 0
 
         card.colour_identity = 0
-        if 'colourIdentity' in card_data:
+        if 'colorIdentity' in card_data:
             card.colour_identity = colour.colour_codes_to_flags(
                 card_data['colorIdentity'])
         else:
