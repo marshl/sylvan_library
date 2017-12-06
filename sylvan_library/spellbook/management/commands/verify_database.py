@@ -205,3 +205,37 @@ class Command(BaseCommand):
         assert Card.objects.get(name='Rune-Tail, Kitsune Ascendant').colour == white, \
             'Rune-Tail, Kitsune Ascendant should be white'
         assert Card.objects.get(name='Rune-Tail\'s Essence').colour == white, 'Rune-Tail\'s Essence should be white'
+
+    def test_card_colour_identity(self):
+        blue = colour.colour_codes_to_flags(['U'])
+        red = colour.colour_codes_to_flags(['R'])
+        green = colour.colour_codes_to_flags(['G'])
+        white_blue = colour.colour_codes_to_flags(['W', 'U'])
+        wubrg = colour.colour_codes_to_flags(['W', 'U', 'B', 'R', 'G'])
+
+        # Normal cards
+        assert Card.objects.get(name='Goblin Piker').colour_identity == red, 'Goblin Piker should be red'
+
+        # Lands
+        assert Card.objects.get(name='Mountain').colour_identity == red, 'Mountain should be red'
+        assert Card.objects.get(name='Polluted Delta').colour_identity == 0, \
+            'Polluted Delta should have no colour identity'
+        assert Card.objects.get(name='Tolarian Academy').colour_identity == blue, 'Tolarian Academy should be blue'
+
+        # Colour indicator cards
+        assert Card.objects.get(name='Ghostfire').colour_identity == red, 'Ghostfire should be red'
+        assert Card.objects.get(name='Dryad Arbor').colour_identity == green, 'Dryad Arbor should be green'
+
+        # Augment cards
+        assert Card.objects.get(name='Half-Orc, Half-').colour_identity == red, 'Half-OrdHal- should be red'
+
+        # Symbol in rules cards
+        assert Card.objects.get(name='Bosh, Iron Golem').colour_identity == red, 'Bosh, Iron Golem should be red'
+        assert Card.objects.get(name='Dawnray Archer').colour_identity == white_blue, \
+            'Dawnray Archer should be white-blue'
+        assert Card.objects.get(name='Obelisk of Alara').colour_identity == wubrg, \
+            'Obelisk of Alara should be all colours'
+
+        # Hybrid cards
+        assert Card.objects.get(name='Azorius Guildmage').colour_identity == white_blue, \
+            'Azorius guildmage should be white-blue'
