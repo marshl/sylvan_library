@@ -106,4 +106,46 @@ class Command(BaseCommand):
         assert Card.objects.get(name='Homura\'s Essence').cmc == 6, 'Homras Essence should have a cmc of 6'
 
     def test_card_color(self):
-        assert Card.objects.get(name='Glory Seeker').colour == 1, 'Glory Seeker should be white'
+        white = colour.colour_codes_to_flags(['W'])
+        blue = colour.colour_codes_to_flags(['U'])
+        green = colour.colour_codes_to_flags(['G'])
+        white_blue = colour.colour_codes_to_flags(['W', 'U'])
+        black_green = colour.colour_codes_to_flags(['B', 'G'])
+        wubrg = colour.colour_codes_to_flags(['W', 'U', 'B', 'R', 'G'])
+
+        # Monocoloured card
+        assert Card.objects.get(name='Glory Seeker').colour == white, 'Glory Seeker should be white'
+
+        # Multicoloured card
+        assert Card.objects.get(name='Dark Heart of the Wood').colour == black_green, \
+            'Dark Heart of the Wood should be black-green'
+        assert Card.objects.get(name='Progenitus').colour == wubrg, 'Progenitus should be all colours'
+        assert Card.objects.get(name='Reaper King').colour == wubrg, 'Reaper King should be all colours'
+
+        # Hybrid card
+        assert Card.objects.get(name='Azorius Guildmage').colour == white_blue, 'Azorius Guildmage should be white-blue'
+
+        # Colour indicator cards
+        assert Card.objects.get(name='Transguild Courier').colour == wubrg, 'Transguild Courier should be all colours'
+        assert Card.objects.get(name='Ghostfire').colour == 0, 'Ghostfire should be colourless'
+        assert Card.objects.get(name='Dryad Arbor').colour == green, 'Dryad Arbor should be green'
+
+        # Same colour transform card
+        assert Card.objects.get(name='Delver of Secrets').colour == blue, 'Delver of Secrets should be blue'
+        assert Card.objects.get(name='Insectile Aberration').colour == blue, 'Insectile Aberration should be blue'
+
+        # Different colour transform card
+        assert Card.objects.get(name='Garruk Relentless').colour == green, 'Garruk Relentless should be green'
+        assert Card.objects.get(name='Garruk, the Veil-Cursed').colour == black_green, \
+            'Garruk, the Veil-Cursed should be black green'
+
+        # Colour identity cards
+        assert Card.objects.get(name='Bosh, Iron Golem').colour == 0, 'Bosh should be colourless'
+
+        # Split card
+        assert Card.objects.get(name='Tear').colour == white, 'Tear should be white'
+
+        # Flip card
+        assert Card.objects.get(name='Rune-Tail, Kitsune Ascendant').colour == white, \
+            'Rune-Tail, Kitsune Ascendant should be white'
+        assert Card.objects.get(name='Rune-Tail\'s Essence').colour == white, 'Rune-Tail\'s Essence should be white'
