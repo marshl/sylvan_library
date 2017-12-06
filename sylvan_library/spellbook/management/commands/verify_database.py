@@ -9,7 +9,8 @@ from spellbook.models import Card, CardPrinting, CardPrintingLanguage
 from spellbook.models import PhysicalCard
 from spellbook.models import CardRuling, Rarity, Block
 from spellbook.models import Set, Language
-from spellbook.management.commands import _parse, _paths, _colour
+from spellbook.management.commands import _parse, _paths
+from spellbook import colour
 
 
 class Command(BaseCommand):
@@ -53,15 +54,23 @@ class Command(BaseCommand):
             'Common rarity should be displayed before uncommon rarity'
 
     def test_card_name(self):
+        # Normal card
         assert Card.objects.get(name='Animate Artifact'), 'Animate Artifact should exist'
+
+        # Split card
+        assert Card.objects.filter(name='Wear').exists(), 'Wear should exist'
+
+        # UTF-8
+        assert Card.objects.filter(name='Jötun Grunt').exists(), 'Jötun Grunt should exist'
         assert Card.objects.get(name='Aether Charge'), 'Aether Charge should exist'
+
+        # Un-names
+        assert Card.objects.filter(name='_____').exists(), '_____ should exist'
+        assert Card.objects.filter(name='"Ach! Hans, Run!"').exists(), '"Ach! Hans, Run!" should exist'
         assert Card.objects.filter(name='The Ultimate Nightmare of Wizards of the Coast® Customer Service').exists(), \
             'The Ultimate Nightmare of Wizards of the Coast® Customer Service should exist'
 
-        assert Card.objects.filter(name='Wear').exists(), 'Wear should exist'
-        assert Card.objects.filter(name='Jötun Grunt').exists(), 'Jötun Grunt should exist'
-        assert Card.objects.filter(name='"Ach! Hans, Run!"').exists(), '"Ach! Hans, Run!" should exist'
-        assert Card.objects.filter(name='_____').exists(), '_____ should exist'
+        # Fip card
         assert Card.objects.filter(name='Homura, Human Ascendant').exists(), 'Homura, Human Ascendant should exist'
 
         # Negative tests
@@ -69,40 +78,87 @@ class Command(BaseCommand):
         assert not Card.objects.filter(name='Æther Charge').exists(), 'Æther Charge should not exist'
 
     def test_card_cost(self):
+        # Expensive card
         assert Card.objects.get(name='Progenitus').cost == '{W}{W}{U}{U}{B}{B}{R}{R}{G}{G}', \
             'Progenitus cost is incorrect'
 
+        # Lands
+        assert Card.objects.get(name='Forest').cost is None, 'Dryad Arbor should have no mana cost'
         assert Card.objects.get(name='Dryad Arbor').cost is None, 'Dryad Arbor should have no mana cost'
+
+        # Monocoloured hybrid card
         assert Card.objects.get(name='Flame Javelin').cost == '{2/R}{2/R}{2/R}', 'Flame Javelins cost is incorrect'
+
+        # Plane
         assert Card.objects.get(name='Krosa').cost is None, 'Krosa should have no mana cost'
+
+        # Multi-numeral symbol cards
         assert Card.objects.get(name='Gleemax').cost == '{1000000}', 'Gleemax has the wrong mana cost'
+        assert Card.objects.get(name='Draco').cost == '{16}', 'Draco has the wrong mana cost'
+
+        # Hybrid multicoloured card
         assert Card.objects.get(name='Naya Hushblade').cost == '{R/W}{G}', 'Naya Hushblade has the wrong mana cost'
+
+        # Half mana card
         assert Card.objects.get(name='Little Girl').cost == '{hw}', 'Little Girl has the wrong mana cost'
+
+        # Meld card
         assert Card.objects.get(name='Brisela, Voice of Nightmares').cost is None, 'Brisela should have no mana cost'
+
+        # Flip card
         assert Card.objects.get(name='Bushi Tenderfoot').cost == '{W}', 'Bushi Tenerfoot has the wrong cost'
         assert Card.objects.get(name='Kenzo the Hardhearted').cost == '{W}', 'Kezno has the wrong mana cost'
+
+        # Phyrexian mana card
         assert Card.objects.get(name='Birthing Pod').cost == '{3}{G/P}', 'Birthing Pod has the wrong mana cost'
 
     def test_card_cmc(self):
+        # Normal cards
         assert Card.objects.get(name='Tarmogoyf').cmc == 2, 'Tarmogoyf should have a cmc of 2'
         assert Card.objects.get(name='Black Lotus').cmc == 0, 'Black Lotus should have a cmc of 0'
+
+        # Costless card
         assert Card.objects.get(name='Living End').cmc == 0, 'Living End should have a cmc of 0'
-        assert Card.objects.get(name='Reaper King').cmc == 10, 'Reaper King should have a cmc of 10'
+
+        # Half mana card
         assert Card.objects.get(name='Little Girl').cmc == 0.5, 'Little Girl should have a cmc of 0.5'
+
+        # Monocoloured hybrid cards
+        assert Card.objects.get(name='Reaper King').cmc == 10, 'Reaper King should have a cmc of 10'
         assert Card.objects.get(name='Flame Javelin').cmc == 6, 'Flame Javelin should have a cmc of 6'
-        assert Card.objects.get(name='Gleemax').cmc == 1000000, 'Gleemax should have a cmc of 1000000'
-        assert Card.objects.get(name='Birthing Pod').cmc == 4, 'Birthing Pod should have a cmc of 4'
+
+        # High cost cards
         assert Card.objects.get(name='Blinkmoth Infusion').cmc == 14, 'Blinkmoth Infusion should have a cmc of 14'
+        assert Card.objects.get(name='Gleemax').cmc == 1000000, 'Gleemax should have a cmc of 1000000'
+
+        # Phyrexian mana card
+        assert Card.objects.get(name='Birthing Pod').cmc == 4, 'Birthing Pod should have a cmc of 4'
+
+        # Land
         assert Card.objects.get(name='Dryad Arbor').cmc == 0, 'Dryad Arbor should have a cmc of 0'
+
+        # Colourless mana card
         assert Card.objects.get(name='Kozilek, the Great Distortion').cmc == 10, \
             'Kozilek the Great Distortion should have a cmc of 10'
+
+        # Plane
         assert Card.objects.get(name='Krosa').cmc == 0, 'Krosa should have a cmc of 0'
+
+        # X cost card
         assert Card.objects.get(name='Comet Storm').cmc == 2, 'Comet STorm should have a cmc of 2'
+
+        # Transform card
         assert Card.objects.get(name='Garruk Relentless').cmc == 4, 'Garruk Relentless should have a cmc of 4'
         assert Card.objects.get(name='Garruk, the Veil-Cursed').cmc == 4, \
             'Garruk, the Veil-Cursed should have a cmc of 4'
+
+        # Meld card
         assert Card.objects.get(name='Brisela, Voice of Nightmares').cmc == 11, 'Brisela should have a cmc of 11'
+
+        # Split card
         assert Card.objects.get(name='Wear').cmc == 2, 'Wear should have a cmc of 2'
+
+        # Flip card
         assert Card.objects.get(name='Homura\'s Essence').cmc == 6, 'Homras Essence should have a cmc of 6'
 
     def test_card_color(self):
