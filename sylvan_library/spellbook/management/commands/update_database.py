@@ -5,11 +5,12 @@ import re
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
+from spellbook import colour
 from spellbook.models import Card, CardPrinting, CardPrintingLanguage
 from spellbook.models import PhysicalCard
 from spellbook.models import CardRuling, Rarity, Block
 from spellbook.models import Set, Language
-from spellbook.management.commands import _parse, _paths, _colour
+from spellbook.management.commands import _parse, _paths
 
 
 class Command(BaseCommand):
@@ -246,14 +247,14 @@ class Command(BaseCommand):
         card.cmc = card_data.get('cmc') or 0
 
         if 'colors' in card_data:
-            card.colour = _colour.get_colour_flags_from_names(
+            card.colour = colour.colour_names_to_flags(
                 card_data['colors'])
         else:
             card.colour = 0
 
         card.colour_identity = 0
         if 'colourIdentity' in card_data:
-            card.colour_identity = _colour.get_colour_flags_from_codes(
+            card.colour_identity = colour.colour_codes_to_flags(
                 card_data['colorIdentity'])
         else:
             card.colour_identity = 0
