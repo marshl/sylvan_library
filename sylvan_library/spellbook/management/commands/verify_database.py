@@ -207,10 +207,12 @@ class Command(BaseCommand):
         assert Card.objects.get(name='Rune-Tail\'s Essence').colour == white, 'Rune-Tail\'s Essence should be white'
 
     def test_card_colour_identity(self):
+        white = colour.colour_codes_to_flags(['W'])
         blue = colour.colour_codes_to_flags(['U'])
         red = colour.colour_codes_to_flags(['R'])
         green = colour.colour_codes_to_flags(['G'])
         white_blue = colour.colour_codes_to_flags(['W', 'U'])
+        black_green = colour.colour_codes_to_flags(['B', 'G'])
         wubrg = colour.colour_codes_to_flags(['W', 'U', 'B', 'R', 'G'])
 
         # Normal cards
@@ -239,3 +241,62 @@ class Command(BaseCommand):
         # Hybrid cards
         assert Card.objects.get(name='Azorius Guildmage').colour_identity == white_blue, \
             'Azorius guildmage should be white-blue'
+
+        # Flip cards
+        assert Card.objects.get(name='Garruk Relentless').colour_identity == black_green, \
+            'Garruk Relentless should be black-green'
+        assert Card.objects.get(name='Garruk, the Veil-Cursed').colour_identity == black_green, \
+            'Garruk, the Veil-Cursed should be black-green'
+
+        assert Card.objects.get(name='Gisela, the Broken Blade').colour_identity == white, \
+            'Gisela, Blade of Goldnight should be white'
+        assert Card.objects.get(name='Brisela, Voice of Nightmares').colour_identity == white, \
+            'Brisela, Voice of Nightmares should be white'
+
+    def test_card_colour_count(self):
+        # Normal cards
+        assert Card.objects.get(name='Birds of Paradise').colour_count == 1, 'Birds of Paradise should have one colour'
+        assert Card.objects.get(name='Edgewalker').colour_count == 2, 'Edgewalker should two colours'
+        assert Card.objects.get(name='Naya Hushblade').colour_count == 3, 'Naya Hushblade should have 3 colours'
+        assert Card.objects.get(name='Swamp').colour_count == 0, 'Swamp should have no colours'
+        assert Card.objects.get(name='Ornithopter').colour_count == 0, 'Ornithopter should have no colours'
+        assert Card.objects.get(name='Glint-Eye Nephilim').colour_count == 4, 'Glint-Eye Nephilim should have 4 colours'
+        assert Card.objects.get(name='Cromat').colour_count == 5, 'Cromat should have 5 colours'
+
+        # Colour indicator cards
+        assert Card.objects.get(name='Evermind').colour_count == 1, 'Evermind should have 1 colour'
+        assert Card.objects.get(name='Arlinn, Embraced by the Moon').colour_count == 2, 'Arlinn should have 2 colours'
+
+        # Non-playable cards
+        assert Card.objects.get(name='Dance, Pathetic Marionette').colour_count == 0, 'Schemes should have no colour'
+
+    def test_card_type(self):
+        assert Card.objects.get(name='Kird Ape').type == 'Creature', 'Kird Ape should be a creature'
+        assert Card.objects.get(name='Forest').type == 'Basic Land', 'Forest should be a Basic Land'
+        assert Card.objects.get(name='Masticore').type == 'Artifact Creature', \
+            'Masticore should be an artifact creature'
+        assert Card.objects.get(name='Tarmogoyf').type == 'Creature', 'Tarmogoyf should be a creature'
+        assert Card.objects.get(name='Lignify').type == 'Tribal Enchantment', 'Lifnify should be a Tribal Enchantment'
+        assert Card.objects.get(name='Sen Triplets').type == 'Legendary Artifact Creature', \
+            'Sen Triplets should be a Legendary Artifact Creature'
+        assert Card.objects.get(name='Walking Atlas').type == 'Artifact Creature', \
+            'Walking Atlas should be an artifact creature'
+
+        assert Card.objects.get(name='Soul Net').type == 'Artifact', 'Soul Net should be an artifact'
+        assert Card.objects.get(name='Ajani Goldmane').type == 'Legendary Planeswalker', \
+            'Ajani should be a Legendary Planeswalker'
+        assert Card.objects.get(name='Bant').type == 'Plane', 'Bant should be a Plane'
+        assert Card.objects.get(name='My Crushing Masterstroke').type == 'Scheme', \
+            'My Crushing Masterstroke should be a scheme'
+
+        assert Card.objects.get(name='Nameless Race').type == 'Creature', 'Nameless race should be a creature'
+
+    def test_card_subype(self):
+        assert Card.objects.get(name='Screaming Seahawk').subtype == 'Bird', 'Screaming Sehawk should be a bird'
+        assert Card.objects.get(name='Jace, the Mind Sculptor').subtype == 'Jace', \
+            'Jace, the Mind Sculptor should be a Jace'
+        assert Card.objects.get(name='Mistform Ultimus').subtype == 'Illusion', 'Mistform Ultimus should be an illusion'
+        assert Card.objects.get(name='Lignify').subtype == 'Treefolk Aura', 'Lignify should be a treefolk aura'
+        assert Card.objects.get(name='Nameless Race').subtype is None, 'Nameless Race should have no subtype'
+        assert Card.objects.get(name='Forest').subtype == 'Forest', 'Forest should be a Forest'
+        assert Card.objects.get(name='Spellbook').subtype is None, 'Spellbook should have no subtype'
