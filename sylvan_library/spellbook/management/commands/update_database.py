@@ -205,7 +205,11 @@ class Command(BaseCommand):
 
             set_obj = Set.objects.get(code=set_code)
 
-            for card_data in set_data['cards']:
+            card_list = sorted(
+                set_data['cards'],
+                key=lambda card: card['number'] if 'number' in card else card['multiverseid'])
+
+            for card_data in card_list:
                 default_cnum += 1
                 card_obj = self.update_card(card_data)
 
