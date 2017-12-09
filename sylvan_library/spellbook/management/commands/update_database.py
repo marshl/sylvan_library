@@ -369,7 +369,7 @@ class Command(BaseCommand):
         return cardlang
 
     def convert_to_number(self, val):
-        match = re.search('([\d.]+)', str(val))
+        match = re.search('(-?[\d.]+)', str(val))
         if match:
             return match.group()
 
