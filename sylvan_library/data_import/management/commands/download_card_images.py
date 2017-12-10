@@ -13,6 +13,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
+        if not Language.objects.filter(name='English').exists():
+            print('Only english card images are downloaded by default, but the English Language '
+                  'object doesn\'t exist. Please run `update_database` first')
+            return
+
         image_download_queue = queue.Queue()
 
         for cpl in CardPrintingLanguage.objects.filter(multiverse_id__isnull=False).filter(
