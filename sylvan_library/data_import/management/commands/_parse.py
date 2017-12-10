@@ -1,5 +1,5 @@
 import json
-from spellbook.management.commands import _paths
+from data_import.management.commands import _paths
 
 
 def parse_json_data():

@@ -6,7 +6,7 @@ import requests
 import zipfile
 from os import path
 
-from spellbook.management.commands import _paths, _query, _parse
+from data_import.management.commands import _paths, _query, _parse
 
 
 class Command(BaseCommand):

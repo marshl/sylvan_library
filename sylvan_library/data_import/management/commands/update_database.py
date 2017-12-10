@@ -10,7 +10,7 @@ from spellbook.models import Card, CardPrinting, CardPrintingLanguage
 from spellbook.models import PhysicalCard
 from spellbook.models import CardRuling, Rarity, Block
 from spellbook.models import Set, Language
-from spellbook.management.commands import _parse, _paths
+from data_import.management.commands import _parse, _paths
 
 
 class Command(BaseCommand):
@@ -49,6 +49,29 @@ class Command(BaseCommand):
             help='Forces an update of the given sets'
         )
 
+    def get_card_sort_key(self, card_data):
+        return card_data['number'] if 'number' in card_data else \
+            card_data['multiverseid'] if 'multiverseid' in card_data else \
+                card_data['mciNumber'] if 'mciNumber' in card_data else \
+                    card_data['name']
+
+    def card_sort_compare(self, card_1, card_2):
+
+        if 'number' in card_1 and 'number' in card_2:
+            (num1, letter1) = self.number_to_cnum(card_1['number'])
+            (num2, letter2) = self.number_to_cnum(card_2['number'])
+
+            return
+
+            return self.number_to_cnum(card_1['number']) - self.number_to_cnum(card_2['number'])
+
+
+        if 'multiverseid' in card_1 and 'multiverseid' in card_2:
+            return card_1['multiverseid'] - card_2['multiverseid']
+
+        if 'mciNumber' in card_1 and 'mciNumber' in card_2:
+            return card_1['mciNumber'] - card_2['mciNumber']
+
     @transaction.atomic
     def handle(self, *args, **options):
 
@@ -59,6 +82,7 @@ class Command(BaseCommand):
 
         if options['force_update_sets']:
             self.sets_to_update += options['force_update_sets']
+
         self.force_update = options['force_update']
 
         if options['no_transaction']:
@@ -206,8 +230,7 @@ class Command(BaseCommand):
             set_obj = Set.objects.get(code=set_code)
 
             card_list = sorted(
-                set_data['cards'],
-                key=lambda card: card['number'] if 'number' in card else card['multiverseid'])
+                set_data['cards'], key=self.get_card_sort_key)
 
             for card_data in card_list:
                 default_cnum += 1
@@ -570,12 +593,10 @@ class Command(BaseCommand):
 
         return card_data['name']
 
-    def get_card_cnum(self, card_data, default_cnum):
-        if 'number' not in card_data:
-            return (default_cnum, None)
+    def number_to_cnum(self, number):
         cnum_match = re.search(
             '^(?P<special>[\D]+)?(?P<number>[\d]+)(?P<letter>[\D]+)?$',
-            card_data['number'])
+            number)
 
         cnum = cnum_match.group('number')
         cnum_letter = (
@@ -583,3 +604,9 @@ class Command(BaseCommand):
             cnum_match.group('letter'))
 
         return (cnum, cnum_letter)
+
+    def get_card_cnum(self, card_data, default_cnum):
+        if 'number' not in card_data:
+            return (default_cnum, None)
+
+        return self.number_to_cnum(card_data['number'])

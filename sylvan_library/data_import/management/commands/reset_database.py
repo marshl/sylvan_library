@@ -4,7 +4,7 @@ from spellbook.models import Card, CardPrinting, CardPrintingLanguage
 from spellbook.models import PhysicalCard, UserOwnedCard
 from spellbook.models import UserCardChange, DeckCard, Deck, CardTagLink
 from spellbook.models import CardTag, CardRuling, Rarity, Block, Set, Language
-from spellbook.management.commands import _query
+from data_import.management.commands import _query
 from django.db import connection
 
 

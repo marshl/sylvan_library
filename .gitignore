@@ -101,8 +101,8 @@ ENV/
 sylvan_env/
 /.metadata
 /sylvan_library/spellbook/static
-sylvan_library/sylvan_library/settings/secrets.json
-sylvan_library/spellbook/data/
+secrets.json
+sylvan_library/data_import/data/
 *.pyc
 sylvan_library/sylvan_library/database_connections.py
 *.idea

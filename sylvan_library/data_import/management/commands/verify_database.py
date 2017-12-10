@@ -1,15 +1,10 @@
-import json
-import logging
-import re
-
 from django.core.management.base import BaseCommand
-from django.db import transaction
 
 from spellbook.models import Card, CardPrinting, CardPrintingLanguage
 from spellbook.models import PhysicalCard
 from spellbook.models import CardRuling, Rarity, Block
 from spellbook.models import Set, Language
-from spellbook.management.commands import _parse, _paths
+from data_import.management.commands import _parse, _paths
 from spellbook import colour
 
 
@@ -300,3 +295,50 @@ class Command(BaseCommand):
         assert Card.objects.get(name='Nameless Race').subtype is None, 'Nameless Race should have no subtype'
         assert Card.objects.get(name='Forest').subtype == 'Forest', 'Forest should be a Forest'
         assert Card.objects.get(name='Spellbook').subtype is None, 'Spellbook should have no subtype'
+
+    def test_card_power(self):
+        # Normal Cards
+        assert Card.objects.get(name='Birds of Paradise').power == '0', 'Birds of Paradise should have a power of 0'
+        assert Card.objects.get(name='Dryad Arbor').power == '1', 'Dryad Arbor should have 1 power'
+        assert Card.objects.get(name='Juggernaut').power == '5', 'Juggernaut should have 5 power'
+
+        # Vehicles
+        assert Card.objects.get(name='Irontread Crusher').power == '6', 'Irontread Crusher should have 6 power'
+
+        # Negative Cards
+        assert Card.objects.get(name='Char-Rumbler').power == '-1', 'Char-Rumbler should have a power of -1'
+        assert Card.objects.get(name='Spinal Parasite').power == '-1', 'Spinal Parasite should have a power of -1'
+
+        # + Cards
+        assert Card.objects.get(name='Tarmogoyf').power == '*', "Tarmogoyf should have a power of *"
+        assert Card.objects.get(name='Gaea\'s Avenger').power == '1+*', 'Gaea\'s Avenger should have a power of 1+*'
+        assert Card.objects.get(name='Zombified').power == '+2', 'Zombified should have a power of +2'
+
+        # Noncreature cards
+        assert Card.objects.get(name='Ancestral Recall').power is None, 'Ancestral recall should have no power'
+        assert Card.objects.get(name='Krosa').power is None, 'Krosa should have no power'
+        assert Card.objects.get(name='Gratuitous Violence').power is None, 'Gratuitous Violence should have no power'
+
+    def test_card_toughness(self):
+
+        # Normal Cards
+        assert Card.objects.get(name='Stone Golem').toughness == '6', 'Stone Golem should have 6 toughness'
+        assert Card.objects.get(name='Dryad Arbor').toughness == '1', 'Dryad Arbor should have 1 toughness'
+        assert Card.objects.get(name='Force of Savagery').toughness == '0', 'Force of Savagery should have 0 toughness'
+
+        # Vehicles
+        assert Card.objects.get(name='Heart of Kiran').toughness == '4', 'Heart of Kiran should have 4 toughness'
+
+        # Negative Cards
+        assert Card.objects.get(name='Char-Rumbler').power == '-1', 'Char-Rumbler should have a power of -1'
+        assert Card.objects.get(name='Spinal Parasite').toughness == '-1', 'Spinal Parasite should have a toughness of -1'
+
+        # + Cards
+        assert Card.objects.get(name='Tarmogoyf').power == '*', "Tarmogoyf should have a power of *"
+        assert Card.objects.get(name='Gaea\'s Avenger').power == '1+*', 'Gaea\'s Avenger should have a power of 1+*'
+        assert Card.objects.get(name='Zombified').power == '+2', 'Zombified should have a power of +2'
+
+        # Noncreature cards
+        assert Card.objects.get(name='Ancestral Recall').power is None, 'Ancestral recall should have no power'
+        assert Card.objects.get(name='Krosa').power is None, 'Krosa should have no power'
+        assert Card.objects.get(name='Gratuitous Violence').power is None, 'Gratuitous Violence should have no power'

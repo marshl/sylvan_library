@@ -90,7 +90,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'spellbook.apps.SpellbookConfig'
+    'spellbook',
+    'data_import'
 ]
 
 STATIC_URL = '/static/'
