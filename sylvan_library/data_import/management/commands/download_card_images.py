@@ -5,7 +5,7 @@ import requests
 import queue
 import threading
 
-from spellbook.models import CardPrintingLanguage, Language
+from cards.models import CardPrintingLanguage, Language
 
 
 class Command(BaseCommand):

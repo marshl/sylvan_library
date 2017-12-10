@@ -187,7 +187,7 @@ class CardTagLink(models.Model):
 
 class Deck(models.Model):
     date_created = models.DateField()
-    last_modiifed = models.DateField()
+    last_modified = models.DateField()
 
     name = models.CharField(max_length=200)
     owner = models.ForeignKey(User)

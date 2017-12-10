@@ -5,11 +5,11 @@ import re
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from spellbook import colour
-from spellbook.models import Card, CardPrinting, CardPrintingLanguage
-from spellbook.models import PhysicalCard
-from spellbook.models import CardRuling, Rarity, Block
-from spellbook.models import Set, Language
+from cards import colour
+from cards.models import Card, CardPrinting, CardPrintingLanguage
+from cards.models import PhysicalCard
+from cards.models import CardRuling, Rarity, Block
+from cards.models import Set, Language
 from data_import.management.commands import _parse, _paths
 
 

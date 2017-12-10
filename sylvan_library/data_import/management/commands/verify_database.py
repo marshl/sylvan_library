@@ -1,11 +1,8 @@
 from django.core.management.base import BaseCommand
 
-from spellbook.models import Card, CardPrinting, CardPrintingLanguage
-from spellbook.models import PhysicalCard
-from spellbook.models import CardRuling, Rarity, Block
-from spellbook.models import Set, Language
+from cards.models import *
 from data_import.management.commands import _parse, _paths
-from spellbook import colour
+from cards import colour
 
 
 class Command(BaseCommand):

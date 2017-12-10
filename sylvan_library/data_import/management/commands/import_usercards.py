@@ -1,9 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 
-from spellbook.models import Card, CardPrinting, CardPrintingLanguage
-from spellbook.models import UserOwnedCard, Set, Language
-from spellbook.models import PhysicalCardLink
+from cards.models import *
 
 
 class Command(BaseCommand):

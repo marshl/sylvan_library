@@ -13,9 +13,9 @@ DATABASES = {
         'USER': get_secret('DATABASE_USERNAME'),
         'PASSWORD': get_secret('DATABASE_PASSWORD'),
         'ATOMIC_REQUESTS': True,
-        'CONN_MAX_AGE': 60 * 5, # Keeps connections for a maximum of 5 minutes.
-        'HOST': '', # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '', # Set to empty string for default. Not used with sqlite3.
+        'CONN_MAX_AGE': 60 * 5,  # Keeps connections for a maximum of 5 minutes.
+        'HOST': '',  # Set to empty string for localhost. Not used with sqlite3.
+        'PORT': '',  # Set to empty string for default. Not used with sqlite3.
     }
 }
 
@@ -49,8 +49,6 @@ STATICFILES_FINDERS = (
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_secret('SECRET_KEY')
-
-
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
@@ -91,7 +89,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'spellbook',
-    'data_import'
+    'data_import',
+    'cards',
 ]
 
 STATIC_URL = '/static/'

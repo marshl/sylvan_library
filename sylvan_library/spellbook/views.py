@@ -1,11 +1,11 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from spellbook.models import Card, Set
+from cards.models import Card, Set
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponseRedirect
 import random
 
-from spellbook.models import CardPrintingLanguage, UserOwnedCard
+from cards.models import CardPrintingLanguage, UserOwnedCard
 
 
 def index(request):
