@@ -6,11 +6,8 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from cards import colour
-from cards.models import Card, CardPrinting, CardPrintingLanguage
-from cards.models import PhysicalCard
-from cards.models import CardRuling, Rarity, Block
-from cards.models import Set, Language
-from data_import.management.commands import _parse, _paths
+from cards.models import *
+from data_import.importers import *
 
 
 class Command(BaseCommand):
@@ -65,7 +62,6 @@ class Command(BaseCommand):
 
             return self.number_to_cnum(card_1['number']) - self.number_to_cnum(card_2['number'])
 
-
         if 'multiverseid' in card_1 and 'multiverseid' in card_2:
             return card_1['multiverseid'] - card_2['multiverseid']
 
@@ -75,10 +71,8 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
 
-        json_data = _parse.parse_json_data()
-        json_data = sorted(
-            json_data.items(),
-            key=lambda card_set: card_set[1]["releaseDate"])
+        importer = JsonImporter()
+        importer.import_data()
 
         if options['force_update_sets']:
             self.sets_to_update += options['force_update_sets']
@@ -86,30 +80,29 @@ class Command(BaseCommand):
         self.force_update = options['force_update']
 
         if options['no_transaction']:
-            self.update_database(json_data)
+            self.update_database(importer)
         else:
             with(transaction.atomic()):
-                self.update_database(json_data)
+                self.update_database(importer)
 
-    def update_database(self, json_data):
-        self.update_rarity_list()
-        self.update_language_list()
-        self.update_block_list(json_data)
-        self.update_set_list(json_data)
-        self.update_card_list(json_data)
-        self.update_ruling_list(json_data)
-        self.update_physical_card_list(json_data)
-        self.update_card_links(json_data)
+    def update_database(self, data_importer):
+        self.update_rarity_list(data_importer)
+        self.update_language_list(data_importer)
 
-    def update_rarity_list(self):
+        staged_sets = data_importer.get_staged_sets()
+
+        self.update_block_list(staged_sets)
+        self.update_set_list(staged_sets)
+        self.update_card_list(staged_sets)
+        self.update_ruling_list(staged_sets)
+        self.update_physical_card_list(staged_sets)
+        self.update_card_links(staged_sets)
+
+    def update_rarity_list(self, data_importer):
 
         logging.info('Updating rarity list')
 
-        f = open(_paths.rarity_json_path, 'r', encoding="utf8")
-        rarities = json.load(f, encoding='UTF-8')
-        f.close()
-
-        for rarity in rarities:
+        for rarity in data_importer.import_rarities():
             rarity_obj = Rarity.objects.filter(symbol=rarity['symbol']).first()
             if rarity_obj is not None:
                 logging.info('Updating existing rarity %s', rarity_obj.name)
@@ -129,15 +122,11 @@ class Command(BaseCommand):
 
         logging.info('Rarity update complete')
 
-    def update_language_list(self):
+    def update_language_list(self, data_importer):
 
         logging.info('Updating language list')
 
-        f = open(_paths.language_json_path, 'r', encoding="utf8")
-        languages = json.load(f, encoding='UTF-8')
-        f.close()
-
-        for lang in languages:
+        for lang in data_importer.import_languages():
             language_obj = Language.objects.filter(name=lang['name']).first()
             if language_obj is not None:
                 logging.info('Updating language: %s', lang['name'])
@@ -150,184 +139,133 @@ class Command(BaseCommand):
 
         logging.info('Language update complete')
 
-    def update_block_list(self, set_list):
+    def update_block_list(self, staged_sets):
         logging.info('Updating block list')
 
-        for s in set_list:
-
-            set_data = s[1]
+        for set in staged_sets:
 
             # Ignore sets that have no block
-            if 'block' not in set_data:
-                logging.info('Ignoring %s', set_data['name'])
+            if not set.has_block():
+                logging.info('Ignoring %s', set.get_name())
                 continue
 
-            block = Block.objects.filter(name=set_data['block']).first()
+            block = Block.objects.filter(name=set.get_block()).first()
 
             if block is not None:
                 logging.info('Block %s already exists', block.name)
             else:
                 block = Block(
-                    name=set_data['block'],
-                    release_date=set_data['releaseDate'])
+                    name=set.get_block(),
+                    release_date=set.get_release_date())
 
                 logging.info('Created block %s', block.name)
                 block.save()
 
         logging.info('BLock list updated')
 
-    def update_set_list(self, set_list):
+    def update_set_list(self, staged_sets):
         logging.info('Updating set list')
 
-        for s in set_list:
-
-            set_code = s[0]
-            set_data = s[1]
+        for s in staged_sets:
 
             # Skip sets that start with 'p' (e.g. pPRE Prerelease Events)
-            if set_code[0] == 'p':
-                logging.info('Ignoring set %s', set_data['name'])
+            if s.get_code()[0] == 'p':
+                logging.info('Ignoring set %s', s.get_name())
                 continue
 
-            if not Set.objects.filter(code=set_code).exists():
+            if not Set.objects.filter(code=s.get_code()).exists():
 
-                logging.info('Creating set %s', set_data['name'])
-                block = Block.objects.filter(name=set_data.get('block')).first()
+                logging.info('Creating set %s', s.get_name())
+                block = Block.objects.filter(name=s.get_block()).first()
 
                 set_obj = Set(
-                    code=set_code,
-                    name=set_data['name'],
-                    release_date=set_data['releaseDate'],
+                    code=s.get_code(),
+                    name=s.get_name(),
+                    release_date=s.get_release_date(),
                     block=block,
-                    mci_code=set_data.get('magicCardsInfoCode'))
+                    mci_code=s.get_mci_code())
 
                 set_obj.save()
-                self.sets_to_update.append(set_code)
+                self.sets_to_update.append(s.get_code())
             else:
-                logging.info('Set %s already exists, no changes made',
-                             set_data['name'])
+                logging.info('Set %s already exists, no changes made', s.get_name())
 
                 if self.force_update:  # use the set anyway during a force update
-                    self.sets_to_update.append(set_code)
-
+                    self.sets_to_update.append(s.get_code())
         logging.info('Set list updated')
 
-    def update_card_list(self, set_list):
+    def update_card_list(self, staged_sets):
         logging.info('Updating card list')
 
-        for s in set_list:
-
-            set_code = s[0]
-            set_data = s[1]
+        for set in staged_sets:
             default_cnum = 0
 
-            if set_code not in self.sets_to_update:
-                logging.info('Ignoring set "%s"', set_data['name'])
+            if set.get_code() not in self.sets_to_update:
+                logging.info('Ignoring set "%s"', set.get_name())
                 continue
 
-            logging.info('Updating cards in set "%s"', set_data['name'])
+            logging.info('Updating cards in set "%s"', set.get_name())
 
-            set_obj = Set.objects.get(code=set_code)
+            set_obj = Set.objects.get(code=set.get_code())
 
-            card_list = sorted(
-                set_data['cards'], key=self.get_card_sort_key)
-
-            for card_data in card_list:
+            for staged_card in set.get_cards():
                 default_cnum += 1
-                card_obj = self.update_card(card_data)
+                card_obj = self.update_card(staged_card)
 
                 printing_obj = self.update_card_printing(
                     card_obj,
                     set_obj,
-                    card_data,
+                    staged_card,
                     default_cnum)
 
                 english = {
                     'language': 'English',
-                    'name': self.get_card_name(card_data),
-                    'multiverseid': card_data.get('multiverseid')
+                    'name': staged_card.get_name(),
+                    'multiverseid': staged_card.get_multiverse_id()
                 }
 
                 self.update_card_printing_language(printing_obj, english)
 
-                if 'foreignNames' in card_data:
-                    for lang in card_data['foreignNames']:
+                if staged_card.has_foreign_names():
+                    for lang in staged_card.get_foreign_names():
                         self.update_card_printing_language(printing_obj, lang)
 
         logging.info('Card list updated')
 
-    def update_card(self, card_data):
-        card_name = self.get_card_name(card_data)
-        card = Card.objects.filter(name=card_name).first()
+    def update_card(self, staged_card):
+        card = Card.objects.filter(name=staged_card.get_name()).first()
         if card is not None:
             logging.info('Updating existing card "%s"', card)
         else:
-            card = Card(name=card_name)
+            card = Card(name=staged_card.get_name())
             logging.info('Creating new card "%s"', card)
 
-        if not self.force_update and card_name in self.updated_cards:
+        if not self.force_update and staged_card.get_name() in self.updated_cards:
             logging.info(f'{card} has already been updated')
             return card
 
-        self.updated_cards.append(card_name)
+        self.updated_cards.append(staged_card.get_name())
 
-        card.cost = card_data.get('manaCost')
-        card.cmc = card_data.get('cmc') or 0
-
-        if 'colors' in card_data:
-            card.colour = colour.colour_names_to_flags(
-                card_data['colors'])
-        else:
-            card.colour = 0
-
-        card.colour_identity = 0
-        if 'colorIdentity' in card_data:
-            card.colour_identity = colour.colour_codes_to_flags(
-                card_data['colorIdentity'])
-        else:
-            card.colour_identity = 0
-
-        card.colour_count = bin(card.colour).count('1')
-
-        card.power = card_data.get('power')
-        card.toughness = card_data.get('toughness')
-
-        if 'power' in card_data:
-            card.num_power = self.convert_to_number(card_data['power'])
-        else:
-            card.num_power = 0
-
-        if 'toughness' in card_data:
-            card.num_toughness = self.convert_to_number(card_data['toughness'])
-        else:
-            card.num_toughness = 0
-
-        card.loyalty = card_data.get('loyalty')
-
-        if 'loyalty' in card_data:
-            card.num_loyalty = self.convert_to_number(card_data['loyalty'])
-        else:
-            card.num_loyalty = 0
-
-        if 'types' in card_data:
-            types = (card_data.get('supertypes') or []) + \
-                    (card_data['types'] or [])
-            card.type = ' '.join(types)
-        else:
-            card.type = None
-
-        if 'subtypes' in card_data:
-            card.subtype = ' '.join(card_data.get('subtypes'))
-        else:
-            card.subtype = None
-
-        card.rules_text = card_data.get('text')
+        card.cost = staged_card.get_mana_cost()
+        card.cmc = staged_card.get_cmc()
+        card.colour = staged_card.get_colour()
+        card.colour_identity = staged_card.get_colour_identity()
+        card.colour_count = staged_card.get_colour_count()
+        card.power = staged_card.get_power()
+        card.toughness = staged_card.get_toughness()
+        card.num_power = staged_card.get_num_power()
+        card.num_toughness = staged_card.get_num_toughness()
+        card.loyalty = staged_card.get_loyalty()
+        card.num_loyalty = staged_card.get_num_loyalty()
+        card.types = staged_card.get_types()
+        card.subtype = staged_card.get_subtypes()
+        card.rules_text = staged_card.get_rules_text()
 
         card.save()
         return card
 
-    def update_card_printing(self, card_obj, set_obj, card_data, default_cnum):
-        (cnum, cnum_letter) = self.get_card_cnum(card_data, default_cnum)
+    def update_card_printing(self, card_obj, set_obj, staged_card, default_cnum):
+        (cnum, cnum_letter) = staged_card.get_cnum(default_cnum)
 
         printing = CardPrinting.objects.filter(
             card_id=card_obj.id,
@@ -345,25 +283,13 @@ class Command(BaseCommand):
                 collector_letter=cnum_letter)
             logging.info('Created new card printing "%s"', printing)
 
-        printing.artist = card_data['artist']
+        printing.artist = staged_card.get_artist()
+        printing.rarity = Rarity.objects.get(name=staged_card.get_rarity_name())
 
-        rarity_name = card_data['rarity']
-        if 'timeshifted' in card_data and card_data['timeshifted']:
-            rarity_name = 'Timeshifted'
-
-        printing.rarity = Rarity.objects.get(name=rarity_name)
-
-        printing.flavour_text = card_data.get('flavor')
-        printing.original_text = card_data.get('originalText')
-        printing.original_type = card_data.get('originalType')
-
-        if 'mciNumber' in card_data:
-            mci_match = re.search(
-                '^(/(?P<set>[^/]*)/(?P<lang>[^/]*)/)?(?P<num>[0-9]+)(\.html)?$',
-                card_data['mciNumber'])
-
-            if mci_match and 'num' not in card_data:
-                printing.mci_number = mci_match.group('num')
+        printing.flavour_text = staged_card.get_flavour_text()
+        printing.original_text = staged_card.get_original_text()
+        printing.original_type = staged_card.get_original_type()
+        printing.mci_number = staged_card.get_mci_number()
 
         printing.save()
 
@@ -391,38 +317,28 @@ class Command(BaseCommand):
         cardlang.save()
         return cardlang
 
-    def convert_to_number(self, val):
-        match = re.search('(-?[\d.]+)', str(val))
-        if match:
-            return match.group()
-
-        return 0
-
-    def update_ruling_list(self, set_list):
+    def update_ruling_list(self, staged_sets):
         logging.info('Updating card rulings')
         CardRuling.objects.all().delete()
 
-        for s in set_list:
+        for set in staged_sets:
 
-            set_code = s[0]
-            set_data = s[1]
-            if set_code not in self.sets_to_update:
-                logging.info('Ignoring set "%s"', set_data['name'])
+            if set.get_code() not in self.sets_to_update:
+                logging.info('Ignoring set "%s"', set.get_name())
                 continue
 
-            logging.info('Updating rulings in "%s"', set_data['name'])
+            logging.info('Updating rulings in "%s"', set.get_name())
 
-            for card_data in set_data['cards']:
+            for staged_card in set.get_cards():
 
-                if 'rulings' not in card_data:
+                if not staged_card.has_rulings():
                     continue
 
-                card_name = self.get_card_name(card_data)
-                card_obj = Card.objects.get(name=card_name)
+                card_obj = Card.objects.get(name=staged_card.get_name())
 
-                logging.info('Updating rulings for "%s"', card_name)
+                logging.info('Updating rulings for "%s"', staged_card.get_name())
 
-                for ruling in card_data['rulings']:
+                for ruling in staged_card.get_rulings():
 
                     ruling_obj = CardRuling.objects.filter(
                         card=card_obj,
@@ -438,34 +354,27 @@ class Command(BaseCommand):
 
         logging.info('Card rulings updated')
 
-    def update_physical_card_list(self, set_list):
+    def update_physical_card_list(self, staged_sets):
         logging.info('Updating physical card list')
 
-        for s in set_list:
+        for set in staged_sets:
 
-            set_code = s[0]
-            set_data = s[1]
-
-            if set_code not in self.sets_to_update:
-                logging.info('Skipping set "%s"', set_data['name'])
+            if set.get_code() not in self.sets_to_update:
+                logging.info('Skipping set "%s"', set.get_name())
                 continue
 
-            set_obj = Set.objects.get(code=set_code)
+            set_obj = Set.objects.get(code=set.get_code())
 
             default_cnum = 0
 
-            for card_data in set_data['cards']:
+            for staged_card in set.get_cards():
 
-                card_name = self.get_card_name(card_data)
-
-                logging.info('Updating physical cards for %s', card_name)
-                card_obj = Card.objects.get(name=card_name)
+                logging.info('Updating physical cards for %s', staged_card.get_name())
+                card_obj = Card.objects.get(name=staged_card.get_name())
 
                 default_cnum += 1
 
-                (cnum, cnum_letter) = self.get_card_cnum(
-                    card_data,
-                    default_cnum)
+                (cnum, cnum_letter) = staged_card.get_cnum()
 
                 printing_obj = CardPrinting.objects.get(
                     card=card_obj,
@@ -480,9 +389,9 @@ class Command(BaseCommand):
 
                 self.update_physical_card(printlang_obj, card_data)
 
-                if 'foreignNames' in card_data:
+                if staged_card.has_foreign_names:
 
-                    for card_language in card_data['foreignNames']:
+                    for card_language in staged_card.get_foreign_names():
                         lang_obj = Language.objects.get(
                             name=card_language['language'])
 
@@ -490,13 +399,13 @@ class Command(BaseCommand):
                             card_printing=printing_obj,
                             language=lang_obj)
 
-                        self.update_physical_card(printlang_obj, card_data)
+                        self.update_physical_card(printlang_obj, staged_card)
 
-    def update_physical_card(self, printlang, card_data):
+    def update_physical_card(self, printlang, staged_card):
         logging.info('Updating physical cards for "%s"', printlang)
 
-        if (card_data['layout'] == 'meld' and
-                    len(card_data['names']) == 3 and
+        if (staged_card.get_layout() == 'meld' and
+                    staged_card.get_name_count() == 3 and
                     printlang.card_printing.collector_letter == 'b'):
             logging.info('Will not create card link for meld card "%s',
                          printlang)
@@ -512,12 +421,9 @@ class Command(BaseCommand):
 
         cp = printlang.card_printing
 
-        if 'names' in card_data:
+        if staged_card.has_other_names():
 
-            for link_name in card_data['names']:
-
-                if link_name == card_data['name']:
-                    continue
+            for link_name in staged_card.get_other_names():
 
                 link_card = Card.objects.get(name=link_name)
                 link_print = CardPrinting.objects.filter(
@@ -527,11 +433,11 @@ class Command(BaseCommand):
                     logging.error(f'Printing for link {link_card} in set {cp.set} not found')
                     raise LookupError()
 
-                if (card_data['layout'] == 'meld' and
+                if (staged_card.get_layout() == 'meld' and
                             printlang.card_printing.collector_letter != 'b' and
                             link_print.collector_letter != 'b'):
                     logging.info('Won''t link %s to %s as they separate cards',
-                                 card_data['name'], link_card.name)
+                                 staged_card.get_name(), link_card.name)
 
                     continue
 
@@ -541,7 +447,7 @@ class Command(BaseCommand):
 
                 linked_language_objs.append(link_print_lang)
 
-        physical_card = PhysicalCard(layout=card_data['layout'])
+        physical_card = PhysicalCard(layout=staged_card.get_layout())
         physical_card.save()
 
         linked_language_objs.append(printlang)
@@ -549,64 +455,30 @@ class Command(BaseCommand):
         for link_lang in linked_language_objs:
             link_lang.physical_cards.add(physical_card)
 
-    def update_card_links(self, set_list):
-        for s in set_list:
+    def update_card_links(self, staged_sets):
+        for set in staged_sets:
 
-            set_code = s[0]
-            set_data = s[1]
-
-            if set_code not in self.sets_to_update:
-                logging.info('Skipping set "%s"', set_data['name'])
+            if set.get_code() not in self.sets_to_update:
+                logging.info('Skipping set "%s"', set.get_name())
                 continue
 
-            cards = set_data['cards']
+            cards = set.get_cards()
 
-            for card_data in [x for x in cards if 'names' in x]:
+            for staged_card in [x for x in cards if x.has_other_names()]:
 
-                card_name = self.get_card_name(card_data)
-                card_obj = Card.objects.get(name=card_name)
+                card_obj = Card.objects.get(name=staged_card.get_name())
 
-                logging.info('Finding card links for {0}'.format(card_name))
+                logging.info('Finding card links for {0}'.format(staged_card.get_name()))
 
-                links = card_data['names']
-
-                for link_name in [x for x in links if x != card_name]:
+                for link_name in staged_card.get_other_names():
 
                     # B.F.M. has the same name for both cards, so the link_name has to be manually set
-                    if card_name == 'B.F.M. (Big Furry Monster) (left)':
+                    if staged_card.get_name() == 'B.F.M. (Big Furry Monster) (left)':
                         link_name = 'B.F.M. (Big Furry Monster) (right)'
-                    elif card_name == 'B.F.M. (Big Furry Monster) (right)':
+                    elif staged_card.get_name() == 'B.F.M. (Big Furry Monster) (right)':
                         link_name = 'B.F.M. (Big Furry Monster) (left)'
 
                     link_card = Card.objects.get(name=link_name)
 
                     card_obj.links.add(link_card)
                     card_obj.save()
-
-    def get_card_name(self, card_data):
-        # B.F.M. has the same name for both "cards", so we rely on the image name to separate the two
-        if card_data['name'] == 'B.F.M. (Big Furry Monster)':
-            if card_data['imageName'] == "b.f.m. 1":
-                return 'B.F.M. (Big Furry Monster) (left)'
-            elif card_data['imageName'] == "b.f.m. 2":
-                return 'B.F.M. (Big Furry Monster) (right)'
-
-        return card_data['name']
-
-    def number_to_cnum(self, number):
-        cnum_match = re.search(
-            '^(?P<special>[\D]+)?(?P<number>[\d]+)(?P<letter>[\D]+)?$',
-            number)
-
-        cnum = cnum_match.group('number')
-        cnum_letter = (
-            cnum_match.group('special') or
-            cnum_match.group('letter'))
-
-        return (cnum, cnum_letter)
-
-    def get_card_cnum(self, card_data, default_cnum):
-        if 'number' not in card_data:
-            return (default_cnum, None)
-
-        return self.number_to_cnum(card_data['number'])
