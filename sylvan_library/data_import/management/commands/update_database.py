@@ -257,7 +257,7 @@ class Command(BaseCommand):
         card.num_toughness = staged_card.get_num_toughness()
         card.loyalty = staged_card.get_loyalty()
         card.num_loyalty = staged_card.get_num_loyalty()
-        card.types = staged_card.get_types()
+        card.type = staged_card.get_types()
         card.subtype = staged_card.get_subtypes()
         card.rules_text = staged_card.get_rules_text()
 
