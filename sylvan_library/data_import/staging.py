@@ -128,7 +128,7 @@ class StagedCard:
             '^(/(?P<set>[^/]*)/(?P<lang>[^/]*)/)?(?P<num>[0-9]+)(\.html)?$',
             self.value_dict['mciNumber'])
 
-        if mci_match :
+        if mci_match:
             return mci_match.group('num')
 
     def get_layout(self):
@@ -141,7 +141,23 @@ class StagedCard:
         return 'names' in self.value_dict
 
     def get_other_names(self):
+
+        # B.F.M. has the same name for both cards, so the link_name has to be manually set
+        if self.get_name() == 'B.F.M. (Big Furry Monster) (left)':
+            return ['B.F.M. (Big Furry Monster) (right)']
+        elif self.get_name() == 'B.F.M. (Big Furry Monster) (right)':
+            return ['B.F.M. (Big Furry Monster) (left)']
+
         return [n for n in self.value_dict['names'] if n != self.get_name()]
+
+    def sanitise_name(self, name):
+        if name == 'B.F.M. (Big Furry Monster)':
+            if self.value_dict['imageName'] == "b.f.m. 1":
+                return 'B.F.M. (Big Furry Monster) (left)'
+            elif self.value_dict['imageName'] == "b.f.m. 2":
+                return 'B.F.M. (Big Furry Monster) (right)'
+
+        return self.value_dict['name']
 
     def pow_tuff_to_num(self, val):
         match = re.search('(-?[\d.]+)', str(val))
@@ -160,20 +176,20 @@ class StagedCard:
             cnum_match.group('special') or
             cnum_match.group('letter'))
 
-        return (cnum, cnum_letter)
+        return cnum, cnum_letter
 
 
 class StagedSet:
-    staged_cards = list()
-
     def __init__(self, value_dict):
         self.value_dict = value_dict
+        self.staged_cards = list()
 
         for card in self.value_dict['cards']:
             self.add_card(card)
 
     def add_card(self, card):
-        self.staged_cards.append(StagedCard(card))
+        staged_card = StagedCard(card)
+        self.staged_cards.append(staged_card)
 
     def get_cards(self):
         return self.staged_cards

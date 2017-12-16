@@ -5,9 +5,8 @@ from data_import import _paths
 
 
 class JsonImporter:
-    sets = list()
-
     def __init__(self):
+        self.sets = list()
         pass
 
     def parse_json(self):
@@ -27,8 +26,8 @@ class JsonImporter:
             self.add_set(raw_set[1])
 
     def add_set(self, json_set):
-        set = StagedSet(json_set)
-        self.sets.append(set)
+        s = StagedSet(json_set)
+        self.sets.append(s)
 
     def get_staged_sets(self):
         return self.sets
@@ -46,4 +45,3 @@ class JsonImporter:
         f.close()
 
         return languages
-
