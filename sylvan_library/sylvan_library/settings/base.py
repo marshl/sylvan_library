@@ -91,6 +91,7 @@ INSTALLED_APPS = [
     'spellbook',
     'data_import',
     'cards',
+    'django_extensions',
 ]
 
 STATIC_URL = '/static/'
