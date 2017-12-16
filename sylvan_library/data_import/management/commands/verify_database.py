@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand
 
 from cards.models import *
-from data_import.management.commands import _parse, _paths
 from cards import colour
 
 
@@ -319,7 +318,7 @@ class Command(BaseCommand):
     def test_card_toughness(self):
 
         # Normal Cards
-        assert Card.objects.get(name='Stone Golem').toughness == '6', 'Stone Golem should have 6 toughness'
+        assert Card.objects.get(name='Obsianus Golem').toughness == '6', 'Obsianus Golem should have 6 toughness'
         assert Card.objects.get(name='Dryad Arbor').toughness == '1', 'Dryad Arbor should have 1 toughness'
         assert Card.objects.get(name='Force of Savagery').toughness == '0', 'Force of Savagery should have 0 toughness'
 
