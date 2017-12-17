@@ -12,7 +12,7 @@ language_json_path = path.join(data_folder, 'languages.json')
 rarity_json_path = path.join(data_folder, 'rarities.json')
 
 log_file_path = path.abspath('data_import' +
-                             datetime.now().strftime('%Y_%m_%d-%H_%M_%S') +
+                             datetime.now().strftime('%Y_%m_%d') +
                              '.log')
 
 logging.basicConfig(filename=log_file_path,
