@@ -94,7 +94,7 @@ class PhysicalCard(models.Model):
 
     def __str__(self):
         return 'Physical for {0}'.format(
-            self.physicalcardlink_set.first().printing_language)
+            self.cardprintinglanguage_set.first())
 
 
 class CardPrintingLanguage(models.Model):
