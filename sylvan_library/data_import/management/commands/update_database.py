@@ -43,28 +43,6 @@ class Command(BaseCommand):
             help='Forces an update of the given sets'
         )
 
-    def get_card_sort_key(self, card_data):
-        return card_data['number'] if 'number' in card_data else \
-            card_data['multiverseid'] if 'multiverseid' in card_data else \
-                card_data['mciNumber'] if 'mciNumber' in card_data else \
-                    card_data['name']
-
-    def card_sort_compare(self, card_1, card_2):
-
-        if 'number' in card_1 and 'number' in card_2:
-            (num1, letter1) = self.number_to_cnum(card_1['number'])
-            (num2, letter2) = self.number_to_cnum(card_2['number'])
-
-            return
-
-            return self.number_to_cnum(card_1['number']) - self.number_to_cnum(card_2['number'])
-
-        if 'multiverseid' in card_1 and 'multiverseid' in card_2:
-            return card_1['multiverseid'] - card_2['multiverseid']
-
-        if 'mciNumber' in card_1 and 'mciNumber' in card_2:
-            return card_1['mciNumber'] - card_2['mciNumber']
-
     def handle(self, *args, **options):
 
         importer = JsonImporter()
@@ -194,7 +172,6 @@ class Command(BaseCommand):
         logging.info('Updating card list')
 
         for staged_set in staged_sets:
-            default_cnum = 0
 
             if staged_set.get_code() not in self.sets_to_update:
                 logging.info('Ignoring set "%s"', staged_set.get_name())
@@ -204,15 +181,20 @@ class Command(BaseCommand):
 
             set_obj = Set.objects.get(code=staged_set.get_code())
 
+            default_collector_number = 1
+
             for staged_card in staged_set.get_cards():
-                default_cnum += 1
+                if staged_card.get_collector_number() is None:
+                    staged_card.set_collector_number(default_collector_number)
+
+                default_collector_number = staged_card.get_collector_number() + 1
+
                 card_obj = self.update_card(staged_card)
 
                 printing_obj = self.update_card_printing(
                     card_obj,
                     set_obj,
-                    staged_card,
-                    default_cnum)
+                    staged_card)
 
                 english = {
                     'language': 'English',
@@ -260,14 +242,13 @@ class Command(BaseCommand):
         card.save()
         return card
 
-    def update_card_printing(self, card_obj, set_obj, staged_card, default_cnum):
-        (cnum, cnum_letter) = staged_card.get_cnum(default_cnum)
+    def update_card_printing(self, card_obj: Card, set_obj: Set, staged_card: StagedCard):
 
         printing = CardPrinting.objects.filter(
             card_id=card_obj.id,
             set_id=set_obj.id,
-            collector_number=cnum,
-            collector_letter=cnum_letter).first()
+            collector_number=staged_card.get_collector_number(),
+            collector_letter=staged_card.get_collector_letter()).first()
 
         if printing is not None:
             logging.info('Updating card printing "%s"', printing)
@@ -275,8 +256,8 @@ class Command(BaseCommand):
             printing = CardPrinting(
                 card=card_obj,
                 set=set_obj,
-                collector_number=cnum,
-                collector_letter=cnum_letter)
+                collector_number=staged_card.get_collector_number(),
+                collector_letter=staged_card.get_collector_letter())
             logging.info('Created new card printing "%s"', printing)
 
         printing.artist = staged_card.get_artist()
@@ -361,22 +342,16 @@ class Command(BaseCommand):
 
             set_obj = Set.objects.get(code=staged_set.get_code())
 
-            default_cnum = 0
-
             for staged_card in staged_set.get_cards():
 
                 logging.info(f'Updating physical cards for {staged_card.get_name()}')
                 card_obj = Card.objects.get(name=staged_card.get_name())
 
-                default_cnum += 1
-
-                (cnum, cnum_letter) = staged_card.get_cnum(default_cnum)
-
                 printing_obj = CardPrinting.objects.get(
                     card=card_obj,
                     set=set_obj,
-                    collector_number=cnum,
-                    collector_letter=cnum_letter)
+                    collector_number=staged_card.get_collector_number(),
+                    collector_letter=staged_card.get_collector_letter())
 
                 lang_obj = Language.objects.get(name='English')
                 printlang_obj = CardPrintingLanguage.objects.get(

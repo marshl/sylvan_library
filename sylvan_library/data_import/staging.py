@@ -1,11 +1,69 @@
 import re
+from functools import total_ordering
 
 from cards import colour
 
 
+@total_ordering
 class StagedCard:
     def __init__(self, value_dict):
         self.value_dict = value_dict
+
+        self.collector_number = None
+        self.collector_letter = None
+        self._parse_number()
+
+    def _parse_number(self):
+        if 'number' not in self.value_dict:
+            return
+
+        match = re.search(
+            '^(?P<special>[\D]+)?(?P<number>[\d]+)(?P<letter>[\D]+)?$',
+            self.value_dict['number'])
+
+        self.collector_number = int(match.group('number'))
+        self.collector_letter = (
+            match.group('special') or
+            match.group('letter'))
+
+    def __eq__(self, other: 'StagedCard'):
+        return self.collector_number == other.collector_number and \
+               self.collector_letter == other.collector_letter and \
+               self.get_multiverse_id() == other.get_multiverse_id() and \
+               self.get_mci_number() == other.get_mci_number() and \
+               self.get_name() == other.get_name()
+
+    def __lt__(self, other: 'StagedCard'):
+
+        # Push cards without a collector number to the end of the set
+        if self.get_collector_number() is not None and other.get_collector_number() is None:
+            return True
+
+        if self.get_collector_number() is None and other.get_collector_number() is not None:
+            return False
+
+        if self.get_collector_number() is not None and other.get_collector_number() is not None:
+
+            # Push '★" cards to the end of the set
+            if self.get_collector_letter() == '★':
+                return False
+
+            if other.get_collector_letter() == '★':
+                return True
+
+            if self.get_collector_number() != other.get_collector_number():
+                return self.get_collector_number() < other.get_collector_number()
+
+            if self.get_collector_letter() is not None and other.get_collector_letter() is None:
+                return True
+
+            if self.get_collector_letter() is None and other.get_collector_letter() is not None:
+                return False
+
+            if self.get_collector_letter() is not None and other.get_collector_letter() is not None:
+                return self.get_collector_letter() < other.get_collector_letter()
+
+        return self.get_name() < other.get_name()
 
     def get_multiverse_id(self):
         return self.value_dict.get('multiverseid')
@@ -90,11 +148,11 @@ class StagedCard:
     def get_rules_text(self):
         return self.value_dict.get('text')
 
-    def get_cnum(self, default_cnum):
-        if 'number' not in self.value_dict:
-            return (default_cnum, None)
+    def get_collector_number(self):
+        return self.collector_number
 
-        return self.number_to_cnum(self.value_dict['number'])
+    def get_collector_letter(self):
+        return self.collector_letter
 
     def get_artist(self):
         return self.value_dict['artist']
@@ -150,6 +208,12 @@ class StagedCard:
 
         return [n for n in self.value_dict['names'] if n != self.get_name()]
 
+    def set_collector_number(self, cnum):
+        if self.collector_number is not None:
+            raise Exception('Cannot set the collector number if it has already been set')
+
+        self.collector_number = cnum
+
     def sanitise_name(self, name):
         if name == 'B.F.M. (Big Furry Monster)':
             if self.value_dict['imageName'] == "b.f.m. 1":
@@ -166,18 +230,6 @@ class StagedCard:
 
         return 0
 
-    def number_to_cnum(self, number):
-        cnum_match = re.search(
-            '^(?P<special>[\D]+)?(?P<number>[\d]+)(?P<letter>[\D]+)?$',
-            number)
-
-        cnum = cnum_match.group('number')
-        cnum_letter = (
-            cnum_match.group('special') or
-            cnum_match.group('letter'))
-
-        return cnum, cnum_letter
-
 
 class StagedSet:
     def __init__(self, value_dict):
@@ -192,7 +244,7 @@ class StagedSet:
         self.staged_cards.append(staged_card)
 
     def get_cards(self):
-        return self.staged_cards
+        return sorted(self.staged_cards)
 
     def get_code(self):
         return self.value_dict['code']
