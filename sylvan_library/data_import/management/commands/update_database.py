@@ -177,6 +177,7 @@ class Command(BaseCommand):
                 logging.info('Ignoring set "%s"', staged_set.get_name())
                 continue
 
+            print('Updating cards in set "%s"', staged_set.get_name())
             logging.info('Updating cards in set "%s"', staged_set.get_name())
 
             set_obj = Set.objects.get(code=staged_set.get_code())
@@ -304,6 +305,7 @@ class Command(BaseCommand):
                 logging.info('Ignoring set "%s"', staged_set.get_name())
                 continue
 
+            print('Updating rulings in "%s"', staged_set.get_name())
             logging.info('Updating rulings in "%s"', staged_set.get_name())
 
             for staged_card in staged_set.get_cards():
@@ -312,7 +314,6 @@ class Command(BaseCommand):
                     continue
 
                 card_obj = Card.objects.get(name=staged_card.get_name())
-
                 logging.info('Updating rulings for "%s"', staged_card.get_name())
 
                 for ruling in staged_card.get_rulings():
@@ -344,6 +345,7 @@ class Command(BaseCommand):
 
             for staged_card in staged_set.get_cards():
 
+                print(f'Updating physical cards for {staged_card.get_name()}')
                 logging.info(f'Updating physical cards for {staged_card.get_name()}')
                 card_obj = Card.objects.get(name=staged_card.get_name())
 
