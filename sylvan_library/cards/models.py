@@ -18,6 +18,7 @@ class Set(models.Model):
     release_date = models.DateField(blank=True, null=True)
     name = models.CharField(max_length=200, unique=True)
     mci_code = models.CharField(max_length=10, blank=True, null=True)
+    border_colour = models.CharField(max_length=20, blank=True, null=True)
 
     block = models.ForeignKey(Block, null=True)
 

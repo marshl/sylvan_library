@@ -147,7 +147,9 @@ class Command(BaseCommand):
                 logging.info('Ignoring set %s', s.get_name())
                 continue
 
-            if not Set.objects.filter(code=s.get_code()).exists():
+            set_obj = Set.objects.filter(code=s.get_code()).first()
+
+            if set_obj is None:
 
                 logging.info('Creating set %s', s.get_name())
                 block = Block.objects.filter(name=s.get_block()).first()
@@ -157,12 +159,16 @@ class Command(BaseCommand):
                     name=s.get_name(),
                     release_date=s.get_release_date(),
                     block=block,
-                    mci_code=s.get_mci_code())
+                    mci_code=s.get_mci_code(),
+                    border_colour=s.get_border_colour())
 
                 set_obj.save()
                 self.sets_to_update.append(s.get_code())
             else:
-                logging.info('Set %s already exists, no changes made', s.get_name())
+                logging.info(f'Set {s.get_name()} already exists, updating')
+
+                set_obj.border_colour = s.get_border_colour()
+                set_obj.save()
 
                 if self.force_update:  # use the set anyway during a force update
                     self.sets_to_update.append(s.get_code())

@@ -263,3 +263,6 @@ class StagedSet:
 
     def get_mci_code(self):
         return self.value_dict.get('magicCardsInfoCode')
+
+    def get_border_colour(self):
+        return self.value_dict.get('border')
