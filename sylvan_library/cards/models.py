@@ -18,10 +18,23 @@ CARD_LAYOUT_CHOICES = (
     ('meld', 'Meld'),
 )
 
+CARD_LEGALITY_RESTRICTION_CHOICES = (
+    ('Legal', 'Legal'),
+    ('Banned', 'Banned'),
+    ('Restricted', 'Restricted'),
+)
+
 
 class Block(models.Model):
     name = models.CharField(max_length=200, unique=True)
     release_date = models.DateField()
+
+    def __str__(self):
+        return self.name
+
+
+class Format(models.Model):
+    name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         return self.name
@@ -174,13 +187,22 @@ class CardRuling(models.Model):
     date = models.DateField()
     text = models.CharField(max_length=4000)
 
-    card = models.ForeignKey(Card)
+    card = models.ForeignKey(Card, related_name='rulings')
 
     class Meta:
         unique_together = ("date", "text", "card")
 
     def __str__(self):
         return f'Ruling for {self.card}: {self.text}'
+
+
+class CardLegality(models.Model):
+    card = models.ForeignKey(Card, related_name='legalities')
+    format = models.ForeignKey(Format, related_name='card_legalities')
+    restriction = models.CharField(max_length=50, choices=CARD_LEGALITY_RESTRICTION_CHOICES)
+
+    def __str__(self):
+        return f'{self.card} is {self.restriction} in {self.format}'
 
 
 class CardTag(models.Model):

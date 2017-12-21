@@ -195,6 +195,9 @@ class StagedCard:
     def get_layout(self):
         return self.value_dict['layout']
 
+    def get_legalities(self):
+        return self.value_dict['legalities'] if 'legalities' in self.value_dict else []
+
     def get_name_count(self):
         return len(self.value_dict['names'])
 

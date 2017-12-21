@@ -71,6 +71,7 @@ class Command(BaseCommand):
         self.update_ruling_list(staged_sets)
         self.update_physical_card_list(staged_sets)
         self.update_card_links(staged_sets)
+        self.update_legalities(staged_sets)
 
     def update_rarity_list(self, data_importer):
 
@@ -451,3 +452,31 @@ class Command(BaseCommand):
 
                     card_obj.links.add(link_card)
                     card_obj.save()
+
+    def update_legalities(self, staged_sets):
+
+        cards_updated = []
+
+        for staged_set in staged_sets:
+            print(staged_set.get_code())
+            if staged_set.get_code() not in self.sets_to_update:
+                logging.info(f'Skipping set {staged_set.get_name()}')
+                continue
+
+            for staged_card in staged_set.get_cards():
+
+                if staged_card.get_name() in cards_updated:
+                    continue
+
+                card_obj = Card.objects.get(name=staged_card.get_name())
+
+                # Legalities can disappear form the json data if the card rolls out of standard,
+                # so all legalities should be cleared out and redone
+                card_obj.legalities.all().delete()
+
+                for legality in staged_card.get_legalities():
+                    format_obj, created = Format.objects.get_or_create(name=legality['format'])
+                    legality, created = CardLegality.objects.get_or_create(card=card_obj, format=format_obj,
+                                                                           restriction=legality['legality'])
+
+                cards_updated.append(staged_card.get_name())
