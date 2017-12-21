@@ -217,7 +217,7 @@ class Command(BaseCommand):
 
         logging.info('Card list updated')
 
-    def update_card(self, staged_card):
+    def update_card(self, staged_card: StagedCard):
         card = Card.objects.filter(name=staged_card.get_name()).first()
         if card is not None:
             logging.info(f'Updating existing card {card}')
@@ -245,6 +245,7 @@ class Command(BaseCommand):
         card.type = staged_card.get_types()
         card.subtype = staged_card.get_subtypes()
         card.rules_text = staged_card.get_rules_text()
+        card.layout = staged_card.get_layout()
 
         card.save()
         return card

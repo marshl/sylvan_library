@@ -4,6 +4,20 @@ from os import path
 from django.db import models
 from django.contrib.auth.models import User
 
+CARD_LAYOUT_CHOICES = (
+    ('normal', 'Normal'),
+    ('split', 'Split'),
+    ('flip', 'Flip'),
+    ('double-faced', 'Double-faced'),
+    ('token', 'Token'),
+    ('plane', 'Plane'),
+    ('scheme', 'Scheme'),
+    ('phenomenon', 'Phenomenon'),
+    ('leveler', 'Leveler'),
+    ('vanguard', 'Vanguard'),
+    ('meld', 'Meld'),
+)
+
 
 class Block(models.Model):
     name = models.CharField(max_length=200, unique=True)
@@ -51,6 +65,7 @@ class Card(models.Model):
     loyalty = models.CharField(max_length=20, blank=True, null=True)
     num_loyalty = models.FloatField()
     rules_text = models.CharField(max_length=1000, blank=True, null=True)
+    layout = models.CharField(max_length=50, choices=CARD_LAYOUT_CHOICES)
 
     links = models.ManyToManyField('self')
 
