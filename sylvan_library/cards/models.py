@@ -106,15 +106,14 @@ class CardPrinting(models.Model):
         )
 
     def __str__(self):
-        return '{0} in {1}'.format(self.card, self.set)
+        return f'{self.card} in {self.set}'
 
 
 class PhysicalCard(models.Model):
-    layout = models.CharField(max_length=20)
+    layout = models.CharField(max_length=50, choices=CARD_LAYOUT_CHOICES)
 
     def __str__(self):
-        return 'Physical for {0}'.format(
-            self.cardprintinglanguage_set.first())
+        return 'Physical ' + '//'.join([str(x) for x in self.cardprintinglanguage_set.all()])
 
 
 class CardPrintingLanguage(models.Model):
@@ -130,7 +129,7 @@ class CardPrintingLanguage(models.Model):
         unique_together = ("language", "card_name", "card_printing")
 
     def __str__(self):
-        return '{0} {1}'.format(self.language, self.card_printing)
+        return f'{self.language} {self.card_printing}'
 
     def get_image_path(self):
         if self.multiverse_id is None:
@@ -157,10 +156,7 @@ class UserOwnedCard(models.Model):
         unique_together = ("physical_card", "owner")
 
     def __str__(self):
-        return '{0} owns {1} of {2}'.format(
-            self.owner.name,
-            self.count,
-            self.physical_card)
+        return f'{self.owner.name} owns {self.count} of {self.physical_card}'
 
 
 class UserCardChange(models.Model):
@@ -171,10 +167,7 @@ class UserCardChange(models.Model):
     owner = models.ForeignKey(User)
 
     def __str__(self):
-        return '{0} {1} {2}'.format(
-            self.date,
-            self.difference,
-            self.physical_card)
+        return f'{self.date} {self.difference} {self.physical_card}'
 
 
 class CardRuling(models.Model):
@@ -187,7 +180,7 @@ class CardRuling(models.Model):
         unique_together = ("date", "text", "card")
 
     def __str__(self):
-        return 'Ruling for {0}: {1}'.format(self.card, self.text)
+        return f'Ruling for {self.card}: {self.text}'
 
 
 class CardTag(models.Model):
@@ -202,7 +195,7 @@ class CardTagLink(models.Model):
     card = models.ForeignKey(Card)
 
     def __str__(self):
-        return '{0} on {1}'.format(self.tag, self.card)
+        return f'{self.tag} on {self.card}'
 
 
 class Deck(models.Model):
@@ -223,7 +216,7 @@ class DeckCard(models.Model):
     deck = models.ForeignKey(Deck)
 
     def __str__(self):
-        return '{0} in {1}'.format(self.card, self.deck)
+        return f'{self.card} in {self.deck}'
 
 
 class Language(models.Model):
