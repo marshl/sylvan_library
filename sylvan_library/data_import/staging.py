@@ -178,6 +178,9 @@ class StagedCard:
     def get_rulings(self):
         return self.value_dict['rulings']
 
+    def get_json_id(self):
+        return self.value_dict['id']
+
     def get_mci_number(self):
         if 'mciNumber' not in self.value_dict:
             return None

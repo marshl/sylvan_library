@@ -274,6 +274,7 @@ class Command(BaseCommand):
         printing.original_text = staged_card.get_original_text()
         printing.original_type = staged_card.get_original_type()
         printing.mci_number = staged_card.get_mci_number()
+        printing.json_id = staged_card.get_json_id()
 
         printing.save()
 
