@@ -237,17 +237,21 @@ class Command(BaseCommand):
         card.colour = staged_card.get_colour()
         card.colour_identity = staged_card.get_colour_identity()
         card.colour_count = staged_card.get_colour_count()
+
         card.power = staged_card.get_power()
         card.toughness = staged_card.get_toughness()
         card.num_power = staged_card.get_num_power()
         card.num_toughness = staged_card.get_num_toughness()
         card.loyalty = staged_card.get_loyalty()
         card.num_loyalty = staged_card.get_num_loyalty()
+
         card.type = staged_card.get_types()
         card.subtype = staged_card.get_subtypes()
+        card.original_type = staged_card.get_original_type()
+
         card.rules_text = staged_card.get_rules_text()
-        card.layout = staged_card.get_layout()
         card.original_text = staged_card.get_original_text()
+        card.layout = staged_card.get_layout()
 
         card.save()
         return card

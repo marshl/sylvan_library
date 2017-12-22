@@ -175,6 +175,9 @@ class StagedCard:
     def get_original_type(self):
         return self.value_dict.get('originalType')
 
+    def get_original_type(self):
+        return self.value_dict.get('originalType')
+
     def has_rulings(self):
         return 'rulings' in self.value_dict
 
