@@ -112,10 +112,10 @@ class CardPrinting(models.Model):
 
     class Meta:
         unique_together = (
-            "set",
-            "card",
-            "collector_number",
-            "collector_letter"
+            'set',
+            'card',
+            'collector_number',
+            'collector_letter'
         )
 
     def __str__(self):
@@ -139,7 +139,7 @@ class CardPrintingLanguage(models.Model):
     physical_cards = models.ManyToManyField(PhysicalCard)
 
     class Meta:
-        unique_together = ("language", "card_name", "card_printing")
+        unique_together = ('language', 'card_name', 'card_printing')
 
     def __str__(self):
         return f'{self.language} {self.card_printing}'
@@ -166,7 +166,7 @@ class UserOwnedCard(models.Model):
     owner = models.ForeignKey(User)
 
     class Meta:
-        unique_together = ("physical_card", "owner")
+        unique_together = ('physical_card', 'owner')
 
     def __str__(self):
         return f'{self.owner.name} owns {self.count} of {self.physical_card}'
@@ -190,7 +190,7 @@ class CardRuling(models.Model):
     card = models.ForeignKey(Card, related_name='rulings')
 
     class Meta:
-        unique_together = ("date", "text", "card")
+        unique_together = ('date', 'text', 'card')
 
     def __str__(self):
         return f'Ruling for {self.card}: {self.text}'
@@ -200,6 +200,13 @@ class CardLegality(models.Model):
     card = models.ForeignKey(Card, related_name='legalities')
     format = models.ForeignKey(Format, related_name='card_legalities')
     restriction = models.CharField(max_length=50, choices=CARD_LEGALITY_RESTRICTION_CHOICES)
+
+    class Meta:
+        unique_together = (
+            'card',
+            'format',
+            'restriction',
+        )
 
     def __str__(self):
         return f'{self.card} is {self.restriction} in {self.format}'
