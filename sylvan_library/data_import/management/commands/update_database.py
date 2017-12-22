@@ -256,6 +256,8 @@ class Command(BaseCommand):
         card.life_modifier = staged_card.get_life_modifier()
         card.hand_modifier = staged_card.get_hand_modifier()
 
+        card.is_reserved = staged_card.is_reserved()
+
         card.save()
         return card
 

@@ -87,6 +87,7 @@ class Card(models.Model):
 
     rules_text = models.CharField(max_length=1000, blank=True, null=True)
     layout = models.CharField(max_length=50, choices=CARD_LAYOUT_CHOICES)
+    is_reserved = models.BooleanField()
 
     links = models.ManyToManyField('self')
 
