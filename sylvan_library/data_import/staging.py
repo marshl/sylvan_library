@@ -169,12 +169,6 @@ class StagedCard:
     def get_flavour_text(self):
         return self.value_dict.get('flavor')
 
-    def get_original_text(self):
-        return self.value_dict.get('originalText')
-
-    def get_original_type(self):
-        return self.value_dict.get('originalType')
-
     def get_original_type(self):
         return self.value_dict.get('originalType')
 

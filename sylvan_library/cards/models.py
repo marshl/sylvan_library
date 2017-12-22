@@ -73,7 +73,6 @@ class Card(models.Model):
 
     type = models.CharField(max_length=100, blank=True, null=True)
     subtype = models.CharField(max_length=100, blank=True, null=True)
-    original_type = models.CharField(max_length=100, blank=True, null=True)
 
     power = models.CharField(max_length=20, blank=True, null=True)
     num_power = models.FloatField()
@@ -83,7 +82,6 @@ class Card(models.Model):
     num_loyalty = models.FloatField()
 
     rules_text = models.CharField(max_length=1000, blank=True, null=True)
-    original_text = models.CharField(max_length=1000, blank=True, null=True)
     layout = models.CharField(max_length=50, choices=CARD_LAYOUT_CHOICES)
 
     links = models.ManyToManyField('self')
