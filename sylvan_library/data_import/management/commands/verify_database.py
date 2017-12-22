@@ -25,9 +25,9 @@ class Command(BaseCommand):
         assert Block.objects.get(name='Ice Age').release_date < Block.objects.get(
             name='Onslaught').release_date, 'Ice Age should be released before Onslaught'
 
-        assert Block.objects.get(name='Mirrodin').set_set.count() == 3, 'Mirrodin should have 3 sets'
-        assert Block.objects.get(name='Time Spiral').set_set.count() == 4, 'Time Spiral should have 4 sets'
-        assert Block.objects.get(name='Amonkhet').set_set.count() == 3, \
+        assert Block.objects.get(name='Mirrodin').sets.count() == 3, 'Mirrodin should have 3 sets'
+        assert Block.objects.get(name='Time Spiral').sets.count() == 4, 'Time Spiral should have 4 sets'
+        assert Block.objects.get(name='Amonkhet').sets.count() == 3, \
             'Amonkhet should have 3 sets (including Welcome Deck 2017)'
 
     def test_sets(self):
