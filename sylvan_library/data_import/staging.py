@@ -204,6 +204,9 @@ class StagedCard:
     def get_watermark(self):
         return self.value_dict.get('watermark')
 
+    def get_border_colour(self):
+        return self.value_dict.get('border')
+
     def has_other_names(self):
         return 'names' in self.value_dict
 

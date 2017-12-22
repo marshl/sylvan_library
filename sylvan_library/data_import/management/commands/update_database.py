@@ -283,6 +283,7 @@ class Command(BaseCommand):
         printing.mci_number = staged_card.get_mci_number()
         printing.json_id = staged_card.get_json_id()
         printing.watermark = staged_card.get_watermark()
+        printing.border_colour = staged_card.get_border_colour()
 
         printing.save()
 

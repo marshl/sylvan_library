@@ -111,6 +111,10 @@ class CardPrinting(models.Model):
 
     mci_number = models.IntegerField(blank=True, null=True)
 
+    # The border colour of the card if it differs from the border colour of the rest of the set
+    # (e.g. basic lands in Unglued)
+    border_colour = models.CharField(max_length=10, blank=True, null=True)
+
     set = models.ForeignKey(Set, related_name='card_printings')
     card = models.ForeignKey(Card, related_name='printings')
     rarity = models.ForeignKey(Rarity, related_name='card_printings')
