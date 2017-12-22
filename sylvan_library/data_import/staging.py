@@ -148,6 +148,9 @@ class StagedCard:
     def get_rules_text(self):
         return self.value_dict.get('text')
 
+    def get_original_text(self):
+        return self.value_dict.get('originalText')
+
     def get_collector_number(self):
         return self.collector_number
 

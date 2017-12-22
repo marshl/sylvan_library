@@ -247,6 +247,7 @@ class Command(BaseCommand):
         card.subtype = staged_card.get_subtypes()
         card.rules_text = staged_card.get_rules_text()
         card.layout = staged_card.get_layout()
+        card.original_text = staged_card.get_original_text()
 
         card.save()
         return card
@@ -458,7 +459,6 @@ class Command(BaseCommand):
         cards_updated = []
 
         for staged_set in staged_sets:
-            print(staged_set.get_code())
             if staged_set.get_code() not in self.sets_to_update:
                 logging.info(f'Skipping set {staged_set.get_name()}')
                 continue
