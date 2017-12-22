@@ -207,6 +207,12 @@ class StagedCard:
     def get_border_colour(self):
         return self.value_dict.get('border')
 
+    def get_hand_modifier(self):
+        return self.value_dict.get('hand')
+
+    def get_life_modifier(self):
+        return self.value_dict.get('life')
+
     def has_other_names(self):
         return 'names' in self.value_dict
 

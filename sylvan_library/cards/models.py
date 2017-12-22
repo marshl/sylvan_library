@@ -81,6 +81,10 @@ class Card(models.Model):
     loyalty = models.CharField(max_length=20, blank=True, null=True)
     num_loyalty = models.FloatField()
 
+    # Vanguard fields
+    hand_modifier = models.IntegerField(blank=True, null=True)
+    life_modifier = models.IntegerField(blank=True, null=True)
+
     rules_text = models.CharField(max_length=1000, blank=True, null=True)
     layout = models.CharField(max_length=50, choices=CARD_LAYOUT_CHOICES)
 

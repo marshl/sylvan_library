@@ -253,6 +253,9 @@ class Command(BaseCommand):
         card.original_text = staged_card.get_original_text()
         card.layout = staged_card.get_layout()
 
+        card.life_modifier = staged_card.get_life_modifier()
+        card.hand_modifier = staged_card.get_hand_modifier()
+
         card.save()
         return card
 
