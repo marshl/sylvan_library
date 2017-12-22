@@ -103,6 +103,7 @@ class CardPrinting(models.Model):
     collector_letter = models.CharField(max_length=1, blank=True, null=True)
     original_text = models.CharField(max_length=1000, blank=True, null=True)
     original_type = models.CharField(max_length=200, blank=True, null=True)
+    watermark = models.CharField(max_length=100, blank=True, null=True)
 
     # The unique identifier that mtgjson uses for the card
     # It is made up by doing an SHA1 hash of setCode + cardName + cardImageName

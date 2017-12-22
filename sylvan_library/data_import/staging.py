@@ -201,6 +201,9 @@ class StagedCard:
     def get_name_count(self):
         return len(self.value_dict['names'])
 
+    def get_watermark(self):
+        return self.value_dict.get('watermark')
+
     def has_other_names(self):
         return 'names' in self.value_dict
 
