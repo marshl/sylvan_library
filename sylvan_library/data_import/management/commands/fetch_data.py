@@ -6,7 +6,7 @@ import requests
 import zipfile
 from os import path
 
-from data_import.management.commands import _paths, _query, _parse
+from data_import import _paths, _query
 
 
 class Command(BaseCommand):
@@ -35,7 +35,10 @@ class Command(BaseCommand):
         json_zip_file = zipfile.ZipFile(_paths.json_zip_path)
         json_zip_file.extractall(_paths.data_folder)
 
-        json_data = _parse.parse_json_data()
+        f = open(_paths.json_data_path, 'r', encoding="utf8")
+        json_data = json.load(f, encoding='UTF-8')
+        f.close()
+
         pretty_file = open(_paths.pretty_json_path, 'w', encoding='utf8')
         pretty_file.write(json.dumps(
                            json_data,
