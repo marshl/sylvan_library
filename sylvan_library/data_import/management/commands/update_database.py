@@ -289,6 +289,7 @@ class Command(BaseCommand):
         printing.json_id = staged_card.get_json_id()
         printing.watermark = staged_card.get_watermark()
         printing.border_colour = staged_card.get_border_colour()
+        printing.release_date = staged_card.get_release_date()
 
         printing.save()
 

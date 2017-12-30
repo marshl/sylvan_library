@@ -213,6 +213,9 @@ class StagedCard:
     def get_life_modifier(self):
         return self.value_dict.get('life')
 
+    def get_release_date(self):
+        return self.value_dict.get('releaseDate')
+
     def is_reserved(self):
         return 'reserved' in self.value_dict and self.value_dict['reserved']
 

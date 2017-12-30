@@ -120,6 +120,10 @@ class CardPrinting(models.Model):
     # (e.g. basic lands in Unglued)
     border_colour = models.CharField(max_length=10, blank=True, null=True)
 
+    # The date this card was released. This is only set for promo cards.
+    # The date may not be accurate to an exact day and month, thus only a partial date may be set
+    release_date = models.DateField(blank=True, null=True)
+
     set = models.ForeignKey(Set, related_name='card_printings')
     card = models.ForeignKey(Card, related_name='printings')
     rarity = models.ForeignKey(Rarity, related_name='card_printings')
