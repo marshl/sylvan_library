@@ -337,18 +337,7 @@ class Command(BaseCommand):
                 logging.info(f'Updating rulings for {staged_card.get_name()}', )
 
                 for ruling in staged_card.get_rulings():
-
-                    ruling_obj = CardRuling.objects.filter(
-                        card=card_obj,
-                        text=ruling['text'],
-                        date=ruling['date']).first()
-
-                    if ruling_obj is None:
-                        ruling_obj = CardRuling(
-                            card=card_obj,
-                            text=ruling['text'],
-                            date=ruling['date'])
-                        ruling_obj.save()
+                    CardRuling.objects.get_or_create(card=card_obj, text=ruling['text'], date=ruling['date'])
 
         logging.info('Card rulings updated')
 
@@ -397,8 +386,8 @@ class Command(BaseCommand):
         logging.info(f'Updating physical cards for {printlang}')
 
         if (staged_card.get_layout() == 'meld' and
-                    staged_card.get_name_count() == 3 and
-                    printlang.card_printing.collector_letter == 'b'):
+                staged_card.get_name_count() == 3 and
+                printlang.card_printing.collector_letter == 'b'):
             logging.info(f'Will not create card link for meld card {printlang}')
 
             return
@@ -424,8 +413,8 @@ class Command(BaseCommand):
                     raise LookupError()
 
                 if (staged_card.get_layout() == 'meld' and
-                            printlang.card_printing.collector_letter != 'b' and
-                            link_print.collector_letter != 'b'):
+                        printlang.card_printing.collector_letter != 'b' and
+                        link_print.collector_letter != 'b'):
                     logging.warning(
                         f'Will not link {staged_card.get_name()} to {link_card.get_name()} as they separate cards')
 
