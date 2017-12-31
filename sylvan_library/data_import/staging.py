@@ -219,6 +219,9 @@ class StagedCard:
     def is_reserved(self):
         return 'reserved' in self.value_dict and self.value_dict['reserved']
 
+    def is_starter_printing(self):
+        return 'starter' in self.value_dict and self.value_dict['starter']
+
     def has_other_names(self):
         return 'names' in self.value_dict
 

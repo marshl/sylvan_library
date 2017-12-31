@@ -128,6 +128,10 @@ class CardPrinting(models.Model):
     card = models.ForeignKey(Card, related_name='printings')
     rarity = models.ForeignKey(Rarity, related_name='card_printings')
 
+    # Set to true if this card was only released as part of a core box set.
+    # These are technically part of the core sets and are tournament legal despite not being available in boosters.
+    is_starter = models.BooleanField()
+
     class Meta:
         unique_together = (
             'set',

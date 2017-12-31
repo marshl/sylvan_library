@@ -290,6 +290,7 @@ class Command(BaseCommand):
         printing.watermark = staged_card.get_watermark()
         printing.border_colour = staged_card.get_border_colour()
         printing.release_date = staged_card.get_release_date()
+        printing.is_starter = staged_card.is_starter_printing()
 
         printing.save()
 
