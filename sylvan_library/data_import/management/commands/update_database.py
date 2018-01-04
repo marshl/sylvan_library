@@ -1,4 +1,4 @@
-import logging
+import logging, time
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -26,8 +26,11 @@ class Command(BaseCommand):
                      'card_printings_created': 0, 'card_printings_updated': 0,
                      'printing_languages_created': 0, 'printing_languages_skipped': 0,
                      'physical_cards_created': 0, 'physical_cards_skipped': 0,
+                     'card_links_created': 0,
+                     'blocks_created': 0,
                      'sets_created': 0, 'sets_updated': 0,
-                     'rulings_updated': 0}
+                     'rulings_created': 0, 'rulings_updated': 0,
+                     'legalities_created': 0, 'legalities_updated': 0}
 
     def add_arguments(self, parser):
 
@@ -55,6 +58,8 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+
+        self.start_time = time.time()
 
         importer = JsonImporter()
         importer.import_data()
@@ -365,8 +370,9 @@ class Command(BaseCommand):
                 logger.info(f'Updating rulings for {staged_card.get_name()}')
 
                 for ruling in staged_card.get_rulings():
-                    CardRuling.objects.get_or_create(card=card_obj, text=ruling['text'], date=ruling['date'])
-                    self.update_counts['rulings_updated'] += 1
+                    ruling, created = CardRuling.objects.get_or_create(card=card_obj, text=ruling['text'],
+                                                                       date=ruling['date'])
+                    self.update_counts['rulings_created' if created else 'rulings_updated'] += 1
 
         logger.info('Card rulings updated')
 
@@ -507,10 +513,13 @@ class Command(BaseCommand):
                     format_obj, created = Format.objects.get_or_create(name=legality['format'])
                     legality, created = CardLegality.objects.get_or_create(card=card_obj, format=format_obj,
                                                                            restriction=legality['legality'])
+                    self.update_counts['legalities_created' if created else 'legalities_updated'] += 1
 
                 cards_updated.append(staged_card.get_name())
 
     def log_stats(self):
-        logger.info(('=' * 80) + '\n\nUpdate complete:\n')
+        logger.info('\n' + ('=' * 80) + '\n\nUpdate complete:\n')
+        elapsed_time = time.time() - self.start_time
+        logger.info(f'Time elapsed: {time.strftime("%H:%M:%S", time.gmtime(elapsed_time))}')
         for key, value in self.update_counts.items():
             logger.info(f'{key}: {value}')
