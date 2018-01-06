@@ -1,11 +1,26 @@
 from django.core.management.base import BaseCommand
 
+import sys, traceback
+
 from cards.models import *
 from cards import colour
+from cards.colour import Colour
 
 
 class Command(BaseCommand):
     help = 'Verifies that database update was successful'
+
+    class VerificationFailure:
+        def __init__(self, message, stack_trace):
+            self.message = message
+            self.stack_trace = stack_trace
+
+    def __init__(self):
+        super().__init__()
+
+        self.successful_tests = 0
+        self.failed_tests = 0
+        self.error_messages = list()
 
     def handle(self, *args, **options):
         methods = [method_name for method_name in dir(self)
@@ -13,328 +28,385 @@ class Command(BaseCommand):
         for method in methods:
             (getattr(self, method))()
 
-    def test_tarmogoyf_exists(self):
-        assert Card.objects.filter(name='Tarmogoyf').exists()
+        total_tests = self.successful_tests + self.failed_tests
+
+        print(f'\n\n{total_tests} Tests Run ({self.successful_tests} Successful, {self.failed_tests} Failed)')
+        for error in self.error_messages:
+            print(f'{error.message}\n{error.stack_trace}')
 
     def test_blocks(self):
-        assert Block.objects.filter(name='Ice Age').exists(), 'Ice Age block should exist'
-        assert Block.objects.filter(name='Ravnica').exists(), 'Ravnica block should exist'
-        assert Block.objects.filter(name='Ixalan').exists(), 'Ixalan block should exist'
-        assert not Block.objects.filter(name='Weatherlight').exists(), 'Weatherlight block should not exist'
+        self.assert_true(Block.objects.filter(name='Ice Age').exists(), 'Ice Age block should exist')
+        self.assert_true(Block.objects.filter(name='Ravnica').exists(), 'Ravnica block should exist')
+        self.assert_true(Block.objects.filter(name='Ixalan').exists(), 'Ixalan block should exist')
+        self.assert_false(Block.objects.filter(name='Weatherlight').exists(), 'Weatherlight block should not exist')
 
-        assert Block.objects.get(name='Ice Age').release_date < Block.objects.get(
-            name='Onslaught').release_date, 'Ice Age should be released before Onslaught'
+        self.assert_true(Block.objects.get(name='Ice Age').release_date < Block.objects.get(
+            name='Onslaught').release_date, 'Ice Age should be released before Onslaught')
 
-        assert Block.objects.get(name='Mirrodin').sets.count() == 3, 'Mirrodin should have 3 sets'
-        assert Block.objects.get(name='Time Spiral').sets.count() == 4, 'Time Spiral should have 4 sets'
-        assert Block.objects.get(name='Amonkhet').sets.count() == 3, \
-            'Amonkhet should have 3 sets (including Welcome Deck 2017)'
+        self.assert_true(Block.objects.get(name='Mirrodin').sets.count() == 3, 'Mirrodin should have 3 sets')
+        self.assert_true(Block.objects.get(name='Time Spiral').sets.count() == 4, 'Time Spiral should have 4 sets')
+        self.assert_true(Block.objects.get(name='Amonkhet').sets.count() == 3,
+                         'Amonkhet should have 3 sets (including Welcome Deck 2017)')
 
     def test_sets(self):
-        assert not Set.objects.filter(name='Worlds').exists(), 'The Worlds set should have been filtered out'
-        assert not Set.objects.filter(code__startswith='p').exists(), \
-            'Sets that start with "p" should have been filtered out'
+        self.assert_false(Set.objects.filter(name='Worlds').exists(), 'The Worlds set should have been filtered out')
+        self.assert_false(Set.objects.filter(code__startswith='p').exists(),
+                         'Sets that start with "p" should have been filtered out')
 
-        assert Set.objects.get(code='ONS').block.name == 'Onslaught', 'Onslaught should be in the Onslaught block'
-        assert Set.objects.get(code='WTH').block.name == 'Mirage', 'Weatherlight should be in the Mirage block'
-        assert Set.objects.get(code='CSP').block.name == 'Ice Age', 'Coldsnap should be in the Ice Age block'
+        self.assert_true(Set.objects.get(code='ONS').block.name == 'Onslaught',
+                         'Onslaught should be in the Onslaught block')
+        self.assert_true(Set.objects.get(code='WTH').block.name == 'Mirage',
+                         'Weatherlight should be in the Mirage block')
+        self.assert_true(Set.objects.get(code='CSP').block.name == 'Ice Age', 'Coldsnap should be in the Ice Age block')
 
     def test_rarities(self):
-        assert Rarity.objects.filter(symbol='R').exists(), 'The rare rarity should exist'
-        assert Rarity.objects.get(symbol='C').display_order < Rarity.objects.get(symbol='U').display_order, \
-            'Common rarity should be displayed before uncommon rarity'
+        self.assert_true(Rarity.objects.filter(symbol='R').exists(), 'The rare rarity should exist')
+
+        self.assert_true(
+            Rarity.objects.get(symbol='C').display_order < Rarity.objects.get(symbol='U').display_order,
+            'Common rarity should be displayed before uncommon rarity')
 
     def test_card_name(self):
         # Normal card
-        assert Card.objects.get(name='Animate Artifact'), 'Animate Artifact should exist'
+        self.assert_card_exists('Animate Artifact')
 
         # Split card
-        assert Card.objects.filter(name='Wear').exists(), 'Wear should exist'
+        self.assert_card_exists('Wear')
 
         # UTF-8
-        assert Card.objects.filter(name='Jötun Grunt').exists(), 'Jötun Grunt should exist'
-        assert Card.objects.get(name='Aether Charge'), 'Aether Charge should exist'
+        self.assert_card_exists('Jötun Grunt')
+        self.assert_card_exists('Aether Charge')
 
         # Un-names
-        assert Card.objects.filter(name='_____').exists(), '_____ should exist'
-        assert Card.objects.filter(name='"Ach! Hans, Run!"').exists(), '"Ach! Hans, Run!" should exist'
-        assert Card.objects.filter(name='The Ultimate Nightmare of Wizards of the Coast® Customer Service').exists(), \
-            'The Ultimate Nightmare of Wizards of the Coast® Customer Service should exist'
+        self.assert_card_exists('_____')
+        self.assert_card_exists('"Ach! Hans, Run!"')
+        self.assert_card_exists('The Ultimate Nightmare of Wizards of the Coast® Customer Service')
 
         # Fip card
-        assert Card.objects.filter(name='Homura, Human Ascendant').exists(), 'Homura, Human Ascendant should exist'
+        self.assert_card_exists('Homura, Human Ascendant')
 
         # Negative tests
-        assert not Card.objects.filter(name='Splendid Genesis').exists(), 'Splendid Genesis should not exist'
-        assert not Card.objects.filter(name='Æther Charge').exists(), 'Æther Charge should not exist'
+        self.assert_card_not_exists('Splendid Genesis')
+        self.assert_card_not_exists('Æther Charge')
 
     def test_card_cost(self):
         # Expensive card
-        assert Card.objects.get(name='Progenitus').cost == '{W}{W}{U}{U}{B}{B}{R}{R}{G}{G}', \
-            'Progenitus cost is incorrect'
+        self.assert_card_cost_eq('Progenitus', '{W}{W}{U}{U}{B}{B}{R}{R}{G}{G}')
 
         # Lands
-        assert Card.objects.get(name='Forest').cost is None, 'Dryad Arbor should have no mana cost'
-        assert Card.objects.get(name='Dryad Arbor').cost is None, 'Dryad Arbor should have no mana cost'
+        self.assert_card_cost_eq('Forest', None)
+        self.assert_card_cost_eq('Dryad Arbor', None)
 
         # Monocoloured hybrid card
-        assert Card.objects.get(name='Flame Javelin').cost == '{2/R}{2/R}{2/R}', 'Flame Javelins cost is incorrect'
+        self.assert_card_cost_eq('Flame Javelin', '{2/R}{2/R}{2/R}')
 
         # Plane
-        assert Card.objects.get(name='Krosa').cost is None, 'Krosa should have no mana cost'
+        self.assert_card_cost_eq('Krosa', None)
 
         # Multi-numeral symbol cards
-        assert Card.objects.get(name='Gleemax').cost == '{1000000}', 'Gleemax has the wrong mana cost'
-        assert Card.objects.get(name='Draco').cost == '{16}', 'Draco has the wrong mana cost'
+        self.assert_card_cost_eq('Gleemax', '{1000000}')
+        self.assert_card_cost_eq('Draco', '{16}')
 
         # Hybrid multicoloured card
-        assert Card.objects.get(name='Naya Hushblade').cost == '{R/W}{G}', 'Naya Hushblade has the wrong mana cost'
+        self.assert_card_cost_eq('Naya Hushblade', '{R/W}{G}')
 
         # Half mana card
-        assert Card.objects.get(name='Little Girl').cost == '{hw}', 'Little Girl has the wrong mana cost'
+        self.assert_card_cost_eq('Little Girl', '{hw}')
 
         # Meld card
-        assert Card.objects.get(name='Brisela, Voice of Nightmares').cost is None, 'Brisela should have no mana cost'
+        self.assert_card_cost_eq('Brisela, Voice of Nightmares', None)
 
         # Flip card
-        assert Card.objects.get(name='Bushi Tenderfoot').cost == '{W}', 'Bushi Tenerfoot has the wrong cost'
-        assert Card.objects.get(name='Kenzo the Hardhearted').cost == '{W}', 'Kezno has the wrong mana cost'
+        self.assert_card_cost_eq('Bushi Tenderfoot', '{W}')
+        self.assert_card_cost_eq('Kenzo the Hardhearted', '{W}')
 
         # Phyrexian mana card
-        assert Card.objects.get(name='Birthing Pod').cost == '{3}{G/P}', 'Birthing Pod has the wrong mana cost'
+        self.assert_card_cost_eq('Birthing Pod', '{3}{G/P}')
 
     def test_card_cmc(self):
         # Normal cards
-        assert Card.objects.get(name='Tarmogoyf').cmc == 2, 'Tarmogoyf should have a cmc of 2'
-        assert Card.objects.get(name='Black Lotus').cmc == 0, 'Black Lotus should have a cmc of 0'
+        self.assert_card_cmc_eq('Tarmogoyf', 2)
+        self.assert_card_cmc_eq('Black Lotus', 0)
 
         # Costless card
-        assert Card.objects.get(name='Living End').cmc == 0, 'Living End should have a cmc of 0'
+        self.assert_card_cmc_eq('Living End', 0)
 
         # Half mana card
-        assert Card.objects.get(name='Little Girl').cmc == 0.5, 'Little Girl should have a cmc of 0.5'
+        self.assert_card_cmc_eq('Little Girl', 0.5)
 
         # Monocoloured hybrid cards
-        assert Card.objects.get(name='Reaper King').cmc == 10, 'Reaper King should have a cmc of 10'
-        assert Card.objects.get(name='Flame Javelin').cmc == 6, 'Flame Javelin should have a cmc of 6'
+        self.assert_card_cmc_eq('Reaper King', 10)
+        self.assert_card_cmc_eq('Flame Javelin', 6)
 
         # High cost cards
-        assert Card.objects.get(name='Blinkmoth Infusion').cmc == 14, 'Blinkmoth Infusion should have a cmc of 14'
-        assert Card.objects.get(name='Gleemax').cmc == 1000000, 'Gleemax should have a cmc of 1000000'
+        self.assert_card_cmc_eq('Blinkmoth Infusion', 14)
+        self.assert_card_cmc_eq('Gleemax', 1000000)
 
         # Phyrexian mana card
-        assert Card.objects.get(name='Birthing Pod').cmc == 4, 'Birthing Pod should have a cmc of 4'
+        self.assert_card_cmc_eq('Birthing Pod', 4)
 
         # Land
-        assert Card.objects.get(name='Dryad Arbor').cmc == 0, 'Dryad Arbor should have a cmc of 0'
+        self.assert_card_cmc_eq('Dryad Arbor', 0)
 
         # Colourless mana card
-        assert Card.objects.get(name='Kozilek, the Great Distortion').cmc == 10, \
-            'Kozilek the Great Distortion should have a cmc of 10'
+        self.assert_card_cmc_eq('Kozilek, the Great Distortion', 10)
 
         # Plane
-        assert Card.objects.get(name='Krosa').cmc == 0, 'Krosa should have a cmc of 0'
+        self.assert_card_cmc_eq('Krosa', 0)
 
         # X cost card
-        assert Card.objects.get(name='Comet Storm').cmc == 2, 'Comet STorm should have a cmc of 2'
+        self.assert_card_cmc_eq('Comet Storm', 2)
 
         # Transform card
-        assert Card.objects.get(name='Garruk Relentless').cmc == 4, 'Garruk Relentless should have a cmc of 4'
-        assert Card.objects.get(name='Garruk, the Veil-Cursed').cmc == 4, \
-            'Garruk, the Veil-Cursed should have a cmc of 4'
+        self.assert_card_cmc_eq('Garruk Relentless', 4)
+        self.assert_card_cmc_eq('Garruk, the Veil-Cursed', 4)
 
         # Meld card
-        assert Card.objects.get(name='Brisela, Voice of Nightmares').cmc == 11, 'Brisela should have a cmc of 11'
+        self.assert_card_cmc_eq('Brisela, Voice of Nightmares', 11)
 
         # Split card
-        assert Card.objects.get(name='Wear').cmc == 2, 'Wear should have a cmc of 2'
+        self.assert_card_cmc_eq('Wear', 2)
 
         # Flip card
-        assert Card.objects.get(name='Homura\'s Essence').cmc == 6, 'Homras Essence should have a cmc of 6'
+        self.assert_card_cmc_eq('Homura\'s Essence', 6)
 
     def test_card_color(self):
-        white = colour.colour_codes_to_flags(['W'])
-        blue = colour.colour_codes_to_flags(['U'])
-        green = colour.colour_codes_to_flags(['G'])
-        white_blue = colour.colour_codes_to_flags(['W', 'U'])
-        black_green = colour.colour_codes_to_flags(['B', 'G'])
-        wubrg = colour.colour_codes_to_flags(['W', 'U', 'B', 'R', 'G'])
-
         # Monocoloured card
-        assert Card.objects.get(name='Glory Seeker').colour == white, 'Glory Seeker should be white'
+        self.assert_card_colour_eq('Glory Seeker', Colour.white)
 
         # Multicoloured card
-        assert Card.objects.get(name='Dark Heart of the Wood').colour == black_green, \
-            'Dark Heart of the Wood should be black-green'
-        assert Card.objects.get(name='Progenitus').colour == wubrg, 'Progenitus should be all colours'
-        assert Card.objects.get(name='Reaper King').colour == wubrg, 'Reaper King should be all colours'
+        self.assert_card_colour_eq('Dark Heart of the Wood', Colour.black | Colour.green)
+        self.assert_card_colour_eq('Progenitus', Colour.all)
+        self.assert_card_colour_eq('Reaper King', Colour.all)
 
         # Hybrid card
-        assert Card.objects.get(name='Azorius Guildmage').colour == white_blue, 'Azorius Guildmage should be white-blue'
+        self.assert_card_colour_eq('Azorius Guildmage', Colour.white | Colour.blue)
 
         # Colour indicator cards
-        assert Card.objects.get(name='Transguild Courier').colour == wubrg, 'Transguild Courier should be all colours'
-        assert Card.objects.get(name='Ghostfire').colour == 0, 'Ghostfire should be colourless'
-        assert Card.objects.get(name='Dryad Arbor').colour == green, 'Dryad Arbor should be green'
+        self.assert_card_colour_eq('Transguild Courier', Colour.all)
+        self.assert_card_colour_eq('Ghostfire', Colour.none)
+        self.assert_card_colour_eq('Dryad Arbor', Colour.green)
 
         # Same colour transform card
-        assert Card.objects.get(name='Delver of Secrets').colour == blue, 'Delver of Secrets should be blue'
-        assert Card.objects.get(name='Insectile Aberration').colour == blue, 'Insectile Aberration should be blue'
+        self.assert_card_colour_eq('Delver of Secrets', Colour.blue)
+        self.assert_card_colour_eq('Insectile Aberration', Colour.blue)
 
         # Different colour transform card
-        assert Card.objects.get(name='Garruk Relentless').colour == green, 'Garruk Relentless should be green'
-        assert Card.objects.get(name='Garruk, the Veil-Cursed').colour == black_green, \
-            'Garruk, the Veil-Cursed should be black green'
+        self.assert_card_colour_eq('Garruk Relentless', Colour.green)
+        self.assert_card_colour_eq('Garruk, the Veil-Cursed', Colour.black | Colour.green)
 
         # Colour identity cards
-        assert Card.objects.get(name='Bosh, Iron Golem').colour == 0, 'Bosh should be colourless'
+        self.assert_card_colour_eq('Bosh, Iron Golem', Colour.none)
 
         # Split card
-        assert Card.objects.get(name='Tear').colour == white, 'Tear should be white'
+        self.assert_card_colour_eq('Tear', Colour.white)
 
         # Flip card
-        assert Card.objects.get(name='Rune-Tail, Kitsune Ascendant').colour == white, \
-            'Rune-Tail, Kitsune Ascendant should be white'
-        assert Card.objects.get(name='Rune-Tail\'s Essence').colour == white, 'Rune-Tail\'s Essence should be white'
+        self.assert_card_colour_eq('Rune-Tail, Kitsune Ascendant', Colour.white)
+        self.assert_card_colour_eq('Rune-Tail\'s Essence', Colour.white)
 
     def test_card_colour_identity(self):
-        white = colour.colour_codes_to_flags(['W'])
-        blue = colour.colour_codes_to_flags(['U'])
-        red = colour.colour_codes_to_flags(['R'])
-        green = colour.colour_codes_to_flags(['G'])
-        white_blue = colour.colour_codes_to_flags(['W', 'U'])
-        black_green = colour.colour_codes_to_flags(['B', 'G'])
-        wubrg = colour.colour_codes_to_flags(['W', 'U', 'B', 'R', 'G'])
-
         # Normal cards
-        assert Card.objects.get(name='Goblin Piker').colour_identity == red, 'Goblin Piker should be red'
+        self.assert_card_colour_identity_eq('Goblin Piker', Colour.red)
 
         # Lands
-        assert Card.objects.get(name='Mountain').colour_identity == red, 'Mountain should be red'
-        assert Card.objects.get(name='Polluted Delta').colour_identity == 0, \
-            'Polluted Delta should have no colour identity'
-        assert Card.objects.get(name='Tolarian Academy').colour_identity == blue, 'Tolarian Academy should be blue'
+        self.assert_card_colour_identity_eq('Mountain', Colour.red)
+        self.assert_card_colour_identity_eq('Polluted Delta', Colour.none)
+        self.assert_card_colour_identity_eq('Tolarian Academy', Colour.blue)
 
         # Colour indicator cards
-        assert Card.objects.get(name='Ghostfire').colour_identity == red, 'Ghostfire should be red'
-        assert Card.objects.get(name='Dryad Arbor').colour_identity == green, 'Dryad Arbor should be green'
+        self.assert_card_colour_identity_eq('Ghostfire', Colour.red)
+        self.assert_card_colour_identity_eq('Dryad Arbor', Colour.green)
 
         # Augment cards
-        assert Card.objects.get(name='Half-Orc, Half-').colour_identity == red, 'Half-OrdHal- should be red'
+        self.assert_card_colour_identity_eq('Half-Orc, Half-', Colour.red)
 
         # Symbol in rules cards
-        assert Card.objects.get(name='Bosh, Iron Golem').colour_identity == red, 'Bosh, Iron Golem should be red'
-        assert Card.objects.get(name='Dawnray Archer').colour_identity == white_blue, \
-            'Dawnray Archer should be white-blue'
-        assert Card.objects.get(name='Obelisk of Alara').colour_identity == wubrg, \
-            'Obelisk of Alara should be all colours'
+        self.assert_card_colour_identity_eq('Bosh, Iron Golem', Colour.red)
+        self.assert_card_colour_identity_eq('Dawnray Archer', Colour.white | Colour.blue)
+        self.assert_card_colour_identity_eq('Obelisk of Alara', Colour.all)
 
         # Hybrid cards
-        assert Card.objects.get(name='Azorius Guildmage').colour_identity == white_blue, \
-            'Azorius guildmage should be white-blue'
+        self.assert_card_colour_identity_eq('Azorius Guildmage', Colour.white | Colour.blue)
+
+        # Split cards
+        self.assert_card_colour_identity_eq('Wear', Colour.white | Colour.red)
+        self.assert_card_colour_identity_eq('Tear', Colour.white | Colour.red)
 
         # Flip cards
-        assert Card.objects.get(name='Garruk Relentless').colour_identity == black_green, \
-            'Garruk Relentless should be black-green'
-        assert Card.objects.get(name='Garruk, the Veil-Cursed').colour_identity == black_green, \
-            'Garruk, the Veil-Cursed should be black-green'
-
-        assert Card.objects.get(name='Gisela, the Broken Blade').colour_identity == white, \
-            'Gisela, Blade of Goldnight should be white'
-        assert Card.objects.get(name='Brisela, Voice of Nightmares').colour_identity == white, \
-            'Brisela, Voice of Nightmares should be white'
+        self.assert_card_colour_identity_eq('Garruk Relentless', Colour.black | Colour.green)
+        self.assert_card_colour_identity_eq('Garruk, the Veil-Cursed', Colour.black | Colour.green)
+        self.assert_card_colour_identity_eq('Gisela, the Broken Blade', Colour.white)
+        self.assert_card_colour_identity_eq('Brisela, Voice of Nightmares', Colour.white)
 
     def test_card_colour_count(self):
         # Normal cards
-        assert Card.objects.get(name='Birds of Paradise').colour_count == 1, 'Birds of Paradise should have one colour'
-        assert Card.objects.get(name='Edgewalker').colour_count == 2, 'Edgewalker should two colours'
-        assert Card.objects.get(name='Naya Hushblade').colour_count == 3, 'Naya Hushblade should have 3 colours'
-        assert Card.objects.get(name='Swamp').colour_count == 0, 'Swamp should have no colours'
-        assert Card.objects.get(name='Ornithopter').colour_count == 0, 'Ornithopter should have no colours'
-        assert Card.objects.get(name='Glint-Eye Nephilim').colour_count == 4, 'Glint-Eye Nephilim should have 4 colours'
-        assert Card.objects.get(name='Cromat').colour_count == 5, 'Cromat should have 5 colours'
+        self.assert_card_colour_count_eq('Birds of Paradise', 1)
+        self.assert_card_colour_count_eq('Edgewalker', 2)
+        self.assert_card_colour_count_eq('Naya Hushblade', 3)
+        self.assert_card_colour_count_eq('Swamp', 0)
+        self.assert_card_colour_count_eq('Ornithopter', 0)
+        self.assert_card_colour_count_eq('Glint-Eye Nephilim', 4)
+        self.assert_card_colour_count_eq('Cromat', 5)
 
         # Colour indicator cards
-        assert Card.objects.get(name='Evermind').colour_count == 1, 'Evermind should have 1 colour'
-        assert Card.objects.get(name='Arlinn, Embraced by the Moon').colour_count == 2, 'Arlinn should have 2 colours'
+        self.assert_card_colour_count_eq('Evermind', 1)
+        self.assert_card_colour_count_eq('Arlinn, Embraced by the Moon', 2)
 
         # Non-playable cards
-        assert Card.objects.get(name='Dance, Pathetic Marionette').colour_count == 0, 'Schemes should have no colour'
+        self.assert_card_colour_count_eq('Dance, Pathetic Marionette', 0)
 
     def test_card_type(self):
-        assert Card.objects.get(name='Kird Ape').type == 'Creature', 'Kird Ape should be a creature'
-        assert Card.objects.get(name='Forest').type == 'Basic Land', 'Forest should be a Basic Land'
-        assert Card.objects.get(name='Masticore').type == 'Artifact Creature', \
-            'Masticore should be an artifact creature'
-        assert Card.objects.get(name='Tarmogoyf').type == 'Creature', 'Tarmogoyf should be a creature'
-        assert Card.objects.get(name='Lignify').type == 'Tribal Enchantment', 'Lifnify should be a Tribal Enchantment'
-        assert Card.objects.get(name='Sen Triplets').type == 'Legendary Artifact Creature', \
-            'Sen Triplets should be a Legendary Artifact Creature'
-        assert Card.objects.get(name='Walking Atlas').type == 'Artifact Creature', \
-            'Walking Atlas should be an artifact creature'
-
-        assert Card.objects.get(name='Soul Net').type == 'Artifact', 'Soul Net should be an artifact'
-        assert Card.objects.get(name='Ajani Goldmane').type == 'Legendary Planeswalker', \
-            'Ajani should be a Legendary Planeswalker'
-        assert Card.objects.get(name='Bant').type == 'Plane', 'Bant should be a Plane'
-        assert Card.objects.get(name='My Crushing Masterstroke').type == 'Scheme', \
-            'My Crushing Masterstroke should be a scheme'
-
-        assert Card.objects.get(name='Nameless Race').type == 'Creature', 'Nameless race should be a creature'
+        self.assert_card_type_eq('Kird Ape', 'Creature')
+        self.assert_card_type_eq('Forest', 'Basic Land')
+        self.assert_card_type_eq('Masticore', 'Artifact Creature')
+        self.assert_card_type_eq('Tarmogoyf', 'Creature')
+        self.assert_card_type_eq('Lignify', 'Tribal Enchantment')
+        self.assert_card_type_eq('Sen Triplets', 'Legendary Artifact Creature')
+        self.assert_card_type_eq('Walking Atlas', 'Artifact Creature')
+        self.assert_card_type_eq('Soul Net', 'Artifact')
+        self.assert_card_type_eq('Ajani Goldmane', 'Legendary Planeswalker')
+        self.assert_card_type_eq('Bant', 'Plane')
+        self.assert_card_type_eq('My Crushing Masterstroke', 'Scheme')
+        self.assert_card_type_eq('Nameless Race', 'Creature')
 
     def test_card_subype(self):
-        assert Card.objects.get(name='Screaming Seahawk').subtype == 'Bird', 'Screaming Sehawk should be a bird'
-        assert Card.objects.get(name='Jace, the Mind Sculptor').subtype == 'Jace', \
-            'Jace, the Mind Sculptor should be a Jace'
-        assert Card.objects.get(name='Mistform Ultimus').subtype == 'Illusion', 'Mistform Ultimus should be an illusion'
-        assert Card.objects.get(name='Lignify').subtype == 'Treefolk Aura', 'Lignify should be a treefolk aura'
-        assert Card.objects.get(name='Nameless Race').subtype is None, 'Nameless Race should have no subtype'
-        assert Card.objects.get(name='Forest').subtype == 'Forest', 'Forest should be a Forest'
-        assert Card.objects.get(name='Spellbook').subtype is None, 'Spellbook should have no subtype'
+        # Single subtype
+        self.assert_card_subtype_eq('Screaming Seahawk', 'Bird')
+        self.assert_card_subtype_eq('Mistform Ultimus', 'Illusion')
+        self.assert_card_subtype_eq('Forest', 'Forest')
+        # Multiple subtypes
+        self.assert_card_subtype_eq('Glory Seeker', 'Human Soldier')
+        # Planeswalker
+        self.assert_card_subtype_eq('Jace, the Mind Sculptor', 'Jace')
+        # Tribal
+        self.assert_card_subtype_eq('Lignify', 'Treefolk Aura')
+        # None
+        self.assert_card_subtype_eq('Nameless Race', None)
+        self.assert_card_subtype_eq('Spellbook', None)
 
     def test_card_power(self):
         # Normal Cards
-        assert Card.objects.get(name='Birds of Paradise').power == '0', 'Birds of Paradise should have a power of 0'
-        assert Card.objects.get(name='Dryad Arbor').power == '1', 'Dryad Arbor should have 1 power'
-        assert Card.objects.get(name='Juggernaut').power == '5', 'Juggernaut should have 5 power'
+        self.assert_card_power_eq('Birds of Paradise', '0')
+        self.assert_card_power_eq('Dryad Arbor', '1')
+        self.assert_card_power_eq('Juggernaut', '5')
 
         # Vehicles
-        assert Card.objects.get(name='Irontread Crusher').power == '6', 'Irontread Crusher should have 6 power'
+        self.assert_card_power_eq('Irontread Crusher', '6')
 
         # Negative Cards
-        assert Card.objects.get(name='Char-Rumbler').power == '-1', 'Char-Rumbler should have a power of -1'
-        assert Card.objects.get(name='Spinal Parasite').power == '-1', 'Spinal Parasite should have a power of -1'
+        self.assert_card_power_eq('Char-Rumbler', '-1')
+        self.assert_card_power_eq('Spinal Parasite', '-1')
 
         # + Cards
-        assert Card.objects.get(name='Tarmogoyf').power == '*', "Tarmogoyf should have a power of *"
-        assert Card.objects.get(name='Gaea\'s Avenger').power == '1+*', 'Gaea\'s Avenger should have a power of 1+*'
-        assert Card.objects.get(name='Zombified').power == '+2', 'Zombified should have a power of +2'
+        self.assert_card_power_eq('Tarmogoyf', '*')
+        self.assert_card_power_eq('Gaea\'s Avenger', '1+*')
+        self.assert_card_power_eq('Zombified', '+2')
 
         # Noncreature cards
-        assert Card.objects.get(name='Ancestral Recall').power is None, 'Ancestral recall should have no power'
-        assert Card.objects.get(name='Krosa').power is None, 'Krosa should have no power'
-        assert Card.objects.get(name='Gratuitous Violence').power is None, 'Gratuitous Violence should have no power'
+        self.assert_card_power_eq('Ancestral Recall', None)
+        self.assert_card_power_eq('Krosa', None)
+        self.assert_card_power_eq('Gratuitous Violence', None)
+
+    def test_card_num_power(self):
+        # Normal creatures
+        self.assert_card_num_power_eq('Stone Golem', 4)
+        self.assert_card_num_power_eq('Progenitus', 10)
+        self.assert_card_num_power_eq('Emrakul, the Aeons Torn', 15)
+
+        # Negative power creatures
+        self.assert_card_num_power_eq('Spinal Parasite', -1)
+
+        # Non-creatures
+        self.assert_card_num_power_eq('Ancestral Recall', 0)
+
+        # + Cards
+        self.assert_card_num_power_eq('Tarmogoyf', 0)
+        self.assert_card_num_power_eq('Haunting Apparition', 1)
 
     def test_card_toughness(self):
-
         # Normal Cards
-        assert Card.objects.get(name='Obsianus Golem').toughness == '6', 'Obsianus Golem should have 6 toughness'
-        assert Card.objects.get(name='Dryad Arbor').toughness == '1', 'Dryad Arbor should have 1 toughness'
-        assert Card.objects.get(name='Force of Savagery').toughness == '0', 'Force of Savagery should have 0 toughness'
+        self.assert_card_toughness_eq('Obsianus Golem', '6')
+        self.assert_card_toughness_eq('Dryad Arbor', '1')
+        self.assert_card_toughness_eq('Force of Savagery', '0')
 
         # Vehicles
-        assert Card.objects.get(name='Heart of Kiran').toughness == '4', 'Heart of Kiran should have 4 toughness'
+        self.assert_card_toughness_eq('Heart of Kiran', '4')
 
         # Negative Cards
-        assert Card.objects.get(name='Char-Rumbler').power == '-1', 'Char-Rumbler should have a power of -1'
-        assert Card.objects.get(name='Spinal Parasite').toughness == '-1', 'Spinal Parasite should have a toughness of -1'
+        self.assert_card_toughness_eq('Spinal Parasite', '-1')
 
         # + Cards
-        assert Card.objects.get(name='Tarmogoyf').power == '*', "Tarmogoyf should have a power of *"
-        assert Card.objects.get(name='Gaea\'s Avenger').power == '1+*', 'Gaea\'s Avenger should have a power of 1+*'
-        assert Card.objects.get(name='Zombified').power == '+2', 'Zombified should have a power of +2'
+        self.assert_card_toughness_eq('Tarmogoyf', '1+*')
+        self.assert_card_toughness_eq('Gaea\'s Avenger', '1+*')
+        self.assert_card_toughness_eq('Half-Orc, Half-', '+1')
 
         # Noncreature cards
-        assert Card.objects.get(name='Ancestral Recall').power is None, 'Ancestral recall should have no power'
-        assert Card.objects.get(name='Krosa').power is None, 'Krosa should have no power'
-        assert Card.objects.get(name='Gratuitous Violence').power is None, 'Gratuitous Violence should have no power'
+        self.assert_card_toughness_eq('Gratuitous Violence', None)
+        self.assert_card_toughness_eq('Ancestral Recall', None)
+        self.assert_card_toughness_eq('Krosa', None)
+
+    def assert_card_exists(self, card_name: str):
+        self.assert_true(Card.objects.filter(name=card_name).exists(), f'{card_name} should exist')
+
+    def assert_card_not_exists(self, card_name: str):
+        self.assert_false(Card.objects.filter(name=card_name).exists(), f'{card_name} should not exist')
+
+    def assert_card_cost_eq(self, card_name: str, cost: str):
+        self.assert_card_name_attr_eq(card_name, 'cost', cost)
+
+    def assert_card_cmc_eq(self, card_name: str, cmc: int):
+        self.assert_card_name_attr_eq(card_name, 'cmc', cmc)
+
+    def assert_card_colour_eq(self, card_name: str, colour: int):
+        self.assert_card_name_attr_eq(card_name, 'colour', colour)
+
+    def assert_card_colour_identity_eq(self, card_name: str, colour_identity: int):
+        self.assert_card_name_attr_eq(card_name, 'colour_identity', colour_identity)
+
+    def assert_card_colour_count_eq(self, card_name: str, colour_count):
+        self.assert_card_name_attr_eq(card_name, 'colour_count', colour_count)
+
+    def assert_card_type_eq(self, card_name: str, type):
+        self.assert_card_name_attr_eq(card_name, 'type', type)
+
+    def assert_card_subtype_eq(self, card_name: str, subtype):
+        self.assert_card_name_attr_eq(card_name, 'subtype', subtype)
+
+    def assert_card_power_eq(self, card_name: str, power):
+        self.assert_card_name_attr_eq(card_name, 'power', power)
+
+    def assert_card_num_power_eq(self, card_name: str, num_power):
+        self.assert_card_name_attr_eq(card_name, 'num_power', num_power)
+
+    def assert_card_toughness_eq(self, card_name: str, toughness):
+        self.assert_card_name_attr_eq(card_name, 'toughness', toughness)
+
+    def assert_card_name_attr_eq(self, card_name: str, attr_name: str, attr_value):
+        if not Card.objects.filter(name=card_name).exists():
+            self.assert_true(False, f'Card "{card_name}" could not be found')
+            return
+
+        card = Card.objects.get(name=card_name)
+        self.assert_card_attr_eq(card, attr_name, attr_value)
+
+    def assert_card_attr_eq(self, card: Card, attr_name: str, attr_value):
+        result = getattr(card, attr_name) == attr_value
+        self.assert_true(result, f'{card} should have {attr_name} of {attr_value}')
+
+    def assert_false(self, result: bool, message: str):
+        self.assert_true(not result, message)
+
+    def assert_true(self, result: bool, message: str):
+
+        if result:
+            self.successful_tests += 1
+            print('.', end='')
+        else:
+            self.failed_tests += 1
+            print('F', end='')
+            error = self.VerificationFailure(message, ''.join(traceback.format_stack()))
+
+            self.error_messages.append(error)
+
+        sys.stdout.flush()
