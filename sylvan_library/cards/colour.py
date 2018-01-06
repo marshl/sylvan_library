@@ -15,6 +15,17 @@ colour_code_to_flag = {
 }
 
 
+class Colour:
+    white = 1
+    blue = 2
+    black = 4
+    red = 8
+    green = 16
+
+    all = white | blue | black | red | green
+    none = 0
+
+
 def colour_names_to_flags(colour_names):
     flags = 0
     for colour in colour_names:
