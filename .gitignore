@@ -97,6 +97,10 @@ ENV/
 # mkdocs documentation
 /site
 
+# Eclipse
+.project
+.pydevproject
+
 # custom
 sylvan_env/
 /.metadata
