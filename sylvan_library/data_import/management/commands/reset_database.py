@@ -1,8 +1,8 @@
 from django.core.management.base import BaseCommand
 
 from cards.models import *
-from data_import.management.commands import _query
 from django.db import connection
+from data_import import _query
 
 
 class Command(BaseCommand):
@@ -30,7 +30,6 @@ class Command(BaseCommand):
 
         self.truncate_model(DeckCard)
         self.truncate_model(Deck)
-        self.truncate_model(CardTagLink)
         self.truncate_model(CardTag)
         self.truncate_model(CardRuling)
         self.truncate_model(UserCardChange)
