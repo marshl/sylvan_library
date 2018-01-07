@@ -346,7 +346,7 @@ class Command(BaseCommand):
 
         logger.info(f'Created new printing language {cardlang}', )
         cardlang.save()
-        self.update_counts['printing_language_created'] += 1
+        self.update_counts['printing_languages_created'] += 1
         return cardlang
 
     def update_ruling_list(self, staged_sets):
@@ -449,7 +449,7 @@ class Command(BaseCommand):
                         printlang.card_printing.collector_letter != 'b' and
                         link_print.collector_letter != 'b'):
                     logger.warning(
-                        f'Will not link {staged_card.get_name()} to {link_card.get_name()} as they separate cards')
+                        f'Will not link {staged_card.get_name()} to {link_card} as they separate cards')
 
                     continue
 
