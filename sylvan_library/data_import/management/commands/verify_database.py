@@ -51,7 +51,7 @@ class Command(BaseCommand):
     def test_sets(self):
         self.assert_false(Set.objects.filter(name='Worlds').exists(), 'The Worlds set should have been filtered out')
         self.assert_false(Set.objects.filter(code__startswith='p').exists(),
-                         'Sets that start with "p" should have been filtered out')
+                          'Sets that start with "p" should have been filtered out')
 
         self.assert_true(Set.objects.get(code='ONS').block.name == 'Onslaught',
                          'Onslaught should be in the Onslaught block')
@@ -302,6 +302,7 @@ class Command(BaseCommand):
         self.assert_card_power_eq('Tarmogoyf', '*')
         self.assert_card_power_eq('Gaea\'s Avenger', '1+*')
         self.assert_card_power_eq('Zombified', '+2')
+        self.assert_card_power_eq('S.N.O.T.', '*²')
 
         # Noncreature cards
         self.assert_card_power_eq('Ancestral Recall', None)
@@ -340,11 +341,29 @@ class Command(BaseCommand):
         self.assert_card_toughness_eq('Tarmogoyf', '1+*')
         self.assert_card_toughness_eq('Gaea\'s Avenger', '1+*')
         self.assert_card_toughness_eq('Half-Orc, Half-', '+1')
+        self.assert_card_toughness_eq('S.N.O.T.', '*²')
 
         # Noncreature cards
         self.assert_card_toughness_eq('Gratuitous Violence', None)
         self.assert_card_toughness_eq('Ancestral Recall', None)
         self.assert_card_toughness_eq('Krosa', None)
+
+    def test_card_num_toughness(self):
+        # Normal Cards
+        self.assert_card_num_toughness_eq('Wall of Fire', 5)
+        self.assert_card_num_toughness_eq('Daru Lancer', 4)
+        self.assert_card_num_toughness_eq('Tree of Redemption', 13)
+
+        # Vehicles
+        self.assert_card_num_toughness_eq('Skysovereign, Consul Flagship', 5)
+
+        # Negative cards
+        self.assert_card_num_toughness_eq('Spinal Parasite', -1)
+
+        # + Cards
+        self.assert_card_num_toughness_eq('Tarmogoyf', 1)
+        self.assert_card_num_toughness_eq('Angry Mob', 2)
+        self.assert_card_num_toughness_eq('S.N.O.T.', 0)
 
     def assert_card_exists(self, card_name: str):
         self.assert_true(Card.objects.filter(name=card_name).exists(), f'{card_name} should exist')
@@ -382,6 +401,9 @@ class Command(BaseCommand):
     def assert_card_toughness_eq(self, card_name: str, toughness):
         self.assert_card_name_attr_eq(card_name, 'toughness', toughness)
 
+    def assert_card_num_toughness_eq(self, card_name: str, num_toughness):
+        self.assert_card_name_attr_eq(card_name, 'num_toughness', num_toughness)
+
     def assert_card_name_attr_eq(self, card_name: str, attr_name: str, attr_value):
         if not Card.objects.filter(name=card_name).exists():
             self.assert_true(False, f'Card "{card_name}" could not be found')
@@ -390,9 +412,9 @@ class Command(BaseCommand):
         card = Card.objects.get(name=card_name)
         self.assert_card_attr_eq(card, attr_name, attr_value)
 
-    def assert_card_attr_eq(self, card: Card, attr_name: str, attr_value):
-        result = getattr(card, attr_name) == attr_value
-        self.assert_true(result, f'{card} should have {attr_name} of {attr_value}')
+    def assert_card_attr_eq(self, card: Card, attr_name: str, expected):
+        actual = getattr(card, attr_name)
+        self.assert_true(expected == actual, f'{card}.{attr_name} was expected to be "{expected}", actually "{actual}"')
 
     def assert_false(self, result: bool, message: str):
         self.assert_true(not result, message)
@@ -406,7 +428,6 @@ class Command(BaseCommand):
             self.failed_tests += 1
             print('F', end='')
             error = self.VerificationFailure(message, ''.join(traceback.format_stack()))
-
             self.error_messages.append(error)
 
         sys.stdout.flush()
