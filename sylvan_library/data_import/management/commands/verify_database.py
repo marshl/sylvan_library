@@ -32,7 +32,8 @@ class Command(BaseCommand):
 
         print(f'\n\n{total_tests} Tests Run ({self.successful_tests} Successful, {self.failed_tests} Failed)')
         for error in self.error_messages:
-            print(f'{error.message}\n{error.stack_trace}')
+            # print(f'{error.message}\n{error.stack_trace}')
+            print(error.message)
 
     def test_blocks(self):
         self.assert_true(Block.objects.filter(name='Ice Age').exists(), 'Ice Age block should exist')
@@ -365,6 +366,32 @@ class Command(BaseCommand):
         self.assert_card_num_toughness_eq('Angry Mob', 2)
         self.assert_card_num_toughness_eq('S.N.O.T.', 0)
 
+    def test_loyalty(self):
+        # Planeswalkers
+        self.assert_card_loyalty_eq('Ajani Goldmane', '4')
+
+        # Flipwalkers
+        self.assert_card_loyalty_eq('Chandra, Fire of Kaladesh', None)
+        self.assert_card_loyalty_eq('Chandra, Roaring Flame', '4')
+
+        # Non-planeswalkers
+        self.assert_card_loyalty_eq('Glimmervoid Basin', None)
+        self.assert_card_loyalty_eq('Megatog', None)
+        self.assert_card_loyalty_eq('Urza', None)
+
+    def test_card_num_loyalty(self):
+        # Planeswalkers
+        self.assert_card_num_loyalty_eq('Ajani Goldmane', 4)
+
+        # Flipwalkers
+        self.assert_card_num_loyalty_eq('Chandra, Fire of Kaladesh', 0)
+        self.assert_card_num_loyalty_eq('Chandra, Roaring Flame', 4)
+
+        # Non-planeswalkers
+        self.assert_card_num_loyalty_eq('Glimmervoid Basin', 0)
+        self.assert_card_num_loyalty_eq('Megatog', 0)
+        self.assert_card_num_loyalty_eq('Urza', 0)
+
     def assert_card_exists(self, card_name: str):
         self.assert_true(Card.objects.filter(name=card_name).exists(), f'{card_name} should exist')
 
@@ -403,6 +430,12 @@ class Command(BaseCommand):
 
     def assert_card_num_toughness_eq(self, card_name: str, num_toughness):
         self.assert_card_name_attr_eq(card_name, 'num_toughness', num_toughness)
+
+    def assert_card_loyalty_eq(self, card_name: str, loyalty: str):
+        self.assert_card_name_attr_eq(card_name, 'loyalty', loyalty)
+
+    def assert_card_num_loyalty_eq(self, card_name: str, num_loyalty: int):
+        self.assert_card_name_attr_eq(card_name, 'num_loyalty', num_loyalty)
 
     def assert_card_name_attr_eq(self, card_name: str, attr_name: str, attr_value):
         if not Card.objects.filter(name=card_name).exists():
