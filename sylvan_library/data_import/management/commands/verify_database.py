@@ -414,6 +414,24 @@ class Command(BaseCommand):
         self.assert_card_life_mod_eq('Elite Vanguard', None)
         self.assert_card_life_mod_eq('Incinerate', None)
 
+    def test_card_rules_text(self):
+        self.assert_card_rules_eq('Grizzly Bears', None)
+        self.assert_card_rules_eq('Elite Vanguard', None)
+        self.assert_card_rules_eq('Forest', None)
+        self.assert_card_rules_eq('Snow-Covered Swamp', None)
+
+        self.assert_card_rules_eq('Air Elemental', 'Flying')
+        self.assert_card_rules_eq('Thunder Spirit', 'Flying, first strike')
+        self.assert_card_rules_eq('Dark Ritual', 'Add {B}{B}{B} to your mana pool.')
+        self.assert_card_rules_eq('Palladium Myr', '{T}: Add {C}{C} to your mana pool.')
+        self.assert_card_rules_eq('Ice Cauldron',
+                                  "{X}, {T}: Put a charge counter on Ice Cauldron and exile a nonland card from your " +
+                                  "hand. You may cast that card for as long as it remains exiled. Note the type and " +
+                                  "amount of mana spent to pay this activation cost. Activate this ability only if " +
+                                  "there are no charge counters on Ice Cauldron.\n{T}, Remove a charge counter from " +
+                                  "Ice Cauldron: Add Ice Cauldron's last noted type and amount of mana to your mana " +
+                                  "pool. Spend this mana only to cast the last card exiled with Ice Cauldron.")
+
     def assert_card_exists(self, card_name: str):
         self.assert_true(Card.objects.filter(name=card_name).exists(), f'{card_name} should exist')
 
@@ -464,6 +482,9 @@ class Command(BaseCommand):
 
     def assert_card_life_mod_eq(self, card_name: str, life_mod: int):
         self.assert_card_name_attr_eq(card_name, 'life_modifier', life_mod)
+
+    def assert_card_rules_eq(self, card_name: str, rules_text: str):
+        self.assert_card_name_attr_eq(card_name, 'rules_text', rules_text)
 
     def assert_card_name_attr_eq(self, card_name: str, attr_name: str, attr_value):
         if not Card.objects.filter(name=card_name).exists():
