@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-
+from django.db.models import Count
 import sys, traceback
 
 from cards.models import *
@@ -66,6 +66,10 @@ class Command(BaseCommand):
         self.assert_true(
             Rarity.objects.get(symbol='C').display_order < Rarity.objects.get(symbol='U').display_order,
             'Common rarity should be displayed before uncommon rarity')
+
+    def test_card_printings(self):
+        self.assert_true(Card.objects.annotate(printing_count=Count('printings')).filter(printing_count=0).count() == 0,
+                         'There should be at least one printing for every card')
 
     def test_card_name(self):
         # Normal card
