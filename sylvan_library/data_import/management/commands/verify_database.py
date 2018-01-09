@@ -392,6 +392,28 @@ class Command(BaseCommand):
         self.assert_card_num_loyalty_eq('Megatog', 0)
         self.assert_card_num_loyalty_eq('Urza', 0)
 
+    def test_card_hand_modifier(self):
+        # Vanguard
+        self.assert_card_hand_mod_eq('Urza', -1)
+        self.assert_card_hand_mod_eq('Volrath', 2)
+        self.assert_card_hand_mod_eq('Birds of Paradise Avatar', 0)
+
+        # Other
+        self.assert_card_hand_mod_eq('Chandra Nalaar', None)
+        self.assert_card_hand_mod_eq('Elite Vanguard', None)
+        self.assert_card_hand_mod_eq('Incinerate', None)
+
+    def test_card_life_modifier(self):
+        # Vanguard
+        self.assert_card_life_mod_eq('Urza', 10)
+        self.assert_card_life_mod_eq('Volrath', -3)
+        self.assert_card_life_mod_eq('Birds of Paradise Avatar', -3)
+
+        # Other
+        self.assert_card_life_mod_eq('Chandra Nalaar', None)
+        self.assert_card_life_mod_eq('Elite Vanguard', None)
+        self.assert_card_life_mod_eq('Incinerate', None)
+
     def assert_card_exists(self, card_name: str):
         self.assert_true(Card.objects.filter(name=card_name).exists(), f'{card_name} should exist')
 
@@ -436,6 +458,12 @@ class Command(BaseCommand):
 
     def assert_card_num_loyalty_eq(self, card_name: str, num_loyalty: int):
         self.assert_card_name_attr_eq(card_name, 'num_loyalty', num_loyalty)
+
+    def assert_card_hand_mod_eq(self, card_name: str, hand_mod: int):
+        self.assert_card_name_attr_eq(card_name, 'hand_modifier', hand_mod)
+
+    def assert_card_life_mod_eq(self, card_name: str, life_mod: int):
+        self.assert_card_name_attr_eq(card_name, 'life_modifier', life_mod)
 
     def assert_card_name_attr_eq(self, card_name: str, attr_name: str, attr_value):
         if not Card.objects.filter(name=card_name).exists():
