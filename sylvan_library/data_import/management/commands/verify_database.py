@@ -436,6 +436,30 @@ class Command(BaseCommand):
                                   "Ice Cauldron: Add Ice Cauldron's last noted type and amount of mana to your mana " +
                                   "pool. Spend this mana only to cast the last card exiled with Ice Cauldron.")
 
+    def test_card_layouts(self):
+        self.assert_card_layout_eq('Glory Seeker', 'normal')
+        self.assert_card_layout_eq('Hit', 'split')
+        self.assert_card_layout_eq('Run', 'split')
+        self.assert_card_layout_eq('Hired Muscle', 'flip')
+        self.assert_card_layout_eq('Scarmaker', 'flip')
+        self.assert_card_layout_eq('Delver of Secrets', 'double-faced')
+        self.assert_card_layout_eq('Insectile Aberration', 'double-faced')
+        self.assert_card_layout_eq('Pegasus token card', 'token')
+        self.assert_card_layout_eq('Hellion', 'token')
+        self.assert_card_layout_eq('Angel', 'token')
+        self.assert_card_layout_eq('Mount Keralia', 'plane')
+        self.assert_card_layout_eq('Glimmervoid Basin', 'plane')
+        self.assert_card_layout_eq('I Bask in Your Silent Awe', 'scheme')
+        self.assert_card_layout_eq('Every Hope Shall Vanish', 'scheme')
+        self.assert_card_layout_eq('Time Distortion', 'phenomenon')
+        self.assert_card_layout_eq('Echo Mage', 'leveler')
+        self.assert_card_layout_eq('Caravan Escort', 'leveler')
+        self.assert_card_layout_eq('Birds of Paradise Avatar', 'vanguard')
+        self.assert_card_layout_eq('Gix', 'vanguard')
+        self.assert_card_layout_eq('Gisela, the Broken Blade', 'meld')
+        self.assert_card_layout_eq('Bruna, the Fading Light', 'meld')
+        self.assert_card_layout_eq('Brisela, Voice of Nightmares', 'meld')
+
     def assert_card_exists(self, card_name: str):
         self.assert_true(Card.objects.filter(name=card_name).exists(), f'{card_name} should exist')
 
@@ -489,6 +513,9 @@ class Command(BaseCommand):
 
     def assert_card_rules_eq(self, card_name: str, rules_text: str):
         self.assert_card_name_attr_eq(card_name, 'rules_text', rules_text)
+
+    def assert_card_layout_eq(self, card_name: str, layout: str):
+        self.assert_card_name_attr_eq(card_name, 'layout', layout)
 
     def assert_card_name_attr_eq(self, card_name: str, attr_name: str, attr_value):
         if not Card.objects.filter(name=card_name).exists():
