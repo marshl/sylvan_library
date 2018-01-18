@@ -460,6 +460,14 @@ class Command(BaseCommand):
         self.assert_card_layout_eq('Bruna, the Fading Light', 'meld')
         self.assert_card_layout_eq('Brisela, Voice of Nightmares', 'meld')
 
+        self.assert_true(Card.objects.filter(
+            printings__in=CardPrinting.objects.filter(set=Set.objects.get(name='Vanguard')).all()).\
+            exclude(layout='vanguard').count() == 0, 'All cards in Vanguard should have the vanguard layout')
+
+        self.assert_true(Card.objects.exclude(
+            printings__in=CardPrinting.objects.filter(set=Set.objects.get(name='Vanguard')).all()).\
+            filter(layout='vanguard').count() == 0, 'No cards outside of Vanguard should have the vanguard layout')
+
     def assert_card_exists(self, card_name: str):
         self.assert_true(Card.objects.filter(name=card_name).exists(), f'{card_name} should exist')
 
