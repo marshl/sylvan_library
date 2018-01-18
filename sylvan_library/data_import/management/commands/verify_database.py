@@ -461,12 +461,29 @@ class Command(BaseCommand):
         self.assert_card_layout_eq('Brisela, Voice of Nightmares', 'meld')
 
         self.assert_true(Card.objects.filter(
-            printings__in=CardPrinting.objects.filter(set=Set.objects.get(name='Vanguard')).all()).\
-            exclude(layout='vanguard').count() == 0, 'All cards in Vanguard should have the vanguard layout')
+            printings__in=CardPrinting.objects.filter(set=Set.objects.get(name='Vanguard')).all()). \
+                         exclude(layout='vanguard').count() == 0,
+                         'All cards in Vanguard should have the vanguard layout')
 
         self.assert_true(Card.objects.exclude(
-            printings__in=CardPrinting.objects.filter(set=Set.objects.get(name='Vanguard')).all()).\
-            filter(layout='vanguard').count() == 0, 'No cards outside of Vanguard should have the vanguard layout')
+            printings__in=CardPrinting.objects.filter(set=Set.objects.get(name='Vanguard')).all()). \
+                         filter(layout='vanguard').count() == 0,
+                         'No cards outside of Vanguard should have the vanguard layout')
+
+    def test_cardprinting_flavour(self):
+        self.assert_cardprinting_flavour_eq('Goblin Chieftain', 'M10',
+                                            '"We are goblinkind, heirs to the mountain empires of chieftains past. ' +
+                                            'Rest is death to us, and arson is our call to war."')
+
+        self.assert_cardprinting_flavour_eq('Goblin Chieftain', 'M12',
+                                            '''"It's time for the 'Smash, Smash' song!"''')
+
+        self.assert_cardprinting_flavour_eq("Land Aid '04", 'UNH', None)
+        self.assert_cardprinting_flavour_eq('Goblin Balloon Brigade', 'M11',
+                                            '"The enemy is getting too close! Quick! Inflate the toad!"')
+        self.assert_cardprinting_flavour_eq('Lhurgoyf', 'ICE',
+                                            '''"Ach! Hans, run! It\'s the Lhurgoyf!"\n—Saffi Eriksdotter, last words''')
+        self.assert_cardprinting_flavour_eq('Magma Mine', 'VIS', 'BOOM!')
 
     def assert_card_exists(self, card_name: str):
         self.assert_true(Card.objects.filter(name=card_name).exists(), f'{card_name} should exist')
@@ -531,11 +548,27 @@ class Command(BaseCommand):
             return
 
         card = Card.objects.get(name=card_name)
-        self.assert_card_attr_eq(card, attr_name, attr_value)
+        self.assert_obj_attr_eq(card, attr_name, attr_value)
 
-    def assert_card_attr_eq(self, card: Card, attr_name: str, expected):
-        actual = getattr(card, attr_name)
-        self.assert_true(expected == actual, f'{card}.{attr_name} was expected to be "{expected}", actually "{actual}"')
+    def assert_cardprinting_flavour_eq(self, card_name: str, setcode: str, flavour: str):
+        self.assert_cardprinting_name_attr_eq(card_name, setcode, 'flavour_text', flavour)
+
+    def assert_cardprinting_name_attr_eq(self, card_name: str, setcode: str, attr_name: str, attr_value):
+        if not Card.objects.filter(name=card_name).exists() or \
+                not CardPrinting.objects.filter(
+                    card=Card.objects.get(name=card_name), set=Set.objects.get(code=setcode)):
+            self.assert_true(False, f'Card Printing "{card_name}" in "{setcode}" could not be found')
+            return
+
+        card = Card.objects.get(name=card_name)
+        s = Set.objects.get(code=setcode)
+        cardprinting = CardPrinting.objects.filter(card=card, set=s).first()
+        self.assert_obj_attr_eq(cardprinting, attr_name, attr_value)
+
+    def assert_obj_attr_eq(self, obj, attr_name: str, expected):
+        actual = getattr(obj, attr_name)
+        self.assert_true(expected == actual,
+                         f'{obj}.{attr_name} was expected to be "{expected}", actually "{actual}"')
 
     def assert_false(self, result: bool, message: str):
         self.assert_true(not result, message)
