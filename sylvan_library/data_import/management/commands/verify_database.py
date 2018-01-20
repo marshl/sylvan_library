@@ -309,6 +309,9 @@ class Command(BaseCommand):
         self.assert_card_power_eq('Zombified', '+2')
         self.assert_card_power_eq('S.N.O.T.', '*²')
 
+        # Misprints
+        self.assert_card_power_eq('Elvish Archers', '2')
+
         # Noncreature cards
         self.assert_card_power_eq('Ancestral Recall', None)
         self.assert_card_power_eq('Krosa', None)
@@ -325,6 +328,9 @@ class Command(BaseCommand):
 
         # Non-creatures
         self.assert_card_num_power_eq('Ancestral Recall', 0)
+
+        # Misprints
+        self.assert_card_num_power_eq('Elvish Archers', 2)
 
         # + Cards
         self.assert_card_num_power_eq('Tarmogoyf', 0)
@@ -348,6 +354,9 @@ class Command(BaseCommand):
         self.assert_card_toughness_eq('Half-Orc, Half-', '+1')
         self.assert_card_toughness_eq('S.N.O.T.', '*²')
 
+        # Misprints
+        self.assert_card_toughness_eq('Elvish Archers', '1')
+
         # Noncreature cards
         self.assert_card_toughness_eq('Gratuitous Violence', None)
         self.assert_card_toughness_eq('Ancestral Recall', None)
@@ -364,6 +373,9 @@ class Command(BaseCommand):
 
         # Negative cards
         self.assert_card_num_toughness_eq('Spinal Parasite', -1)
+
+        # Misprints
+        self.assert_card_num_toughness_eq('Elvish Archers', 1)
 
         # + Cards
         self.assert_card_num_toughness_eq('Tarmogoyf', 1)
