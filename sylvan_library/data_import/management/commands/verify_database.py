@@ -497,6 +497,19 @@ class Command(BaseCommand):
                                             '''"Ach! Hans, run! It\'s the Lhurgoyf!"\n—Saffi Eriksdotter, last words''')
         self.assert_cardprinting_flavour_eq('Magma Mine', 'VIS', 'BOOM!')
 
+    def test_cardprinting_artist(self):
+        # Misprint
+        self.assert_cardprinting_artist_eq('Animate Artifact', 'LEA', 'Douglas Shuler')
+        self.assert_cardprinting_artist_eq('Benalish Hero', 'LEB', 'Douglas Shuler')
+
+        # Combination
+        self.assert_cardprinting_artist_eq('Wound Reflection', 'SHM', 'Terese Nielsen & Ron Spencer')
+
+        # Unhinged
+        self.assert_cardprinting_artist_eq('Persecute Artist', 'UNH', 'Rebecca “Don\'t Mess with Me” Guay')
+        self.assert_cardprinting_artist_eq('Fascist Art Director', 'UNH', 'Edward P. “Feed Me” Beard, Jr.')
+        self.assert_cardprinting_artist_eq('Atinlay Igpay', 'UNH', 'Evkay Alkerway')
+
     def assert_card_exists(self, card_name: str):
         self.assert_true(Card.objects.filter(name=card_name).exists(), f'{card_name} should exist')
 
@@ -564,6 +577,9 @@ class Command(BaseCommand):
 
     def assert_cardprinting_flavour_eq(self, card_name: str, setcode: str, flavour: str):
         self.assert_cardprinting_name_attr_eq(card_name, setcode, 'flavour_text', flavour)
+
+    def assert_cardprinting_artist_eq(self, card_name: str, setcode: str, artist: str):
+        self.assert_cardprinting_name_attr_eq(card_name, setcode, 'artist', artist)
 
     def assert_cardprinting_name_attr_eq(self, card_name: str, setcode: str, attr_name: str, attr_value):
         if not Card.objects.filter(name=card_name).exists() or \
