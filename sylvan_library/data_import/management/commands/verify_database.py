@@ -510,6 +510,23 @@ class Command(BaseCommand):
         self.assert_cardprinting_artist_eq('Fascist Art Director', 'UNH', 'Edward P. “Feed Me” Beard, Jr.')
         self.assert_cardprinting_artist_eq('Atinlay Igpay', 'UNH', 'Evkay Alkerway')
 
+    def test_cardprinting_collectornum(self):
+
+        brothers_yamazaki = Card.objects.get(name='Brothers Yamazaki')
+        kamigawa = Set.objects.get(name='Champions of Kamigawa')
+        brother_a = CardPrinting.objects.get(card=brothers_yamazaki, set=kamigawa, collector_letter='a')
+        brother_b = CardPrinting.objects.get(card=brothers_yamazaki, set=kamigawa, collector_letter='b')
+
+        self.assert_true(brother_a.collector_number == brother_b.collector_number,
+                         'Brothers Yamazaki should have the same collector number')
+
+        fallen_empires = Set.objects.get(name='Fallen Empires')
+        initiates = Card.objects.get(name='Initiates of the Ebon Hand')
+        collector_numbers = [c.collector_number for c in
+                             CardPrinting.objects.filter(card=initiates, set=fallen_empires)]
+        self.assert_true(collector_numbers == [110, 111, 112],
+                         'The collector numbers for Initiates of the Ebon Hand are incorrect')
+
     def assert_card_exists(self, card_name: str):
         self.assert_true(Card.objects.filter(name=card_name).exists(), f'{card_name} should exist')
 
