@@ -527,6 +527,19 @@ class Command(BaseCommand):
         self.assert_true(collector_numbers == [110, 111, 112],
                          'The collector numbers for Initiates of the Ebon Hand are incorrect')
 
+    def test_cardprinting_collectorletter(self):
+        self.assert_cardprinting_collecterletter_eq('Legion\'s Landing', 'XLN', 'a')
+        self.assert_cardprinting_collecterletter_eq('Adanto, the First Fort', 'XLN', 'b')
+
+        self.assert_cardprinting_collecterletter_eq('Rise', 'DIS', 'a')
+        self.assert_cardprinting_collecterletter_eq('Fall', 'DIS', 'b')
+
+        self.assert_cardprinting_collecterletter_eq('Who', 'UNH', 'a')
+        self.assert_cardprinting_collecterletter_eq('What', 'UNH', 'b')
+        self.assert_cardprinting_collecterletter_eq('When', 'UNH', 'c')
+        self.assert_cardprinting_collecterletter_eq('Where', 'UNH', 'd')
+        self.assert_cardprinting_collecterletter_eq('Why', 'UNH', 'e')
+
     def assert_card_exists(self, card_name: str):
         self.assert_true(Card.objects.filter(name=card_name).exists(), f'{card_name} should exist')
 
@@ -598,8 +611,12 @@ class Command(BaseCommand):
     def assert_cardprinting_artist_eq(self, card_name: str, setcode: str, artist: str):
         self.assert_cardprinting_name_attr_eq(card_name, setcode, 'artist', artist)
 
+    def assert_cardprinting_collecterletter_eq(self, card_name: str, setcode: str, collector_letter: str):
+        self.assert_cardprinting_name_attr_eq(card_name, setcode, 'collector_letter', collector_letter)
+
     def assert_cardprinting_name_attr_eq(self, card_name: str, setcode: str, attr_name: str, attr_value):
         if not Card.objects.filter(name=card_name).exists() or \
+                not Set.objects.filter(code=setcode).exists() or \
                 not CardPrinting.objects.filter(
                     card=Card.objects.get(name=card_name), set=Set.objects.get(code=setcode)):
             self.assert_true(False, f'Card Printing "{card_name}" in "{setcode}" could not be found')
