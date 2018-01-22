@@ -11,8 +11,8 @@ router.register(r'cards', views.CardViewSet)
 # Wire up our API using automatic URL routing
 # Additionally, we include login URLs for the browsable API
 urlpatterns = [
-    url(r'^cards/$', views.card_list),
-    url(r'^cards/(?P<pk>[0-9]+)$', views.card_detail),
+    url(r'^cards/$', views.CardList.as_view()),
+    url(r'^cards/(?P<pk>[0-9]+)$', views.CardDetail.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
