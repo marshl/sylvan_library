@@ -1,13 +1,14 @@
 from datetime import datetime
-
 from pytz import utc
+import logging
 
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 
 from cards.models import Card, CardPrinting, CardPrintingLanguage
-from cards.models import UserCardChange, Set, Language
-from cards.models import PhysicalCardLink
+from cards.models import UserCardChange, Set, Language, PhysicalCard
+
+logger = logging.getLogger('django')
 
 
 class Command(BaseCommand):
@@ -28,54 +29,50 @@ class Command(BaseCommand):
         try:
             user = User.objects.get(username=options.get('username')[0])
         except User.DoesNotExist:
-            print('Cannot find user with name "{0}"'.format(
-                    options.get('username')[0]))
+            logger.error('Cannot find user with name "{0}"'.format(
+                options.get('username')[0]))
             return
 
-        user.usercardchange_set.all().delete()
+        user.card_changes.all().delete()
 
         with open(filename, 'r') as f:
 
             for line in f:
 
-                print(line)
+                logger.info(line)
                 (name, setcode, datestr, number) = line.rstrip().split('\t')
                 date = datetime.strptime(datestr, '%Y-%m-%d %H:%M:%S')
                 date = utc.localize(date)
 
                 card = Card.objects.get(name=name)
-                print('Card ID: {0}'.format(card.id))
+                logger.info(f'Card: {card}')
 
                 cardset = Set.objects.get(code=setcode)
-                print('Set ID: {0}'.format(cardset.id))
+                logger.info(f'Set: {cardset}')
 
                 printing = CardPrinting.objects.filter(
-                               card=card,
-                               set=cardset).first()
-                print('CardPrinting ID: {0}'.format(printing.id))
+                    card=card,
+                    set=cardset).first()
+                logger.info(f'CardPrinting: {printing}')
 
                 printlang = CardPrintingLanguage.objects.get(
-                             card_printing=printing,
-                             language=english)
-                print('CardPrintingLanguage ID: {0}'.format(printlang.id))
+                    card_printing=printing,
+                    language=english)
+                logger.info(f'CardPrintingLanguage: {printlang}')
 
-                link = PhysicalCardLink.objects.get(
-                        printing_language=printlang)
-                print('PhysicalCardLink ID: {0}'.format(link.id))
+                physcards = PhysicalCard.objects.filter(
+                    printed_languages=printlang)
 
-                phys = link.physical_card
-                print('PhysicaCard ID: {0}'.format(phys.id))
-
-                if phys.layout != 'normal' and UserCardChange.objects.filter(
-                        physical_card=phys,
-                        owner=user,
-                        date=date).exists():
-                    print('Other half of this card already has been added')
+                if UserCardChange.objects.filter(
+                        physical_card__in=physcards,
+                        owner=user, date=date, difference=number).exists():
+                    logger.info('Other half of this card already has been added')
                     continue
 
-                cardchange = UserCardChange(
-                             physical_card=phys,
-                             difference=number,
-                             owner=user,
-                             date=date)
-                cardchange.save()
+                for phys in physcards:
+                    usercard = UserCardChange(
+                        physical_card=phys,
+                        difference=number,
+                        owner=user,
+                        date=date)
+                    usercard.save()
