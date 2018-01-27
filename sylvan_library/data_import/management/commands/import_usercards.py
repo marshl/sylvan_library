@@ -1,7 +1,11 @@
+import logging
+
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
+from django.db import transaction
 
 from cards.models import *
+
+logger = logging.getLogger('django')
 
 
 class Command(BaseCommand):
@@ -10,8 +14,8 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
 
         # Positional arguments
-        parser.add_argument('username', nargs=1, type=str)
-        parser.add_argument('filename', nargs=1, type=str)
+        parser.add_argument('username', nargs=1, type=str, help='The user to who owns teh cards')
+        parser.add_argument('filename', nargs=1, type=str, help='The file to import the cards from')
 
     def handle(self, *args, **options):
 
@@ -22,48 +26,44 @@ class Command(BaseCommand):
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
-            print('Cannot find user with name "{0}"'.format(username))
+            logger.error(f'Cannot find user with name {username}')
             return
 
-        user.userownedcard_set.all().delete()
+        with(transaction.atomic()):
+            user.owned_cards.all().delete()
 
-        with open(filename, 'r') as f:
+            with open(filename, 'r') as f:
+                for line in f:
+                    (name, number, setcode) = line.rstrip().split('\t')
 
-            for line in f:
+                    card = Card.objects.get(name=name)
+                    logger.info(f'Card ID: {card.id}')
 
-                (name, number, setcode) = line.rstrip().split('\t')
+                    cardset = Set.objects.get(code=setcode)
+                    logger.info(f'Set ID: {cardset.id}')
 
-                card = Card.objects.get(name=name)
-                print('Card ID: {0}'.format(card.id))
+                    printing = CardPrinting.objects.filter(
+                        card=card,
+                        set=cardset).first()
+                    logger.info(f'CardPrinting ID: {printing.id}')
 
-                cardset = Set.objects.get(code=setcode)
-                print('Set ID: {0}'.format(cardset.id))
+                    printlang = CardPrintingLanguage.objects.get(
+                        card_printing=printing,
+                        language=english)
+                    logger.info(f'CardPrintingLanguage ID: {printlang.id}')
 
-                printing = CardPrinting.objects.filter(
-                               card=card,
-                               set=cardset).first()
-                print('CardPrinting ID: {0}'.format(printing.id))
+                    physcards = PhysicalCard.objects.filter(
+                        printed_languages=printlang)
 
-                printlang = CardPrintingLanguage.objects.get(
-                             card_printing=printing,
-                             language=english)
-                print('CardPrintingLanguage ID: {0}'.format(printlang.id))
+                    if UserOwnedCard.objects.filter(
+                            physical_card__in=physcards,
+                            owner=user).exists():
+                        logger.info('Other half of this card already has been added')
+                        continue
 
-                link = PhysicalCardLink.objects.get(
-                        printing_language=printlang)
-                print('PhysicalCardLink ID: {0}'.format(link.id))
-
-                phys = link.physical_card
-                print('PhysicaCard ID: {0}'.format(phys.id))
-
-                if phys.layout != 'normal' and UserOwnedCard.objects.filter(
-                        physical_card=phys,
-                        owner=user).exists():
-                    print('Other half of this card already has been added')
-                    continue
-
-                usercard = UserOwnedCard(
-                             physical_card=phys,
-                             count=number,
-                             owner=user)
-                usercard.save()
+                    for phys in physcards:
+                        usercard = UserOwnedCard(
+                            physical_card=phys,
+                            count=number,
+                            owner=user)
+                        usercard.save()
