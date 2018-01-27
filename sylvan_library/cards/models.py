@@ -148,7 +148,7 @@ class PhysicalCard(models.Model):
     layout = models.CharField(max_length=50, choices=CARD_LAYOUT_CHOICES)
 
     def __str__(self):
-        return 'Physical ' + '//'.join([str(x) for x in self.cardprintinglanguage_set.all()])
+        return 'Physical ' + '//'.join([str(x) for x in self.printed_languages.all()])
 
 
 class CardPrintingLanguage(models.Model):
@@ -158,7 +158,7 @@ class CardPrintingLanguage(models.Model):
 
     card_printing = models.ForeignKey(CardPrinting, related_name='printed_languages')
 
-    physical_cards = models.ManyToManyField(PhysicalCard)
+    physical_cards = models.ManyToManyField(PhysicalCard, related_name='printed_languages')
 
     class Meta:
         unique_together = ('language', 'card_name', 'card_printing')
@@ -191,7 +191,7 @@ class UserOwnedCard(models.Model):
         unique_together = ('physical_card', 'owner')
 
     def __str__(self):
-        return f'{self.owner.name} owns {self.count} of {self.physical_card}'
+        return f'{self.owner} owns {self.count} of {self.physical_card}'
 
 
 class UserCardChange(models.Model):
