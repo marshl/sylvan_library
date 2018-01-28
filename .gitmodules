@@ -1,0 +1,3 @@
+[submodule "sylvan_library/website/static/mtg-font"]
+	path = sylvan_library/website/static/mtg-font
+	url = https://github.com/AlexandreArpin/mtg-font.git
