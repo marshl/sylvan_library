@@ -16,7 +16,7 @@
 		<li>
 	      {{ lang.card_name }}
 			{{ lang.language.name }}
-             <form action="{% url 'spellbook:add_card' lang.id %}" method="post">
+             <form action="{% url 'website:add_card' lang.id %}" method="post">
 			 {% csrf_token %}
 			 <input type="submit" value="Add Card"/>
 			</form>

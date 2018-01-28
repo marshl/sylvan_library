@@ -93,6 +93,7 @@ INSTALLED_APPS = [
     'cards',
     'django_extensions',
     'rest_framework',
+    'website',
 ]
 
 STATIC_URL = '/static/'

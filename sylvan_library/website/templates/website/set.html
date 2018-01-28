@@ -1,7 +1,7 @@
 {% for printing in set.cardprinting_set.all %}
 	{{ printing.flavour_text }}
 	{% with printing.card as card %}
-        <a href="{% url 'spellbook:card_detail' card.id %}">{{ card.name }}</a>
-		{% include "spellbook/card_detail.html" %}
+        <a href="{% url 'website:card_detail' card.id %}">{{ card.name }}</a>
+		{% include "website/card_detail.html" %}
 	{% endwith %}
 {% endfor %}
