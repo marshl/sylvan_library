@@ -5,11 +5,14 @@ from django.shortcuts import get_object_or_404
 from django.http import HttpResponseRedirect
 import random
 
+from cards.models import *
+
 from cards.models import CardPrintingLanguage, UserOwnedCard
 
 
 def index(request):
-    return HttpResponse("Hello, world. You're at the polls index.")
+    context = {'sets': Set.objects.all()}
+    return render(request, 'website/index.html', context)
 
 
 def card_detail(request, card_id):

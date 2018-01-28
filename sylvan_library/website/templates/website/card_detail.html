@@ -1,9 +1,23 @@
+
+
+
+
+{% load static %}
+<head>
+    <link href="{% static "Keyrune/css/keyrune.css" %}" rel="stylesheet" type="text/css" />
+    <link href="{% static "mtg-font/css/magic-font.css" %}" rel="stylesheet" type="text/css" />
+</head>
+
+{% load mtg_font %}
+
+
 <h1>{{ card.name }}</h1>
 <p>{{ card.type }}</p>
 {% if card.subtype %}
 	<p>{{ card.subtype }}</p>
 {% endif %}
-{{ card.rules_text }}
+<p>Rules: {{ card.rules_text }}</p>
+<p>Fancy Rules: {{ card.rules_text|replace_mtg_font_symbols|safe }}</p>
 
 
 
