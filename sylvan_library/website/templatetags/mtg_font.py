@@ -12,23 +12,29 @@ def replace_mtg_font_symbols(value, scale=None):
     if value is None:
         return None
 
-    def get_colour_tag(symbol: str, phyrexian=False):
-        classes = ['mi', f'mi-{symbol}']
+    def get_colour_tag(symbol: str, phyrexian=False, split=False):
 
         if symbol == 't':
             symbol = 'tap'
         elif symbol == 'q':
             symbol = 'untap'
 
-        if symbol not in ['chaos']:
-            #if symbol in ['w', 'u', 'b', 'r', 'g'] or symbol.isnumeric():
-            classes.append('mi-mana')
+        classes = ['mi']
 
         if scale is not None:
             classes.append(f'mi-{scale}x')
 
         if shadow:
             classes.append('mi-shadow')
+
+        if phyrexian:
+            classes.append('mi-p')
+            classes.append(f'mi-mana-{symbol}')
+        else:
+            classes.append(f'mi-{symbol}')
+
+            if symbol not in ['chaos'] and not split:
+                classes.append('mi-mana')
 
         return '<i class="' + ' '.join(classes) + '"></i>'
 
@@ -38,7 +44,7 @@ def replace_mtg_font_symbols(value, scale=None):
             if grp[-1] == 'p':
                 return get_colour_tag(grp[0], phyrexian=True)
             else:
-                return '<span class="mi-split">' + ''.join([get_colour_tag(x) for x in grp.split('/')]) + '</span>'
+                return '<span class="mi-split">' + ' '.join([get_colour_tag(x, split=True) for x in grp.split('/')]) + '</span>'
         else:
             return get_colour_tag(grp)
 
