@@ -168,13 +168,11 @@ class CardPrintingLanguage(models.Model):
 
     def get_image_path(self):
         if self.multiverse_id is None:
-            raise AttributeError('Cannot find image path for card with no multiverse id')
+            return None
 
         ms = str(self.multiverse_id)
         # Break up images over multiple folders to stop too many being placed in one folder
-        return path.join('spellbook',
-                         'static',
-                         'card_images',
+        return path.join('static', 'card_images',
                          ms[0:1],
                          ms[0:2] if len(ms) >= 2 else '',
                          ms[0:3] if len(ms) >= 3 else '',

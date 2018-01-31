@@ -71,6 +71,8 @@ class ImageDownloadThread(threading.Thread):
 
 def download_image_for_card(printing_language, random_sleep):
     image_path = printing_language.get_image_path()
+    image_path = os.path.join('website', image_path)
+
     os.makedirs(os.path.dirname(image_path), exist_ok=True)
 
     if os.path.exists(image_path):
