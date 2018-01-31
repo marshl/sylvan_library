@@ -1,49 +1,53 @@
 
 
 
-
 {% load static %}
 <head>
-    <link href="{% static "Keyrune/css/keyrune.css" %}" rel="stylesheet" type="text/css" />
-    <link href="{% static "mtg-font/css/magic-font.css" %}" rel="stylesheet" type="text/css" />
+    <link href="{% static "Keyrune/css/keyrune.css" %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static "mtg-font/css/magic-font.css" %}" rel="stylesheet" type="text/css"/>
 </head>
 
 {% load mtg_font %}
 
 
 <h1>{{ card.name }}</h1>
+{{ card.cost }}
+{{ card.cost|replace_mtg_font_symbols|safe }}
 <p>{{ card.type }}</p>
 {% if card.subtype %}
-	<p>{{ card.subtype }}</p>
+    <p>{{ card.subtype }}</p>
 {% endif %}
 <p>Rules: {{ card.rules_text }}</p>
 <p>Fancy Rules: {{ card.rules_text|replace_mtg_font_symbols|safe }}</p>
 
-
-
+Printings:
 <ul>
-
-{% for printing in card.cardprinting_set.all %}
-	<li>{{ printing.set.name }}
-		<ul>
-		{% for lang in printing.cardprintinglanguage_set.all %}
-		<li>
-	      {{ lang.card_name }}
-			{{ lang.language.name }}
-             <form action="{% url 'website:add_card' lang.id %}" method="post">
-			 {% csrf_token %}
-			 <input type="submit" value="Add Card"/>
-			</form>
-			<ul>
-			{% for link in lang.physicalcardlink_set.all %}
-				{% for own in link.physical_card.userownedcard_set.all %}
-					<p>{{ own.owner }} owns {{ own.count }}</p>
-				{% endfor %}
-			{% endfor %}
-			</ul>
-		</li>
-		{% endfor %}
-		</ul>
-	</li>
-{% endfor %}
+    {% for printing in card.printings.all %}
+        Printed Languages:
+        <li>{{ printing.set.name }}
+            <ul>
+                {% for lang in printing.printed_languages.all %}
+                    <li>
+                        {{ lang.card_name }}
+                        {{ lang.language.name }}
+                        <form action="{% url 'website:add_card' lang.id %}" method="post">
+                            {% csrf_token %}
+                            <input type="submit" value="Add Card"/>
+                        </form>
+                        {% if lang.get_image_path %}
+                            <img src="/{{ lang.get_image_path }}"/>
+                        {% endif %}
+                        Ownerships:
+                        <ul>
+                            {% for phys in lang.physical_cards.all %}
+                                {% for ownership in phys.owned_cards.all %}
+                                    <p>{{ ownership.owner }} owns {{ ownership.count }}</p>
+                                {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% endfor %}
+            </ul>
+        </li>
+    {% endfor %}
 </ul>
