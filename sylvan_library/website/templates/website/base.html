@@ -1,0 +1,20 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sylvan Libary</title>
+    <link href="{% static "Keyrune/css/keyrune.css" %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static "mtg-font/css/magic-font.css" %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static "css/website.css" %}" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<div class="page-header">
+    <h1><a href="/">Sylvan Library</a></h1>
+</div>
+<div class="content container">
+    {% block content %}
+    {% endblock %}
+</div>
+</body>
+</html>

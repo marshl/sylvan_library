@@ -1,10 +1,5 @@
-<html>
-
-{% load static %}
-<head>
-    <link href="{% static "Keyrune/css/keyrune.css" %}" rel="stylesheet" type="text/css"/>
-    <link href="{% static "mtg-font/css/magic-font.css" %}" rel="stylesheet" type="text/css"/>
-</head>
+{% extends 'website/base.html' %}
+{% block content %}
 
 <p>Hello</p>
 
@@ -27,4 +22,4 @@
 <span class="mi-split"><i class="mi mi-b"></i> <i class="mi mi-g"></i></span>
 <span class="mi-split mi-shadow"><i class="mi mi-b"></i><i class="mi mi-g"></i></span>
 <span class="mi-split"><i class="mi mi-2"></i><i class="mi mi-g"></i></span>
-</html>
+{% endblock %}
