@@ -32,6 +32,13 @@ class JsonImporter:
     def get_staged_sets(self):
         return self.sets
 
+    def import_colours(self):
+        file = open(_paths.colour_json_path, 'r', encoding='utf8')
+        colours = json.load(file, encoding='UTF-8')
+        file.close()
+
+        return colours
+
     def import_rarities(self):
         file = open(_paths.rarity_json_path, 'r', encoding="utf8")
         rarities = json.load(file, encoding='UTF-8')

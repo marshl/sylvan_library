@@ -7,4 +7,5 @@ json_data_path = path.join(data_folder, 'AllSets-x.json')
 pretty_json_path = path.join(data_folder, 'AllSets-x-pretty.json')
 
 language_json_path = path.join(data_folder, 'languages.json')
+colour_json_path = path.join(data_folder, 'colours.json')
 rarity_json_path = path.join(data_folder, 'rarities.json')

@@ -1,7 +1,7 @@
 import re
 from functools import total_ordering
 
-from cards import colour
+from cards.models import Colour
 
 
 @total_ordering
@@ -89,20 +89,20 @@ class StagedCard:
     def get_cmc(self):
         return self.value_dict.get('cmc') or 0
 
-    def get_colour(self):
+    def get_colours(self):
         if 'colors' in self.value_dict:
-            return colour.colour_names_to_flags(self.value_dict['colors'])
-        else:
-            return 0
+            return Colour.objects.filter(name__in=self.value_dict['colors'])
 
-    def get_colour_identity(self):
+        return []
+
+    def get_colour_identities(self):
         if 'colorIdentity' in self.value_dict:
-            return colour.colour_codes_to_flags(self.value_dict['colorIdentity'])
-        else:
-            return 0
+            return Colour.objects.filter(symbol__in=self.value_dict['colorIdentity'])
+
+        return []
 
     def get_colour_count(self):
-        return bin(self.get_colour()).count('1')
+        return len(self.get_colours())
 
     def get_power(self):
         return self.value_dict.get('power')

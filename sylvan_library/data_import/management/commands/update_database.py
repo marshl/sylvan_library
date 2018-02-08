@@ -21,6 +21,7 @@ class Command(BaseCommand):
     force_update = False
 
     update_counts = {'rarities_created': 0, 'rarities_updated': 0,
+                     'colours_created': 0, 'colours_updated': 0,
                      'languages_created': 0, 'languages_updated': 0,
                      'cards_created': 0, 'cards_updated': 0, 'cards_ignored': 0,
                      'card_printings_created': 0, 'card_printings_updated': 0,
@@ -79,6 +80,7 @@ class Command(BaseCommand):
 
     def update_database(self, data_importer):
         self.update_rarity_list(data_importer)
+        self.update_colour_list(data_importer)
         self.update_language_list(data_importer)
 
         staged_sets = data_importer.get_staged_sets()
@@ -90,6 +92,20 @@ class Command(BaseCommand):
         self.update_physical_card_list(staged_sets)
         self.update_card_links(staged_sets)
         self.update_legalities(staged_sets)
+
+    def update_colour_list(self, data_importer):
+        logger.info('Updating colour list')
+
+        for colour in data_importer.import_colours():
+            colour_obj = Colour.objects.filter(symbol=colour['symbol']).first()
+            if colour_obj is not None:
+                logger.info(f'Updating existing colour {colour_obj}')
+                self.update_counts['colours_updated'] += 1
+            else:
+                logger.info(f"Creating new colour {colour['name']}")
+                colour_obj = Colour(symbol=colour['symbol'], name=colour['name'], display_order=colour['display_order'])
+                colour_obj.save()
+                self.update_counts['colours_created'] += 1
 
     def update_rarity_list(self, data_importer):
 
@@ -262,9 +278,8 @@ class Command(BaseCommand):
 
         card.cost = staged_card.get_mana_cost()
         card.cmc = staged_card.get_cmc()
-        card.colour = staged_card.get_colour()
-        card.colour_identity = staged_card.get_colour_identity()
-        card.colour_count = staged_card.get_colour_count()
+        card.colours = staged_card.get_colours()
+        card.colour_identities = staged_card.get_colour_identities()
 
         card.power = staged_card.get_power()
         card.toughness = staged_card.get_toughness()
@@ -379,6 +394,7 @@ class Command(BaseCommand):
     def update_physical_card_list(self, staged_sets):
         logger.info('Updating physical card list')
 
+        english_language = Language.objects.get(name='English')
         for staged_set in staged_sets:
 
             if staged_set.get_code() not in self.sets_to_update:
@@ -396,10 +412,9 @@ class Command(BaseCommand):
                     collector_number=staged_card.get_collector_number(),
                     collector_letter=staged_card.get_collector_letter())
 
-                lang_obj = Language.objects.get(name='English')
                 printlang_obj = CardPrintingLanguage.objects.get(
                     card_printing=printing_obj,
-                    language=lang_obj)
+                    language=english_language)
 
                 self.update_physical_card(printlang_obj, staged_card)
 
@@ -416,7 +431,10 @@ class Command(BaseCommand):
 
     def update_physical_card(self, printlang: CardPrintingLanguage, staged_card: StagedCard):
 
-        logger.info(f'Updating physical cards for {printlang}')
+        if printlang.physical_cards.exists():
+            logger.info(f'Physical link already exists for {printlang}')
+            self.update_counts['physical_cards_skipped'] += 1
+            return
 
         if (staged_card.get_layout() == 'meld' and
                 staged_card.get_name_count() == 3 and
@@ -424,10 +442,7 @@ class Command(BaseCommand):
             logger.info(f'Will not create card link for meld card {printlang}')
             return
 
-        if printlang.physical_cards.exists():
-            logger.info(f'Physical link already exists for {printlang}')
-            self.update_counts['physical_cards_skipped'] += 1
-            return
+        logger.info(f'Updating physical cards for {printlang}')
 
         linked_language_objs = []
 

@@ -62,14 +62,42 @@ class Rarity(models.Model):
         return self.name
 
 
+class Colour(models.Model):
+    symbol = models.CharField(max_length=1, unique=True)
+    name = models.CharField(max_length=15, unique=True)
+    display_order = models.IntegerField(unique=True)
+
+    @staticmethod
+    def white():
+        return Colour.objects.get(symbol='W')
+
+    @staticmethod
+    def blue():
+        return Colour.objects.get(symbol='U')
+
+    @staticmethod
+    def black():
+        return Colour.objects.get(symbol='B')
+
+    @staticmethod
+    def red():
+        return Colour.objects.get(symbol='R')
+
+    @staticmethod
+    def green():
+        return Colour.objects.get(symbol='G')
+
+    def __str__(self):
+        return self.name
+
+
 class Card(models.Model):
     name = models.CharField(max_length=200, unique=True)
 
     cost = models.CharField(max_length=50, blank=True, null=True)
     cmc = models.FloatField()
-    colour = models.IntegerField()
-    colour_identity = models.IntegerField()
-    colour_count = models.IntegerField()
+    colours = models.ManyToManyField(Colour, related_name='colour_cards')
+    colour_identities = models.ManyToManyField(Colour, related_name='colour_id_cards')
 
     type = models.CharField(max_length=100, blank=True, null=True)
     subtype = models.CharField(max_length=100, blank=True, null=True)
