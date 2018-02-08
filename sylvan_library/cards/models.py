@@ -98,6 +98,7 @@ class Card(models.Model):
     cmc = models.FloatField()
     colours = models.ManyToManyField(Colour, related_name='colour_cards')
     colour_identities = models.ManyToManyField(Colour, related_name='colour_id_cards')
+    colour_count = models.IntegerField()
 
     type = models.CharField(max_length=100, blank=True, null=True)
     subtype = models.CharField(max_length=100, blank=True, null=True)
