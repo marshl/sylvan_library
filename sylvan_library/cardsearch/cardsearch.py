@@ -13,15 +13,6 @@ class SearchParameterNode:
         self.child_parameters = list()
         self.boolean_flag = True
 
-    def get_filters_r(self):
-        return self.get_filter()
-
-    def get_filter(self):
-        raise NotImplementedError('Please implement this method')
-
-    def get_boolean_filter(self):
-        return self.get_filter() if self.boolean_flag else ~self.get_filter()
-
     def get_result(self):
         raise NotImplementedError('Please implement this method')
 
@@ -43,20 +34,6 @@ class AndParameterNode(BranchParameterNode):
     def __init__(self):
         super().__init__()
 
-    def get_filter(self):
-        filters = [x.get_boolean_filter() for x in self.child_parameters]
-        if not filters:
-            return None
-
-        result = filters[0]
-        for f in filters:
-            result &= f
-        return result
-        # return reduce(operator.and_, filters, Q())
-
-    def __str__(self):
-        return 'AND (' + ', '.join(self.child_parameters) + ')'
-
     def get_result(self):
         result = Card.objects.all()
         for child in self.child_parameters:
@@ -72,21 +49,6 @@ class OrParameterNode(BranchParameterNode):
     def __init__(self):
         super().__init__()
 
-    def get_filter(self):
-        filters = [x.get_boolean_filter() for x in self.child_parameters]
-        if not filters:
-            return None
-
-        result = filters[0]
-        for f in filters:
-            result |= f
-        return result
-
-        # return reduce(operator.or_, filters, Q())
-
-    def __str__(self):
-        return 'OR (' + ', '.join(self.child_parameters) + ')'
-
     def get_result(self):
         result = Card.objects.none()
         for child in self.child_parameters:
@@ -98,24 +60,10 @@ class OrParameterNode(BranchParameterNode):
         return result
 
 
-class RootSearchParameter(SearchParameterNode):
-    def __init__(self):
-        super().__init__()
-
-    def apply_filter(self, base_set: QuerySet):
-        pass
-
-
 class CardNameSearchParameter(SearchParameterNode):
     def __init__(self, card_name):
         super().__init__()
         self.card_name = card_name
-
-    def apply_filter(self, base_set: QuerySet):
-        return base_set.filter(name__icontains=self.card_name)
-
-    def get_filter(self):
-        return Q(name__icontains=self.card_name)
 
     def get_result(self):
         if self.boolean_flag:
@@ -129,9 +77,6 @@ class CardRulesSearchParameter(SearchParameterNode):
         super().__init__()
         self.card_rules = card_rules
 
-    def get_filter(self):
-        return Q(rules__icontains=self.card_rules)
-
     def get_result(self):
         if self.boolean_flag:
             return Card.objects.filter(rules__icontains=self.card_rules)
@@ -143,9 +88,6 @@ class CardTypeSearchParameter(SearchParameterNode):
     def __init__(self, card_type):
         super().__init__()
         self.card_type = card_type
-
-    def get_filter(self):
-        return Q(type__icontains=self.card_type)
 
     def get_result(self):
         if self.boolean_flag:
@@ -159,9 +101,6 @@ class CardSubtypeParameter(SearchParameterNode):
         super().__init__()
         self.card_subtype = card_subtype
 
-    def get_filter(self):
-        return Q(subtype__icontains=self.card_subtype)
-
     def get_result(self):
         if self.boolean_flag:
             return Card.objects.filter(subtype__icontains=self.card_subtype)
@@ -174,9 +113,6 @@ class CardColourParameter(SearchParameterNode):
         super().__init__()
         self.card_colour = card_colour
 
-    def get_filter(self):
-        return Q(colours=self.card_colour)
-
     def get_result(self):
         if self.boolean_flag:
             return Card.objects.filter(colours=self.card_colour)
@@ -187,9 +123,6 @@ class CardColourParameter(SearchParameterNode):
 class CardMulticolouredOnlyParameter(SearchParameterNode):
     def __init__(self):
         super().__init__()
-
-    def get_filter(self):
-        return Q(caolour_count__gt=1)
 
     def get_result(self):
         if self.boolean_flag:
@@ -203,9 +136,6 @@ class CardSetParameter(SearchParameterNode):
         super().__init__()
         self.set_obj = set_obj
 
-    def get_filter(self):
-        return Q(printings__set=self.set_obj)
-
     def get_result(self):
         if self.boolean_flag:
             return Card.objects.filter(printings__set=self.set_obj)
@@ -218,9 +148,6 @@ class CardOwnerParameter(SearchParameterNode):
         super().__init__()
         self.user = user
 
-    def get_filter(self):
-        return Q(printings__printed_languages__physical_cards__ownerships__owner=self.user)
-
     def get_result(self):
         if self.boolean_flag:
             return Card.objects.filter(printings__printed_languages__physical_cards__ownerships__owner=self.user)
@@ -231,32 +158,6 @@ class CardOwnerParameter(SearchParameterNode):
 class CardSearch:
     def __init__(self):
         self.root_parameter = AndParameterNode()
-        self.parameter_list = list()
-
-    def add_parameter(self, param):
-        self.parameter_list.append(param)
-
-    def get_base_result_set(self):
-        return Card.objects.all()
-
-    def search(self):
-        base_set = self.get_base_result_set()
-        for param in self.parameter_list:
-            base_set = param.apply_filter(base_set)
-
-        return base_set
-
-    def q_search(self):
-        query = self.parameter_list[0].create_q()
-        for param in self.parameter_list[1:]:
-            query &= param.create_q()
-
-        return Card.objects.filter(query)
-
-    def tree_search(self):
-        filters = self.root_parameter.get_boolean_filter()
-        print(filters)
-        return Card.objects.filter(filters)
 
     def result_search(self):
         return self.root_parameter.get_result()

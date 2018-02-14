@@ -21,8 +21,7 @@ class SimpleSearch:
     def get_query(self):
 
         searcher = cardsearch.CardSearch()
-
-        root_param = searcher.root_parameter# = cardsearch.AndParameterNode()
+        root_param = searcher.root_parameter
 
         if self.text:
             text_root = root_param.add_parameter(cardsearch.OrParameterNode())
@@ -43,10 +42,8 @@ class SimpleSearch:
             for colour in self.colours:
                 param.add_parameter(cardsearch.CardColourParameter(colour))
 
-            print(self.exclude_colours)
             if self.exclude_colours:
                 for colour in [c for c in Colour.objects.all() if c not in self.colours]:
-                    print('Excluding ' + colour.name)
                     p = cardsearch.CardColourParameter(colour)
                     p.boolean_flag = False
                     root_param.add_parameter(p)
@@ -60,5 +57,4 @@ class SimpleSearch:
         if self.card_type:
             root_param.add_parameter(cardsearch.CardTypeSearchParameter(self.card_type))
 
-        # return searcher.tree_search()
         return searcher.result_search()
