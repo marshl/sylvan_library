@@ -7,6 +7,8 @@ from functools import reduce
 
 from cards.models import *
 
+comparisons = {'<': '__lt', '>': '__gt', '=': ''}
+
 
 class SearchParameterNode:
     def __init__(self):
@@ -15,9 +17,6 @@ class SearchParameterNode:
 
     def get_result(self):
         raise NotImplementedError('Please implement this method')
-
-    def __str__(self):
-        return '!'
 
 
 class BranchParameterNode(SearchParameterNode):
@@ -153,6 +152,22 @@ class CardOwnerParameter(SearchParameterNode):
             return Card.objects.filter(printings__printed_languages__physical_cards__ownerships__owner=self.user)
         else:
             return Card.objects.exclude(printings__printed_languages__physical_cards__ownerships__owner=self.user)
+
+
+class CardNumPowerParameter(SearchParameterNode):
+    def __init__(self, num_power: int, comparison: str):
+        super().__init__()
+        self.num_power = num_power
+        self.comparison = comparison
+
+    def get_result(self):
+
+        args = {f'num_power{comparisons[self.comparison]}': self.num_power}
+
+        if self.boolean_flag:
+            return Card.objects.filter(**args)
+        else:
+            return Card.objects.exlcude(**args)
 
 
 class CardSearch:
