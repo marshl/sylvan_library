@@ -154,7 +154,18 @@ class CardOwnerParameter(SearchParameterNode):
             return Card.objects.exclude(printings__printed_languages__physical_cards__ownerships__owner=self.user)
 
 
-class CardNumPowerParameter(SearchParameterNode):
+class CardNumericalParameter(SearchParameterNode):
+
+    def __init__(self, number: int, operator: str):
+        super().__init__()
+        self.number = number
+        self.operator = operator
+
+    def get_args(self, field: str):
+        return {f'{field}{comparisons[self.operator]}': self.number}
+
+
+class CardNumPowerParameter(CardNumericalParameter):
     def __init__(self, num_power: int, comparison: str):
         super().__init__()
         self.num_power = num_power
@@ -162,12 +173,24 @@ class CardNumPowerParameter(SearchParameterNode):
 
     def get_result(self):
 
-        args = {f'num_power{comparisons[self.comparison]}': self.num_power}
+        args = self.get_args('num_power')
 
         if self.boolean_flag:
             return Card.objects.filter(**args)
         else:
             return Card.objects.exlcude(**args)
+
+
+class CardNumToughnessParameter(CardNumericalParameter):
+    def __init__(self, number: int, operator: str):
+        super().__init__(number, operator)
+
+    def get_result(self):
+        args = self.get_args('num_toughness')
+        if self.boolean_flag:
+            return Card.objects.filter(**args)
+        else:
+            return Card.objects.exclude(**args)
 
 
 class CardSearch:
