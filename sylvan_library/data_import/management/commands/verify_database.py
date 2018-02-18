@@ -176,74 +176,82 @@ class Command(BaseCommand):
         self.assert_card_cmc_eq('Homura\'s Essence', 6)
 
     def test_card_color(self):
+        wubrg = Card.colour_flags.white | Card.colour_flags.blue | \
+                Card.colour_flags.black | Card.colour_flags.red | Card.colour_flags.green
+
         # Monocoloured card
-        self.assert_card_colour_eq('Glory Seeker', [Colour.white()])
+        self.assert_card_colour_eq('Glory Seeker', Card.colour_flags.white)
 
         # Multicoloured card
-        self.assert_card_colour_eq('Dark Heart of the Wood', [Colour.black(), Colour.green()])
-        self.assert_card_colour_eq('Progenitus', list(Colour.objects.all()))
-        self.assert_card_colour_eq('Reaper King', list(Colour.objects.all()))
+        self.assert_card_colour_eq('Dark Heart of the Wood', Card.colour_flags.black | Card.colour_flags.green)
+
+        self.assert_card_colour_eq('Progenitus', wubrg)
+        self.assert_card_colour_eq('Reaper King', wubrg)
 
         # Hybrid card
-        self.assert_card_colour_eq('Azorius Guildmage', [Colour.white(), Colour.blue()])
+        self.assert_card_colour_eq('Azorius Guildmage', Card.colour_flags.white | Card.colour_flags.blue)
 
         # Colour indicator cards
-        self.assert_card_colour_eq('Transguild Courier', list(Colour.objects.all()))
-        self.assert_card_colour_eq('Ghostfire', [])
-        self.assert_card_colour_eq('Dryad Arbor', [Colour.green()])
+        self.assert_card_colour_eq('Transguild Courier', wubrg)
+        self.assert_card_colour_eq('Ghostfire', 0)
+        self.assert_card_colour_eq('Dryad Arbor', Card.colour_flags.green)
 
         # Same colour transform card
-        self.assert_card_colour_eq('Delver of Secrets', [Colour.blue()])
-        self.assert_card_colour_eq('Insectile Aberration', [Colour.blue()])
+        self.assert_card_colour_eq('Delver of Secrets', Card.colour_flags.blue)
+        self.assert_card_colour_eq('Insectile Aberration', Card.colour_flags.blue)
 
         # Different colour transform card
-        self.assert_card_colour_eq('Garruk Relentless', [Colour.green()])
-        self.assert_card_colour_eq('Garruk, the Veil-Cursed', [Colour.black(), Colour.green()])
+        self.assert_card_colour_eq('Garruk Relentless', Card.colour_flags.green)
+        self.assert_card_colour_eq('Garruk, the Veil-Cursed', Card.colour_flags.black | Card.colour_flags.green)
 
         # Colour identity cards
-        self.assert_card_colour_eq('Bosh, Iron Golem', [])
+        self.assert_card_colour_eq('Bosh, Iron Golem', 0)
 
         # Split card
-        self.assert_card_colour_eq('Tear', [Colour.white()])
+        self.assert_card_colour_eq('Tear', Card.colour_flags.white)
 
         # Flip card
-        self.assert_card_colour_eq('Rune-Tail, Kitsune Ascendant', [Colour.white()])
-        self.assert_card_colour_eq('Rune-Tail\'s Essence', [Colour.white()])
+        self.assert_card_colour_eq('Rune-Tail, Kitsune Ascendant', Card.colour_flags.white)
+        self.assert_card_colour_eq('Rune-Tail\'s Essence', Card.colour_flags.white)
 
         # Normal cards
 
     def test_card_colour_identity(self):
-        self.assert_card_colour_identity_eq('Goblin Piker', [Colour.red()])
+        wubrg = Card.colour_flags.white | Card.colour_flags.blue | \
+                Card.colour_flags.black | Card.colour_flags.red | Card.colour_flags.green
+
+        self.assert_card_colour_identity_eq('Goblin Piker', Card.colour_flags.red)
 
         # Lands
-        self.assert_card_colour_identity_eq('Mountain', [Colour.red()])
-        self.assert_card_colour_identity_eq('Polluted Delta', [])
-        self.assert_card_colour_identity_eq('Tolarian Academy', [Colour.blue()])
+        self.assert_card_colour_identity_eq('Mountain', Card.colour_flags.red)
+        self.assert_card_colour_identity_eq('Polluted Delta', 0)
+        self.assert_card_colour_identity_eq('Tolarian Academy', Card.colour_flags.blue)
 
         # Colour indicator cards
-        self.assert_card_colour_identity_eq('Ghostfire', [Colour.red()])
-        self.assert_card_colour_identity_eq('Dryad Arbor', [Colour.green()])
+        self.assert_card_colour_identity_eq('Ghostfire', Card.colour_flags.red)
+        self.assert_card_colour_identity_eq('Dryad Arbor', Card.colour_flags.green)
 
         # Augment cards
-        self.assert_card_colour_identity_eq('Half-Orc, Half-', [Colour.red()])
+        self.assert_card_colour_identity_eq('Half-Orc, Half-', Card.colour_flags.red)
 
         # Symbol in rules cards
-        self.assert_card_colour_identity_eq('Bosh, Iron Golem', [Colour.red()])
-        self.assert_card_colour_identity_eq('Dawnray Archer', [Colour.white(), Colour.blue()])
-        self.assert_card_colour_identity_eq('Obelisk of Alara', list(Colour.objects.all()))
+        self.assert_card_colour_identity_eq('Bosh, Iron Golem', Card.colour_flags.red)
+        self.assert_card_colour_identity_eq('Dawnray Archer', Card.colour_flags.white | Card.colour_flags.blue)
+        self.assert_card_colour_identity_eq('Obelisk of Alara', wubrg)
 
         # Hybrid cards
-        self.assert_card_colour_identity_eq('Azorius Guildmage', [Colour.white(), Colour.blue()])
+        self.assert_card_colour_identity_eq('Azorius Guildmage', Card.colour_flags.white | Card.colour_flags.blue)
 
         # Split cards
-        self.assert_card_colour_identity_eq('Wear', [Colour.white(), Colour.red()])
-        self.assert_card_colour_identity_eq('Tear', [Colour.white(), Colour.red()])
+        self.assert_card_colour_identity_eq('Wear', Card.colour_flags.white | Card.colour_flags.red)
+        self.assert_card_colour_identity_eq('Tear', Card.colour_flags.white | Card.colour_flags.red)
 
         # Flip cards
-        self.assert_card_colour_identity_eq('Garruk Relentless', [Colour.black(), Colour.green()])
-        self.assert_card_colour_identity_eq('Garruk, the Veil-Cursed', [Colour.black(), Colour.green()])
-        self.assert_card_colour_identity_eq('Gisela, the Broken Blade', [Colour.white()])
-        self.assert_card_colour_identity_eq('Brisela, Voice of Nightmares', [Colour.white()])
+        self.assert_card_colour_identity_eq('Garruk Relentless', Card.colour_flags.black | Card.colour_flags.green)
+        self.assert_card_colour_identity_eq('Garruk, the Veil-Cursed',
+                                            Card.colour_flags.black | Card.colour_flags.green)
+        self.assert_card_colour_identity_eq('Gisela, the Broken Blade', Card.colour_flags.white)
+        self.assert_card_colour_identity_eq('Brisela, Voice of Nightmares', Card.colour_flags.white)
 
     def test_card_colour_count(self):
         # Normal cards
@@ -553,20 +561,19 @@ class Command(BaseCommand):
     def assert_card_cmc_eq(self, card_name: str, cmc: int):
         self.assert_card_name_attr_eq(card_name, 'cmc', cmc)
 
-    def assert_card_colour_eq(self, card_name: str, colours: List[Colour]):
-        actual = Card.objects.get(name=card_name).colours.order_by('display_order').all()
-        self.assert_true(colours == list(actual),
+    def assert_card_colour_eq(self, card_name: str, colours: int):
+        actual = int(Card.objects.get(name=card_name).colour_flags)
+        self.assert_true(colours == actual,
                          f'{card_name}.colours was expected to be "{colours}", actually "{actual}"')
 
-    def assert_card_colour_identity_eq(self, card_name: str, colour_identity: List[Colour]):
-        actual = Card.objects.get(name=card_name).colour_identities.order_by('display_order').all()
-        self.assert_true(colour_identity == list(actual),
-                         f'{card_name}.colour_identities was expected to be "{colour_identity}", actually "{actual}"')
+    def assert_card_colour_identity_eq(self, card_name: str, colour_identity: int):
+        actual = int(Card.objects.get(name=card_name).colour_identity_flags)
+        self.assert_true(colour_identity == actual,
+                         f'{card_name}.colour_identity_flags was expected ' +
+                         f'to be "{colour_identity}", actually "{actual}"')
 
     def assert_card_colour_count_eq(self, card_name: str, colour_count):
-        actual = Card.objects.get(name=card_name).colours.count()
-        self.assert_true(actual == colour_count,
-                         f'{card_name}.colour_count was expected to be "{colour_count}", actually "{actual}"')
+        self.assert_card_name_attr_eq(card_name, 'colour_count', colour_count)
 
     def assert_card_type_eq(self, card_name: str, type):
         self.assert_card_name_attr_eq(card_name, 'type', type)
