@@ -4,6 +4,7 @@ chardet==3.0.4
 colorama==0.3.9
 decorator==4.1.2
 Django==1.11.4
+django-bitfield==1.9.3
 django-extensions==1.9.8
 djangorestframework==3.7.7
 entrypoints==0.2.3

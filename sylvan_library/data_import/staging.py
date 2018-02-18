@@ -1,7 +1,23 @@
 import re
 from functools import total_ordering
 
-from cards.models import Colour
+from cards.models import Colour, Card
+
+COLOUR_NAME_TO_FLAG = {
+    'white': Card.colour_flags.white,
+    'blue': Card.colour_flags.blue,
+    'black': Card.colour_flags.black,
+    'red': Card.colour_flags.red,
+    'green': Card.colour_flags.green,
+}
+
+COLOUR_CODE_TO_FLAG = {
+    'w': Card.colour_flags.white,
+    'u': Card.colour_flags.blue,
+    'b': Card.colour_flags.black,
+    'r': Card.colour_flags.red,
+    'g': Card.colour_flags.green,
+}
 
 
 @total_ordering
@@ -23,8 +39,8 @@ class StagedCard:
 
         self.collector_number = int(match.group('number'))
         self.collector_letter = (
-            match.group('special') or
-            match.group('letter'))
+                match.group('special') or
+                match.group('letter'))
 
     def __eq__(self, other: 'StagedCard'):
         return self.collector_number == other.collector_number and \
@@ -89,20 +105,24 @@ class StagedCard:
     def get_cmc(self):
         return self.value_dict.get('cmc') or 0
 
-    def get_colours(self):
+    def get_colour(self):
+        result = 0
         if 'colors' in self.value_dict:
-            return Colour.objects.filter(name__in=self.value_dict['colors'])
+            for colour_name in self.value_dict['colors']:
+                result |= COLOUR_NAME_TO_FLAG[colour_name.lower()]
 
-        return []
+        return result
 
-    def get_colour_identities(self):
+    def get_colour_identity(self):
+        result = 0
         if 'colorIdentity' in self.value_dict:
-            return Colour.objects.filter(symbol__in=self.value_dict['colorIdentity'])
+            for colour_code in self.value_dict['colorIdentity']:
+                result |= COLOUR_CODE_TO_FLAG[colour_code.lower()]
 
-        return []
+        return result
 
     def get_colour_count(self):
-        return len(self.get_colours())
+        return bin(self.get_colour()).count('1')
 
     def get_power(self):
         return self.value_dict.get('power')

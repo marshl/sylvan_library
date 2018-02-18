@@ -278,8 +278,8 @@ class Command(BaseCommand):
 
         card.cost = staged_card.get_mana_cost()
         card.cmc = staged_card.get_cmc()
-        card.colours = staged_card.get_colours()
-        card.colour_identities = staged_card.get_colour_identities()
+        card.colour_flags = staged_card.get_colour()
+        card.colour_identity_flags = staged_card.get_colour_identity()
         card.colour_count = staged_card.get_colour_count()
 
         card.power = staged_card.get_power()

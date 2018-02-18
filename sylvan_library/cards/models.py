@@ -3,6 +3,7 @@ from os import path
 
 from django.db import models
 from django.contrib.auth.models import User
+from bitfield import BitField
 
 CARD_LAYOUT_CHOICES = (
     ('normal', 'Normal'),
@@ -96,8 +97,8 @@ class Card(models.Model):
 
     cost = models.CharField(max_length=50, blank=True, null=True)
     cmc = models.FloatField()
-    colours = models.ManyToManyField(Colour, related_name='colour_cards')
-    colour_identities = models.ManyToManyField(Colour, related_name='colour_id_cards')
+    colour_flags = BitField(flags=('white', 'blue', 'black', 'red', 'green'))
+    colour_identity_flags = BitField(flags=('white', 'blue', 'black', 'red', 'green'))
     colour_count = models.IntegerField()
 
     type = models.CharField(max_length=100, blank=True, null=True)
