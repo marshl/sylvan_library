@@ -1,0 +1,37 @@
+[
+  {
+    "symbol": "L",
+    "name": "Basic Land",
+    "display_order": 10
+  },
+  {
+    "symbol": "C",
+    "name": "Common",
+    "display_order": 20
+  },
+  {
+    "symbol": "U",
+    "name": "Uncommon",
+    "display_order": 30
+  },
+  {
+    "symbol": "R",
+    "name": "Rare",
+    "display_order": 40
+  },
+  {
+    "symbol": "M",
+    "name": "Mythic Rare",
+    "display_order": 50
+  },
+  {
+    "symbol": "T",
+    "name": "Timeshifted",
+    "display_order": 60
+  },
+  {
+    "symbol": "S",
+    "name": "Special",
+    "display_order": 70
+  }
+]

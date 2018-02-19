@@ -1,0 +1,27 @@
+[
+  {
+    "symbol": "W",
+    "name": "White",
+    "display_order": 10
+  },
+  {
+    "symbol": "U",
+    "name": "Blue",
+    "display_order": 20
+  },
+  {
+    "symbol": "B",
+    "name": "Black",
+    "display_order": 30
+  },
+  {
+    "symbol": "R",
+    "name": "Red",
+    "display_order": 40
+  },
+  {
+    "symbol": "G",
+    "name": "Green",
+    "display_order": 50
+  }
+]

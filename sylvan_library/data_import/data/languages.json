@@ -1,0 +1,50 @@
+[
+  {
+    "name": "English",
+    "code": "en"
+  },
+  {
+    "name": "Chinese Simplified",
+    "code": "tw"
+  },
+  {
+    "name": "Chinese Traditional",
+    "code": "ch"
+  },
+  {
+    "name": "French",
+    "code": "fr"
+  },
+  {
+    "name": "German",
+    "code": "de"
+  },
+  {
+    "name": "Italian",
+    "code": "it"
+  },
+  {
+    "name": "Japanese",
+    "code": "jp"
+  },
+  {
+    "name": "Italian",
+    "code": "it"
+  },
+  {
+    "name": "Portuguese (Brazil)",
+    "code": "pt"
+  },
+  {
+    "name": "Russian",
+    "code": "ru"
+  },
+  {
+    "name": "Spanish",
+    "code": "es"
+  },
+  {
+    "name": "Korean",
+    "code": null
+  }
+]

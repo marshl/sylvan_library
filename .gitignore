@@ -106,9 +106,9 @@ sylvan_env/
 /.metadata
 
 secrets.json
-sylvan_library/data_import/data/
 *.pyc
 *.jpg
 *.jpeg
 sylvan_library/sylvan_library/database_connections.py
 *.idea
+AllSets-*.json*
