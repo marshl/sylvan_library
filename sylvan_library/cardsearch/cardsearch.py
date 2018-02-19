@@ -7,7 +7,7 @@ from functools import reduce
 
 from cards.models import *
 
-comparisons = {'<': '__lt', '>': '__gt', '=': ''}
+comparisons = {'<': '__lt', '<=': '__lte', '>': '__gt', '>=': '__gte', '=': ''}
 
 
 class SearchParameterNode:
@@ -83,7 +83,7 @@ class CardRulesSearchParameter(SearchParameterNode):
             return Card.objects.exclude(rules__icontains=self.card_rules)
 
 
-class CardTypeSearchParameter(SearchParameterNode):
+class CardTypeParameter(SearchParameterNode):
     def __init__(self, card_type):
         super().__init__()
         self.card_type = card_type
@@ -114,9 +114,9 @@ class CardColourParameter(SearchParameterNode):
 
     def get_result(self):
         if self.boolean_flag:
-            return Card.objects.filter(colours=self.card_colour)
+            return Card.objects.filter(colour_flags=self.card_colour)
         else:
-            return Card.objects.exclude(colours=self.card_colour)
+            return Card.objects.exclude(colour_flags=self.card_colour)
 
 
 class CardMulticolouredOnlyParameter(SearchParameterNode):
@@ -167,7 +167,7 @@ class CardNumericalParameter(SearchParameterNode):
 
 class CardNumPowerParameter(CardNumericalParameter):
     def __init__(self, num_power: int, comparison: str):
-        super().__init__()
+        super().__init__(num_power, comparison)
         self.num_power = num_power
         self.comparison = comparison
 
@@ -182,11 +182,35 @@ class CardNumPowerParameter(CardNumericalParameter):
 
 
 class CardNumToughnessParameter(CardNumericalParameter):
+    def __init__(self, num_toughness: int, operator: str):
+        super().__init__(num_toughness, operator)
+
+    def get_result(self):
+        args = self.get_args('num_toughness')
+        if self.boolean_flag:
+            return Card.objects.filter(**args)
+        else:
+            return Card.objects.exclude(**args)
+
+
+class CardNumLoyaltyParameter(CardNumericalParameter):
     def __init__(self, number: int, operator: str):
         super().__init__(number, operator)
 
     def get_result(self):
-        args = self.get_args('num_toughness')
+        args = self.get_args('num_loyalty')
+        if self.boolean_flag:
+            return Card.objects.filter(**args)
+        else:
+            return Card.objects.exclude(**args)
+
+
+class CardCmcParameter(CardNumericalParameter):
+    def __init__(self, number: int, operator: str):
+        super().__init__(number, operator)
+
+    def get_result(self):
+        args = self.get_args('cmc')
         if self.boolean_flag:
             return Card.objects.filter(**args)
         else:
