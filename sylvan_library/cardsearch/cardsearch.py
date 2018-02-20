@@ -217,9 +217,35 @@ class CardCmcParameter(CardNumericalParameter):
             return Card.objects.exclude(**args)
 
 
+class CardSortOrder:
+    def __init__(self, descending: bool = False):
+        super().__init__()
+        self.sort_descending = descending
+
+    def get_order(self):
+        raise NotImplementedError('Please implement this method')
+
+    def get_argument(self):
+        return ('-' if self.sort_descending else '') + self.get_order()
+
+
+class CardNameSortOrder(CardSortOrder):
+
+    def get_order(self):
+        return 'name'
+
+
 class CardSearch:
     def __init__(self):
         self.root_parameter = AndParameterNode()
+        self.sort_orders = list()
+
+    def add_sort_order(self, sort_order: CardSortOrder):
+        self.sort_orders.append(sort_order)
 
     def result_search(self):
-        return self.root_parameter.get_result()
+        result = self.root_parameter.get_result()
+        for sort_order in self.sort_orders:
+            result = result.order_by(sort_order.get_argument())
+
+        return result
