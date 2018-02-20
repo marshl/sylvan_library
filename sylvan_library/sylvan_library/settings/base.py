@@ -88,7 +88,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'spellbook',
     'data_import',
     'cards',
     'django_extensions',
