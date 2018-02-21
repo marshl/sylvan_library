@@ -101,6 +101,7 @@ class Card(models.Model):
     colour_identity_flags = BitField(flags=('white', 'blue', 'black', 'red', 'green'))
     colour_count = models.IntegerField()
     colour_sort_key = models.IntegerField()
+    colour_weight = models.IntegerField()
 
     type = models.CharField(max_length=100, blank=True, null=True)
     subtype = models.CharField(max_length=100, blank=True, null=True)

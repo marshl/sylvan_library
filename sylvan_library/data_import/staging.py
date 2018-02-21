@@ -158,6 +158,16 @@ class StagedCard:
     def get_colour_sort_key(self):
         return COLOUR_TO_SORT_KEY[int(self.get_colour())]
 
+    def get_colour_weight(self):
+        if not self.get_mana_cost():
+            return 0
+
+        generic_mana = re.search('(\d+)', self.get_mana_cost())
+        if not generic_mana:
+            return self.get_cmc()
+        else:
+            return self.get_cmc() - int(generic_mana.group(0))
+
     def get_colour_identity(self):
         result = 0
         if 'colorIdentity' in self.value_dict:
