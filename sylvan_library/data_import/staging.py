@@ -19,6 +19,48 @@ COLOUR_CODE_TO_FLAG = {
     'g': Card.colour_flags.green,
 }
 
+COLOUR_TO_SORT_KEY = {
+    0: 0,
+    int(Card.colour_flags.white): 1,
+    int(Card.colour_flags.blue): 2,
+    int(Card.colour_flags.black): 3,
+    int(Card.colour_flags.red): 4,
+    int(Card.colour_flags.green): 5,
+
+    int(Card.colour_flags.white | Card.colour_flags.blue): 6,
+    int(Card.colour_flags.blue | Card.colour_flags.black): 7,
+    int(Card.colour_flags.black | Card.colour_flags.red): 8,
+    int(Card.colour_flags.red | Card.colour_flags.green): 9,
+    int(Card.colour_flags.green | Card.colour_flags.white): 10,
+
+    int(Card.colour_flags.white | Card.colour_flags.black): 11,
+    int(Card.colour_flags.blue | Card.colour_flags.red): 12,
+    int(Card.colour_flags.black | Card.colour_flags.green): 13,
+    int(Card.colour_flags.red | Card.colour_flags.white): 14,
+    int(Card.colour_flags.green | Card.colour_flags.blue): 15,
+
+    int(Card.colour_flags.white | Card.colour_flags.blue | Card.colour_flags.black): 16,
+    int(Card.colour_flags.blue | Card.colour_flags.black | Card.colour_flags.red): 17,
+    int(Card.colour_flags.black | Card.colour_flags.red | Card.colour_flags.green): 18,
+    int(Card.colour_flags.red | Card.colour_flags.green | Card.colour_flags.white): 19,
+    int(Card.colour_flags.green | Card.colour_flags.white | Card.colour_flags.blue): 20,
+
+    int(Card.colour_flags.white | Card.colour_flags.black | Card.colour_flags.green): 21,
+    int(Card.colour_flags.blue | Card.colour_flags.red | Card.colour_flags.white): 22,
+    int(Card.colour_flags.black | Card.colour_flags.green | Card.colour_flags.blue): 23,
+    int(Card.colour_flags.red | Card.colour_flags.white | Card.colour_flags.black): 24,
+    int(Card.colour_flags.green | Card.colour_flags.blue | Card.colour_flags.red): 25,
+
+    int(Card.colour_flags.white | Card.colour_flags.blue | Card.colour_flags.black | Card.colour_flags.red): 26,
+    int(Card.colour_flags.blue | Card.colour_flags.black | Card.colour_flags.red | Card.colour_flags.green): 27,
+    int(Card.colour_flags.black | Card.colour_flags.red | Card.colour_flags.green | Card.colour_flags.white): 28,
+    int(Card.colour_flags.red | Card.colour_flags.green | Card.colour_flags.white | Card.colour_flags.blue): 29,
+    int(Card.colour_flags.green | Card.colour_flags.white | Card.colour_flags.blue | Card.colour_flags.black): 30,
+
+    int(Card.colour_flags.white | Card.colour_flags.blue | Card.colour_flags.black
+        | Card.colour_flags.red | Card.colour_flags.green): 31,
+}
+
 
 @total_ordering
 class StagedCard:
@@ -112,6 +154,9 @@ class StagedCard:
                 result |= COLOUR_NAME_TO_FLAG[colour_name.lower()]
 
         return result
+
+    def get_colour_sort_key(self):
+        return COLOUR_TO_SORT_KEY[int(self.get_colour())]
 
     def get_colour_identity(self):
         result = 0

@@ -281,6 +281,7 @@ class Command(BaseCommand):
         card.colour_flags = staged_card.get_colour()
         card.colour_identity_flags = staged_card.get_colour_identity()
         card.colour_count = staged_card.get_colour_count()
+        card.colour_sort_key = staged_card.get_colour_sort_key()
 
         card.power = staged_card.get_power()
         card.toughness = staged_card.get_toughness()
