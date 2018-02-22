@@ -217,35 +217,49 @@ class CardCmcParameter(CardNumericalParameter):
             return Card.objects.exclude(**args)
 
 
-class CardSortOrder:
+class CardSortParam:
     def __init__(self, descending: bool = False):
         super().__init__()
         self.sort_descending = descending
 
-    def get_order(self):
-        raise NotImplementedError('Please implement this method')
+    def get_sort_list(self):
+        return ['-' + arg if self.sort_descending else arg for arg in self.get_sort_keys()]
 
-    def get_argument(self):
-        return ('-' if self.sort_descending else '') + self.get_order()
+    def get_sort_keys(self):
+        raise NotImplemented()
 
 
-class CardNameSortOrder(CardSortOrder):
+class CardNameSortParam(CardSortParam):
 
-    def get_order(self):
-        return 'name'
+    def get_sort_keys(self):
+        return ['name']
+
+
+class CardCollectorNumSortParam(CardSortParam):
+    def get_sort_keys(self):
+        return ['printings__collector_number']
+
+
+class CardColourSortParam(CardSortParam):
+    def get_sort_keys(self):
+        return ['colour_sort_key']
+
+
+class CardColourWeightSortParam(CardSortParam):
+    def get_sort_keys(self):
+        return ['cmc', 'colour_sort_key', 'colour_weight']
 
 
 class CardSearch:
     def __init__(self):
         self.root_parameter = AndParameterNode()
-        self.sort_orders = list()
+        self.sort_params = list()
 
-    def add_sort_order(self, sort_order: CardSortOrder):
-        self.sort_orders.append(sort_order)
+    def add_sort_param(self, sort_param: CardSortParam):
+        self.sort_params.append(sort_param)
 
     def result_search(self):
         result = self.root_parameter.get_result()
-        for sort_order in self.sort_orders:
-            result = result.order_by(sort_order.get_argument())
-
+        self.add_sort_param(CardNameSortParam())
+        result = result.order_by(*[order for sort_param in self.sort_params for order in sort_param.get_sort_list()])
         return result
