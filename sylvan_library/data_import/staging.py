@@ -1,4 +1,4 @@
-import re
+import datetime, re
 from functools import total_ordering
 
 from cards.models import Colour, Card
@@ -289,7 +289,18 @@ class StagedCard:
         return self.value_dict.get('life')
 
     def get_release_date(self):
-        return self.value_dict.get('releaseDate')
+        if 'releaseDate' in self.value_dict:
+            date_string = self.value_dict['releaseDate']
+            try:
+                return datetime.datetime.strptime(date_string, '%Y-%m-%d')
+            except ValueError:
+                try:
+                    return datetime.datetime.strptime(date_string, '%Y-%m')
+                except ValueError:
+                    return datetime.datetime.strptime(date_string, '%Y')
+
+        return None
+
 
     def is_reserved(self):
         return 'reserved' in self.value_dict and self.value_dict['reserved']
