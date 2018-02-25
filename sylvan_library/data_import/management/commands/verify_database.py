@@ -549,6 +549,21 @@ class Command(BaseCommand):
         self.assert_cardprinting_collecterletter_eq('Where', 'UNH', 'd')
         self.assert_cardprinting_collecterletter_eq('Why', 'UNH', 'e')
 
+    def test_physical_cards(self):
+        gisela = Card.objects.get(name='Gisela, the Broken Blade')
+        bruna = Card.objects.get(name='Bruna, the Fading Light')
+        brisela = Card.objects.get(name='Brisela, Voice of Nightmares')
+        emn = Set.objects.get(code='EMN')
+        english = Language.objects.get(name='English')
+
+        gisela_printlang = gisela.printings.get(set=emn).printed_languages.get(language=english)
+        bruna_printlang = bruna.printings.get(set=emn).printed_languages.get(language=english)
+        brisela_printlang = brisela.printings.get(set=emn).printed_languages.get(language=english)
+
+        self.assert_true(gisela_printlang.physical_cards.count() == 1, 'Gisela should only have one physical card')
+        self.assert_true(bruna_printlang.physical_cards.count() == 1, 'Bruna should only have one physical card')
+        self.assert_true(brisela_printlang.physical_cards.count() == 2, 'Brisela should have two physical cards')
+
     def assert_card_exists(self, card_name: str):
         self.assert_true(Card.objects.filter(name=card_name).exists(), f'{card_name} should exist')
 
