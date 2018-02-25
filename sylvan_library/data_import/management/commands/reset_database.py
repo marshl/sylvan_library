@@ -11,15 +11,12 @@ class Command(BaseCommand):
     def truncate_model(self, model_obj):
         print('Truncating {0}... '.format(model_obj.__name__), end='')
         model_obj.objects.all().delete()
-
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT setval(pg_get_serial_sequence('\"{0}\"','id'), 1, false);".format(
-                    model_obj.objects.model._meta.db_table
-                )
-            )
-
+        self.reset_sequence(model_obj.objects.model._meta.db_table)
         print('Done')
+
+    def reset_sequence(self, table_name):
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT setval(pg_get_serial_sequence('\"{table_name}\"','id'), 1, false);")
 
     def handle(self, *args, **options):
         confirm = _query.query_yes_no(
@@ -32,6 +29,7 @@ class Command(BaseCommand):
         self.truncate_model(Deck)
         self.truncate_model(CardTag)
         self.truncate_model(CardRuling)
+        self.truncate_model(CardLegality)
         self.truncate_model(UserCardChange)
         self.truncate_model(UserOwnedCard)
         self.truncate_model(PhysicalCard)
@@ -41,4 +39,9 @@ class Command(BaseCommand):
         self.truncate_model(Rarity)
         self.truncate_model(Set)
         self.truncate_model(Block)
+        self.truncate_model(Format)
         self.truncate_model(Language)
+        self.truncate_model(Colour)
+
+        self.reset_sequence('cards_card_links')
+        self.reset_sequence('cards_cardprintinglanguage_physical_cards')
