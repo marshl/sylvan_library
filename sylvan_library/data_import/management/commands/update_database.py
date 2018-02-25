@@ -312,11 +312,7 @@ class Command(BaseCommand):
 
     def update_card_printing(self, card_obj: Card, set_obj: Set, staged_card: StagedCard):
 
-        printing = CardPrinting.objects.filter(
-            card=card_obj,
-            set=set_obj,
-            collector_number=staged_card.get_collector_number(),
-            collector_letter=staged_card.get_collector_letter()).first()
+        printing = CardPrinting.objects.filter(json_id=staged_card.get_json_id()).first()
 
         if printing is not None:
             logger.info(f'Updating card printing {printing}')
@@ -325,10 +321,12 @@ class Command(BaseCommand):
             printing = CardPrinting(
                 card=card_obj,
                 set=set_obj,
-                collector_number=staged_card.get_collector_number(),
-                collector_letter=staged_card.get_collector_letter())
+            )
             logger.info(f'Created new card printing {printing}')
             self.update_counts['card_printings_created'] += 1
+
+        printing.collector_number = staged_card.get_collector_number()
+        printing.collector_letter = staged_card.get_collector_letter()
 
         printing.artist = staged_card.get_artist()
         printing.rarity = Rarity.objects.get(name=staged_card.get_rarity_name())
@@ -412,11 +410,7 @@ class Command(BaseCommand):
             for staged_card in staged_set.get_cards():
                 card_obj = Card.objects.get(name=staged_card.get_name())
 
-                printing_obj = CardPrinting.objects.get(
-                    card=card_obj,
-                    set=set_obj,
-                    collector_number=staged_card.get_collector_number(),
-                    collector_letter=staged_card.get_collector_letter())
+                printing_obj = CardPrinting.objects.get(json_id=staged_card.get_json_id())
 
                 printlang_obj = CardPrintingLanguage.objects.get(
                     card_printing=printing_obj,
@@ -452,8 +446,6 @@ class Command(BaseCommand):
 
         linked_language_objs = []
 
-        cp = printlang.card_printing
-
         if staged_card.has_other_names():
 
             for link_name in staged_card.get_other_names():
@@ -461,9 +453,9 @@ class Command(BaseCommand):
                 link_card = Card.objects.get(name=link_name)
                 link_print = CardPrinting.objects.filter(
                     card=link_card,
-                    set=cp.set).first()
+                    set=printlang.card_printing.set).first()
                 if link_print is None:
-                    logger.error(f'Printing for link {link_card} in set {cp.set} not found')
+                    logger.error(f'Printing for link {link_card} in set {printlang.card_printing.set} not found')
                     raise LookupError()
 
                 if (staged_card.get_layout() == 'meld' and

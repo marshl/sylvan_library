@@ -145,7 +145,7 @@ class CardPrinting(models.Model):
 
     # The unique identifier that mtgjson uses for the card
     # It is made up by doing an SHA1 hash of setCode + cardName + cardImageName
-    json_id = models.CharField(max_length=40)
+    json_id = models.CharField(max_length=40, unique=True)
 
     mci_number = models.IntegerField(blank=True, null=True)
 

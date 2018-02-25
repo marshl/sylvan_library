@@ -297,10 +297,12 @@ class StagedCard:
                 try:
                     return datetime.datetime.strptime(date_string, '%Y-%m')
                 except ValueError:
-                    return datetime.datetime.strptime(date_string, '%Y')
+                    return datetime.datetime.strptime()
 
         return None
 
+    def get_image_name(self):
+        return self.value_dict.get('imageName')
 
     def is_reserved(self):
         return 'reserved' in self.value_dict and self.value_dict['reserved']
@@ -354,6 +356,11 @@ class StagedSet:
 
     def add_card(self, card):
         staged_card = StagedCard(card)
+        if staged_card.get_image_name() in ['b.f.m. (big furry monster)2',
+                                            'b.f.m. (big furry monster, right side)2',
+                                            'brisela, voice of nightmares2']:
+            return
+
         self.staged_cards.append(staged_card)
 
     def get_cards(self):
