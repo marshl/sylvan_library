@@ -67,6 +67,7 @@ class Colour(models.Model):
     symbol = models.CharField(max_length=1, unique=True)
     name = models.CharField(max_length=15, unique=True)
     display_order = models.IntegerField(unique=True)
+    bit_value = models.IntegerField(unique=True)
 
     @staticmethod
     def white():

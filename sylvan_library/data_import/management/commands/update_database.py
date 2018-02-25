@@ -103,7 +103,10 @@ class Command(BaseCommand):
                 self.update_counts['colours_updated'] += 1
             else:
                 logger.info(f"Creating new colour {colour['name']}")
-                colour_obj = Colour(symbol=colour['symbol'], name=colour['name'], display_order=colour['display_order'])
+                colour_obj = Colour(symbol=colour['symbol'],
+                                    name=colour['name'],
+                                    display_order=colour['display_order'],
+                                    bit_value=colour['bit_value'])
                 colour_obj.save()
                 self.update_counts['colours_created'] += 1
 

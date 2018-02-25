@@ -2,26 +2,31 @@
   {
     "symbol": "W",
     "name": "White",
-    "display_order": 10
+    "display_order": 10,
+    "bit_value": 1
   },
   {
     "symbol": "U",
     "name": "Blue",
-    "display_order": 20
+    "display_order": 20,
+    "bit_value": 2
   },
   {
     "symbol": "B",
     "name": "Black",
-    "display_order": 30
+    "display_order": 30,
+    "bit_value": 4
   },
   {
     "symbol": "R",
     "name": "Red",
-    "display_order": 40
+    "display_order": 40,
+    "bit_value": 8
   },
   {
     "symbol": "G",
     "name": "Green",
-    "display_order": 50
+    "display_order": 50,
+    "bit_value": 16
   }
 ]
