@@ -57,7 +57,7 @@ class OrParameterNode(BranchParameterNode):
         return result
 
 
-class CardNameSearchParameter(SearchParameterNode):
+class CardNameSearchParam(SearchParameterNode):
     def __init__(self, card_name):
         super().__init__()
         self.card_name = card_name
@@ -69,7 +69,7 @@ class CardNameSearchParameter(SearchParameterNode):
             return Card.objects.exclude(name__icontains=self.card_name)
 
 
-class CardRulesSearchParameter(SearchParameterNode):
+class CardRulesSearchParam(SearchParameterNode):
     def __init__(self, card_rules):
         super().__init__()
         self.card_rules = card_rules
@@ -81,7 +81,7 @@ class CardRulesSearchParameter(SearchParameterNode):
             return Card.objects.exclude(rules__icontains=self.card_rules)
 
 
-class CardTypeParameter(SearchParameterNode):
+class CardTypeParam(SearchParameterNode):
     def __init__(self, card_type):
         super().__init__()
         self.card_type = card_type
@@ -93,7 +93,7 @@ class CardTypeParameter(SearchParameterNode):
             return Card.objects.exclude(type__icontains=self.card_type)
 
 
-class CardSubtypeParameter(SearchParameterNode):
+class CardSubtypeParam(SearchParameterNode):
     def __init__(self, card_subtype):
         super().__init__()
         self.card_subtype = card_subtype
@@ -105,7 +105,7 @@ class CardSubtypeParameter(SearchParameterNode):
             return Card.objects.exclude(subtype__icontains=self.card_subtype)
 
 
-class CardColourParameter(SearchParameterNode):
+class CardColourParam(SearchParameterNode):
     def __init__(self, card_colour: Colour):
         super().__init__()
         self.card_colour = card_colour
@@ -117,7 +117,7 @@ class CardColourParameter(SearchParameterNode):
             return Card.objects.exclude(colour_flags=self.card_colour)
 
 
-class CardMulticolouredOnlyParameter(SearchParameterNode):
+class CardMulticolouredOnlyParam(SearchParameterNode):
     def __init__(self):
         super().__init__()
 
@@ -128,7 +128,7 @@ class CardMulticolouredOnlyParameter(SearchParameterNode):
             return Card.objects.filter(colour_count__lte=1)
 
 
-class CardSetParameter(SearchParameterNode):
+class CardSetParam(SearchParameterNode):
     def __init__(self, set_obj: Set):
         super().__init__()
         self.set_obj = set_obj
@@ -140,7 +140,7 @@ class CardSetParameter(SearchParameterNode):
             return Card.objects.exclude(printings__set=self.set_obj)
 
 
-class CardOwnerParameter(SearchParameterNode):
+class CardOwnerParam(SearchParameterNode):
     def __init__(self, user: User):
         super().__init__()
         self.user = user
@@ -152,7 +152,7 @@ class CardOwnerParameter(SearchParameterNode):
             return Card.objects.exclude(printings__printed_languages__physical_cards__ownerships__owner=self.user)
 
 
-class CardNumericalParameter(SearchParameterNode):
+class CardNumericalParam(SearchParameterNode):
 
     def __init__(self, number: int, operator: str):
         super().__init__()
@@ -163,7 +163,7 @@ class CardNumericalParameter(SearchParameterNode):
         return {f'{field}{comparisons[self.operator]}': self.number}
 
 
-class CardNumPowerParameter(CardNumericalParameter):
+class CardNumPowerParam(CardNumericalParam):
     def __init__(self, num_power: int, comparison: str):
         super().__init__(num_power, comparison)
         self.num_power = num_power
@@ -179,7 +179,7 @@ class CardNumPowerParameter(CardNumericalParameter):
             return Card.objects.exlcude(**args)
 
 
-class CardNumToughnessParameter(CardNumericalParameter):
+class CardNumToughnessParam(CardNumericalParam):
     def __init__(self, num_toughness: int, operator: str):
         super().__init__(num_toughness, operator)
 
@@ -191,7 +191,7 @@ class CardNumToughnessParameter(CardNumericalParameter):
             return Card.objects.exclude(**args)
 
 
-class CardNumLoyaltyParameter(CardNumericalParameter):
+class CardNumLoyaltyParam(CardNumericalParam):
     def __init__(self, number: int, operator: str):
         super().__init__(number, operator)
 
@@ -203,7 +203,7 @@ class CardNumLoyaltyParameter(CardNumericalParameter):
             return Card.objects.exclude(**args)
 
 
-class CardCmcParameter(CardNumericalParameter):
+class CardCmcParam(CardNumericalParam):
     def __init__(self, number: int, operator: str):
         super().__init__(number, operator)
 
@@ -215,7 +215,7 @@ class CardCmcParameter(CardNumericalParameter):
             return Card.objects.exclude(**args)
 
 
-class CardOwnershipCountParameter(CardNumericalParameter):
+class CardOwnershipCountParam(CardNumericalParam):
     def __init__(self, user: User, number: int, operator: str):
         super().__init__(number, operator)
         self.user = user
