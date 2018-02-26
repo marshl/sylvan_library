@@ -1,7 +1,7 @@
 from django.db import models
 from django.db.models.query import Q, QuerySet
 from django.contrib.auth.models import User
-from django.db.models import Sum
+from django.db.models import Sum, Case, When, IntegerField
 
 from cards.models import *
 
@@ -223,7 +223,11 @@ class CardOwnershipCountParameter(CardNumericalParameter):
     def get_result(self):
 
         annotated_result = Card.objects.annotate(
-            ownership_count=Sum('printings__printed_languages__physical_cards__ownerships__count'))
+            ownership_count=Sum(
+                Case(When(printings__printed_languages__physical_cards__ownerships__owner=self.user,
+                          then='printings__printed_languages__physical_cards__ownerships__count'),
+                     output_field=IntegerField())))
+
         kwargs = {f'ownership_count{comparisons[self.operator]}': self.number}
         query = Q(**kwargs)
 
