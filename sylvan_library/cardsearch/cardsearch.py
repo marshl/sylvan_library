@@ -1,9 +1,7 @@
 from django.db import models
 from django.db.models.query import Q, QuerySet
 from django.contrib.auth.models import User
-
-import operator
-from functools import reduce
+from django.db.models import Sum
 
 from cards.models import *
 
@@ -215,6 +213,24 @@ class CardCmcParameter(CardNumericalParameter):
             return Card.objects.filter(**args)
         else:
             return Card.objects.exclude(**args)
+
+
+class CardOwnershipCountParameter(CardNumericalParameter):
+    def __init__(self, user: User, number: int, operator: str):
+        super().__init__(number, operator)
+        self.user = user
+
+    def get_result(self):
+
+        annotated_result = Card.objects.annotate(
+            ownership_count=Sum('printings__printed_languages__physical_cards__ownerships__count'))
+        kwargs = {f'ownership_count{comparisons[self.operator]}': self.number}
+        query = Q(**kwargs)
+
+        if self.boolean_flag:
+            return annotated_result.filter(query)
+        else:
+            return annotated_result.exclude(query)
 
 
 class CardSortParam:
