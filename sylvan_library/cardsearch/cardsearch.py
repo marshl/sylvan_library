@@ -76,9 +76,9 @@ class CardRulesSearchParam(SearchParameterNode):
 
     def get_result(self):
         if self.boolean_flag:
-            return Card.objects.filter(rules__icontains=self.card_rules)
+            return Card.objects.filter(rules_text__icontains=self.card_rules)
         else:
-            return Card.objects.exclude(rules__icontains=self.card_rules)
+            return Card.objects.exclude(rules_text__icontains=self.card_rules)
 
 
 class CardTypeParam(SearchParameterNode):
@@ -140,6 +140,18 @@ class CardSetParam(SearchParameterNode):
             return Card.objects.exclude(printings__set=self.set_obj)
 
 
+class CardBlockParam(SearchParameterNode):
+    def __init__(self, block_obj: Block):
+        super().__init__()
+        self.block_obj = block_obj
+
+    def get_result(self):
+        if self.boolean_flag:
+            return Card.objects.filter(printings__set__block=self.block_obj)
+        else:
+            return Card.objects.exclude(printings__set__block=self.block_obj)
+
+
 class CardOwnerParam(SearchParameterNode):
     def __init__(self, user: User):
         super().__init__()
@@ -176,7 +188,7 @@ class CardNumPowerParam(CardNumericalParam):
         if self.boolean_flag:
             return Card.objects.filter(**args)
         else:
-            return Card.objects.exlcude(**args)
+            return Card.objects.exclude(**args)
 
 
 class CardNumToughnessParam(CardNumericalParam):
