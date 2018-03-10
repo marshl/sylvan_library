@@ -238,7 +238,9 @@ class CardOwnershipCountParam(CardNumericalParam):
             ownership_count=Sum(
                 Case(When(printings__printed_languages__physical_cards__ownerships__owner=self.user,
                           then='printings__printed_languages__physical_cards__ownerships__count'),
-                     output_field=IntegerField())))
+                     output_field=IntegerField(),
+                     default=0
+                     )))
 
         kwargs = {f'ownership_count{comparisons[self.operator]}': self.number}
         query = Q(**kwargs)
