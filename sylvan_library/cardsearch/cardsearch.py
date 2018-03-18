@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models.query import Q, QuerySet
 from django.contrib.auth.models import User
 from django.db.models import Sum, Case, When, IntegerField
+from bitfield.types import Bit
 
 from cards.models import *
 
@@ -106,7 +107,7 @@ class CardSubtypeParam(SearchParameterNode):
 
 
 class CardColourParam(SearchParameterNode):
-    def __init__(self, card_colour: Colour):
+    def __init__(self, card_colour: Bit):
         super().__init__()
         self.card_colour = card_colour
 
@@ -115,6 +116,18 @@ class CardColourParam(SearchParameterNode):
             return Card.objects.filter(colour_flags=self.card_colour)
         else:
             return Card.objects.exclude(colour_flags=self.card_colour)
+
+
+class CardColourIdentityParam(SearchParameterNode):
+    def __init__(self, colour_identity: Bit):
+        super().__init__()
+        self.colour_identity = colour_identity
+
+    def get_result(self):
+        if self.boolean_flag:
+            return Card.objects.filter(colour_identity_flags=self.colour_identity)
+        else:
+            return Card.objects.exclude(colour_identity_flags=self.colour_identity)
 
 
 class CardMulticolouredOnlyParam(SearchParameterNode):
