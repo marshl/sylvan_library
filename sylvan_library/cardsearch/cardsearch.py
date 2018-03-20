@@ -193,6 +193,19 @@ class CardManaCostParam(CardSearchParam):
             return Card.objects.exclude(q)
 
 
+class CardRarityParam(CardSearchParam):
+    def __init__(self, rarity: Rarity):
+        super().__init__()
+        self.rarity = rarity
+
+    def get_result(self):
+        q = Q(printings__rarity=self.rarity)
+        if self.boolean_flag:
+            return Card.objects.filter(q)
+        else:
+            return Card.objects.exclude(q)
+
+
 class CardNumericalParam(CardSearchParam):
 
     def __init__(self, number: int, operator: str):
