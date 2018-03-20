@@ -184,7 +184,6 @@ class CardManaCostParam(CardSearchParam):
         self.exact_match = exact_match
 
     def get_result(self):
-
         q = Q(cost=self.cost) if self.exact_match else Q(cost__icontains=self.cost)
 
         if self.boolean_flag:
@@ -270,7 +269,7 @@ class CardCmcParam(CardNumericalParam):
 
 
 class CardOwnershipCountParam(CardNumericalParam):
-    def __init__(self, user: User, number: int, operator: str):
+    def __init__(self, user: User, operator: str, number: int):
         super().__init__(number, operator)
         self.user = user
 
@@ -288,9 +287,9 @@ class CardOwnershipCountParam(CardNumericalParam):
         query = Q(**kwargs)
 
         if self.boolean_flag:
-            return annotated_result.filter(query)
+            return Card.objects.filter(id__in=annotated_result.filter(query))
         else:
-            return annotated_result.exclude(query)
+            return Card.objects.filter(id__in=annotated_result.exclude(query))
 
 
 class CardSortParam:
