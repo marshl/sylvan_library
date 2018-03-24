@@ -4,3 +4,6 @@
 [submodule "sylvan_library/website/static/Keyrune"]
 	path = sylvan_library/website/static/Keyrune
 	url = https://github.com/andrewgioia/Keyrune.git
+[submodule "sylvan_library/website/static/Font-Awesome"]
+	path = sylvan_library/website/static/Font-Awesome
+	url = https://github.com/FortAwesome/Font-Awesome.git
