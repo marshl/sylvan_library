@@ -1,6 +1,4 @@
-from django.db import models
-from django.db.models.query import Q, QuerySet
-from django.contrib.auth.models import User
+from django.db.models.query import Q
 from django.db.models import Sum, Case, When, IntegerField
 from bitfield.types import Bit
 
@@ -18,7 +16,7 @@ class CardSearchParam:
         raise NotImplementedError('Please implement this method')
 
 
-class BranchParameterNode(CardSearchParam):
+class BranchParam(CardSearchParam):
     def __init__(self):
         super().__init__()
         self.child_parameters = list()
@@ -28,7 +26,7 @@ class BranchParameterNode(CardSearchParam):
         return param
 
 
-class AndParameterNode(BranchParameterNode):
+class AndParam(BranchParam):
     def __init__(self):
         super().__init__()
 
@@ -43,7 +41,7 @@ class AndParameterNode(BranchParameterNode):
         return result
 
 
-class OrParameterNode(BranchParameterNode):
+class OrParam(BranchParam):
     def __init__(self):
         super().__init__()
 
@@ -58,7 +56,7 @@ class OrParameterNode(BranchParameterNode):
         return result
 
 
-class CardNameSearchParam(CardSearchParam):
+class CardNameParam(CardSearchParam):
     def __init__(self, card_name):
         super().__init__()
         self.card_name = card_name
@@ -70,7 +68,7 @@ class CardNameSearchParam(CardSearchParam):
             return Card.objects.exclude(name__icontains=self.card_name)
 
 
-class CardRulesSearchParam(CardSearchParam):
+class CardRulesTextParam(CardSearchParam):
     def __init__(self, card_rules):
         super().__init__()
         self.card_rules = card_rules
@@ -323,18 +321,3 @@ class CardColourSortParam(CardSortParam):
 class CardColourWeightSortParam(CardSortParam):
     def get_sort_keys(self):
         return ['cmc', 'colour_sort_key', 'colour_weight']
-
-
-class CardSearch:
-    def __init__(self):
-        self.root_parameter = AndParameterNode()
-        self.sort_params = list()
-
-    def add_sort_param(self, sort_param: CardSortParam):
-        self.sort_params.append(sort_param)
-
-    def result_search(self):
-        result = self.root_parameter.get_result()
-        self.add_sort_param(CardNameSortParam())
-        result = result.order_by(*[order for sort_param in self.sort_params for order in sort_param.get_sort_list()])
-        return result

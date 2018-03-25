@@ -1,4 +1,5 @@
-from cardsearch import cardsearch
+from cardsearch.card_search import CardSearch
+from cardsearch.parameters import *
 from cards.models import Colour
 
 
@@ -20,41 +21,41 @@ class SimpleSearch:
 
     def get_query(self):
 
-        searcher = cardsearch.CardSearch()
+        searcher = CardSearch()
         root_param = searcher.root_parameter
 
         if self.text:
-            text_root = root_param.add_parameter(cardsearch.OrParameterNode())
+            text_root = root_param.add_parameter(OrParam())
             if self.include_name:
-                text_root.add_parameter(cardsearch.CardNameSearchParam(self.text))
+                text_root.add_parameter(CardNameParam(self.text))
 
             if self.include_rules:
-                text_root.add_parameter(cardsearch.CardRulesSearchParam(self.text))
+                text_root.add_parameter(CardRulesTextParam(self.text))
 
             if self.include_types:
-                text_root.add_parameter(cardsearch.CardTypeSearchParameter(self.text))
-                text_root.add_parameter(cardsearch.CardSubtypeParam(self.text))
+                text_root.add_parameter(CardTypeParam(self.text))
+                text_root.add_parameter(CardSubtypeParam(self.text))
 
         if self.colours:
-            param = cardsearch.AndParameterNode() if self.match_colours else cardsearch.OrParameterNode()
+            param = AndParam() if self.match_colours else OrParam()
             root_param.add_parameter(param)
 
             for colour in self.colours:
-                param.add_parameter(cardsearch.CardColourParam(colour))
+                param.add_parameter(CardColourParam(colour))
 
             if self.exclude_colours:
                 for colour in [c for c in Colour.objects.all() if c not in self.colours]:
-                    p = cardsearch.CardColourParam(colour)
+                    p = CardColourParam(colour)
                     p.boolean_flag = False
                     root_param.add_parameter(p)
 
         if self.set:
-            root_param.add_parameter(cardsearch.CardSetParam(self.set))
+            root_param.add_parameter(CardSetParam(self.set))
 
         if self.multicoloured_only:
-            root_param.add_parameter(cardsearch.CardMulticolouredOnlyParam())
+            root_param.add_parameter(CardMulticolouredOnlyParam())
 
         if self.card_type:
-            root_param.add_parameter(cardsearch.CardTypeSearchParameter(self.card_type))
+            root_param.add_parameter(CardTypeParam(self.card_type))
 
         return searcher.result_search()
