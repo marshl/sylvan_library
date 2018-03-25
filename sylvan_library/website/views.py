@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect
 import random
 
 from cards.models import *
-from cardsearch.cardsearch import *
+from cardsearch.card_search import *
 from cardsearch.simplesearch import *
 
 

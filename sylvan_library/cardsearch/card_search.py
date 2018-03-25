@@ -1,9 +1,9 @@
-from cardsearch.parameters import AndParameterNode, CardSortParam, CardNameSortParam
+from cardsearch.parameters import AndParam, CardSortParam, CardNameSortParam
 
 
 class CardSearch:
     def __init__(self):
-        self.root_parameter = AndParameterNode()
+        self.root_parameter = AndParam()
         self.sort_params = list()
 
     def add_sort_param(self, sort_param: CardSortParam):

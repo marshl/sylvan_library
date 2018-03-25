@@ -1,7 +1,5 @@
 from cardsearch.card_search import CardSearch
 from cardsearch.parameters import *
-from cards.models import Colour
-
 
 class SimpleSearch:
 
@@ -37,17 +35,21 @@ class SimpleSearch:
                 text_root.add_parameter(CardSubtypeParam(self.text))
 
         if self.colours:
-            param = AndParam() if self.match_colours else OrParam()
-            root_param.add_parameter(param)
+            if self.match_colours:
+                colour_root = root_param
+            else:
+                colour_root = OrParam()
+                root_param.add_parameter(colour_root)
 
             for colour in self.colours:
-                param.add_parameter(CardColourParam(colour))
+                colour_root.add_parameter(CardColourParam(colour))
 
             if self.exclude_colours:
-                for colour in [c for c in Colour.objects.all() if c not in self.colours]:
+                exclude_param = NotParam()
+                root_param.add_parameter(exclude_param)
+                for colour in [c for c in Card.colour_flags.values() if c not in self.colours]:
                     p = CardColourParam(colour)
-                    p.boolean_flag = False
-                    root_param.add_parameter(p)
+                    exclude_param.add_parameter(p)
 
         if self.set:
             root_param.add_parameter(CardSetParam(self.set))
