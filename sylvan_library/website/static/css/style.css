@@ -1,0 +1,45 @@
+body, html {
+    margin: 0;
+    padding: 0;
+}
+
+header, footer {
+    background-color: #ffa500;
+    #grid-area: header;
+}
+
+body {
+    grid-column: span 12;
+    grid-row: 3;
+}
+
+.header {
+    grid-column: span 12;
+    grid-row: 1;
+}
+
+.footer {
+    grid-column: span 12;
+    grid-row: 3;
+}
+
+.content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+}
+
+.simple-search-container {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+}
+
+.simple-search-sidebar {
+    grid-column: span 4;
+    grid-row: 2;
+}
+
+.simple-search-content {
+    grid-column: span 8;
+    grid-row: 2;
+}

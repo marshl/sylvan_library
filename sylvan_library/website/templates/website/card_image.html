@@ -1,0 +1,6 @@
+{% load card_image %}
+{% load staticfiles %}
+
+{% block content %}
+    <img src="{% static card|card_image_url|safe %}" alt="{{ card.name }}"/>
+{% endblock %}

@@ -6,8 +6,8 @@ from django.http import HttpResponseRedirect
 import random
 
 from cards.models import *
-
-from cards.models import CardPrintingLanguage, UserOwnedCard
+from cardsearch.cardsearch import *
+from cardsearch.simplesearch import *
 
 
 def index(request):
@@ -45,3 +45,24 @@ def random_card(request):
     card = random.choice(Card.objects.all())
 
     return HttpResponseRedirect('../card/{0}'.format(card.id))
+
+
+def simple_search(request):
+    results = []
+
+    if request.GET.get('card_name'):
+        search = SimpleSearch()
+        search.text = request.GET.get('card_name')
+        search.include_name = True
+        results = search.get_query()
+
+    return render(request, 'website/simple_search.html',
+                  {'card_name': request.GET.get('card_name'), 'results': results})
+
+
+def advanced_search(request):
+    return 'advanced search'
+
+
+def search_results(request):
+    return 'search results'

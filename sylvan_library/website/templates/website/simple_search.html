@@ -1,0 +1,21 @@
+{% extends 'website/base.html' %}
+{% block content %}
+    <section class="simple-search-container">
+        <section class="simple-search-sidebar">
+            sidebar
+            <form action="{% url 'website:simple_search' %}" method="get">
+                <div>
+                    <label for="simple-search-name">Name</label>
+                    <input type="text" id="simple-search-name" name="card_name" value="{{ card_name }}"/>
+                </div>
+                <button type="submit">Search</button>
+            </form>
+        </section>
+        <section class="simple-search-content">
+            content
+            {% for result in results %}
+                {% include "website/search_result.html" with card=result %}
+            {% endfor %}
+        </section>
+    </section>
+{% endblock %}

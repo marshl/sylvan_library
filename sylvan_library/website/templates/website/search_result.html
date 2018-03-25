@@ -1,0 +1,19 @@
+{% load mtg_font %}
+
+{% block content %}
+    <div class="card-result">
+        <div class="card-image">
+            {% include "website/card_image.html" with card=card %}
+        </div>
+        <div class="card-content">
+        </div>
+
+        <div class="card-title">
+            {{ card.name }} {{ card.cost | replace_mtg_font_symbols | safe }}
+        </div>
+
+        <div class="card-rules">
+            {{ card.rules_text | replace_mtg_font_symbols | safe }}
+        </div>
+    </div>
+{% endblock %}
