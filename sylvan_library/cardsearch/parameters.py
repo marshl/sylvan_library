@@ -10,7 +10,6 @@ comparisons = {'<': '__lt', '<=': '__lte', '>': '__gt', '>=': '__gte', '=': ''}
 class CardSearchParam:
     def __init__(self):
         self.child_parameters = list()
-        self.boolean_flag = True
 
     def get_result(self):
         raise NotImplementedError('Please implement this method')
@@ -31,12 +30,12 @@ class AndParam(BranchParam):
         super().__init__()
 
     def get_result(self):
-        result = Card.objects.all()
-        for child in self.child_parameters:
-            result = result.intersection(child.get_result())
+        if not self.child_parameters:
+            return Card.objects.none()
 
-        if not self.boolean_flag:
-            result = Card.objects.all().difference(result)
+        result = self.child_parameters[0].get_result()
+        for child in self.child_parameters[1:]:
+            result = result.intersection(child.get_result())
 
         return result
 
@@ -46,14 +45,23 @@ class OrParam(BranchParam):
         super().__init__()
 
     def get_result(self):
-        result = Card.objects.none()
-        for child in self.child_parameters:
+        if not self.child_parameters:
+            return Card.objects.none()
+
+        result = self.child_parameters[0].get_result()
+
+        for child in self.child_parameters[1:]:
             result = result.union(child.get_result())
 
-        if not self.boolean_flag:
-            result = Card.objects.all().difference(result)
-
         return result
+
+
+class NotParam(OrParam):
+    def __init__(self):
+        super().__init__()
+
+    def get_result(self):
+        return Card.objects.difference(super().get_result())
 
 
 class CardNameParam(CardSearchParam):
@@ -62,10 +70,7 @@ class CardNameParam(CardSearchParam):
         self.card_name = card_name
 
     def get_result(self):
-        if self.boolean_flag:
-            return Card.objects.filter(name__icontains=self.card_name)
-        else:
-            return Card.objects.exclude(name__icontains=self.card_name)
+        return Card.objects.filter(name__icontains=self.card_name)
 
 
 class CardRulesTextParam(CardSearchParam):
@@ -74,10 +79,7 @@ class CardRulesTextParam(CardSearchParam):
         self.card_rules = card_rules
 
     def get_result(self):
-        if self.boolean_flag:
-            return Card.objects.filter(rules_text__icontains=self.card_rules)
-        else:
-            return Card.objects.exclude(rules_text__icontains=self.card_rules)
+        return Card.objects.filter(rules_text__icontains=self.card_rules)
 
 
 class CardTypeParam(CardSearchParam):
@@ -86,10 +88,7 @@ class CardTypeParam(CardSearchParam):
         self.card_type = card_type
 
     def get_result(self):
-        if self.boolean_flag:
-            return Card.objects.filter(type__icontains=self.card_type)
-        else:
-            return Card.objects.exclude(type__icontains=self.card_type)
+        return Card.objects.filter(type__icontains=self.card_type)
 
 
 class CardSubtypeParam(CardSearchParam):
@@ -98,10 +97,7 @@ class CardSubtypeParam(CardSearchParam):
         self.card_subtype = card_subtype
 
     def get_result(self):
-        if self.boolean_flag:
-            return Card.objects.filter(subtype__icontains=self.card_subtype)
-        else:
-            return Card.objects.exclude(subtype__icontains=self.card_subtype)
+        return Card.objects.filter(subtype__icontains=self.card_subtype)
 
 
 class CardColourParam(CardSearchParam):
@@ -110,10 +106,7 @@ class CardColourParam(CardSearchParam):
         self.card_colour = card_colour
 
     def get_result(self):
-        if self.boolean_flag:
-            return Card.objects.filter(colour_flags=self.card_colour)
-        else:
-            return Card.objects.exclude(colour_flags=self.card_colour)
+        return Card.objects.filter(colour_flags=self.card_colour)
 
 
 class CardColourIdentityParam(CardSearchParam):
@@ -122,10 +115,7 @@ class CardColourIdentityParam(CardSearchParam):
         self.colour_identity = colour_identity
 
     def get_result(self):
-        if self.boolean_flag:
-            return Card.objects.filter(colour_identity_flags=self.colour_identity)
-        else:
-            return Card.objects.exclude(colour_identity_flags=self.colour_identity)
+        return Card.objects.filter(colour_identity_flags=self.colour_identity)
 
 
 class CardMulticolouredOnlyParam(CardSearchParam):
@@ -133,10 +123,7 @@ class CardMulticolouredOnlyParam(CardSearchParam):
         super().__init__()
 
     def get_result(self):
-        if self.boolean_flag:
-            return Card.objects.filter(colour_count__gt=1)
-        else:
-            return Card.objects.filter(colour_count__lte=1)
+        return Card.objects.filter(colour_count__gt=1)
 
 
 class CardSetParam(CardSearchParam):
@@ -145,10 +132,7 @@ class CardSetParam(CardSearchParam):
         self.set_obj = set_obj
 
     def get_result(self):
-        if self.boolean_flag:
-            return Card.objects.filter(printings__set=self.set_obj)
-        else:
-            return Card.objects.exclude(printings__set=self.set_obj)
+        return Card.objects.filter(printings__set=self.set_obj)
 
 
 class CardBlockParam(CardSearchParam):
@@ -157,10 +141,7 @@ class CardBlockParam(CardSearchParam):
         self.block_obj = block_obj
 
     def get_result(self):
-        if self.boolean_flag:
-            return Card.objects.filter(printings__set__block=self.block_obj)
-        else:
-            return Card.objects.exclude(printings__set__block=self.block_obj)
+        return Card.objects.filter(printings__set__block=self.block_obj)
 
 
 class CardOwnerParam(CardSearchParam):
@@ -169,10 +150,7 @@ class CardOwnerParam(CardSearchParam):
         self.user = user
 
     def get_result(self):
-        if self.boolean_flag:
-            return Card.objects.filter(printings__printed_languages__physical_cards__ownerships__owner=self.user)
-        else:
-            return Card.objects.exclude(printings__printed_languages__physical_cards__ownerships__owner=self.user)
+        return Card.objects.filter(printings__printed_languages__physical_cards__ownerships__owner=self.user)
 
 
 class CardManaCostParam(CardSearchParam):
@@ -184,10 +162,7 @@ class CardManaCostParam(CardSearchParam):
     def get_result(self):
         q = Q(cost=self.cost) if self.exact_match else Q(cost__icontains=self.cost)
 
-        if self.boolean_flag:
-            return Card.objects.filter(q)
-        else:
-            return Card.objects.exclude(q)
+        return Card.objects.filter(q)
 
 
 class CardRarityParam(CardSearchParam):
@@ -197,10 +172,7 @@ class CardRarityParam(CardSearchParam):
 
     def get_result(self):
         q = Q(printings__rarity=self.rarity)
-        if self.boolean_flag:
-            return Card.objects.filter(q)
-        else:
-            return Card.objects.exclude(q)
+        return Card.objects.filter(q)
 
 
 class CardNumericalParam(CardSearchParam):
@@ -221,13 +193,8 @@ class CardNumPowerParam(CardNumericalParam):
         self.comparison = comparison
 
     def get_result(self):
-
         args = self.get_args('num_power')
-
-        if self.boolean_flag:
-            return Card.objects.filter(**args)
-        else:
-            return Card.objects.exclude(**args)
+        return Card.objects.filter(**args)
 
 
 class CardNumToughnessParam(CardNumericalParam):
@@ -236,10 +203,7 @@ class CardNumToughnessParam(CardNumericalParam):
 
     def get_result(self):
         args = self.get_args('num_toughness')
-        if self.boolean_flag:
-            return Card.objects.filter(**args)
-        else:
-            return Card.objects.exclude(**args)
+        return Card.objects.filter(**args)
 
 
 class CardNumLoyaltyParam(CardNumericalParam):
@@ -248,10 +212,7 @@ class CardNumLoyaltyParam(CardNumericalParam):
 
     def get_result(self):
         args = self.get_args('num_loyalty')
-        if self.boolean_flag:
-            return Card.objects.filter(**args)
-        else:
-            return Card.objects.exclude(**args)
+        return Card.objects.filter(**args)
 
 
 class CardCmcParam(CardNumericalParam):
@@ -260,10 +221,7 @@ class CardCmcParam(CardNumericalParam):
 
     def get_result(self):
         args = self.get_args('cmc')
-        if self.boolean_flag:
-            return Card.objects.filter(**args)
-        else:
-            return Card.objects.exclude(**args)
+        return Card.objects.filter(**args)
 
 
 class CardOwnershipCountParam(CardNumericalParam):
@@ -272,7 +230,6 @@ class CardOwnershipCountParam(CardNumericalParam):
         self.user = user
 
     def get_result(self):
-
         annotated_result = Card.objects.annotate(
             ownership_count=Sum(
                 Case(When(printings__printed_languages__physical_cards__ownerships__owner=self.user,
@@ -283,11 +240,7 @@ class CardOwnershipCountParam(CardNumericalParam):
 
         kwargs = {f'ownership_count{comparisons[self.operator]}': self.number}
         query = Q(**kwargs)
-
-        if self.boolean_flag:
-            return Card.objects.filter(id__in=annotated_result.filter(query))
-        else:
-            return Card.objects.filter(id__in=annotated_result.exclude(query))
+        return Card.objects.filter(id__in=annotated_result.filter(query))
 
 
 class CardSortParam:
