@@ -33,7 +33,7 @@ def replace_mtg_font_symbols(value, scale=None):
         else:
             classes.append(f'mi-{symbol}')
 
-            if symbol not in ['chaos'] and not split:
+            if symbol not in ['chaos', 'e'] and not split:
                 classes.append('mi-mana')
 
         return '<i class="' + ' '.join(classes) + '"></i>'
