@@ -447,15 +447,15 @@ class Command(BaseCommand):
 
         self.assert_card_rules_eq('Air Elemental', 'Flying')
         self.assert_card_rules_eq('Thunder Spirit', 'Flying, first strike')
-        self.assert_card_rules_eq('Dark Ritual', 'Add {B}{B}{B} to your mana pool.')
-        self.assert_card_rules_eq('Palladium Myr', '{T}: Add {C}{C} to your mana pool.')
+        self.assert_card_rules_eq('Dark Ritual', 'Add {B}{B}{B}.')
+        self.assert_card_rules_eq('Palladium Myr', '{T}: Add {C}{C}.')
         self.assert_card_rules_eq('Ice Cauldron',
                                   "{X}, {T}: Put a charge counter on Ice Cauldron and exile a nonland card from your " +
                                   "hand. You may cast that card for as long as it remains exiled. Note the type and " +
                                   "amount of mana spent to pay this activation cost. Activate this ability only if " +
                                   "there are no charge counters on Ice Cauldron.\n{T}, Remove a charge counter from " +
-                                  "Ice Cauldron: Add Ice Cauldron's last noted type and amount of mana to your mana " +
-                                  "pool. Spend this mana only to cast the last card exiled with Ice Cauldron.")
+                                  "Ice Cauldron: Add Ice Cauldron's last noted type and amount of mana. "
+                                  "Spend this mana only to cast the last card exiled with Ice Cauldron.")
 
     def test_card_layouts(self):
         self.assert_card_layout_eq('Glory Seeker', 'normal')
