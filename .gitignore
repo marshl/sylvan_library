@@ -112,3 +112,4 @@ secrets.json
 sylvan_library/sylvan_library/database_connections.py
 *.idea
 AllSets-*.json*
+sylvan_library/data_import/backup/
