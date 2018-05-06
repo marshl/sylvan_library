@@ -3,10 +3,12 @@
     <section class="simple-search-container">
         <section class="simple-search-sidebar">
             sidebar
+
             <form action="{% url 'website:simple_search' %}" method="get">
                 <div>
-                    <label for="simple-search-name">Name</label>
-                    <input type="text" id="simple-search-name" name="card_name" value="{{ card_name }}"/>
+                    <label for="{{ form.card_name.id_for_label }}">Name</label>
+                    <!--<input type="text" id="card_name" name="card_name"/>-->
+                    {{ form.card_name }}
                 </div>
                 <button type="submit">Search</button>
             </form>

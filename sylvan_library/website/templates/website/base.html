@@ -6,14 +6,17 @@
     <title>Sylvan Libary</title>
     <link href="{% static "Keyrune/css/keyrune.css" %}" rel="stylesheet" type="text/css"/>
     <link href="{% static "mtg-font/css/magic-font.css" %}" rel="stylesheet" type="text/css"/>
-    <link href="{% static "Font-Awesome/web-fonts-with-css/css/fontawesome-all.min.css" %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static "Font-Awesome/web-fonts-with-css/css/fontawesome-all.min.css" %}" rel="stylesheet"
+          type="text/css"/>
     <link href="{% static "css/style.css" %}" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <header class="header">
     <h1><a href="/">Sylvan Library</a></h1>
-    <a href="{% url 'website:simple_search' %}">Card Search</a>
-    <a href="{% url 'website:advanced_search' %}">Advanced Search</a>
+    <ul class="menu">
+        <li><a href="{% url 'website:simple_search' %}">Card Search</a></li>
+        <li><a href="{% url 'website:advanced_search' %}">Advanced Search</a></li>
+    </ul>
 </header>
 <main class="content">
     {% block content %}

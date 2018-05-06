@@ -1,6 +1,7 @@
 body, html {
     margin: 0;
     padding: 0;
+    font-family: "Segoe UI", Helvetica, "Sans-Serif";
 }
 
 header, footer {
@@ -13,9 +14,37 @@ body {
     grid-row: 3;
 }
 
+h1 {
+    color: white;
+    margin: 0;
+}
+
+a {
+    color: white;
+    text-decoration: none;
+}
+
+ul.menu {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+ul.menu li {
+    float: left;
+}
+
+ul.menu a {
+    display: block;
+    padding: 8px;
+}
+
+
 .header {
     grid-column: span 12;
     grid-row: 1;
+    background: #2a4466;
 }
 
 .footer {

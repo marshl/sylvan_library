@@ -8,6 +8,7 @@ import random
 from cards.models import *
 from cardsearch.card_search import *
 from cardsearch.simplesearch import *
+from .forms import *
 
 
 def index(request):
@@ -50,14 +51,16 @@ def random_card(request):
 def simple_search(request):
     results = []
 
-    if request.GET.get('card_name'):
-        search = SimpleSearch()
-        search.text = request.GET.get('card_name')
-        search.include_name = True
-        results = search.get_query()
+    form = SearchForm(request.GET)
+
+    #if request.GET.get('card_name'):
+    search = SimpleSearch()
+    search.text = form.data['card_name'] #request.GET.get('card_name')
+    search.include_name = True
+    results = search.get_query()
 
     return render(request, 'website/simple_search.html',
-                  {'card_name': request.GET.get('card_name'), 'results': results})
+                  {'form': form, 'results': results})
 
 
 def advanced_search(request):
@@ -66,3 +69,8 @@ def advanced_search(request):
 
 def search_results(request):
     return 'search results'
+
+
+class SimpleSEarchView(SimpleSearch):
+    form_class = SimpleSearch
+    template_name = 'simple_search.html'
