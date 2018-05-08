@@ -79,7 +79,12 @@ class CardRulesTextParam(CardSearchParam):
         self.card_rules = card_rules
 
     def get_result(self):
-        return Card.objects.filter(rules_text__icontains=self.card_rules)
+
+        if '~' in self.card_rules:
+            return Card.objects.extra(where=["rules_text ILIKE '%%' || REPLACE(%s, '~', name) || '%%'"],
+                                      params=[self.card_rules])
+        else:
+            return Card.objects.filter(rules_text__icontains=self.card_rules)
 
 
 class CardTypeParam(CardSearchParam):
