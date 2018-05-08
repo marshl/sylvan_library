@@ -7,8 +7,11 @@
             <form action="{% url 'website:simple_search' %}" method="get">
                 <div>
                     <label for="{{ form.card_name.id_for_label }}">Name</label>
-                    <!--<input type="text" id="card_name" name="card_name"/>-->
                     {{ form.card_name }}
+                </div>
+                <div>
+                    <label for="{{ form.rules_text.id_for_label }}">Rules</label>
+                    {{ form.rules_text }}
                 </div>
                 <button type="submit">Search</button>
             </form>
