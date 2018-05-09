@@ -7,6 +7,8 @@ class FieldSearch:
     def __init__(self):
         self.card_name = None
         self.rules_text = None
+        self.cmc = None
+        self.cmc_operator = None
 
     def get_query(self):
 
@@ -18,5 +20,8 @@ class FieldSearch:
 
         if self.rules_text is not None:
             root_param.add_parameter(CardRulesTextParam(self.rules_text))
+
+        if self.cmc is not None:
+            root_param.add_parameter(CardCmcParam(self.cmc,self.cmc_operator))
 
         return searcher.result_search()

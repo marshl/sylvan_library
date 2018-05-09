@@ -13,6 +13,11 @@
                     <label for="{{ form.rules_text.id_for_label }}">Rules</label>
                     {{ form.rules_text }}
                 </div>
+                <div>
+                    <label for="{{ form.cmc.id_for_label }}">Converted Mana Cost</label>
+                    {{ form.cmc }}
+                    {{ form.cmc_operator }}
+                </div>
                 <button type="submit">Search</button>
             </form>
         </section>

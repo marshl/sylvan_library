@@ -4,7 +4,15 @@ from bitfield.types import Bit
 
 from cards.models import *
 
-comparisons = {'<': '__lt', '<=': '__lte', '>': '__gt', '>=': '__gte', '=': ''}
+OPERATOR_MAPPING = {'LT': '__lt', 'LTE': '__lte', 'GT': '__gt', 'GTE': '__gte', 'EQ': ''}
+
+NUMERICAL_OPERATOR_CHOICES = (
+    ('GT', '>'),
+    ('GTE', '>='),
+    ('LT', '<'),
+    ('LTE', '<='),
+    ('EQ', '='),
+)
 
 
 class CardSearchParam:
@@ -188,7 +196,7 @@ class CardNumericalParam(CardSearchParam):
         self.operator = operator
 
     def get_args(self, field: str):
-        return {f'{field}{comparisons[self.operator]}': self.number}
+        return {f'{field}{OPERATOR_MAPPING[self.operator]}': self.number}
 
 
 class CardNumPowerParam(CardNumericalParam):
@@ -243,7 +251,7 @@ class CardOwnershipCountParam(CardNumericalParam):
                      default=0
                      )))
 
-        kwargs = {f'ownership_count{comparisons[self.operator]}': self.number}
+        kwargs = {f'ownership_count{OPERATOR_MAPPING[self.operator]}': self.number}
         query = Q(**kwargs)
         return Card.objects.filter(id__in=annotated_result.filter(query))
 

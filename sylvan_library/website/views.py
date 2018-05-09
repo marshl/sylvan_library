@@ -51,10 +51,17 @@ def random_card(request):
 
 def simple_search(request):
     form = SearchForm(request.GET)
-    search = FieldSearch()
-    search.card_name= form.data.get('card_name')
-    search.rules_text = form.data.get('rules_text')
-    results = search.get_query()
+    results = []
+    if form.is_valid():
+        search = FieldSearch()
+        search.card_name= form.data.get('card_name')
+        search.rules_text = form.data.get('rules_text')
+
+        search.cmc = form.data.get('cmc')
+        if search.cmc is not None:
+            search.cmc_operator = form.data.get('cmc_operator')
+
+        results = search.get_query()
 
     return render(request, 'website/simple_search.html',
                   {'form': form, 'results': results})
