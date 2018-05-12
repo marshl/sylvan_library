@@ -4,12 +4,15 @@ from cards.models import Card, Set
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponseRedirect
 import random
+import logging
 
 from cards.models import *
 from cardsearch.card_search import *
 from cardsearch.simplesearch import *
 from cardsearch.fieldsearch import *
 from .forms import *
+
+logger = logging.getLogger('django')
 
 
 def index(request):
@@ -54,14 +57,22 @@ def simple_search(request):
     results = []
     if form.is_valid():
         search = FieldSearch()
-        search.card_name= form.data.get('card_name')
+        search.card_name = form.data.get('card_name')
         search.rules_text = form.data.get('rules_text')
 
-        search.cmc = form.data.get('cmc')
-        if search.cmc is not None:
+        if form.data.get('cmc'):
+            logger.info('wasd')
+            search.cmc = int(form.data.get('cmc'))
             search.cmc_operator = form.data.get('cmc_operator')
 
-        results = search.get_query()
+        search.white = form.data.get('colour_white')
+        search.blue = form.data.get('colour_blue')
+        search.black = form.data.get('colour_black')
+        search.red = form.data.get('colour_red')
+        search.green = form.data.get('colour_green')
+        logger.info(f'{search.white} {search.blue} {search.black} {search.red} {search.green}')
+
+        results = search.get_query()[:10]
 
     return render(request, 'website/simple_search.html',
                   {'form': form, 'results': results})
@@ -73,4 +84,3 @@ def advanced_search(request):
 
 def search_results(request):
     return 'search results'
-

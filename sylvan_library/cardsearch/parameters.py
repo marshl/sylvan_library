@@ -4,6 +4,10 @@ from bitfield.types import Bit
 
 from cards.models import *
 
+import logging
+
+logger = logging.getLogger('django')
+
 OPERATOR_MAPPING = {'LT': '__lt', 'LTE': '__lte', 'GT': '__gt', 'GTE': '__gte', 'EQ': ''}
 
 NUMERICAL_OPERATOR_CHOICES = (
@@ -39,6 +43,7 @@ class AndParam(BranchParam):
 
     def get_result(self):
         if not self.child_parameters:
+            logger.info('No child parameters found, returning empty set')
             return Card.objects.none()
 
         result = self.child_parameters[0].get_result()
@@ -54,6 +59,7 @@ class OrParam(BranchParam):
 
     def get_result(self):
         if not self.child_parameters:
+            logger.info('No child parameters found,returning empty set')
             return Card.objects.none()
 
         result = self.child_parameters[0].get_result()
