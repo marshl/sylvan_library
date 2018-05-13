@@ -6,6 +6,7 @@ decorator==4.1.2
 Django==1.11.4
 django-bitfield==1.9.3
 django-extensions==1.9.8
+django-widget-tweaks==1.4.2
 entrypoints==0.2.3
 html5lib==1.0.1
 idna==2.5
