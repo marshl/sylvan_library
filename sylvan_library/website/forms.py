@@ -13,3 +13,6 @@ class SearchForm(forms.Form):
     colour_black = forms.BooleanField(required=False)
     colour_red = forms.BooleanField(required=False)
     colour_green = forms.BooleanField(required=False)
+
+    exclude_colours = forms.BooleanField(required=False)
+    match_colours = forms.BooleanField(required=False)

@@ -40,7 +40,6 @@ ul.menu a {
     padding: 8px;
 }
 
-
 .header {
     grid-column: span 12;
     grid-row: 1;
@@ -71,4 +70,90 @@ ul.menu a {
 .simple-search-content {
     grid-column: span 8;
     grid-row: 2;
+}
+
+.toggle-checkbox {
+    display: none;
+}
+
+.toggle-checkbox:checked + label {
+    background-color: #08c;
+    border-color: #08c;
+    color: #fff;
+}
+
+.toggle-checkbox + label {
+    display: inline;
+    position: relative;
+    padding: 0 4px;
+    border: 1px solid #444;
+    border-radius: 3px;
+    color: #ddd;
+    font-weight: 500;
+    font-size: 14px;
+    background-color: #222;
+    cursor: pointer;
+    user-select: none;
+}
+
+.no-select {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none;
+    /* Non-prefixed version, currently
+                                        supported by Chrome and Opera */
+}
+
+.toggle {
+    display: flex;
+    align-content: center;
+    text-align: center;
+    border-radius: 3px;
+    max-height: 30px;
+}
+
+.toggle-option.is-active {
+    background-color: #08c;
+    color: #fff;
+    border-color: #08c;
+}
+
+.toggle-option:first-child {
+    border-radius: 3px 0 0 3px;
+}
+
+
+.toggle-option:first-child {
+    border-radius: 3px 0 0 3px;
+}
+
+.toggle-option {
+    flex: 1;
+    background-color: #333;
+    border: 1px solid #444;
+    border-top-color: rgb(68, 68, 68);
+    border-right-color: rgb(68, 68, 68);
+    border-bottom-color: rgb(68, 68, 68);
+    border-left-color: rgb(68, 68, 68);
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    color: #ddd;
+    padding: 5px 10px;
+    border-right: none;
+    border-right-color: currentcolor;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+
+.toggle-item {
+    background-color: #222;
+    padding: 0 4px;
+}
+
+.toggle-option label {
+    display: inline;
 }

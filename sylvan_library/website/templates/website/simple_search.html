@@ -1,4 +1,5 @@
 {% extends 'website/base.html' %}
+{% load widget_tweaks %}
 {% block content %}
     <section class="simple-search-container">
         <section class="simple-search-sidebar">
@@ -20,12 +21,108 @@
                 </div>
                 <div>
                     <label>Colour</label>
+                    <label for="{{ form.colour_white.id_for_label }}">
+                        <i class="mi mi-w mi-mana"></i>
+                    </label>
                     {{ form.colour_white }}
+
+                    <label for="{{ form.colour_blue.id_for_label }}">
+                        <i class="mi mi-u mi-mana"></i>
+                    </label>
                     {{ form.colour_blue }}
+
+
+                    <label for="{{ form.colour_black.id_for_label }}">
+                        <i class="mi mi-b mi-mana"></i>
+                    </label>
                     {{ form.colour_black }}
+
+
+                    <label for="{{ form.colour_red.id_for_label }}">
+                        <i class="mi mi-r mi-mana"></i>
+                    </label>
                     {{ form.colour_red }}
+
+
+                    <label for="{{ form.colour_green.id_for_label }}">
+                        <i class="mi mi-g mi-mana"></i>
+                    </label>
                     {{ form.colour_green }}
                 </div>
+
+
+                <div class="sk-panel filter--colours">
+                    <div class="sk-panel__header is-collapsable">
+                        <div style="float:right;">
+                            <div style="display:flex;max-height:23px;">
+                                {% render_field form.exclude_colours class="toggle-checkbox no-select" %}
+                                <label for="{{ form.exclude_colours.id_for_label }}" class="toggle-checkbox">Only</label>
+
+                                {% render_field form.match_colours.as_hidden %}
+                                <div class="toggle">
+                                    <div class="toggle-option toggle-item {% if form.match_colours.value %}is-active{% endif %}"
+                                         data-input-field="#{{ form.match_colours.id_for_label }}" data-input-value="on">
+                                        <label>And</label>
+                                    </div>
+                                    <div class="toggle-option toggle-item {% if not form.match_colours.value %}is-active{% endif %}"
+                                         data-input-field="#{{ form.match_colours.id_for_label }}" data-input-value="">
+                                        <label>Or</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="sk-arrow-down"></span><span
+                    >&nbsp;</span><span
+                    >Colours</span></div>
+                    <div class="sk-panel__content">
+                        <div data-qa="options" class="sk-item-list">
+                            <div class="sk-item-list-option sk-item-list__item is-active" data-qa="option"
+                            >
+                                <i class="mi mi-w mi-mana"></i>
+                                <div data-qa="count" class="sk-item-list-option__count"
+                                >1
+                                </div>
+                            </div>
+                            <div class="sk-item-list-option sk-item-list__item" data-qa="option"
+                            >
+                                <i class="mi mi-u mi-mana"></i>
+                                <div data-qa="count" class="sk-item-list-option__count"
+                                >0
+                                </div>
+                            </div>
+                            <div class="sk-item-list-option sk-item-list__item" data-qa="option"
+                            >
+                                <i class="mi mi-b mi-mana"></i>
+                                <div data-qa="count" class="sk-item-list-option__count"
+                                >0
+                                </div>
+                            </div>
+                            <div class="sk-item-list-option sk-item-list__item" data-qa="option"
+                            >
+                                <i class="mi mi-r mi-mana"></i>
+                                <div data-qa="count" class="sk-item-list-option__count"
+                                >0
+                                </div>
+                            </div>
+                            <div class="sk-item-list-option sk-item-list__item" data-qa="option"
+                            >
+                                <i class="mi mi-g mi-mana"></i>
+                                <div data-qa="count" class="sk-item-list-option__count"
+                                >0
+                                </div>
+                            </div>
+                            <div class="sk-item-list-option sk-item-list__item" data-qa="option"
+                            >
+                                <i class="mi mi-c mi-mana"></i>
+                                <div data-qa="count" class="sk-item-list-option__count"
+                                >0
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
                 <button type="submit">Search</button>
             </form>
         </section>

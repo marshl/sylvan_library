@@ -13,11 +13,11 @@ class FieldSearch:
         self.rules_text = None
         self.cmc = None
         self.cmc_operator = None
-        self.white = False
-        self.blue = False
-        self.black = False
-        self.red = False
-        self.green = False
+
+        self.colours = []
+
+        self.exclude_unselected_colours = False
+        self.match_colours_exactly = False
 
     def get_query(self):
 
@@ -36,19 +36,21 @@ class FieldSearch:
             logger.info(f'Searching for CMC {self.cmc}/{self.cmc_operator}')
             root_param.add_parameter(CardCmcParam(self.cmc, self.cmc_operator))
 
-        if self.white:
-            root_param.add_parameter(CardColourParam(Card.colour_flags.white))
+        if self.colours:
+            if self.match_colours_exactly:
+                colour_root = root_param
+            else:
+                colour_root = OrParam()
+                root_param.add_parameter(colour_root)
 
-        if self.blue:
-            root_param.add_parameter(CardColourParam(Card.colour_flags.blue))
+            for colour in self.colours:
+                colour_root.add_parameter(CardColourParam(colour))
 
-        if self.black:
-            root_param.add_parameter(CardColourParam(Card.colour_flags.black))
-
-        if self.red:
-            root_param.add_parameter(CardColourParam(Card.colour_flags.red))
-
-        if self.green:
-            root_param.add_parameter(CardColourParam(Card.colour_flags.green))
-
+            if self.exclude_unselected_colours:
+                exclude_param = NotParam()
+                root_param.add_parameter(exclude_param)
+                for colour in [c for c in Card.colour_flags.values() if c not in self.colours]:
+                    p = CardColourParam(colour)
+                    exclude_param.add_parameter(p)
+        logger.info('Query: ' + str(searcher.result_search().query))
         return searcher.result_search()

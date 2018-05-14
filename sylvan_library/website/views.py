@@ -65,12 +65,19 @@ def simple_search(request):
             search.cmc = int(form.data.get('cmc'))
             search.cmc_operator = form.data.get('cmc_operator')
 
-        search.white = form.data.get('colour_white')
-        search.blue = form.data.get('colour_blue')
-        search.black = form.data.get('colour_black')
-        search.red = form.data.get('colour_red')
-        search.green = form.data.get('colour_green')
-        logger.info(f'{search.white} {search.blue} {search.black} {search.red} {search.green}')
+        if form.data.get('colour_white'):
+            search.colours.append(Card.colour_flags.white)
+        if form.data.get('colour_blue'):
+            search.colours.append(Card.colour_flags.blue)
+        if form.data.get('colour_black'):
+            search.colours.append(Card.colour_flags.black)
+        if form.data.get('colour_red'):
+            search.colours.append(Card.colour_flags.red)
+        if form.data.get('colour_green'):
+            search.colours.append(Card.colour_flags.green)
+
+        search.exclude_unselected_colours = bool(form.data.get('exclude_colours'))
+        search.match_colours_exactly = bool(form.data.get('match_colours'))
 
         results = search.get_query()[:10]
 
