@@ -44,43 +44,16 @@
                                     </div>
                                 </div>
                             </div>
+                            <span class="sk-arrow-down"></span>
+                        </div>
 
-                            <span class="sk-arrow-down"></span><span
-                        >&nbsp;</span><span
-                        >Colours</span></div>
                         <div class="sk-panel__content">
-                            <div class="item-list">
-                                <label class="list-item js-colour-filter {% if form.colour_white.value %}is-active{% endif %}"
-                                       for="{{ form.colour_white.id_for_label }}">
-                                    <i class="mi mi-w mi-mana"></i>
-                                    {{ form.colour_white }}
-                                </label>
-                                <label class="list-item js-colour-filter {% if form.colour_blue.value %}is-active{% endif %}"
-                                       for="{{ form.colour_blue.id_for_label }}">
-                                    <i class="mi mi-u mi-mana"></i>
-                                    {{ form.colour_blue }}
-                                </label>
-                                <label class="list-item js-colour-filter {% if form.colour_black.value %}is-active{% endif %}"
-                                       for="{{ form.colour_black.id_for_label }}">
-                                    <i class="mi mi-b mi-mana"></i>
-                                    {{ form.colour_black }}
-                                </label>
-                                <label class="list-item js-colour-filter {% if form.colour_red.value %}is-active{% endif %}"
-                                       for="{{ form.colour_red.id_for_label }}">
-                                    <i class="mi mi-r mi-mana"></i>
-                                    {{ form.colour_red }}
-                                </label>
-                                <label class="list-item js-colour-filter {% if form.colour_green.value %}is-active{% endif %}"
-                                       for="{{ form.colour_green.id_for_label }}">
-                                    <i class="mi mi-g mi-mana"></i>
-                                    {{ form.colour_green }}
-                                </label>
-                                <label class="list-item js-colour-filter {% if form.colour_colourless.value %}is-active{% endif %}"
-                                       for="{{ form.colour_colourless.id_for_label }}">
-                                    <i class="mi mi-c mi-mana"></i>
-                                    {{ form.colour_colourless }}
-                                </label>
-                            </div>
+                            <span>Colours</span>
+                            {% include "website/colour_group_selector.html" with colour_fields=form.colour_fields %}
+                        </div>
+                        <div class="sk-panel__content">
+                            <span>Colour Identity</span>
+                            {% include "website/colour_group_selector.html" with colour_fields=form.colour_identity_fields %}
                         </div>
                     </div>
                 </div>

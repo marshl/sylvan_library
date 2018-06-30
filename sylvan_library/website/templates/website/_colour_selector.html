@@ -1,0 +1,7 @@
+{% block content %}
+    <label class="list-item js-colour-filter {% if colour_field.value %}is-active{% endif %}"
+           for="{{ colour_field.id_for_label }}">
+        <i class="mi mi-{{ symbol }} mi-mana"></i>
+        {{ colour_field }}
+    </label>
+{% endblock %}

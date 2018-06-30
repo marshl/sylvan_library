@@ -1,0 +1,7 @@
+{% block content %}
+    <div class="item-list">
+        {% for colour_field in colour_fields %}
+            {% include "website/_colour_selector.html" with colour_field=colour_field.field symbol=colour_field.symbol %}
+        {% endfor %}
+    </div>
+{% endblock %}

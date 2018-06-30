@@ -52,5 +52,5 @@ class FieldSearch:
                 for colour in [c for c in Card.colour_flags.values() if c not in self.colours]:
                     p = CardColourParam(colour)
                     exclude_param.add_parameter(p)
-        logger.info('Query: ' + str(searcher.result_search().query))
+
         return searcher.result_search()
