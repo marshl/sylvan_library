@@ -1,46 +1,47 @@
 from django.test import TestCase
 
-from .cardsearch import *
+from .parameters import *
 from cards.tests import create_test_card, create_test_card_printing, create_test_set
 
 
 class CardNameParamTestCase(TestCase):
     def test_name_match(self):
         card = create_test_card({'name': 'foo'})
-        param = CardNameSearchParam('foo')
+        param = CardNameParam('foo')
         self.assertIn(card, param.get_result())
 
     def test_name_contains(self):
         card = create_test_card({'name': 'foobar'})
-        param = CardNameSearchParam('foo')
+        param = CardNameParam('foo')
         self.assertIn(card, param.get_result())
 
     def test_name_not_contains(self):
         card = create_test_card({'name': 'foo'})
-        param = CardNameSearchParam('bar')
+        param = CardNameParam('bar')
         self.assertNotIn(card, param.get_result())
 
     def test_name_match_invert(self):
+        root_param = NotParam()
         card = create_test_card({'name': 'foo'})
-        param = CardNameSearchParam('bar')
-        param.boolean_flag = False
-        self.assertIn(card, param.get_result())
+        param = CardNameParam('bar')
+        root_param.add_parameter(param)
+        self.assertIn(card, root_param.get_result())
 
 
 class CardRulesParamTestCase(TestCase):
     def test_rules_match(self):
         card = create_test_card({'rules_text': 'Flying'})
-        param = CardRulesSearchParam('Flying')
+        param = CardRulesTextParam('Flying')
         self.assertIn(card, param.get_result())
 
     def test_rules_contains(self):
         card = create_test_card({'rules_text': 'Double Strike'})
-        param = CardRulesSearchParam('strike')
+        param = CardRulesTextParam('strike')
         self.assertIn(card, param.get_result())
 
     def test_rules_blank(self):
         card = create_test_card({})
-        param = CardRulesSearchParam('Vigilance')
+        param = CardRulesTextParam('Vigilance')
         self.assertNotIn(card, param.get_result())
 
 
