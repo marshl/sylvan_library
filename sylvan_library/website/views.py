@@ -79,6 +79,23 @@ def simple_search(request):
         search.exclude_unselected_colours = bool(form.data.get('exclude_colours'))
         search.match_colours_exactly = bool(form.data.get('match_colours'))
 
+        if form.data.get('colourid_white'):
+            search.colour_identities.append(Card.colour_flags.white)
+        if form.data.get('colourid_blue'):
+            search.colour_identities.append(Card.colour_flags.blue)
+        if form.data.get('colourid_black'):
+            search.colour_identities.append(Card.colour_flags.black)
+        if form.data.get('colourid_red'):
+            search.colour_identities.append(Card.colour_flags.red)
+        if form.data.get('colourid_green'):
+            search.colour_identities.append(Card.colour_flags.green)
+        if form.data.get('colourid_colourless'):
+            search.colour_identities.append(Card.colour_flags.colourless)
+
+        search.exclude_unselected_colour_identities = bool(form.data.get('exclude_colours'))
+        search.match_colour_identities_exactly = bool(form.data.get('match_colours'))
+
+
         results = search.get_query()[:10]
 
     return render(request, 'website/simple_search.html',

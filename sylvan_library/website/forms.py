@@ -17,20 +17,24 @@ class SearchForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(SearchForm, self).__init__(*args, **kwargs)
 
-        for colour in ['white', 'blue', 'black', 'red', 'green', 'colourless']:
+        for colour, symbol in self.colour_list().items():
             self.fields['colour_' + colour] = forms.BooleanField(required=False)
-            self.fields['colourid_'] = forms.BooleanField(required=False)
+            self.fields['colourid_' + colour] = forms.BooleanField(required=False)
 
-    def colour_fields(self):
-        for colour, symbol in {
+    def colour_list(self):
+        return {
             'white': 'w',
             'blue': 'u',
             'black': 'b',
             'red': 'r',
             'green': 'g',
             'colourless': 'c'
-        }.items():
+        }
+
+    def colour_fields(self):
+        for colour, symbol in self.colour_list().items():
             yield {'field': self['colour_' + colour], 'symbol': symbol}
-            # for name in self.fields:
-            #    if name.startswith('colour_'):
-            #        yield {'field': self[name], 'symbol': 'r'}
+
+    def colour_identity_fields(self):
+        for colour, symbol in self.colour_list().items():
+            yield {'field': self['colourid_' + colour], 'symbol': symbol}
