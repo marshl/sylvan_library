@@ -165,14 +165,6 @@ class CardPrinting(models.Model):
     # These are technically part of the core sets and are tournament legal despite not being available in boosters.
     is_starter = models.BooleanField()
 
-    class Meta:
-        unique_together = (
-            'set',
-            'card',
-            'collector_number',
-            'collector_letter'
-        )
-
     def __str__(self):
         return f'{self.card} in {self.set}'
 
