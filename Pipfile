@@ -9,6 +9,7 @@ django-bitfield = "==1.9.3"
 Django = "==1.11.4"
 django-extensions = "*"
 django-widget-tweaks = "*"
+requests = "*"
 
 [dev-packages]
 jupyter_core = "==4.4.0"
