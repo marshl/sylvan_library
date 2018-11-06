@@ -282,7 +282,7 @@ class CardNameSortParam(CardSortParam):
 
 class CardCollectorNumSortParam(CardSortParam):
     def get_sort_keys(self):
-        return ['printings__collector_number']
+        return ['printings__number']
 
 
 class CardColourSortParam(CardSortParam):

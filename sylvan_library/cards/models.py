@@ -28,7 +28,7 @@ CARD_LEGALITY_RESTRICTION_CHOICES = (
 
 class Block(models.Model):
     name = models.CharField(max_length=200, unique=True)
-    release_date = models.DateField()
+    release_date = models.DateField(blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -45,8 +45,6 @@ class Set(models.Model):
     code = models.CharField(max_length=10, unique=True)
     release_date = models.DateField(blank=True, null=True)
     name = models.CharField(max_length=200, unique=True)
-    mci_code = models.CharField(max_length=10, blank=True, null=True)
-    border_colour = models.CharField(max_length=20, blank=True, null=True)
 
     block = models.ForeignKey(Block, null=True, related_name='sets')
 
@@ -114,10 +112,6 @@ class Card(models.Model):
     loyalty = models.CharField(max_length=20, blank=True, null=True)
     num_loyalty = models.FloatField()
 
-    # Vanguard fields
-    hand_modifier = models.IntegerField(blank=True, null=True)
-    life_modifier = models.IntegerField(blank=True, null=True)
-
     rules_text = models.CharField(max_length=1000, blank=True, null=True)
     layout = models.CharField(max_length=50, choices=CARD_LAYOUT_CHOICES)
     is_reserved = models.BooleanField()
@@ -137,8 +131,7 @@ class Card(models.Model):
 class CardPrinting(models.Model):
     flavour_text = models.CharField(max_length=500, blank=True, null=True)
     artist = models.CharField(max_length=100)
-    collector_number = models.IntegerField()
-    collector_letter = models.CharField(max_length=1, blank=True, null=True)
+    number = models.CharField(max_length=10, blank=True, null=True)
     original_text = models.CharField(max_length=1000, blank=True, null=True)
     original_type = models.CharField(max_length=200, blank=True, null=True)
     watermark = models.CharField(max_length=100, blank=True, null=True)
@@ -146,8 +139,6 @@ class CardPrinting(models.Model):
     # The unique identifier that mtgjson uses for the card
     # It is made up by doing an SHA1 hash of setCode + cardName + cardImageName
     json_id = models.CharField(max_length=40, unique=True)
-
-    mci_number = models.IntegerField(blank=True, null=True)
 
     # The border colour of the card if it differs from the border colour of the rest of the set
     # (e.g. basic lands in Unglued)
@@ -289,11 +280,6 @@ class DeckCard(models.Model):
 
 class Language(models.Model):
     name = models.CharField(max_length=50, unique=True)
-    mci_code = models.CharField(
-        max_length=10,
-        unique=True,
-        blank=True,
-        null=True)
 
     def __str__(self):
         return self.name

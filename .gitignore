@@ -116,3 +116,4 @@ sylvan_library/data_import/backup/
 *.bat
 *.ipynb
 sylvan_library/website/static/jquery/
+sylvan_library/data_import/data/AllSets.json

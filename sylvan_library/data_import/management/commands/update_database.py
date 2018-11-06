@@ -143,12 +143,11 @@ class Command(BaseCommand):
             language_obj = Language.objects.filter(name=lang['name']).first()
             if language_obj is not None:
                 logger.info(f"Updating language: {lang['name']}", )
-                language_obj.mci_code = lang['code']
                 language_obj.save()
                 self.update_counts['languages_updated'] += 1
             else:
                 logger.info(f"Creating new language: {lang['name']}")
-                language_obj = Language(name=lang['name'], mci_code=lang['code'])
+                language_obj = Language(name=lang['name'])
                 language_obj.save()
                 self.update_counts['languages_created'] += 1
 
@@ -193,16 +192,14 @@ class Command(BaseCommand):
 
             if set_obj is None:
 
-                logger.info(f'Creating set {s.get_name()}')
+                logger.info(f'Creating set {s.get_name()} ({s.code})')
                 block = Block.objects.filter(name=s.get_block()).first()
 
                 set_obj = Set(
                     code=s.get_code(),
                     name=s.get_name(),
                     release_date=s.get_release_date(),
-                    block=block,
-                    mci_code=s.get_mci_code(),
-                    border_colour=s.get_border_colour())
+                    block=block)
 
                 set_obj.save()
                 self.update_counts['sets_created'] += 1
@@ -210,8 +207,6 @@ class Command(BaseCommand):
 
             else:
                 logger.info(f'Set {s.get_name()} already exists, updating')
-
-                set_obj.border_colour = s.get_border_colour()
                 set_obj.save()
                 self.update_counts['sets_updated'] += 1
 
@@ -232,13 +227,13 @@ class Command(BaseCommand):
 
             set_obj = Set.objects.get(code=staged_set.get_code())
 
-            default_collector_number = 1
+            default_number = 1
 
             for staged_card in staged_set.get_cards():
-                if staged_card.get_collector_number() is None:
-                    staged_card.set_collector_number(default_collector_number)
+                if staged_card.get_number() is None:
+                    staged_card.set_number(default_number)
 
-                default_collector_number = staged_card.get_collector_number() + 1
+                default_number = staged_card.get_number() + 1
 
                 card_obj = self.update_card(staged_card)
 
@@ -302,9 +297,6 @@ class Command(BaseCommand):
         card.original_text = staged_card.get_original_text()
         card.layout = staged_card.get_layout()
 
-        card.life_modifier = staged_card.get_life_modifier()
-        card.hand_modifier = staged_card.get_hand_modifier()
-
         card.is_reserved = staged_card.is_reserved()
 
         card.save()
@@ -325,8 +317,7 @@ class Command(BaseCommand):
             logger.info(f'Created new card printing {printing}')
             self.update_counts['card_printings_created'] += 1
 
-        printing.collector_number = staged_card.get_collector_number()
-        printing.collector_letter = staged_card.get_collector_letter()
+        printing.number = staged_card.get_number()
 
         printing.artist = staged_card.get_artist()
         printing.rarity = Rarity.objects.get(name=staged_card.get_rarity_name())
@@ -334,7 +325,6 @@ class Command(BaseCommand):
         printing.flavour_text = staged_card.get_flavour_text()
         printing.original_text = staged_card.get_original_text()
         printing.original_type = staged_card.get_original_type()
-        printing.mci_number = staged_card.get_mci_number()
         printing.json_id = staged_card.get_json_id()
         printing.watermark = staged_card.get_watermark()
         printing.border_colour = staged_card.get_border_colour()
@@ -438,7 +428,8 @@ class Command(BaseCommand):
 
         if (staged_card.get_layout() == 'meld' and
                 staged_card.get_name_count() == 3 and
-                printlang.card_printing.collector_letter == 'b'):
+                printlang.card_printing.number and
+                printlang.card_printing.number[-1] == 'b'):
             logger.info(f'Will not create card link for meld card {printlang}')
             return
 
@@ -459,8 +450,8 @@ class Command(BaseCommand):
                     raise LookupError()
 
                 if (staged_card.get_layout() == 'meld' and
-                        printlang.card_printing.collector_letter != 'b' and
-                        link_print.collector_letter != 'b'):
+                        printlang.card_printing.number[-1] != 'b' and
+                        link_print.number[-1] != 'b'):
                     logger.warning(
                         f'Will not link {staged_card.get_name()} to {link_card} as they separate cards')
 
@@ -522,10 +513,11 @@ class Command(BaseCommand):
                 # so all legalities should be cleared out and redone
                 card_obj.legalities.all().delete()
 
-                for legality in staged_card.get_legalities():
-                    format_obj, created = Format.objects.get_or_create(name=legality['format'])
-                    legality, created = CardLegality.objects.get_or_create(card=card_obj, format=format_obj,
-                                                                           restriction=legality['legality'])
+                for format_name, legality in staged_card.get_legalities().items():
+                    format_obj, created = Format.objects.get_or_create(name=format_name)
+                    legality, created = CardLegality.objects.get_or_create(
+                        card=card_obj, format=format_obj, restriction=legality
+                    )
                     self.update_counts['legalities_created' if created else 'legalities_updated'] += 1
 
                 cards_updated.append(staged_card.get_name())

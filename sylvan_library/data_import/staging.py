@@ -66,65 +66,33 @@ COLOUR_TO_SORT_KEY = {
 class StagedCard:
     def __init__(self, value_dict):
         self.value_dict = value_dict
-
-        self.collector_number = None
-        self.collector_letter = None
-        self._parse_number()
-
-    def _parse_number(self):
-        if 'number' not in self.value_dict:
-            return
-
-        match = re.search(
-            '^(?P<special>[\D]+)?(?P<number>[\d]+)(?P<letter>[\D]+)?$',
-            self.value_dict['number'])
-
-        self.collector_number = int(match.group('number'))
-        self.collector_letter = (
-                match.group('special') or
-                match.group('letter'))
+        self.number = value_dict.get('number')
 
     def __eq__(self, other: 'StagedCard'):
-        return self.collector_number == other.collector_number and \
-               self.collector_letter == other.collector_letter and \
+        return self.number == other.number and \
                self.get_multiverse_id() == other.get_multiverse_id() and \
-               self.get_mci_number() == other.get_mci_number() and \
                self.get_name() == other.get_name()
 
     def __lt__(self, other: 'StagedCard'):
 
         # Push cards without a collector number to the end of the set
-        if self.get_collector_number() is not None and other.get_collector_number() is None:
+        if self.get_number() is not None and other.get_number() is None:
             return True
 
-        if self.get_collector_number() is None and other.get_collector_number() is not None:
+        if self.get_number() is None and other.get_number() is not None:
             return False
 
-        if self.get_collector_number() is not None and other.get_collector_number() is not None:
-
-            # Push '★" cards to the end of the set
-            if self.get_collector_letter() == '★':
-                return False
-
-            if other.get_collector_letter() == '★':
-                return True
-
-            if self.get_collector_number() != other.get_collector_number():
-                return self.get_collector_number() < other.get_collector_number()
-
-            if self.get_collector_letter() is not None and other.get_collector_letter() is None:
-                return True
-
-            if self.get_collector_letter() is None and other.get_collector_letter() is not None:
-                return False
-
-            if self.get_collector_letter() is not None and other.get_collector_letter() is not None:
-                return self.get_collector_letter() < other.get_collector_letter()
+        if self.get_number() is not None and other.get_number() is not None:
+            if self.get_number() != other.get_number():
+                return self.get_number() < other.get_number()
 
         return self.get_name() < other.get_name()
 
+    def get_number(self):
+        return self.number
+
     def get_multiverse_id(self):
-        return self.value_dict.get('multiverseid')
+        return self.value_dict.get('multiverseId')
 
     def has_foreign_names(self):
         return 'foreignNames' in self.value_dict
@@ -134,9 +102,9 @@ class StagedCard:
 
     def get_name(self):
         if self.value_dict['name'] == 'B.F.M. (Big Furry Monster)':
-            if self.value_dict['imageName'] == "b.f.m. 1":
+            if self.value_dict['number'] == '28':
                 return 'B.F.M. (Big Furry Monster) (left)'
-            elif self.value_dict['imageName'] == "b.f.m. 2":
+            elif self.value_dict['number'] == '29':
                 return 'B.F.M. (Big Furry Monster) (right)'
 
         return self.value_dict['name']
@@ -145,7 +113,7 @@ class StagedCard:
         return self.value_dict.get('manaCost')
 
     def get_cmc(self):
-        return self.value_dict.get('cmc') or 0
+        return self.value_dict.get('convertedManaCost') or 0
 
     def get_colour(self):
         result = 0
@@ -226,12 +194,6 @@ class StagedCard:
     def get_original_text(self):
         return self.value_dict.get('originalText')
 
-    def get_collector_number(self):
-        return self.collector_number
-
-    def get_collector_letter(self):
-        return self.collector_letter
-
     def get_artist(self):
         return self.value_dict['artist']
 
@@ -242,7 +204,7 @@ class StagedCard:
         return self.value_dict['rarity']
 
     def get_flavour_text(self):
-        return self.value_dict.get('flavor')
+        return self.value_dict.get('flavorText')
 
     def get_original_type(self):
         return self.value_dict.get('originalType')
@@ -254,18 +216,7 @@ class StagedCard:
         return self.value_dict['rulings']
 
     def get_json_id(self):
-        return self.value_dict['id']
-
-    def get_mci_number(self):
-        if 'mciNumber' not in self.value_dict:
-            return None
-
-        mci_match = re.search(
-            '^(/(?P<set>[^/]*)/(?P<lang>[^/]*)/)?(?P<num>[0-9]+)(\.html)?$',
-            self.value_dict['mciNumber'])
-
-        if mci_match:
-            return mci_match.group('num')
+        return self.value_dict['uuid']
 
     def get_layout(self):
         return self.value_dict['layout']
@@ -280,13 +231,7 @@ class StagedCard:
         return self.value_dict.get('watermark')
 
     def get_border_colour(self):
-        return self.value_dict.get('border')
-
-    def get_hand_modifier(self):
-        return self.value_dict.get('hand')
-
-    def get_life_modifier(self):
-        return self.value_dict.get('life')
+        return self.value_dict.get('borderColor')
 
     def get_release_date(self):
         if 'releaseDate' in self.value_dict:
@@ -300,9 +245,6 @@ class StagedCard:
                     return datetime.datetime.strptime()
 
         return None
-
-    def get_image_name(self):
-        return self.value_dict.get('imageName')
 
     def is_reserved(self):
         return 'reserved' in self.value_dict and self.value_dict['reserved']
@@ -323,17 +265,17 @@ class StagedCard:
 
         return [n for n in self.value_dict['names'] if n != self.get_name()]
 
-    def set_collector_number(self, cnum):
-        if self.collector_number is not None:
+    def set_number(self, cnum):
+        if self.number is not None:
             raise Exception('Cannot set the collector number if it has already been set')
 
-        self.collector_number = cnum
+        self.number = cnum
 
     def sanitise_name(self, name):
         if name == 'B.F.M. (Big Furry Monster)':
-            if self.value_dict['imageName'] == "b.f.m. 1":
+            if self.value_dict['number'] == '28':
                 return 'B.F.M. (Big Furry Monster) (left)'
-            elif self.value_dict['imageName'] == "b.f.m. 2":
+            elif self.value_dict['number'] == '29':
                 return 'B.F.M. (Big Furry Monster) (right)'
 
         return self.value_dict['name']
@@ -347,7 +289,8 @@ class StagedCard:
 
 
 class StagedSet:
-    def __init__(self, value_dict):
+    def __init__(self, code, value_dict):
+        self.code = code
         self.value_dict = value_dict
         self.staged_cards = list()
 
@@ -356,18 +299,13 @@ class StagedSet:
 
     def add_card(self, card):
         staged_card = StagedCard(card)
-        if staged_card.get_image_name() in ['b.f.m. (big furry monster)2',
-                                            'b.f.m. (big furry monster, right side)2',
-                                            'brisela, voice of nightmares2']:
-            return
-
         self.staged_cards.append(staged_card)
 
     def get_cards(self):
         return sorted(self.staged_cards)
 
     def get_code(self):
-        return self.value_dict['code']
+        return self.code
 
     def get_release_date(self):
         return self.value_dict['releaseDate']
@@ -380,9 +318,3 @@ class StagedSet:
 
     def has_block(self):
         return 'block' in self.value_dict
-
-    def get_mci_code(self):
-        return self.value_dict.get('magicCardsInfoCode')
-
-    def get_border_colour(self):
-        return self.value_dict.get('border')

@@ -1,4 +1,5 @@
 import json
+from datetime import date
 
 from data_import.staging import *
 from data_import import _paths
@@ -20,13 +21,13 @@ class JsonImporter:
 
         raw_sets = sorted(
             json_data.items(),
-            key=lambda card_set: card_set[1]["releaseDate"])
+            key=lambda card_set: card_set[1]["releaseDate"] or str(date.max))
 
         for raw_set in raw_sets:
-            self.add_set(raw_set[1])
+            self.add_set(raw_set[0], raw_set[1])
 
-    def add_set(self, json_set):
-        s = StagedSet(json_set)
+    def add_set(self, code, json_set):
+        s = StagedSet(code, json_set)
         self.sets.append(s)
 
     def get_staged_sets(self):

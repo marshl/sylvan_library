@@ -28,7 +28,6 @@ def create_test_card_printing(card: Card, set_obj: Set, fields: dict = {}):
     printing = CardPrinting()
     printing.card = card
     printing.set = set_obj
-    printing.collector_number = 0
     printing.rarity = create_test_rarity('Common', 'C')
     printing.is_starter = False
 

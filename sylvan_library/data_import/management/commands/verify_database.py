@@ -417,28 +417,6 @@ class Command(BaseCommand):
         self.assert_card_num_loyalty_eq('Megatog', 0)
         self.assert_card_num_loyalty_eq('Urza', 0)
 
-    def test_card_hand_modifier(self):
-        # Vanguard
-        self.assert_card_hand_mod_eq('Urza', -1)
-        self.assert_card_hand_mod_eq('Volrath', 2)
-        self.assert_card_hand_mod_eq('Birds of Paradise Avatar', 0)
-
-        # Other
-        self.assert_card_hand_mod_eq('Chandra Nalaar', None)
-        self.assert_card_hand_mod_eq('Elite Vanguard', None)
-        self.assert_card_hand_mod_eq('Incinerate', None)
-
-    def test_card_life_modifier(self):
-        # Vanguard
-        self.assert_card_life_mod_eq('Urza', 10)
-        self.assert_card_life_mod_eq('Volrath', -3)
-        self.assert_card_life_mod_eq('Birds of Paradise Avatar', -3)
-
-        # Other
-        self.assert_card_life_mod_eq('Chandra Nalaar', None)
-        self.assert_card_life_mod_eq('Elite Vanguard', None)
-        self.assert_card_life_mod_eq('Incinerate', None)
-
     def test_card_rules_text(self):
         self.assert_card_rules_eq('Grizzly Bears', None)
         self.assert_card_rules_eq('Elite Vanguard', None)
@@ -523,17 +501,17 @@ class Command(BaseCommand):
 
         brothers_yamazaki = Card.objects.get(name='Brothers Yamazaki')
         kamigawa = Set.objects.get(name='Champions of Kamigawa')
-        brother_a = CardPrinting.objects.get(card=brothers_yamazaki, set=kamigawa, collector_letter='a')
-        brother_b = CardPrinting.objects.get(card=brothers_yamazaki, set=kamigawa, collector_letter='b')
+        brother_a = CardPrinting.objects.get(card=brothers_yamazaki, set=kamigawa, number__endswitch='a')
+        brother_b = CardPrinting.objects.get(card=brothers_yamazaki, set=kamigawa, number__endswith='b')
 
-        self.assert_true(brother_a.collector_number == brother_b.collector_number,
+        self.assert_true(brother_a.number[:-1] == brother_b.number[:-1],
                          'Brothers Yamazaki should have the same collector number')
 
         fallen_empires = Set.objects.get(name='Fallen Empires')
         initiates = Card.objects.get(name='Initiates of the Ebon Hand')
-        collector_numbers = [c.collector_number for c in
+        numbers = [c.number for c in
                              CardPrinting.objects.filter(card=initiates, set=fallen_empires)]
-        self.assert_true(collector_numbers == [110, 111, 112],
+        self.assert_true(numbers == ['110', '111', '112'],
                          'The collector numbers for Initiates of the Ebon Hand are incorrect')
 
     def test_cardprinting_collectorletter(self):
@@ -614,12 +592,6 @@ class Command(BaseCommand):
     def assert_card_num_loyalty_eq(self, card_name: str, num_loyalty: int):
         self.assert_card_name_attr_eq(card_name, 'num_loyalty', num_loyalty)
 
-    def assert_card_hand_mod_eq(self, card_name: str, hand_mod: int):
-        self.assert_card_name_attr_eq(card_name, 'hand_modifier', hand_mod)
-
-    def assert_card_life_mod_eq(self, card_name: str, life_mod: int):
-        self.assert_card_name_attr_eq(card_name, 'life_modifier', life_mod)
-
     def assert_card_rules_eq(self, card_name: str, rules_text: str):
         self.assert_card_name_attr_eq(card_name, 'rules_text', rules_text)
 
@@ -639,9 +611,6 @@ class Command(BaseCommand):
 
     def assert_cardprinting_artist_eq(self, card_name: str, setcode: str, artist: str):
         self.assert_cardprinting_name_attr_eq(card_name, setcode, 'artist', artist)
-
-    def assert_cardprinting_collecterletter_eq(self, card_name: str, setcode: str, collector_letter: str):
-        self.assert_cardprinting_name_attr_eq(card_name, setcode, 'collector_letter', collector_letter)
 
     def assert_cardprinting_name_attr_eq(self, card_name: str, setcode: str, attr_name: str, attr_value):
         if not Card.objects.filter(name=card_name).exists() or \
