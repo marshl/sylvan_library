@@ -53,8 +53,8 @@ class Set(models.Model):
 
 
 class Rarity(models.Model):
-    symbol = models.CharField(max_length=1, unique=True)
-    name = models.CharField(max_length=15, unique=True)
+    symbol = models.CharField(max_length=5, unique=True)
+    name = models.CharField(max_length=30, unique=True)
     display_order = models.IntegerField(unique=True)
 
     def __str__(self):
