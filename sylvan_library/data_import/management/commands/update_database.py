@@ -5,6 +5,7 @@ from django.db import transaction
 
 from cards.models import *
 from data_import.importers import *
+from data_import import _paths
 
 logger = logging.getLogger('django')
 
@@ -62,8 +63,8 @@ class Command(BaseCommand):
 
         self.start_time = time.time()
 
-        importer = JsonImporter()
-        importer.import_data()
+        importer = DataImporter()
+        importer.import_sets()
 
         if options['force_update_sets']:
             self.sets_to_update += options['force_update_sets']
@@ -78,16 +79,16 @@ class Command(BaseCommand):
 
         self.log_stats()
 
-    def update_database(self, data_importer):
+    def update_database(self, data_importer: DataImporter):
         self.update_rarity_list(data_importer)
         self.update_colour_list(data_importer)
         self.update_language_list(data_importer)
 
-        staged_sets = data_importer.get_staged_sets()
+        staged_sets = data_importer.staged_sets
 
         self.update_block_list(staged_sets)
         self.update_set_list(staged_sets)
-        self.update_card_list(staged_sets)
+        self.update_card_list(data_importer)
         self.update_ruling_list(staged_sets)
         self.update_physical_card_list(staged_sets)
         self.update_card_links(staged_sets)
@@ -182,17 +183,11 @@ class Command(BaseCommand):
         logger.info('Updating set list')
 
         for s in staged_sets:
-
-            # Skip sets that start with 'p' (e.g. pPRE Prerelease Events)
-            if s.get_code()[0] == 'p':
-                logger.info(f'Ignoring set {s.get_name()}')
-                continue
-
             set_obj = Set.objects.filter(code=s.get_code()).first()
 
             if set_obj is None:
 
-                logger.info(f'Creating set {s.get_name()} ({s.code})')
+                logger.info(f'Creating set {s.get_name()} ({s.get_code()})')
                 block = Block.objects.filter(name=s.get_block()).first()
 
                 set_obj = Set(
@@ -214,45 +209,32 @@ class Command(BaseCommand):
                     self.sets_to_update.append(s.get_code())
         logger.info('Set list updated')
 
-    def update_card_list(self, staged_sets):
+    def update_card_list(self, importer):
         logger.info('Updating card list')
 
-        for staged_set in staged_sets:
+        for staged_card in importer.get_cards():
 
-            if staged_set.get_code() not in self.sets_to_update:
-                logger.info(f'Ignoring set {staged_set.get_name()}')
-                continue
+            logger.info(f'Updading {staged_card.get_name()}')
 
-            logger.info(f'Updating cards in set {staged_set.get_name()}')
+            card_obj = self.update_card(staged_card)
+            set_obj = Set.objects.get(code=staged_card.get_set_code())
 
-            set_obj = Set.objects.get(code=staged_set.get_code())
+            printing_obj = self.update_card_printing(
+                card_obj,
+                set_obj,
+                staged_card)
 
-            default_number = 1
+            english = {
+                'language': 'English',
+                'name': staged_card.get_name(),
+                'multiverseid': staged_card.get_multiverse_id()
+            }
 
-            for staged_card in staged_set.get_cards():
-                if staged_card.get_number() is None:
-                    staged_card.set_number(default_number)
+            self.update_card_printing_language(printing_obj, english)
 
-                default_number = staged_card.get_number() + 1
-
-                card_obj = self.update_card(staged_card)
-
-                printing_obj = self.update_card_printing(
-                    card_obj,
-                    set_obj,
-                    staged_card)
-
-                english = {
-                    'language': 'English',
-                    'name': staged_card.get_name(),
-                    'multiverseid': staged_card.get_multiverse_id()
-                }
-
-                self.update_card_printing_language(printing_obj, english)
-
-                if staged_card.has_foreign_names():
-                    for lang in staged_card.get_foreign_names():
-                        self.update_card_printing_language(printing_obj, lang)
+            if staged_card.has_foreign_names():
+                for lang in staged_card.get_foreign_names():
+                    self.update_card_printing_language(printing_obj, lang)
 
         logger.info('Card list updated')
 
@@ -320,7 +302,7 @@ class Command(BaseCommand):
         printing.number = staged_card.get_number()
 
         printing.artist = staged_card.get_artist()
-        printing.rarity = Rarity.objects.get(name=staged_card.get_rarity_name())
+        printing.rarity = Rarity.objects.get(name__iexact=staged_card.get_rarity_name())
 
         printing.flavour_text = staged_card.get_flavour_text()
         printing.original_text = staged_card.get_original_text()
@@ -363,11 +345,6 @@ class Command(BaseCommand):
         CardRuling.objects.all().delete()
 
         for staged_set in staged_sets:
-
-            if staged_set.get_code() not in self.sets_to_update:
-                logger.info(f'Ignoring set {staged_set.get_name()}')
-                continue
-
             logger.info(f'Updating rulings in {staged_set.get_name()}')
 
             for staged_card in staged_set.get_cards():
@@ -390,10 +367,6 @@ class Command(BaseCommand):
 
         english_language = Language.objects.get(name='English')
         for staged_set in staged_sets:
-
-            if staged_set.get_code() not in self.sets_to_update:
-                logger.info(f'Skipping set {staged_set.get_name()}')
-                continue
 
             set_obj = Set.objects.get(code=staged_set.get_code())
 
@@ -475,10 +448,6 @@ class Command(BaseCommand):
     def update_card_links(self, staged_sets):
         for staged_set in staged_sets:
 
-            if staged_set.get_code() not in self.sets_to_update:
-                logger.info(f'Skipping set {staged_set.get_name()}')
-                continue
-
             cards = staged_set.get_cards()
 
             for staged_card in [x for x in cards if x.has_other_names()]:
@@ -498,10 +467,6 @@ class Command(BaseCommand):
         cards_updated = []
 
         for staged_set in staged_sets:
-            if staged_set.get_code() not in self.sets_to_update:
-                logger.info(f'Skipping set {staged_set.get_name()}')
-                continue
-
             for staged_card in staged_set.get_cards():
 
                 if staged_card.get_name() in cards_updated:

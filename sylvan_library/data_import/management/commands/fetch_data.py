@@ -1,9 +1,7 @@
 from django.core.management.base import BaseCommand
 
-import json
 import logging
-import requests
-import zipfile
+import urllib.request
 from os import path
 
 from data_import import _paths, _query
@@ -14,36 +12,33 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        if path.isfile(_paths.json_data_path):
+        if path.isfile(_paths.json_data_path) or path.isfile(_paths.json_set_data_path):
             overwrite = _query.query_yes_no(
-                '{0} already exists, overwrite?'.format(_paths.json_zip_path))
+                f'Data files already exist, do you wish to overwrite them?')
 
             if not overwrite:
-                logging.info('The file {0} wasn''t overwritten'
-                             .format(_paths.json_zip_path))
+                logging.info(f'User cancelled')
                 return
 
-        logging.info('Downloading json file from {0}'
-                     .format(_paths.json_zip_download_url))
-        stream = requests.get(_paths.json_zip_download_url)
+        # urllib.request.urlretrieve(_paths.json_download_url, _paths.json_data_path)
 
-        logging.info('Writing json data to file {0}'
-                     .format(_paths.json_zip_path))
-        with open(_paths.json_zip_path, 'wb') as output:
-            output.write(stream.content)
+        self.download_file(_paths.json_set_download_url, _paths.json_set_data_path)
+        self.download_file(_paths.json_download_url, _paths.json_data_path)
 
-        json_zip_file = zipfile.ZipFile(_paths.json_zip_path)
-        json_zip_file.extractall(_paths.data_folder)
+    def download_file(self, url, output_path):
+        u = urllib.request.urlopen(url)
+        f = open(output_path, 'wb')
+        print(f'Downloading: {url} to {output_path}')
 
-        f = open(_paths.json_data_path, 'r', encoding="utf8")
-        json_data = json.load(f, encoding='UTF-8')
+        file_size_dl = 0
+        block_sz = 8192
+        while True:
+            buffer = u.read(block_sz)
+            if not buffer:
+                break
+
+            file_size_dl += len(buffer)
+            f.write(buffer)
+            print("{:,} bytes".format(file_size_dl), end='\r')
+
         f.close()
-
-        pretty_file = open(_paths.pretty_json_path, 'w', encoding='utf8')
-        pretty_file.write(json.dumps(
-                           json_data,
-                           sort_keys=True,
-                           indent=2,
-                           separators=(',', ': ')))
-
-        pretty_file.close()

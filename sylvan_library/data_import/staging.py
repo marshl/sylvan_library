@@ -12,11 +12,11 @@ COLOUR_NAME_TO_FLAG = {
 }
 
 COLOUR_CODE_TO_FLAG = {
-    'w': Card.colour_flags.white,
-    'u': Card.colour_flags.blue,
-    'b': Card.colour_flags.black,
-    'r': Card.colour_flags.red,
-    'g': Card.colour_flags.green,
+    'W': Card.colour_flags.white,
+    'U': Card.colour_flags.blue,
+    'B': Card.colour_flags.black,
+    'R': Card.colour_flags.red,
+    'G': Card.colour_flags.green,
 }
 
 COLOUR_TO_SORT_KEY = {
@@ -119,7 +119,7 @@ class StagedCard:
         result = 0
         if 'colors' in self.value_dict:
             for colour_name in self.value_dict['colors']:
-                result |= COLOUR_NAME_TO_FLAG[colour_name.lower()]
+                result |= COLOUR_CODE_TO_FLAG[colour_name]
 
         return result
 
@@ -138,9 +138,9 @@ class StagedCard:
 
     def get_colour_identity(self):
         result = 0
-        if 'colorIdentity' in self.value_dict:
-            for colour_code in self.value_dict['colorIdentity']:
-                result |= COLOUR_CODE_TO_FLAG[colour_code.lower()]
+        if 'color_identity' in self.value_dict:
+            for colour_code in self.value_dict['color_identity']:
+                result |= COLOUR_CODE_TO_FLAG[colour_code]
 
         return result
 
@@ -216,7 +216,7 @@ class StagedCard:
         return self.value_dict['rulings']
 
     def get_json_id(self):
-        return self.value_dict['uuid']
+        return self.value_dict['id']
 
     def get_layout(self):
         return self.value_dict['layout']
@@ -232,6 +232,9 @@ class StagedCard:
 
     def get_border_colour(self):
         return self.value_dict.get('borderColor')
+
+    def get_set_code(self):
+        return self.value_dict['set'].upper()
 
     def get_release_date(self):
         if 'releaseDate' in self.value_dict:
@@ -289,26 +292,14 @@ class StagedCard:
 
 
 class StagedSet:
-    def __init__(self, code, value_dict):
-        self.code = code
+    def __init__(self, value_dict):
         self.value_dict = value_dict
-        self.staged_cards = list()
-
-        for card in self.value_dict['cards']:
-            self.add_card(card)
-
-    def add_card(self, card):
-        staged_card = StagedCard(card)
-        self.staged_cards.append(staged_card)
-
-    def get_cards(self):
-        return sorted(self.staged_cards)
 
     def get_code(self):
-        return self.code
+        return self.value_dict['code'].upper()
 
     def get_release_date(self):
-        return self.value_dict['releaseDate']
+        return self.value_dict.get('released_at')
 
     def get_name(self):
         return self.value_dict['name']

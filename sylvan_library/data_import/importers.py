@@ -1,14 +1,13 @@
-import json
+import json, ijson
 from datetime import date
 
 from data_import.staging import *
 from data_import import _paths
 
 
-class JsonImporter:
+class DataImporter:
     def __init__(self):
-        self.sets = list()
-        pass
+        self.staged_sets = list()
 
     def parse_json(self):
         f = open(_paths.json_data_path, 'r', encoding="utf8")
@@ -16,22 +15,11 @@ class JsonImporter:
         f.close()
         return json_data
 
-    def import_data(self):
-        json_data = self.parse_json()
-
-        raw_sets = sorted(
-            json_data.items(),
-            key=lambda card_set: card_set[1]["releaseDate"] or str(date.max))
-
-        for raw_set in raw_sets:
-            self.add_set(raw_set[0], raw_set[1])
-
-    def add_set(self, code, json_set):
-        s = StagedSet(code, json_set)
-        self.sets.append(s)
-
-    def get_staged_sets(self):
-        return self.sets
+    def get_cards(self):
+        f = open(_paths.json_data_path, 'r', encoding="utf8")
+        json_data = ijson.items(f, 'item')
+        for card_json in json_data:
+            yield StagedCard(card_json)
 
     def import_colours(self):
         file = open(_paths.colour_json_path, 'r', encoding='utf8')
@@ -53,3 +41,13 @@ class JsonImporter:
         f.close()
 
         return languages
+
+    def import_sets(self):
+        f = open(_paths.json_set_data_path, 'r', encoding="utf8")
+        json_data = ijson.items(f, 'data.item')
+        for json_set in json_data:
+            self.add_set(json_set)
+
+    def add_set(self, json_set):
+        s = StagedSet(json_set)
+        self.staged_sets.append(s)
