@@ -13,7 +13,6 @@ CARD_LAYOUT_CHOICES = (
     ('token', 'Token'),
     ('planar', 'Planar'),
     ('scheme', 'Scheme'),
-    ('phenomenon', 'Phenomenon'),
     ('leveler', 'Leveler'),
     ('vanguard', 'Vanguard'),
     ('meld', 'Meld'),
