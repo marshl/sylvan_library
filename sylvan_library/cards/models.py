@@ -9,7 +9,7 @@ CARD_LAYOUT_CHOICES = (
     ('normal', 'Normal'),
     ('split', 'Split'),
     ('flip', 'Flip'),
-    ('double-faced', 'Double-faced'),
+    ('transform', 'Transform'),
     ('token', 'Token'),
     ('plane', 'Plane'),
     ('scheme', 'Scheme'),
