@@ -30,7 +30,6 @@ class Command(BaseCommand):
                      'card_links_created': 0,
                      'blocks_created': 0,
                      'sets_created': 0, 'sets_updated': 0,
-                     'rulings_created': 0, 'rulings_updated': 0,
                      'legalities_created': 0, 'legalities_updated': 0}
 
     def add_arguments(self, parser):
@@ -88,7 +87,6 @@ class Command(BaseCommand):
         self.update_block_list(staged_sets)
         self.update_set_list(staged_sets)
         self.update_card_list(staged_sets)
-        self.update_ruling_list(staged_sets)
         self.update_physical_card_list(staged_sets)
         self.update_card_links(staged_sets)
         self.update_legalities(staged_sets)
@@ -357,33 +355,6 @@ class Command(BaseCommand):
         cardlang.save()
         self.update_counts['printing_languages_created'] += 1
         return cardlang
-
-    def update_ruling_list(self, staged_sets):
-        logger.info('Updating card rulings')
-        CardRuling.objects.all().delete()
-
-        for staged_set in staged_sets:
-
-            if staged_set.get_code() not in self.sets_to_update:
-                logger.info(f'Ignoring set {staged_set.get_name()}')
-                continue
-
-            logger.info(f'Updating rulings in {staged_set.get_name()}')
-
-            for staged_card in staged_set.get_cards():
-
-                if not staged_card.has_rulings():
-                    continue
-
-                card_obj = Card.objects.get(name=staged_card.get_name())
-                logger.info(f'Updating rulings for {staged_card.get_name()}')
-
-                for ruling in staged_card.get_rulings():
-                    ruling, created = CardRuling.objects.get_or_create(card=card_obj, text=ruling['text'],
-                                                                       date=ruling['date'])
-                    self.update_counts['rulings_created' if created else 'rulings_updated'] += 1
-
-        logger.info('Card rulings updated')
 
     def update_physical_card_list(self, staged_sets):
         logger.info('Updating physical card list')

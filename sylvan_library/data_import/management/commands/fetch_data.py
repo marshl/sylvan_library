@@ -19,7 +19,7 @@ class Command(BaseCommand):
                 '{0} already exists, overwrite?'.format(_paths.json_zip_path))
 
             if not overwrite:
-                logging.info('The file {0} wasn''t overwritten'
+                logging.info("The file {0} wasn't overwritten"
                              .format(_paths.json_zip_path))
                 return
 
