@@ -46,8 +46,7 @@ class Command(BaseCommand):
 
         self.assert_true(Block.objects.get(name='Mirrodin').sets.count() == 3, 'Mirrodin should have 3 sets')
         self.assert_true(Block.objects.get(name='Time Spiral').sets.count() == 4, 'Time Spiral should have 4 sets')
-        self.assert_true(Block.objects.get(name='Amonkhet').sets.count() == 3,
-                         'Amonkhet should have 3 sets (including Welcome Deck 2017)')
+        self.assert_true(Block.objects.get(name='Amonkhet').sets.count() == 5, "Amonkhet blockshould have 5 sets")
 
     def test_sets(self):
         self.assert_false(Set.objects.filter(name='Worlds').exists(), 'The Worlds set should have been filtered out')
@@ -116,14 +115,14 @@ class Command(BaseCommand):
         self.assert_card_cost_eq('Naya Hushblade', '{R/W}{G}')
 
         # Half mana card
-        self.assert_card_cost_eq('Little Girl', '{hw}')
+        self.assert_card_cost_eq('Little Girl', '{HW}')
 
         # Meld card
         self.assert_card_cost_eq('Brisela, Voice of Nightmares', None)
 
         # Flip card
         self.assert_card_cost_eq('Bushi Tenderfoot', '{W}')
-        self.assert_card_cost_eq('Kenzo the Hardhearted', '{W}')
+        self.assert_card_cost_eq('Kenzo the Hardhearted', None)
 
         # Phyrexian mana card
         self.assert_card_cost_eq('Birthing Pod', '{3}{G/P}')
@@ -170,7 +169,9 @@ class Command(BaseCommand):
         self.assert_card_cmc_eq('Brisela, Voice of Nightmares', 11)
 
         # Split card
-        self.assert_card_cmc_eq('Wear', 2)
+        # Both Wear and Tear should have the same CMC under teh new rules
+        self.assert_card_cmc_eq('Wear', 3)
+        self.assert_card_cmc_eq('Tear', 3)
 
         # Flip card
         self.assert_card_cmc_eq('Homura\'s Essence', 6)
@@ -441,13 +442,13 @@ class Command(BaseCommand):
         self.assert_card_layout_eq('Run', 'split')
         self.assert_card_layout_eq('Hired Muscle', 'flip')
         self.assert_card_layout_eq('Scarmaker', 'flip')
-        self.assert_card_layout_eq('Delver of Secrets', 'double-faced')
-        self.assert_card_layout_eq('Insectile Aberration', 'double-faced')
-        self.assert_card_layout_eq('Pegasus token card', 'token')
-        self.assert_card_layout_eq('Hellion', 'token')
-        self.assert_card_layout_eq('Angel', 'token')
-        self.assert_card_layout_eq('Mount Keralia', 'plane')
-        self.assert_card_layout_eq('Glimmervoid Basin', 'plane')
+        self.assert_card_layout_eq('Delver of Secrets', 'transform')
+        self.assert_card_layout_eq('Insectile Aberration', 'transform')
+        # self.assert_card_layout_eq('Pegasus token card', 'token')
+        # self.assert_card_layout_eq('Hellion', 'token')
+        # self.assert_card_layout_eq('Angel', 'token')
+        self.assert_card_layout_eq('Mount Keralia', 'planar')
+        self.assert_card_layout_eq('Glimmervoid Basin', 'planar')
         self.assert_card_layout_eq('I Bask in Your Silent Awe', 'scheme')
         self.assert_card_layout_eq('Every Hope Shall Vanish', 'scheme')
         self.assert_card_layout_eq('Time Distortion', 'phenomenon')
@@ -459,15 +460,15 @@ class Command(BaseCommand):
         self.assert_card_layout_eq('Bruna, the Fading Light', 'meld')
         self.assert_card_layout_eq('Brisela, Voice of Nightmares', 'meld')
 
-        self.assert_true(Card.objects.filter(
-            printings__in=CardPrinting.objects.filter(set=Set.objects.get(name='Vanguard')).all()). \
-                         exclude(layout='vanguard').count() == 0,
-                         'All cards in Vanguard should have the vanguard layout')
-
-        self.assert_true(Card.objects.exclude(
-            printings__in=CardPrinting.objects.filter(set=Set.objects.get(name='Vanguard')).all()). \
-                         filter(layout='vanguard').count() == 0,
-                         'No cards outside of Vanguard should have the vanguard layout')
+        # self.assert_true(Card.objects.filter(
+        #     printings__in=CardPrinting.objects.filter(set=Set.objects.get(name='Vanguard')).all()). \
+        #                  exclude(layout='vanguard').count() == 0,
+        #                  'All cards in Vanguard should have the vanguard layout')
+        #
+        # self.assert_true(Card.objects.exclude(
+        #     printings__in=CardPrinting.objects.filter(set=Set.objects.get(name='Vanguard')).all()). \
+        #                  filter(layout='vanguard').count() == 0,
+        #                  'No cards outside of Vanguard should have the vanguard layout')
 
     def test_cardprinting_flavour(self):
         self.assert_cardprinting_flavour_eq('Goblin Chieftain', 'M10',
@@ -501,7 +502,7 @@ class Command(BaseCommand):
 
         brothers_yamazaki = Card.objects.get(name='Brothers Yamazaki')
         kamigawa = Set.objects.get(name='Champions of Kamigawa')
-        brother_a = CardPrinting.objects.get(card=brothers_yamazaki, set=kamigawa, number__endswitch='a')
+        brother_a = CardPrinting.objects.get(card=brothers_yamazaki, set=kamigawa, number__endswith='a')
         brother_b = CardPrinting.objects.get(card=brothers_yamazaki, set=kamigawa, number__endswith='b')
 
         self.assert_true(brother_a.number[:-1] == brother_b.number[:-1],
@@ -510,22 +511,9 @@ class Command(BaseCommand):
         fallen_empires = Set.objects.get(name='Fallen Empires')
         initiates = Card.objects.get(name='Initiates of the Ebon Hand')
         numbers = [c.number for c in
-                             CardPrinting.objects.filter(card=initiates, set=fallen_empires)]
+                   CardPrinting.objects.filter(card=initiates, set=fallen_empires)]
         self.assert_true(numbers == ['110', '111', '112'],
                          'The collector numbers for Initiates of the Ebon Hand are incorrect')
-
-    def test_cardprinting_collectorletter(self):
-        self.assert_cardprinting_collecterletter_eq('Legion\'s Landing', 'XLN', 'a')
-        self.assert_cardprinting_collecterletter_eq('Adanto, the First Fort', 'XLN', 'b')
-
-        self.assert_cardprinting_collecterletter_eq('Rise', 'DIS', 'a')
-        self.assert_cardprinting_collecterletter_eq('Fall', 'DIS', 'b')
-
-        self.assert_cardprinting_collecterletter_eq('Who', 'UNH', 'a')
-        self.assert_cardprinting_collecterletter_eq('What', 'UNH', 'b')
-        self.assert_cardprinting_collecterletter_eq('When', 'UNH', 'c')
-        self.assert_cardprinting_collecterletter_eq('Where', 'UNH', 'd')
-        self.assert_cardprinting_collecterletter_eq('Why', 'UNH', 'e')
 
     def test_physical_cards(self):
         gisela = Card.objects.get(name='Gisela, the Broken Blade')
