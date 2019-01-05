@@ -24,13 +24,7 @@ class Command(BaseCommand):
         CardRuling.objects.all().delete()
 
         for staged_set in staged_sets:
-
-            if staged_set.get_code().startswith('p'):
-                logger.info(f'Ignoring set {s.get_name()}')
-                continue
-
             logger.info(f'Updating rulings in {staged_set.get_name()}')
-
             for staged_card in staged_set.get_cards():
 
                 if not staged_card.has_rulings():

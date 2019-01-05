@@ -185,12 +185,6 @@ class Command(BaseCommand):
         logger.info('Updating set list')
 
         for s in staged_sets:
-
-            # Skip sets that start with 'p' (e.g. pPRE Prerelease Events)
-            if s.get_code()[0] == 'p':
-                logger.info(f'Ignoring set {s.get_name()}')
-                continue
-
             set_obj = Set.objects.filter(code=s.get_code()).first()
 
             if set_obj is None:
