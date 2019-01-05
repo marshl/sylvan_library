@@ -49,10 +49,6 @@ class Command(BaseCommand):
         self.assert_true(Block.objects.get(name='Amonkhet').sets.count() == 5, "Amonkhet blockshould have 5 sets")
 
     def test_sets(self):
-        self.assert_false(Set.objects.filter(name='Worlds').exists(), 'The Worlds set should have been filtered out')
-        self.assert_false(Set.objects.filter(code__startswith='p').exists(),
-                          'Sets that start with "p" should have been filtered out')
-
         self.assert_true(Set.objects.get(code='ONS').block.name == 'Onslaught',
                          'Onslaught should be in the Onslaught block')
         self.assert_true(Set.objects.get(code='WTH').block.name == 'Mirage',
@@ -90,7 +86,6 @@ class Command(BaseCommand):
         self.assert_card_exists('Homura, Human Ascendant')
 
         # Negative tests
-        self.assert_card_not_exists('Splendid Genesis')
         self.assert_card_not_exists('Æther Charge')
 
     def test_card_cost(self):
@@ -297,8 +292,8 @@ class Command(BaseCommand):
         # Tribal
         self.assert_card_subtype_eq('Lignify', 'Treefolk Aura')
         # None
-        self.assert_card_subtype_eq('Nameless Race', None)
-        self.assert_card_subtype_eq('Spellbook', None)
+        self.assert_card_subtype_eq('Nameless Race', '')
+        self.assert_card_subtype_eq('Spellbook', '')
 
     def test_card_power(self):
         # Normal Cards
@@ -421,10 +416,11 @@ class Command(BaseCommand):
     def test_card_rules_text(self):
         self.assert_card_rules_eq('Grizzly Bears', None)
         self.assert_card_rules_eq('Elite Vanguard', None)
-        self.assert_card_rules_eq('Forest', None)
-        self.assert_card_rules_eq('Snow-Covered Swamp', None)
+        self.assert_card_rules_eq('Forest', '({T}: Add {G}.)')
+        self.assert_card_rules_eq('Snow-Covered Swamp', '({T}: Add {B}.)')
 
-        self.assert_card_rules_eq('Air Elemental', 'Flying')
+        self.assert_card_rules_eq('Air Elemental',
+                                  "Flying (This creature can't be blocked except by creatures with flying or reach.)")
         self.assert_card_rules_eq('Thunder Spirit', 'Flying, first strike')
         self.assert_card_rules_eq('Dark Ritual', 'Add {B}{B}{B}.')
         self.assert_card_rules_eq('Palladium Myr', '{T}: Add {C}{C}.')
@@ -451,7 +447,7 @@ class Command(BaseCommand):
         self.assert_card_layout_eq('Glimmervoid Basin', 'planar')
         self.assert_card_layout_eq('I Bask in Your Silent Awe', 'scheme')
         self.assert_card_layout_eq('Every Hope Shall Vanish', 'scheme')
-        self.assert_card_layout_eq('Time Distortion', 'phenomenon')
+        self.assert_card_layout_eq('Time Distortion', 'planar')
         self.assert_card_layout_eq('Echo Mage', 'leveler')
         self.assert_card_layout_eq('Caravan Escort', 'leveler')
         self.assert_card_layout_eq('Birds of Paradise Avatar', 'vanguard')
@@ -482,7 +478,8 @@ class Command(BaseCommand):
         self.assert_cardprinting_flavour_eq('Goblin Balloon Brigade', 'M11',
                                             '"The enemy is getting too close! Quick! Inflate the toad!"')
         self.assert_cardprinting_flavour_eq('Lhurgoyf', 'ICE',
-                                            '''"Ach! Hans, run! It\'s the Lhurgoyf!"\n—Saffi Eriksdotter, last words''')
+                                            '''"Ach! Hans, run! It's the Lhurgoyf!" —Saffi Eriksdotter, last words''')
+
         self.assert_cardprinting_flavour_eq('Magma Mine', 'VIS', 'BOOM!')
 
     def test_cardprinting_artist(self):
@@ -512,7 +509,7 @@ class Command(BaseCommand):
         initiates = Card.objects.get(name='Initiates of the Ebon Hand')
         numbers = [c.number for c in
                    CardPrinting.objects.filter(card=initiates, set=fallen_empires)]
-        self.assert_true(numbers == ['110', '111', '112'],
+        self.assert_true(sorted(numbers) == sorted(['39a', '39b', '39c']),
                          'The collector numbers for Initiates of the Ebon Hand are incorrect')
 
     def test_physical_cards(self):
