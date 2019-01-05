@@ -1,37 +1,37 @@
 [
   {
-    "symbol": "L",
-    "name": "Basic Land",
-    "display_order": 10
-  },
-  {
     "symbol": "C",
     "name": "Common",
-    "display_order": 20
+    "display_order": 10
   },
   {
     "symbol": "U",
     "name": "Uncommon",
-    "display_order": 30
+    "display_order": 20
   },
   {
     "symbol": "R",
     "name": "Rare",
-    "display_order": 40
+    "display_order": 30
   },
   {
     "symbol": "M",
-    "name": "Mythic Rare",
+    "name": "Mythic",
+    "display_order": 40
+  },
+  {
+    "symbol": "TC",
+    "name": "Timeshifted Common",
     "display_order": 50
   },
   {
-    "symbol": "T",
-    "name": "Timeshifted",
+    "symbol": "TU",
+    "name": "Timeshifted Uncommon",
     "display_order": 60
   },
   {
-    "symbol": "S",
-    "name": "Special",
+    "symbol": "TR",
+    "name": "Timeshifted Rare",
     "display_order": 70
   }
 ]
