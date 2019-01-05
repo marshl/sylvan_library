@@ -119,7 +119,7 @@ class StagedCard:
         result = 0
         if 'colors' in self.value_dict:
             for colour_name in self.value_dict['colors']:
-                result |= COLOUR_NAME_TO_FLAG[colour_name.lower()]
+                result |= COLOUR_CODE_TO_FLAG[colour_name.lower()]
 
         return result
 
