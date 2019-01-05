@@ -11,7 +11,7 @@ CARD_LAYOUT_CHOICES = (
     ('flip', 'Flip'),
     ('transform', 'Transform'),
     ('token', 'Token'),
-    ('plane', 'Plane'),
+    ('planar', 'Planar'),
     ('scheme', 'Scheme'),
     ('phenomenon', 'Phenomenon'),
     ('leveler', 'Leveler'),
@@ -46,7 +46,7 @@ class Set(models.Model):
     release_date = models.DateField(blank=True, null=True)
     name = models.CharField(max_length=200, unique=True)
 
-    block = models.ForeignKey(Block, null=True, related_name='sets')
+    block = models.ForeignKey(Block, null=True, blank=True, related_name='sets')
 
     def __str__(self):
         return self.name
