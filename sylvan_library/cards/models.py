@@ -17,6 +17,9 @@ CARD_LAYOUT_CHOICES = (
     ('leveler', 'Leveler'),
     ('vanguard', 'Vanguard'),
     ('meld', 'Meld'),
+    ('host', 'Host'),
+    ('augment', 'Augment'),
+    ('saga', 'Saga'),
 )
 
 CARD_LEGALITY_RESTRICTION_CHOICES = (
