@@ -105,6 +105,7 @@ class Command(BaseCommand):
                                     name=colour['name'],
                                     display_order=colour['display_order'],
                                     bit_value=colour['bit_value'])
+                colour_obj.full_clean()
                 colour_obj.save()
                 self.update_counts['colours_created'] += 1
 
@@ -118,6 +119,7 @@ class Command(BaseCommand):
                 logger.info(f'Updating existing rarity {rarity_obj.name}')
                 rarity_obj.name = rarity['name']
                 rarity_obj.display_order = rarity['display_order']
+                rarity_obj.full_clean()
                 rarity_obj.save()
                 self.update_counts['rarities_updated'] += 1
             else:
@@ -127,7 +129,7 @@ class Command(BaseCommand):
                     symbol=rarity['symbol'],
                     name=rarity['name'],
                     display_order=rarity['display_order'])
-
+                rarity_obj.full_clean()
                 rarity_obj.save()
                 self.update_counts['rarities_created'] += 1
 
@@ -141,11 +143,13 @@ class Command(BaseCommand):
             language_obj = Language.objects.filter(name=lang['name']).first()
             if language_obj is not None:
                 logger.info(f"Updating language: {lang['name']}", )
+                language_obj.full_clean()
                 language_obj.save()
                 self.update_counts['languages_updated'] += 1
             else:
                 logger.info(f"Creating new language: {lang['name']}")
                 language_obj = Language(name=lang['name'])
+                language_obj.full_clean()
                 language_obj.save()
                 self.update_counts['languages_created'] += 1
 
@@ -171,6 +175,7 @@ class Command(BaseCommand):
                     release_date=staged_set.get_release_date())
 
                 logger.info(f'Created block {block.name}')
+                block.full_clean()
                 block.save()
                 self.update_counts['blocks_created'] += 1
 
@@ -198,13 +203,14 @@ class Command(BaseCommand):
                     name=s.get_name(),
                     release_date=s.get_release_date(),
                     block=block)
-
+                set_obj.full_clean()
                 set_obj.save()
                 self.update_counts['sets_created'] += 1
                 self.sets_to_update.append(s.get_code())
 
             else:
                 logger.info(f'Set {s.get_name()} already exists, updating')
+                set_obj.full_clean()
                 set_obj.save()
                 self.update_counts['sets_updated'] += 1
 
@@ -230,8 +236,6 @@ class Command(BaseCommand):
             for staged_card in staged_set.get_cards():
                 if staged_card.get_number() is None:
                     staged_card.set_number(default_number)
-
-                default_number = staged_card.get_number() + 1
 
                 card_obj = self.update_card(staged_card)
 
@@ -296,7 +300,7 @@ class Command(BaseCommand):
         card.layout = staged_card.get_layout()
 
         card.is_reserved = staged_card.is_reserved()
-
+        card.full_clean()
         card.save()
         return card
 
@@ -318,7 +322,7 @@ class Command(BaseCommand):
         printing.number = staged_card.get_number()
 
         printing.artist = staged_card.get_artist()
-        printing.rarity = Rarity.objects.get(name=staged_card.get_rarity_name())
+        printing.rarity = Rarity.objects.get(name__iexact=staged_card.get_rarity_name())
 
         printing.flavour_text = staged_card.get_flavour_text()
         printing.original_text = staged_card.get_original_text()
@@ -329,6 +333,7 @@ class Command(BaseCommand):
         printing.release_date = staged_card.get_release_date()
         printing.is_starter = staged_card.is_starter_printing()
 
+        printing.full_clean()
         printing.save()
 
         return printing
@@ -352,6 +357,7 @@ class Command(BaseCommand):
             multiverse_id=lang.get('multiverseid'))
 
         logger.info(f'Created new printing language {cardlang}', )
+        cardlang.full_clean()
         cardlang.save()
         self.update_counts['printing_languages_created'] += 1
         return cardlang
@@ -435,6 +441,7 @@ class Command(BaseCommand):
                 linked_language_objs.append(link_print_lang)
 
         physical_card = PhysicalCard(layout=staged_card.get_layout())
+        physical_card.full_clean()
         physical_card.save()
         self.update_counts['physical_cards_created'] += 1
 
@@ -461,6 +468,7 @@ class Command(BaseCommand):
                     link_card = Card.objects.get(name=link_name)
 
                     card_obj.links.add(link_card)
+                    card_obj.full_clean()
                     card_obj.save()
                     self.update_counts['card_links_created'] += 1
 
