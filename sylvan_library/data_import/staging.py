@@ -94,11 +94,11 @@ class StagedCard:
     def get_multiverse_id(self):
         return self.value_dict.get('multiverseId')
 
-    def has_foreign_names(self):
-        return 'foreignNames' in self.value_dict
+    def has_foreign_data(self):
+        return bool(self.value_dict.get('foreignData'))
 
-    def get_foreign_names(self):
-        return self.value_dict['foreignNames']
+    def get_foreign_data(self):
+        return self.value_dict['foreignData']
 
     def get_name(self):
         if self.value_dict['name'] == 'B.F.M. (Big Furry Monster)':
