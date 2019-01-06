@@ -569,28 +569,28 @@ Vine Trellis	2	MMQ
 Vine Trellis	2	DDD
 Henge Guardian	1	DDG
 Power Matrix	1	MMQ
-Fanatical Devotion	1	NMS
-Parallax Wave	2	NMS
-Wandering Eye	1	NMS
-Death Pit Offering	1	NMS
-Mind Slash	1	NMS
-Murderous Betrayal	1	NMS
-Parallax Dementia	4	NMS
+Fanatical Devotion	1	NEM
+Parallax Wave	2	NEM
+Wandering Eye	1	NEM
+Death Pit Offering	1	NEM
+Mind Slash	1	NEM
+Murderous Betrayal	1	NEM
+Parallax Dementia	4	NEM
 Seal of Doom	3	DIS
-Volrath the Fallen	1	NMS
+Volrath the Fallen	1	NEM
 Downhill Charge	1	DDI
-Laccolith Rig	1	NMS
-Moggcatcher	1	NMS
+Laccolith Rig	1	NEM
+Moggcatcher	1	NEM
 Seal of Fire	4	DIS
-Blastoderm	4	NMS
+Blastoderm	4	NEM
 Blastoderm	2	DDD
 Rhox	1	8ED
-Saproling Burst	3	NMS
-Saproling Cluster	1	NMS
-Skyshroud Claim	1	NMS
-Skyshroud Ridgeback	4	NMS
-Belbe's Portal	1	NMS
-Eye of Yawgmoth	1	NMS
+Saproling Burst	3	NEM
+Saproling Cluster	1	NEM
+Skyshroud Claim	1	NEM
+Skyshroud Ridgeback	4	NEM
+Belbe's Portal	1	NEM
+Eye of Yawgmoth	1	NEM
 Terrain Generator	1	DD2
 Aura Fracture	1	PCY
 Entangler	1	PCY
@@ -2444,7 +2444,7 @@ Wispmare	2	LRW
 Wizened Cenn	4	LRW
 Aethersnipe	2	LRW
 Broken Ambitions	4	LRW
-Drowner of Secrets	3	LRW
+Drowner of Secrets	4	LRW
 Ego Erasure	1	LRW
 Faerie Trickery	1	LRW
 Fallowsage	4	LRW
@@ -3905,7 +3905,7 @@ Garruk's Companion	4	M11
 Garruk's Packleader	4	M11
 Greater Basilisk	3	M11
 Hornet Sting	1	M11
-Hunters' Feast	3	M11
+Hunters' Feast	4	M11
 Mitotic Slime	2	M11
 Overwhelming Stampede	1	M11
 Primeval Titan	1	M11
@@ -4464,7 +4464,7 @@ Brain Weevil	4	ISD
 Bump in the Night	4	ISD
 Corpse Lunge	4	ISD
 Curse of Oblivion	3	ISD
-Dead Weight	3	ISD
+Dead Weight	4	ISD
 Disciple of Griselbrand	1	ISD
 Falkenrath Noble	1	ISD
 Ghoulcaller's Chant	2	ISD
@@ -4846,7 +4846,7 @@ Tyrant of Discord	1	AVR
 Uncanny Speed	1	AVR
 Vexing Devil	1	AVR
 Vigilante Justice	4	AVR
-Abundant Growth	2	AVR
+Abundant Growth	4	AVR
 Blessings of Nature	1	AVR
 Bower Passage	2	AVR
 Champion of Lambholt	1	AVR
@@ -5473,11 +5473,11 @@ Paradise Mantle	1	MMA
 Ovinomancer	1	VIS
 Penance	1	EXO
 Mana Breach	1	7ED
-Laccolith Whelp	1	NMS
-Laccolith Grunt	1	NMS
-Laccolith Warrior	1	NMS
-Stampede Driver	1	NMS
-Woodripper	1	NMS
+Laccolith Whelp	1	NEM
+Laccolith Grunt	1	NEM
+Laccolith Warrior	1	NEM
+Stampede Driver	1	NEM
+Woodripper	1	NEM
 Escape Routes	1	PLS
 Phantom Nomad	1	JUD
 Voltaic Construct	1	DST
@@ -5835,7 +5835,7 @@ Dauthi Mindripper	1	TMP
 Volrath's Curse	1	TMP
 Temper	1	STH
 Fog of Gnats	1	ULG
-Seal of Cleansing	1	NMS
+Seal of Cleansing	1	NEM
 Shackles	2	INV
 Probe	4	INV
 Whip Silk	1	INV
@@ -5906,7 +5906,7 @@ Auriok Bladewarden	4	MRD
 Leonin Den-Guard	4	MRD
 Consume Spirit	2	MRD
 Hallow	1	DST
-Dawn's Reflection	1	5DN
+Dawn's Reflection	4	5DN
 Flickering Spirit	1	TSP
 Lumithread Field	1	FUT
 Game-Trail Changeling	1	MOR
@@ -6164,7 +6164,7 @@ Knighthood	1	7ED
 Think Tank	1	ODY
 Phantom Flock	1	JUD
 Headhunter	1	ONS
-Complicate	1	ONS
+Complicate	4	ONS
 Graceful Adept	1	CHK
 Kami of the Honored Dead	1	BOK
 Belfry Spirit	1	GPT
@@ -6229,7 +6229,7 @@ Death Stroke	1	STH
 Angelic Page	1	USG
 Scent of Brine	1	UDS
 Briar Patch	1	MMQ
-Rackling	1	NMS
+Rackling	1	NEM
 Tranquil Path	1	APC
 Awe Strike	1	MRD
 Wit's End	1	DIS
@@ -6411,7 +6411,7 @@ Ephara's Enlightenment	4	BNG
 Corrosion	1	VIS
 Disturbed Burial	1	TMP
 Rootwater Mystic	1	EXO
-Expunge	1	USG
+Expunge	4	USG
 Hunting Kavu	1	INV
 Dead Ringers	1	APC
 Obsessive Search	4	TOR
@@ -6460,7 +6460,7 @@ Ogre Battledriver	1	M14
 Dismiss into Dream	1	M14
 Fissure	1	DRK
 Undo	1	VIS
-Belbe's Armor	1	NMS
+Belbe's Armor	1	NEM
 Seer's Vision	1	INV
 Pitchstone Wall	1	TOR
 Anurid Scavenger	1	TOR
@@ -6505,9 +6505,9 @@ Change of Heart	1	STH
 Thrull Surgeon	1	EXO
 Telepathic Spies	1	UDS
 Mark of Fury	4	UDS
-Seal of Removal	1	NMS
-Seal of Doom	1	NMS
-Seal of Strength	4	NMS
+Seal of Removal	1	NEM
+Seal of Doom	1	NEM
+Seal of Strength	4	NEM
 Thresher Beast	1	PCY
 Urborg Emissary	1	INV
 Stormscape Battlemage	1	PLS
@@ -6666,7 +6666,7 @@ Market Festival	5	JOU
 Desperate Stand	1	JOU
 Armory of Iroas	1	JOU
 Temple of Epiphany	1	JOU
-Nyx-Fleece Ram	1	JOU
+Nyx-Fleece Ram	4	JOU
 Scourge of Fleets	1	JOU
 Stormchaser Chimera	1	JOU
 Revel of the Fallen God	1	JOU
@@ -7183,14 +7183,14 @@ Gate to the Aether	1	MRD
 Promise of Power	1	MRD
 Myr Welder	1	MBS
 Cold-Eyed Selkie	1	MMA
-Stronghold Biologist	1	NMS
-Stronghold Machinist	1	NMS
+Stronghold Biologist	1	NEM
+Stronghold Machinist	1	NEM
 Slithermuse	1	MOR
 Titan's Revenge	1	MOR
-Ascendant Evincar	1	NMS
-Flowstone Overseer	1	NMS
-Laccolith Titan	1	NMS
-Rupture	1	NMS
+Ascendant Evincar	1	NEM
+Flowstone Overseer	1	NEM
+Laccolith Titan	1	NEM
+Rupture	1	NEM
 Chancellor of the Dross	1	NPH
 Cabal Patriarch	1	ODY
 Decaying Soil	1	ODY
@@ -7491,10 +7491,10 @@ Death Bomb	1	PLS
 Mirri the Cursed	1	PLC
 Cryptic Gateway	1	ONS
 Recoup	1	ODY
-Predator, Flagship	1	NMS
-Phyrexian Prowler	1	NMS
-Dominate	1	NMS
-Belbe's Percher	1	NMS
+Predator, Flagship	1	NEM
+Phyrexian Prowler	1	NEM
+Dominate	1	NEM
+Belbe's Percher	1	NEM
 Worm Harvest	2	MMA
 Eternal Witness	1	MMA
 Adarkar Valkyrie	1	MMA
@@ -7963,7 +7963,7 @@ Typhoid Rats	5	FRF
 Battle Brawler	1	FRF
 Sultai Emissary	4	FRF
 Hooded Assassin	4	FRF
-Mardu Strike Leader	1	FRF
+Mardu Strike Leader	2	FRF
 Merciless Executioner	4	FRF
 Alesha's Vanguard	4	FRF
 Orc Sureshot	1	FRF
@@ -8420,7 +8420,7 @@ Flatten	2	DTK
 Deadly Wanderings	1	DTK
 Hedonist's Trove	1	DTK
 Kolaghan Stormsinger	2	DTK
-Lightning Berserker	1	DTK
+Lightning Berserker	4	DTK
 Zurgo Bellstriker	1	DTK
 Dragonlord's Servant	4	DTK
 Kolaghan Aspirant	4	DTK
@@ -8545,7 +8545,7 @@ Lull	4	USG
 Pyromancy	1	ULG
 Rofellos's Gift	2	UDS
 Multani's Decree	1	UDS
-Fog Patch	1	NMS
+Fog Patch	1	NEM
 Calming Verse	1	PCY
 Tranquility	1	INV
 Chatter of the Squirrel	4	ODY
@@ -8589,7 +8589,7 @@ Hidden Horror	2	10E
 Beacon of Destruction	1	10E
 Warren Weirding	3	MOR
 Sapseep Forest	1	SHM
-Recoil	1	INV
+Recoil	4	INV
 Stag Beetle	1	ONS
 Trash for Treasure	1	MRD
 Serra Sphinx	1	PLC
@@ -8658,7 +8658,7 @@ Ringskipper	1	LRW
 Streambed Aquitects	1	LRW
 Flowstone Blade	1	CNS
 Tiger Claws	1	MMQ
-Mind Swords	1	NMS
+Mind Swords	1	NEM
 Planeswalker's Favor	1	PLS
 Symbiotic Wurm	1	ONS
 Rustmouth Ogre	1	MRD
@@ -8694,7 +8694,7 @@ Mindstab Thrull	1	5ED
 Lightning Blast	1	TMP
 Elven Warhounds	1	TMP
 Ghitu Slinger	1	ULG
-Trickster Mage	1	NMS
+Trickster Mage	1	NEM
 Withdraw	1	PCY
 Opt	2	INV
 Callous Giant	1	INV
@@ -8718,7 +8718,7 @@ Jarad's Orders	1	RTR
 Akroan Horse	1	THS
 Dragon-Style Twins	1	KTK
 Wandering Champion	1	FRF
-Reverent Silence	1	NMS
+Reverent Silence	1	NEM
 Groffskithur	1	MRD
 Second Sight	1	DST
 Hearth Kami	1	CHK
@@ -9198,7 +9198,7 @@ Skull Catapult	1	5ED
 Knight of the Mists	1	VIS
 Forbidden Ritual	1	VIS
 Volrath's Laboratory	1	STH
-Viseling	1	NMS
+Viseling	1	NEM
 Crypt Angel	1	INV
 Manacles of Decay	1	APC
 Raka Sanctuary	1	APC
@@ -9376,7 +9376,7 @@ Briarbridge Patrol	1	SOI
 Solitary Hunter	1	SOI
 One of the Pack	1	SOI
 Vessel of Nascency	2	SOI
-Weirding Wood	1	SOI
+Weirding Wood	3	SOI
 Invocation of Saint Traft	1	SOI
 Altered Ego	1	SOI
 Harvest Hand	1	SOI
@@ -9460,7 +9460,7 @@ Gearshift Ace	1	KLD
 Aerial Responder	4	KLD
 Visionary Augmenter	1	KLD
 Wispweaver Angel	1	KLD
-Servo Exhibition	2	KLD
+Servo Exhibition	3	KLD
 Refurbish	1	KLD
 Aethersquall Ancient	1	KLD
 Ceremonious Rejection	1	KLD
@@ -9547,7 +9547,7 @@ Renegade Wheelsmith	1	AER
 Solemn Recruit	1	AER
 Sram, Senior Edificer	1	AER
 Winding Constrictor	4	AER
-Archfiend of Ifnir	1	AKH
+Archfiend of Ifnir	4	AKH
 Aven Mindcensor	1	AKH
 Aven Wind Guide	1	AKH
 Bloodrage Brawler	4	AKH
@@ -9559,7 +9559,7 @@ Deem Worthy	4	AKH
 Desert Cerodon	4	AKH
 Edifice of Authority	1	AKH
 Faith of the Devoted	4	AKH
-Gate to the Afterlife	1	AKH
+Gate to the Afterlife	4	AKH
 Grasping Dunes	4	AKH
 Greater Sandwurm	4	AKH
 Hapatra, Vizier of Poisons	1	AKH
@@ -9723,7 +9723,7 @@ Grizzled Angler	1	EMN
 Grisly Anglerfish	1	EMN
 Liliana's Elite	1	EMN
 Ninth Bridge Patrol	1	KLD
-Glimmer of Genius	2	KLD
+Glimmer of Genius	4	KLD
 Fretwork Colony	1	KLD
 Essence Extraction	2	KLD
 Reckless Fireweaver	1	KLD
@@ -9751,7 +9751,7 @@ By Force	1	AKH
 Oashra Cultivator	4	AKH
 Sixth Sense	1	AKH
 Cartouche of Strength	1	AKH
-Gift of Paradise	1	AKH
+Gift of Paradise	4	AKH
 Onward	1	AKH
 Victory	1	AKH
 Honed Khopesh	4	AKH
@@ -9771,7 +9771,7 @@ Banewhip Punisher	4	HOU
 Liliana's Defeat	1	HOU
 Doomfall	1	HOU
 Torment of Venom	1	HOU
-Razaketh's Rite	1	HOU
+Razaketh's Rite	4	HOU
 Firebrand Archer	3	HOU
 Gilded Cerodon	1	HOU
 Chandra's Defeat	1	HOU
@@ -9783,7 +9783,7 @@ Sifter Wurm	1	HOU
 Beneath the Sands	4	HOU
 Nissa's Defeat	1	HOU
 Overcome	1	HOU
-Bloodwater Entity	1	HOU
+Bloodwater Entity	4	HOU
 River Hoopoe	1	HOU
 Farm	1	HOU
 Market	1	HOU
@@ -10002,14 +10002,14 @@ Burning-Tree Shaman	4	GPT
 Electrolyze	3	GPT
 Order of the Stars	1	GPT
 Teysa, Orzhov Scion	1	GPT
-Abandoned Sarcophagus	2	HOU
+Abandoned Sarcophagus	4	HOU
 Ammit Eternal	1	HOU
 Angel of Condemnation	1	HOU
 Apocalypse Demon	1	HOU
 Crested Sunmare	1	HOU
 Dreamstealer	1	HOU
 Endless Sands	1	HOU
-God-Pharaoh's Gift	2	HOU
+God-Pharaoh's Gift	4	HOU
 Grind	4	HOU
 Dust	4	HOU
 Hollow One	4	HOU
@@ -10090,8 +10090,8 @@ Chandra, Pyromaster	1	M15
 Genesis Hydra	1	M15
 Hornet Nest	1	M15
 Reclamation Sage	3	M15
-Chandra, Fire of Kaladesh	1	ORI
-Chandra, Roaring Flame	1	ORI
+Chandra, Fire of Kaladesh	3	ORI
+Chandra, Roaring Flame	3	ORI
 Disciple of the Ring	1	ORI
 Erebos's Titan	1	ORI
 Managorger Hydra	1	ORI
@@ -10302,7 +10302,7 @@ Man-o'-War	1	A25
 Brine Elemental	1	A25
 Skirk Commando	1	A25
 Balduvian Horde	1	A25
-Cinder Storm	1	A25
+Cinder Storm	2	A25
 Tragic Poet	1	DOM
 Benalish Honor Guard	3	DOM
 Knight of Grace	1	DOM
@@ -10318,7 +10318,7 @@ Academy Journeymage	2	DOM
 Cold-Water Snapper	1	DOM
 Slinn Voda, the Rising Deep	2	DOM
 Rescue	1	DOM
-Blink of an Eye	1	DOM
+Blink of an Eye	4	DOM
 Befuddle	4	DOM
 Syncopate	2	DOM
 Caligo Skin-Witch	3	DOM
@@ -10342,15 +10342,15 @@ Seismic Shift	3	DOM
 Fiery Intervention	1	DOM
 Krosan Druid	3	DOM
 Llanowar Envoy	3	DOM
-Yavimaya Sapherd	2	DOM
+Yavimaya Sapherd	4	DOM
 Gaea's Protector	3	DOM
 Territorial Allosaurus	1	DOM
 Arbor Armament	2	DOM
 Ancient Animus	2	DOM
-Saproling Migration	1	DOM
-Spore Swarm	1	DOM
+Saproling Migration	4	DOM
+Spore Swarm	4	DOM
 Aryel, Knight of Windgrace	1	DOM
-Tiana, Ship's Caretaker	1	DOM
+Tiana, Ship's Caretaker	2	DOM
 Bloodtallow Candle	3	DOM
 Sorcerer's Wand	2	DOM
 Jousting Lance	5	DOM
@@ -10365,45 +10365,45 @@ Mesa Unicorn	1	DOM
 Pegasus Courser	1	DOM
 Aven Sentry	2	DOM
 Kwende, Pride of Femeref	1	DOM
-Charge	2	DOM
+Charge	3	DOM
 Healing Grace	1	DOM
 Dub	3	DOM
-Invoke the Divine	1	DOM
-Artificer's Assistant	1	DOM
+Invoke the Divine	2	DOM
+Artificer's Assistant	4	DOM
 Diligent Excavator	1	DOM
 Relic Runner	4	DOM
 Academy Drake	1	DOM
 Tolarian Scholar	1	DOM
 Homarid Explorer	1	DOM
 Sentinel of the Pearl Trident	1	DOM
-Arcane Flight	1	DOM
+Arcane Flight	5	DOM
 Curator's Ward	1	DOM
 Deep Freeze	3	DOM
 Divination	2	DOM
 In Bolas's Clutches	2	DOM
 Stronghold Confessor	2	DOM
-Urgoros, the Empty One	1	DOM
+Urgoros, the Empty One	2	DOM
 Blessing of Belzenlok	2	DOM
 Divest	1	DOM
-Fungal Infection	1	DOM
+Fungal Infection	4	DOM
 Soul Salvage	2	DOM
-Chainer's Torment	1	DOM
+Chainer's Torment	2	DOM
 Eviscerate	1	DOM
 Settle the Score	1	DOM
-Ghitu Chronicler	1	DOM
+Ghitu Chronicler	2	DOM
 Keldon Warcaller	3	DOM
-Orcish Vandal	1	DOM
+Orcish Vandal	2	DOM
 Rampaging Cyclops	2	DOM
-Skizzik	1	DOM
+Skizzik	5	DOM
 Keldon Raider	1	DOM
 Shivan Fire	2	DOM
 Warlord's Fury	3	DOM
 The Flame of Keld	2	DOM
 Fight with Fire	2	DOM
 Llanowar Elves	1	DOM
-Baloth Gorger	1	DOM
+Baloth Gorger	2	DOM
 Primordial Wurm	1	DOM
-Thorn Elemental	1	DOM
+Thorn Elemental	2	DOM
 Adventurous Impulse	1	DOM
 Gift of Growth	4	DOM
 Nature's Spiral	2	DOM
@@ -10413,3 +10413,555 @@ Aesthir Glider	1	DOM
 Skittering Surveyor	2	DOM
 Guardians of Koilos	2	DOM
 Mountain	3	DOM
+Heaven	1	AKH
+Earth	1	AKH
+Cognivore	1	ODY
+Auriok Salvagers	1	MMA
+Powerstone Shard	4	DOM
+Opt	2	DOM
+Ghitu Lavarunner	3	DOM
+Short Sword	1	DOM
+Keldon Overseer	1	DOM
+Broken Bond	1	DOM
+Navigator's Compass	1	DOM
+Unwind	4	DOM
+Deathbloom Thallid	4	DOM
+Voltaic Servant	1	DOM
+Baird, Steward of Argive	1	DOM
+Jhoira's Familiar	1	DOM
+Sage of Lat-Nam	1	DOM
+Final Parting	1	DOM
+The Eldest Reborn	1	DOM
+Shield of the Realm	1	DOM
+Rona, Disciple of Gix	1	DOM
+Warcry Phoenix	1	DOM
+Time of Ice	2	DOM
+On Serra's Wings	1	DOM
+Gaea's Blessing	1	DOM
+Memorial to War	3	DOM
+Thallid Soothsayer	2	DOM
+Memorial to Genius	1	DOM
+Hallar, the Firefletcher	1	DOM
+Triumph of Gerrard	1	DOM
+Will-o'-the-Wisp	4	A25
+Southern Paladin	1	7ED
+Yawgmoth Demon	1	9ED
+Baral's Expertise	1	AER
+Trophy Mage	1	AER
+Anointed Procession	1	AKH
+Approach of the Second Sun	4	AKH
+Channeler Initiate	1	AKH
+Crocodile of the Crossing	1	AKH
+Cryptic Serpent	4	AKH
+Decimator Beetle	1	AKH
+Doomed Dissenter	4	AKH
+Enigma Drake	4	AKH
+Exemplar of Strength	1	AKH
+Flameblade Adept	4	AKH
+Harsh Mentor	1	AKH
+Heart-Piercer Manticore	1	AKH
+Honored Hydra	1	AKH
+Khenra Charioteer	1	AKH
+Lay Bare the Heart	1	AKH
+New Perspectives	4	AKH
+Oketra the True	1	AKH
+Protection of the Hekma	1	AKH
+Pyramid of the Pantheon	1	AKH
+Sacred Excavation	4	AKH
+Seraph of the Suns	1	AKH
+Spring	1	AKH
+Mind	1	AKH
+Finish	4	AKH
+Start	4	AKH
+Angelic Chorus	1	BBD
+Archon of Valor's Reach	1	BBD
+Azra Oddsmaker	1	BBD
+Blaring Captain	2	BBD
+Blaring Recruiter	2	BBD
+Bonus Round	1	BBD
+Chakram Retriever	2	BBD
+Chakram Slinger	2	BBD
+Decorated Champion	4	BBD
+Generous Patron	1	BBD
+Genesis Chamber	1	BBD
+Gorm the Great	1	BBD
+Virtus the Veiled	1	BBD
+Impetuous Protege	1	BBD
+Proud Mentor	1	BBD
+Jubilant Mascot	1	BBD
+Khorvath Brightflame	1	BBD
+Sylvia Brightspear	1	BBD
+Khorvath's Fury	1	BBD
+Standing Army	1	UNH
+Magmatic Force	1	BBD
+Mangara of Corondor	1	BBD
+Mindblade Render	1	BBD
+Regna, the Redeemer	1	BBD
+Krav, the Unredeemed	1	BBD
+Rushblade Commander	1	BBD
+Sentinel Tower	1	BBD
+Soulblade Corrupter	1	BBD
+Soulblade Renewer	1	BBD
+Thrasher Brute	1	BBD
+Tidespout Tyrant	1	BBD
+Together Forever	1	BBD
+Veteran Explorer	3	BBD
+Nath of the Gilt-Leaf	1	C16
+Crosis, the Purger	1	C17
+Fist of Suns	1	C17
+Izzet Chemister	1	C17
+Jedit Ojanen of Efrava	1	C17
+Kindred Boon	1	C17
+Knights of the Black Rose	1	CN2
+Adeliz, the Cinder Wind	1	DOM
+Arvad the Cursed	1	DOM
+Benalish Marshal	1	DOM
+Cabal Stronghold	1	DOM
+Champion of the Flame	4	DOM
+Danitha Capashen, Paragon	1	DOM
+Darigaaz Reincarnated	1	DOM
+Dauntless Bodyguard	1	DOM
+Fungal Plots	1	DOM
+Garna, the Bloodflame	1	DOM
+Goblin Barrage	1	DOM
+Goblin Warchief	4	DOM
+Grand Warlord Radha	1	DOM
+Grunn, the Lonely King	1	DOM
+Jaya's Immolating Inferno	1	DOM
+Jhoira, Weatherlight Captain	1	DOM
+Josu Vess, Lich Knight	1	DOM
+Knight of Malice	1	DOM
+Lich's Mastery	1	DOM
+Multani, Yavimaya's Avatar	1	DOM
+Phyrexian Scriptures	1	DOM
+Precognition Field	1	DOM
+Primevals' Glorious Rebirth	1	DOM
+Raff Capashen, Ship's Mage	1	DOM
+Rite of Belzenlok	1	DOM
+Shanna, Sisay's Legacy	1	DOM
+Slimefoot, the Stowaway	1	DOM
+Sporecrown Thallid	4	DOM
+Squee, the Immortal	1	DOM
+Sylvan Awakening	1	DOM
+Tatyova, Benthic Druid	1	DOM
+Teshar, Ancestor's Apostle	1	DOM
+Tetsuko Umezawa, Fugitive	1	DOM
+The Mending of Dominaria	1	DOM
+The Mirari Conjecture	1	DOM
+Thran Temporal Gateway	1	DOM
+Torgaar, Famine Incarnate	1	DOM
+Valduk, Keeper of the Flame	1	DOM
+Verix Bladewing	1	DOM
+Weatherlight	1	DOM
+Wild Onslaught	1	DOM
+Wizard's Retort	1	DOM
+Yawgmoth's Vile Offering	1	DOM
+Zhalfirin Void	4	DOM
+Arashin Foremost	1	DTK
+Blood-Chin Fanatic	1	DTK
+Silumgar's Command	1	DTK
+Assembled Alphas	1	EMN
+Insatiable Gorgers	1	EMN
+Summary Dismissal	1	EMN
+Thalia's Lancers	1	EMN
+Unsubstantiate	4	EMN
+Adaptive Automaton	1	E02
+Driven	1	HOU
+Despair	1	HOU
+Plague Spitter	1	INV
+Yawgmoth's Agenda	1	INV
+Bloodcrazed Paladin	1	XLN
+Captain Lannery Storm	1	XLN
+Kopala, Warden of Waves	1	XLN
+Sheltering Light	1	XLN
+Thundering Spineback	1	XLN
+Vanquisher's Banner	1	XLN
+Pia Nalaar	1	KLD
+Unlicensed Disintegration	4	KLD
+Akroma's Vengeance	2	A25
+Akroma, Angel of Wrath	1	A25
+Broodhatch Nantuko	1	A25
+Conflux	1	A25
+Elvish Piper	1	A25
+Flash	1	A25
+Hanna, Ship's Navigator	1	A25
+Ihsan's Shade	1	A25
+Kavu Predator	4	A25
+Master of the Wild Hunt	1	A25
+Niv-Mizzet, the Firemind	1	A25
+Pernicious Deed	1	A25
+Presence of Gond	2	A25
+Promise of Bunrei	4	A25
+Stangg	1	A25
+Undead Gladiator	4	A25
+Zada, Hedron Grinder	1	A25
+Liability	1	MMQ
+Vendetta	1	MMQ
+Dark Suspicions	1	PLS
+Greel, Mind Raker	1	PCY
+Last Gasp	4	RAV
+Arrogant Bloodlord	1	ROE
+Arch of Orazca	1	RIX
+Blood Sun	1	RIX
+Brass's Bounty	1	RIX
+Dead Man's Chest	1	RIX
+Form of the Dinosaur	1	RIX
+Golden Guardian	1	RIX
+Gold-Forge Garrison	1	RIX
+Kumena's Awakening	1	RIX
+Paladin of Atonement	1	RIX
+Path of Discovery	1	RIX
+Path of Mettle	1	RIX
+Metzali, Tower of Triumph	1	RIX
+Profane Procession	1	RIX
+Tomb of the Dusk Rose	1	RIX
+Ravenous Chupacabra	4	RIX
+Seafloor Oracle	1	RIX
+Silverclad Ferocidons	1	RIX
+Slaughter the Strong	1	RIX
+Tetzimoc, Primal Death	2	RIX
+Tilonalli's Summoner	1	RIX
+World Shaper	1	RIX
+Zetalpa, Primal Dawn	1	RIX
+Puresight Merrow	4	SHM
+Witherscale Wurm	1	SHM
+Fevered Convulsions	1	TMP
+Minion of the Wastes	1	TMP
+Shambling Swarm	1	TOR
+Eastern Paladin	1	USG
+Order of Yawgmoth	1	USG
+Waylay	1	USG
+Western Paladin	1	USG
+Witch Engine	1	USG
+Serrated Biskelion	1	WTH
+Northern Paladin	1	7ED
+Whirlpool Warrior	1	APC
+Lovisa Coldeyes	1	DDS
+Paladin en-Vec	1	EXO
+Massacre	1	NEM
+Oppression	1	USG
+Unearth	1	A25
+Evolving Wilds	1	RIX
+Merfolk Trickster	2	DOM
+Memorial to Glory	1	DOM
+Limits of Solidarity	1	AKH
+Recall	1	CHR
+Arena of the Ancients	1	CHR
+Ritual of the Machine	1	ALL
+Apocalypse	1	TMP
+Forcemage Advocate	1	JUD
+Phantom Tiger	1	JUD
+Congregate	1	M14
+Stromkirk Occultist	1	EMN
+Ovalchase Daredevil	1	KLD
+Fateful Showdown	1	KLD
+Oketra's Last Mercy	1	HOU
+Kefnet's Last Word	1	HOU
+Hazoret's Undying Fury	1	HOU
+Refuse	1	HOU
+Cooperate	1	HOU
+Heartless Pillage	1	XLN
+Untamed Kavu	1	DOM
+Urza's Tome	1	DOM
+Rustwing Falcon	4	M19
+Trusty Packbeast	1	M19
+Aethershield Artificer	1	M19
+Ajani's Welcome	1	M19
+Aegis of the Heavens	1	M19
+Surge Mare	1	M19
+Exclusion Mage	2	M19
+Mirror Image	1	M19
+Salvager of Secrets	1	M19
+Psychic Corrosion	1	M19
+Stitcher's Supplier	1	M19
+Fell Specter	1	M19
+Abnormal Endurance	4	M19
+Blood Divination	1	M19
+Dark-Dweller Oracle	1	M19
+Goblin Instigator	4	M19
+Catalyst Elemental	4	M19
+Volley Veteran	1	M19
+Siegebreaker Giant	1	M19
+Thud	4	M19
+Dryad Greenseeker	1	M19
+Druid of Horns	1	M19
+Vigilant Baloth	1	M19
+Ghastbark Twins	1	M19
+Talons of Wildwood	1	M19
+Colossal Majesty	1	M19
+Psychic Symbiont	1	M19
+Brawl-Bash Ogre	1	M19
+Draconic Disciple	2	M19
+Satyr Enchanter	3	M19
+Skyrider Patrol	1	M19
+Suspicious Bookcase	1	M19
+Skyscanner	4	M19
+Meteor Golem	2	M19
+Haazda Marshal	4	GRN
+Healer's Hawk	4	GRN
+Hunted Witness	4	GRN
+Flight of Equenauts	1	GRN
+Demotion	1	GRN
+Gird for Battle	4	GRN
+Sworn Companions	1	GRN
+Crush Contraband	1	GRN
+Passwall Adept	1	GRN
+Murmuring Mystic	4	GRN
+Maximize Altitude	4	GRN
+Unexplained Disappearance	1	GRN
+Guild Summit	4	GRN
+Selective Snare	1	GRN
+Pilfering Imp	4	GRN
+Plaguecrafter	1	GRN
+Undercity Necrolisk	1	GRN
+Lotleth Giant	1	GRN
+Vicious Rumors	4	GRN
+Severed Strands	3	GRN
+Torch Courier	4	GRN
+Electrostatic Field	4	GRN
+Fire Urchin	4	GRN
+Goblin Cratermaker	4	GRN
+Smelt-Ward Minotaur	1	GRN
+Book Devourer	1	GRN
+Lava Coil	3	GRN
+Direct Current	4	GRN
+Street Riot	1	GRN
+Inescapable Blaze	1	GRN
+Portcullis Vine	1	GRN
+Kraul Harpooner	1	GRN
+District Guide	4	GRN
+Golgari Raiders	1	GRN
+Affectionate Indrik	1	GRN
+Arboretum Elemental	2	GRN
+Pause for Reflection	1	GRN
+Sprouting Renewal	4	GRN
+Circuitous Route	4	GRN
+House Guildmage	1	GRN
+Nightveil Predator	2	GRN
+Notion Rain	4	GRN
+Beamsplitter Mage	4	GRN
+League Guildmage	1	GRN
+Crackling Drake	4	GRN
+Beacon Bolt	4	GRN
+Sonic Assault	4	GRN
+Hypothesizzle	4	GRN
+Glowspore Shaman	1	GRN
+Swarm Guildmage	1	GRN
+Rhizome Lurcher	1	GRN
+Golgari Findbroker	2	GRN
+Molderhulk	1	GRN
+Boros Challenger	1	GRN
+Legion Guildmage	1	GRN
+Truefire Captain	1	GRN
+Swathcutter Giant	1	GRN
+Justice Strike	1	GRN
+Conclave Guildmage	1	GRN
+Centaur Peacemaker	4	GRN
+Ledev Champion	3	GRN
+Sumala Woodshaper	2	GRN
+Conclave Cavalier	4	GRN
+Rosemane Centaur	4	GRN
+Worldsoul Colossus	2	GRN
+Join Shields	1	GRN
+Piston-Fist Cyclops	4	GRN
+Vernadi Shieldmate	4	GRN
+Discovery	1	GRN
+Dispersal	1	GRN
+Invent	1	GRN
+Invert	1	GRN
+Status	1	GRN
+Statue	1	GRN
+Integrity	4	GRN
+Intervention	4	GRN
+Flower	1	GRN
+Flourish	1	GRN
+Wand of Vertebrae	1	GRN
+Glaive of the Guildpact	1	GRN
+Dimir Locket	1	GRN
+Izzet Locket	1	GRN
+Boros Locket	1	GRN
+Golgari Locket	1	GRN
+Selesnya Locket	1	GRN
+Gateway Plaza	1	GRN
+Dimir Guildgate	1	GRN
+Dimir Guildgate	1	GRN
+Izzet Guildgate	1	GRN
+Izzet Guildgate	1	GRN
+Golgari Guildgate	1	GRN
+Golgari Guildgate	1	GRN
+Boros Guildgate	1	GRN
+Boros Guildgate	1	GRN
+Selesnya Guildgate	1	GRN
+Selesnya Guildgate	1	GRN
+Bushi Tenderfoot	1	CHK
+Kitsune Mystic	1	CHK
+Jushi Apprentice	1	CHK
+Nezumi Graverobber	2	CHK
+Akki Lavarunner	1	CHK
+Initiate of Blood	1	CHK
+Dokai, Weaver of Life	1	CHK
+Orochi Eggwatcher	3	CHK
+Rune-Tail, Kitsune Ascendant	1	SOK
+Homura, Human Ascendant	1	SOK
+Sasaya, Orochi Ascendant	1	SOK
+Hanweir Battlements	1	EMN
+Hanweir Battlements	1	EMN
+Kari Zev's Expertise	1	AER
+Kari Zev, Skyship Raider	1	AER
+Renegade Rallier	4	AER
+Rishkar, Peema Renegade	1	AER
+Treasure Keeper	1	AER
+Ahn-Crop Champion	1	AKH
+Cast Out	4	AKH
+Censor	4	AKH
+Haze of Pollen	4	AKH
+Hieroglyphic Illumination	4	AKH
+Rags	1	AKH
+Riches	1	AKH
+Shadow of the Grave	4	AKH
+Splendid Agony	4	AKH
+Vizier of Tumbling Sands	4	AKH
+Najeela, the Blade-Blossom	1	BBD
+Vigor	1	BBD
+Aminatou's Augury	1	C18
+Bant Charm	1	C18
+Boreas Charger	1	C18
+Crash of Rhino Beetles	1	C18
+Elderwood Scion	1	C18
+Empyrial Storm	1	C18
+Esper Charm	1	C18
+Ever-Watching Threshold	1	C18
+Forge of Heroes	1	C18
+Genesis Storm	1	C18
+Loyal Apprentice	1	C18
+Loyal Drake	1	C18
+Loyal Guardian	1	C18
+Loyal Unicorn	1	C18
+Magus of the Balance	1	C18
+Mountain Valley	1	C18
+Night Incarnate	1	C18
+Nylea's Colossus	1	C18
+Octopus Umbra	1	C18
+Skull Storm	1	C18
+Sower of Discord	1	C18
+Thopter Spy Network	1	C18
+Turntimber Sower	1	C18
+Varchild, Betrayer of Kjeldor	1	C18
+Aether Tunnel	1	M19
+Apex of Power	1	M19
+Arcades, the Strategist	1	M19
+Arcane Encyclopedia	1	M19
+Chaos Wand	1	M19
+Departed Deckhand	1	M19
+Desecrated Tomb	1	M19
+Dragon's Hoard	1	M19
+Goreclaw, Terror of Qal Sisma	1	M19
+Gravewaker	1	M19
+Hungering Hydra	1	M19
+Isareth the Awakener	1	M19
+Lathliss, Dragon Queen	1	M19
+Lena, Selfless Champion	1	M19
+Liliana's Contract	1	M19
+Metamorphic Alteration	1	M19
+Militia Bugler	1	M19
+Open the Graves	1	M19
+Prodigious Growth	1	M19
+Regal Bloodlord	1	M19
+Runic Armasaur	1	M19
+Sarkhan's Unsealing	1	M19
+Sigiled Sword of Valeron	1	M19
+Spit Flame	4	M19
+Suncleanser	1	M19
+Transmogrifying Wand	1	M19
+Valiant Knight	1	M19
+Evra, Halcyon Witness	1	DOM
+Fall of the Thran	1	DOM
+Kamahl's Druidic Vow	1	DOM
+Llanowar Scout	1	DOM
+Song of Freyalise	1	DOM
+Traxos, Scourge of Kroog	1	DOM
+Urza's Ruinous Blast	1	DOM
+Beacon of Tomorrows	1	DDS
+Phyrexian Colossus	1	DDE
+Assure	1	GRN
+Assemble	1	GRN
+Camaraderie	1	GRN
+Charnel Troll	1	GRN
+Citywide Bust	1	GRN
+Dawn of Hope	1	GRN
+Emmara, Soul of the Accord	1	GRN
+Erratic Cyclops	1	GRN
+Firemind's Research	1	GRN
+Gruesome Menagerie	1	GRN
+Midnight Reaper	1	GRN
+Niv-Mizzet, Parun	1	GRN
+Omnispell Adept	1	GRN
+Radical Idea	4	GRN
+Response	1	GRN
+Resurgence	1	GRN
+Vivid Revival	1	GRN
+Djeru, With Eyes Open	1	HOU
+Hour of Devastation	1	HOU
+Rampaging Hippo	4	HOU
+Striped Riverwinder	4	HOU
+Deeproot Champion	1	XLN
+Fell Flagship	1	XLN
+Goring Ceratops	1	XLN
+Herald of Secret Streams	1	XLN
+Tilonalli's Skinshifter	1	XLN
+Valor	1	JUD
+Eliminate the Competition	1	KLD
+Filigree Familiar	4	KLD
+Saheeli's Artistry	1	KLD
+Smuggler's Copter	1	KLD
+Wildest Dreams	1	KLD
+Rocky Tar Pit	1	MIR
+Vona's Hunger	1	RIX
+Skyshroud Ranger	1	TMP
+Radiant's Judgment	4	ULG
+Rescind	4	USG
+Waterspout Djinn	1	VIS
+Progenitus	1	CON
+Skyship Stalker	1	KLD
+Heart of Kiran	1	AER
+Angel of Sanctions	1	AKH
+Bontu the Glorified	1	AKH
+Cut	1	AKH
+Ribbons	1	AKH
+Dusk	1	AKH
+Dawn	1	AKH
+Fetid Pools	4	AKH
+Glorybringer	1	AKH
+Irrigated Farmland	4	AKH
+Kefnet the Mindful	1	AKH
+Never	1	AKH
+Return	1	AKH
+Pull from Tomorrow	1	AKH
+Scattered Groves	4	AKH
+Sheltered Thicket	4	AKH
+Sweltering Suns	4	AKH
+Vizier of the Menagerie	1	AKH
+Ruhan of the Fomori	1	CMD
+Enchantress's Presence	1	C18
+Endless Atlas	1	C18
+Entreat the Dead	1	C18
+Isolated Watchtower	1	C18
+Lord Windgrace	1	C18
+Yennett, Cryptic Sovereign	1	C18
+Demonlord Belzenlok	1	DOM
+Den Protector	1	DTK
+Jagged-Scar Archers	3	DDU
+Conclave Tribunal	4	GRN
+Bontu's Last Reckoning	1	HOU
+Dowsing Dagger	1	XLN
+Lost Vale	1	XLN
+River's Rebuke	1	XLN
+Wakening Sun's Avatar	1	XLN
+Angel of Invention	1	KLD
+Combustible Gearhulk	1	KLD
+Fumigate	1	KLD
+Wingmate Roc	1	KTK
+Chamber of Manipulation	1	ODY
+Olivia, Mobilized for War	1	SOI
+Xenagos, the Reveler	1	THS
+Miscalculation	4	ULG

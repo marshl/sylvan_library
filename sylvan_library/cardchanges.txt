@@ -143,7 +143,7 @@ Death Stroke	STH	2014-02-02 20:43:37	1
 Angelic Page	USG	2014-02-02 20:43:55	1
 Scent of Brine	UDS	2014-02-02 20:44:10	1
 Briar Patch	MMQ	2014-02-02 20:44:46	1
-Rackling	NMS	2014-02-02 20:44:56	1
+Rackling	NEM	2014-02-02 20:44:56	1
 Tranquil Path	APC	2014-02-02 20:45:11	1
 Sonic Seizure	TOR	2014-02-02 20:45:31	1
 Awe Strike	MRD	2014-02-02 20:46:07	1
@@ -445,7 +445,7 @@ Glimpse the Sun God	BNG	2014-03-21 21:39:57	2
 Fissure	DRK	2014-03-30 13:09:52	1
 Cuombajj Witches	ARN	2014-03-30 13:10:01	1
 Undo	VIS	2014-03-30 13:10:18	1
-Belbe's Armor	NMS	2014-03-30 13:10:44	1
+Belbe's Armor	NEM	2014-03-30 13:10:44	1
 Seer's Vision	INV	2014-03-30 13:11:43	1
 Pitchstone Wall	TOR	2014-03-30 13:12:02	1
 Anurid Scavenger	TOR	2014-03-30 13:12:10	1
@@ -520,9 +520,9 @@ Change of Heart	STH	2014-05-03 16:24:27	1
 Thrull Surgeon	EXO	2014-05-03 16:31:53	1
 Telepathic Spies	UDS	2014-05-03 16:32:03	1
 Mark of Fury	UDS	2014-05-03 16:32:29	1
-Seal of Removal	NMS	2014-05-03 16:42:11	1
-Seal of Doom	NMS	2014-05-03 16:42:17	1
-Seal of Strength	NMS	2014-05-03 16:42:31	1
+Seal of Removal	NEM	2014-05-03 16:42:11	1
+Seal of Doom	NEM	2014-05-03 16:42:17	1
+Seal of Strength	NEM	2014-05-03 16:42:31	1
 Thresher Beast	PCY	2014-05-03 16:42:40	1
 Urborg Emissary	INV	2014-05-03 16:43:03	1
 Stormscape Battlemage	PLS	2014-05-03 16:43:28	1
@@ -1306,14 +1306,14 @@ Gate to the Aether	MRD	2014-09-26 10:07:18	1
 Promise of Power	MRD	2014-09-26 10:07:29	1
 Myr Welder	MBS	2014-09-26 10:07:37	1
 Cold-Eyed Selkie	MMA	2014-09-26 10:07:46	1
-Stronghold Biologist	NMS	2014-09-26 10:08:07	1
-Stronghold Machinist	NMS	2014-09-26 10:08:09	1
+Stronghold Biologist	NEM	2014-09-26 10:08:07	1
+Stronghold Machinist	NEM	2014-09-26 10:08:09	1
 Slithermuse	MOR	2014-09-26 10:08:34	1
 Titan's Revenge	MOR	2014-09-26 10:08:45	1
-Ascendant Evincar	NMS	2014-09-26 10:08:55	1
-Flowstone Overseer	NMS	2014-09-26 10:09:20	1
-Laccolith Titan	NMS	2014-09-26 10:09:34	1
-Rupture	NMS	2014-09-26 10:09:47	1
+Ascendant Evincar	NEM	2014-09-26 10:08:55	1
+Flowstone Overseer	NEM	2014-09-26 10:09:20	1
+Laccolith Titan	NEM	2014-09-26 10:09:34	1
+Rupture	NEM	2014-09-26 10:09:47	1
 Chancellor of the Dross	NPH	2014-09-26 10:09:58	1
 Cabal Patriarch	ODY	2014-09-26 10:10:10	1
 Decaying Soil	ODY	2014-09-26 10:10:37	1
@@ -1673,10 +1673,10 @@ Mirri the Cursed	PLC	2014-10-20 20:20:35	1
 Aeon Chronicler	PLC	2014-10-20 20:20:55	3
 Cryptic Gateway	ONS	2014-10-20 20:21:09	1
 Recoup	ODY	2014-10-20 20:21:18	1
-Predator, Flagship	NMS	2014-10-20 20:21:28	1
-Phyrexian Prowler	NMS	2014-10-20 20:21:38	1
-Dominate	NMS	2014-10-20 20:21:44	1
-Belbe's Percher	NMS	2014-10-20 20:21:55	1
+Predator, Flagship	NEM	2014-10-20 20:21:28	1
+Phyrexian Prowler	NEM	2014-10-20 20:21:38	1
+Dominate	NEM	2014-10-20 20:21:44	1
+Belbe's Percher	NEM	2014-10-20 20:21:55	1
 Countryside Crusher	MOR	2014-10-20 20:22:06	3
 Worm Harvest	MMA	2014-10-20 20:23:29	2
 Reach of Branches	MMA	2014-10-20 20:23:42	3
@@ -2814,8 +2814,8 @@ Pyromancy	ULG	2015-04-25 09:26:56	1
 Mark of Fury	UDS	2015-04-25 09:27:04	3
 Rofellos's Gift	UDS	2015-04-25 09:27:15	2
 Multani's Decree	UDS	2015-04-25 09:27:30	1
-Seal of Strength	NMS	2015-04-25 09:27:37	3
-Fog Patch	NMS	2015-04-25 09:27:46	1
+Seal of Strength	NEM	2015-04-25 09:27:37	3
+Fog Patch	NEM	2015-04-25 09:27:46	1
 Calming Verse	PCY	2015-04-25 09:27:54	1
 Tranquility	INV	2015-04-25 09:28:10	1
 Lashknife Barrier	PLS	2015-04-25 09:28:19	1
@@ -3011,7 +3011,7 @@ Flowstone Blade	CNS	2015-06-20 14:46:00	2
 Flowstone Blade	CNS	2015-06-20 14:46:03	-1
 Sightless Brawler	JOU	2015-06-20 14:46:17	1
 Tiger Claws	MMQ	2015-06-22 20:36:55	1
-Mind Swords	NMS	2015-06-22 20:37:07	1
+Mind Swords	NEM	2015-06-22 20:37:07	1
 Planeswalker's Favor	PLS	2015-06-22 20:39:15	1
 Symbiotic Wurm	ONS	2015-06-22 20:40:35	1
 Rustmouth Ogre	MRD	2015-06-22 20:40:48	1
@@ -3055,7 +3055,7 @@ Mindstab Thrull	5ED	2015-06-29 22:26:59	1
 Lightning Blast	TMP	2015-06-29 22:27:09	1
 Elven Warhounds	TMP	2015-06-29 22:27:18	1
 Ghitu Slinger	ULG	2015-06-29 22:27:35	1
-Trickster Mage	NMS	2015-06-29 22:27:44	1
+Trickster Mage	NEM	2015-06-29 22:27:44	1
 Withdraw	PCY	2015-06-29 22:28:12	1
 Opt	INV	2015-06-29 22:28:23	2
 Callous Giant	INV	2015-06-29 22:28:35	1
@@ -3090,7 +3090,7 @@ Dragon-Style Twins	KTK	2015-06-29 22:34:39	1
 Sultai Charm	KTK	2015-06-29 22:34:49	1
 Wandering Champion	FRF	2015-06-29 22:34:59	1
 Stormrider Rig	DTK	2015-06-29 22:35:09	1
-Reverent Silence	NMS	2015-07-15 17:32:24	1
+Reverent Silence	NEM	2015-07-15 17:32:24	1
 Groffskithur	MRD	2015-07-15 17:32:32	1
 Second Sight	DST	2015-07-15 17:32:50	1
 Hearth Kami	CHK	2015-07-15 17:33:08	1
@@ -3680,7 +3680,7 @@ Skull Catapult	5ED	2016-06-15 18:30:07	1
 Knight of the Mists	VIS	2016-06-15 18:30:18	1
 Forbidden Ritual	VIS	2016-06-15 18:30:31	1
 Volrath's Laboratory	STH	2016-06-15 19:25:32	1
-Viseling	NMS	2016-06-15 19:25:39	1
+Viseling	NEM	2016-06-15 19:25:39	1
 Crypt Angel	INV	2016-06-15 19:26:05	1
 Manacles of Decay	APC	2016-06-15 19:26:20	1
 Raka Sanctuary	APC	2016-06-15 19:26:29	1
@@ -5281,3 +5281,643 @@ Forest	DOM	2018-04-23 18:03:01	1
 Swamp	DOM	2018-04-23 18:03:42	1
 Swamp	DOM	2018-04-23 18:03:52	-1
 Swamp	M11	2018-04-23 18:04:13	1
+Heaven	AKH	2018-06-09 11:48:20	1
+Earth	AKH	2018-06-09 11:48:20	1
+Cognivore	ODY	2018-06-09 11:48:28	1
+Auriok Salvagers	MMA	2018-06-09 11:48:37	1
+Ghitu Chronicler	DOM	2018-06-09 11:48:47	1
+Powerstone Shard	DOM	2018-06-09 11:48:59	1
+Blink of an Eye	DOM	2018-06-09 11:49:23	1
+Blink of an Eye	DOM	2018-06-09 11:49:23	1
+Opt	DOM	2018-06-09 11:49:49	1
+Saproling Migration	DOM	2018-06-09 11:49:59	1
+Blink of an Eye	DOM	2018-06-09 11:50:09	1
+Ghitu Lavarunner	DOM	2018-06-09 11:50:17	1
+Short Sword	DOM	2018-06-09 11:50:30	1
+Opt	DOM	2018-06-09 11:58:03	1
+Arcane Flight	DOM	2018-06-09 11:58:13	1
+Keldon Overseer	DOM	2018-06-09 11:58:24	1
+Arcane Flight	DOM	2018-06-09 11:58:35	1
+Arcane Flight	DOM	2018-06-09 11:58:39	1
+Baloth Gorger	DOM	2018-06-09 11:58:51	1
+Broken Bond	DOM	2018-06-09 11:59:00	1
+Navigator's Compass	DOM	2018-06-09 11:59:08	1
+Arcane Flight	DOM	2018-06-09 11:59:19	1
+Artificer's Assistant	DOM	2018-06-09 11:59:28	1
+Charge	DOM	2018-06-09 11:59:36	1
+Unwind	DOM	2018-06-09 11:59:44	1
+Invoke the Divine	DOM	2018-06-09 11:59:51	1
+Deathbloom Thallid	DOM	2018-06-09 11:59:59	1
+Powerstone Shard	DOM	2018-06-09 12:00:06	1
+Ghitu Lavarunner	DOM	2018-06-09 12:00:16	1
+Ghitu Lavarunner	DOM	2018-06-09 12:00:19	1
+Unwind	DOM	2018-06-09 12:00:25	1
+Powerstone Shard	DOM	2018-06-09 12:00:36	1
+Unwind	DOM	2018-06-09 12:00:51	1
+Powerstone Shard	DOM	2018-06-09 12:00:58	1
+Saproling Migration	DOM	2018-06-09 12:01:05	1
+Cinder Storm	A25	2018-06-09 12:01:18	1
+Voltaic Servant	DOM	2018-06-09 12:01:53	1
+Unwind	DOM	2018-06-09 12:02:05	1
+Urgoros, the Empty One	DOM	2018-06-09 12:02:14	1
+Orcish Vandal	DOM	2018-06-09 12:02:25	1
+Baird, Steward of Argive	DOM	2018-06-09 12:02:32	1
+Jhoira's Familiar	DOM	2018-06-09 12:02:40	1
+Thorn Elemental	DOM	2018-06-09 12:05:00	1
+Sage of Lat-Nam	DOM	2018-06-09 12:05:09	1
+Final Parting	DOM	2018-06-09 12:05:18	1
+The Eldest Reborn	DOM	2018-06-09 12:05:30	1
+Shield of the Realm	DOM	2018-06-09 12:05:38	1
+Rona, Disciple of Gix	DOM	2018-06-09 12:06:00	1
+Skizzik	DOM	2018-06-09 12:06:21	1
+Skizzik	DOM	2018-06-09 12:06:22	1
+Skizzik	DOM	2018-06-09 12:06:22	1
+Warcry Phoenix	DOM	2018-06-09 12:06:31	1
+Time of Ice	DOM	2018-06-09 12:06:38	1
+On Serra's Wings	DOM	2018-06-09 12:06:46	1
+Tiana, Ship's Caretaker	DOM	2018-06-09 12:06:53	1
+Gaea's Blessing	DOM	2018-06-09 12:07:22	1
+Memorial to War	DOM	2018-06-09 12:07:32	1
+Thallid Soothsayer	DOM	2018-06-09 12:07:44	1
+Memorial to Genius	DOM	2018-06-09 12:07:54	1
+Skizzik	DOM	2018-06-09 12:09:20	1
+Hallar, the Firefletcher	DOM	2018-06-09 12:09:26	1
+Triumph of Gerrard	DOM	2018-06-09 12:09:41	1
+Chainer's Torment	DOM	2018-06-09 12:09:57	1
+Will-o'-the-Wisp	A25	2018-06-09 12:10:06	1
+Southern Paladin	7ED	2018-06-26 21:43:15	1
+Yawgmoth Demon	9ED	2018-06-26 21:43:28	1
+Baral's Expertise	AER	2018-06-26 21:43:36	1
+Trophy Mage	AER	2018-06-26 21:43:44	1
+Anointed Procession	AKH	2018-06-26 21:43:50	1
+Approach of the Second Sun	AKH	2018-06-26 21:43:57	4
+Archfiend of Ifnir	AKH	2018-06-26 21:44:08	3
+Channeler Initiate	AKH	2018-06-26 21:44:17	1
+Crocodile of the Crossing	AKH	2018-06-26 21:44:26	1
+Cryptic Serpent	AKH	2018-06-26 21:44:41	4
+Decimator Beetle	AKH	2018-06-26 21:44:52	1
+Doomed Dissenter	AKH	2018-06-26 21:46:02	4
+Enigma Drake	AKH	2018-06-26 21:46:17	4
+Exemplar of Strength	AKH	2018-06-26 21:46:28	1
+Flameblade Adept	AKH	2018-06-26 21:46:40	4
+Gate to the Afterlife	AKH	2018-06-26 21:47:00	3
+Harsh Mentor	AKH	2018-06-26 21:47:08	1
+Heart-Piercer Manticore	AKH	2018-06-26 21:47:17	1
+Honored Hydra	AKH	2018-06-26 21:47:25	1
+Khenra Charioteer	AKH	2018-06-26 21:47:32	1
+Lay Bare the Heart	AKH	2018-06-26 21:47:43	1
+New Perspectives	AKH	2018-06-26 21:48:00	4
+Oketra the True	AKH	2018-06-26 21:48:27	1
+Protection of the Hekma	AKH	2018-06-26 21:48:34	1
+Pyramid of the Pantheon	AKH	2018-06-26 21:48:42	1
+Sacred Excavation	AKH	2018-06-26 21:48:51	4
+Seraph of the Suns	AKH	2018-06-26 21:49:02	1
+Spring	AKH	2018-06-26 21:49:26	1
+Mind	AKH	2018-06-26 21:49:26	1
+Finish	AKH	2018-06-26 21:49:42	4
+Start	AKH	2018-06-26 21:49:42	4
+Angelic Chorus	BBD	2018-06-26 21:50:11	1
+Archon of Valor's Reach	BBD	2018-06-26 21:50:19	1
+Azra Oddsmaker	BBD	2018-06-26 21:50:26	1
+Blaring Captain	BBD	2018-06-26 21:50:34	1
+Blaring Recruiter	BBD	2018-06-26 21:50:34	1
+Blaring Recruiter	BBD	2018-06-26 21:50:39	1
+Blaring Captain	BBD	2018-06-26 21:50:39	1
+Bonus Round	BBD	2018-06-26 21:50:54	1
+Chakram Retriever	BBD	2018-06-26 21:51:09	1
+Chakram Slinger	BBD	2018-06-26 21:51:09	1
+Chakram Slinger	BBD	2018-06-26 21:51:14	1
+Chakram Retriever	BBD	2018-06-26 21:51:14	1
+Decorated Champion	BBD	2018-06-26 21:51:47	4
+Generous Patron	BBD	2018-06-26 21:52:08	1
+Genesis Chamber	BBD	2018-06-26 21:52:25	1
+Gorm the Great	BBD	2018-06-26 21:52:33	1
+Virtus the Veiled	BBD	2018-06-26 21:52:33	1
+Impetuous Protege	BBD	2018-06-26 21:52:48	1
+Proud Mentor	BBD	2018-06-26 21:52:48	1
+Jubilant Mascot	BBD	2018-06-26 21:53:01	1
+Khorvath Brightflame	BBD	2018-06-26 21:53:11	1
+Sylvia Brightspear	BBD	2018-06-26 21:53:11	1
+Khorvath's Fury	BBD	2018-06-26 21:53:18	1
+Standing Army	UNH	2018-06-26 21:53:29	1
+Magmatic Force	BBD	2018-06-26 21:53:39	1
+Mangara of Corondor	BBD	2018-06-26 21:53:59	1
+Mindblade Render	BBD	2018-06-26 21:54:14	1
+Regna, the Redeemer	BBD	2018-06-26 23:20:09	1
+Krav, the Unredeemed	BBD	2018-06-26 23:20:09	1
+Rushblade Commander	BBD	2018-06-26 23:20:18	1
+Sentinel Tower	BBD	2018-06-26 23:20:26	1
+Soulblade Corrupter	BBD	2018-06-26 23:20:32	1
+Soulblade Renewer	BBD	2018-06-26 23:20:32	1
+Thrasher Brute	BBD	2018-06-26 23:20:51	1
+Tidespout Tyrant	BBD	2018-06-26 23:20:59	1
+Together Forever	BBD	2018-06-26 23:21:05	1
+Veteran Explorer	BBD	2018-06-26 23:21:19	3
+Nath of the Gilt-Leaf	LRW	2018-06-26 23:21:37	1
+Nath of the Gilt-Leaf	LRW	2018-06-26 23:21:42	-1
+Nath of the Gilt-Leaf	C16	2018-06-26 23:21:43	1
+Crosis, the Purger	C17	2018-06-26 23:21:52	1
+Fist of Suns	C17	2018-06-26 23:21:59	1
+Izzet Chemister	C17	2018-06-26 23:22:07	1
+Jedit Ojanen of Efrava	C17	2018-06-26 23:22:15	1
+Kindred Boon	C17	2018-06-26 23:22:22	1
+Knights of the Black Rose	CN2	2018-06-26 23:22:29	1
+Adeliz, the Cinder Wind	DOM	2018-06-26 23:22:36	1
+Artificer's Assistant	DOM	2018-06-26 23:22:42	1
+Artificer's Assistant	DOM	2018-06-26 23:22:42	1
+Arvad the Cursed	DOM	2018-06-26 23:22:52	1
+Benalish Marshal	DOM	2018-06-26 23:23:01	1
+Cabal Stronghold	DOM	2018-06-26 23:23:08	1
+Champion of the Flame	DOM	2018-06-26 23:23:18	4
+Danitha Capashen, Paragon	DOM	2018-06-26 23:23:30	1
+Darigaaz Reincarnated	DOM	2018-06-26 23:23:37	1
+Dauntless Bodyguard	DOM	2018-06-26 23:23:43	1
+Deathbloom Thallid	DOM	2018-06-26 23:23:53	1
+Deathbloom Thallid	DOM	2018-06-26 23:23:53	1
+Deathbloom Thallid	DOM	2018-06-26 23:23:53	1
+Fungal Infection	DOM	2018-06-26 23:24:13	3
+Fungal Plots	DOM	2018-06-26 23:24:19	1
+Garna, the Bloodflame	DOM	2018-06-26 23:24:27	1
+Goblin Barrage	DOM	2018-06-26 23:24:33	1
+Goblin Warchief	DOM	2018-06-26 23:24:47	4
+Grand Warlord Radha	DOM	2018-06-26 23:24:56	1
+Grunn, the Lonely King	DOM	2018-06-26 23:25:04	1
+Jaya's Immolating Inferno	DOM	2018-06-26 23:25:12	1
+Jhoira, Weatherlight Captain	DOM	2018-06-26 23:25:21	1
+Josu Vess, Lich Knight	DOM	2018-06-26 23:25:27	1
+Knight of Malice	DOM	2018-06-26 23:25:33	1
+Lich's Mastery	DOM	2018-06-26 23:25:39	1
+Multani, Yavimaya's Avatar	DOM	2018-06-26 23:25:45	1
+Phyrexian Scriptures	DOM	2018-06-26 23:25:50	1
+Precognition Field	DOM	2018-06-26 23:25:57	1
+Primevals' Glorious Rebirth	DOM	2018-06-26 23:26:03	1
+Raff Capashen, Ship's Mage	DOM	2018-06-26 23:26:09	1
+Rite of Belzenlok	DOM	2018-06-26 23:26:15	1
+Saproling Migration	DOM	2018-06-26 23:26:24	1
+Shanna, Sisay's Legacy	DOM	2018-06-26 23:26:30	1
+Slimefoot, the Stowaway	DOM	2018-06-26 23:26:37	1
+Spore Swarm	DOM	2018-06-26 23:26:45	1
+Spore Swarm	DOM	2018-06-26 23:26:45	1
+Spore Swarm	DOM	2018-06-26 23:26:46	1
+Sporecrown Thallid	DOM	2018-06-26 23:26:55	1
+Squee, the Immortal	DOM	2018-06-26 23:27:00	1
+Sylvan Awakening	DOM	2018-06-26 23:27:08	1
+Tatyova, Benthic Druid	DOM	2018-06-26 23:27:14	1
+Teshar, Ancestor's Apostle	DOM	2018-06-26 23:27:20	1
+Tetsuko Umezawa, Fugitive	DOM	2018-06-26 23:27:26	1
+The Mending of Dominaria	DOM	2018-06-26 23:27:32	1
+The Mirari Conjecture	DOM	2018-06-26 23:27:39	1
+Thran Temporal Gateway	DOM	2018-06-26 23:27:45	1
+Torgaar, Famine Incarnate	DOM	2018-06-26 23:27:54	1
+Valduk, Keeper of the Flame	DOM	2018-06-26 23:28:01	1
+Verix Bladewing	DOM	2018-06-26 23:28:06	1
+Weatherlight	DOM	2018-06-26 23:28:15	1
+Wild Onslaught	DOM	2018-06-26 23:28:26	1
+Wizard's Retort	DOM	2018-06-27 18:01:25	1
+Yavimaya Sapherd	DOM	2018-06-27 18:01:36	1
+Yavimaya Sapherd	DOM	2018-06-27 18:01:36	1
+Yawgmoth's Vile Offering	DOM	2018-06-27 18:01:51	1
+Zhalfirin Void	DOM	2018-06-27 18:02:00	4
+Arashin Foremost	DTK	2018-06-27 19:46:18	1
+Blood-Chin Fanatic	DTK	2018-06-27 19:46:30	1
+Lightning Berserker	DTK	2018-06-27 19:46:47	3
+Silumgar's Command	DTK	2018-06-27 19:46:58	1
+Assembled Alphas	EMN	2018-06-27 19:47:16	1
+Insatiable Gorgers	EMN	2018-06-27 19:49:27	1
+Summary Dismissal	EMN	2018-06-27 19:49:34	1
+Thalia's Lancers	EMN	2018-06-27 19:49:44	1
+Unsubstantiate	EMN	2018-06-27 19:49:56	4
+Adaptive Automaton	E02	2018-06-27 19:50:12	1
+Mardu Strike Leader	FRF	2018-06-27 19:50:20	1
+Bloodwater Entity	HOU	2018-06-27 19:50:29	3
+Driven	HOU	2018-06-27 19:50:39	1
+Despair	HOU	2018-06-27 19:50:39	1
+Plague Spitter	INV	2018-06-27 19:50:46	1
+Yawgmoth's Agenda	INV	2018-06-27 19:51:31	1
+Bloodcrazed Paladin	XLN	2018-06-27 19:57:09	1
+Captain Lannery Storm	XLN	2018-06-27 19:57:19	1
+Kopala, Warden of Waves	XLN	2018-06-27 19:57:29	1
+Sheltering Light	XLN	2018-06-27 19:57:36	1
+Thundering Spineback	XLN	2018-06-27 19:57:44	1
+Vanquisher's Banner	XLN	2018-06-27 19:57:52	1
+Pia Nalaar	KLD	2018-06-27 19:58:12	1
+Pia Nalaar	KLD	2018-06-27 19:58:12	1
+Pia Nalaar	KLD	2018-06-27 19:58:15	-1
+Unlicensed Disintegration	KLD	2018-06-27 19:58:26	4
+Drowner of Secrets	LRW	2018-06-27 19:58:41	1
+Akroma's Vengeance	A25	2018-06-27 20:01:40	2
+Akroma, Angel of Wrath	A25	2018-06-27 20:01:58	2
+Akroma, Angel of Wrath	A25	2018-06-27 20:02:02	-1
+Broodhatch Nantuko	A25	2018-06-27 20:02:20	1
+Conflux	A25	2018-06-27 20:05:59	1
+Elvish Piper	A25	2018-06-27 20:06:13	1
+Flash	A25	2018-06-27 20:06:36	1
+Hanna, Ship's Navigator	A25	2018-06-27 20:07:04	1
+Ihsan's Shade	A25	2018-06-27 20:09:08	1
+Kavu Predator	A25	2018-06-27 20:09:33	4
+Master of the Wild Hunt	A25	2018-06-27 20:09:46	1
+Niv-Mizzet, the Firemind	A25	2018-06-27 20:10:15	1
+Pernicious Deed	A25	2018-06-27 20:10:58	1
+Presence of Gond	A25	2018-06-27 20:11:13	1
+Presence of Gond	A25	2018-06-27 20:11:13	1
+Promise of Bunrei	A25	2018-06-27 20:11:24	4
+Stangg	A25	2018-06-27 20:21:31	1
+Undead Gladiator	A25	2018-06-27 20:22:32	4
+Will-o'-the-Wisp	A25	2018-06-27 20:22:41	3
+Zada, Hedron Grinder	A25	2018-06-27 20:22:52	1
+Liability	MMQ	2018-06-27 20:23:03	1
+Vendetta	MMQ	2018-06-27 20:23:47	1
+Dark Suspicions	PLS	2018-06-27 20:24:39	1
+Greel, Mind Raker	PCY	2018-06-27 20:24:49	1
+Last Gasp	RAV	2018-06-27 20:24:57	4
+Arrogant Bloodlord	ROE	2018-06-27 20:25:14	1
+Arch of Orazca	RIX	2018-06-27 20:25:33	1
+Blood Sun	RIX	2018-06-27 20:25:43	1
+Brass's Bounty	RIX	2018-06-27 20:25:51	1
+Dead Man's Chest	RIX	2018-06-27 20:27:01	1
+Form of the Dinosaur	RIX	2018-06-27 20:27:09	1
+Golden Guardian	RIX	2018-06-27 20:27:18	1
+Gold-Forge Garrison	RIX	2018-06-27 20:27:18	1
+Kumena's Awakening	RIX	2018-06-27 20:27:28	1
+Paladin of Atonement	RIX	2018-06-27 20:27:39	1
+Path of Discovery	RIX	2018-06-27 20:27:51	1
+Path of Mettle	RIX	2018-06-27 20:28:01	1
+Metzali, Tower of Triumph	RIX	2018-06-27 20:28:01	1
+Profane Procession	RIX	2018-06-27 20:28:23	1
+Tomb of the Dusk Rose	RIX	2018-06-27 20:28:23	1
+Ravenous Chupacabra	RIX	2018-06-27 20:28:37	4
+Seafloor Oracle	RIX	2018-06-27 20:28:55	1
+Silverclad Ferocidons	RIX	2018-06-27 20:29:05	1
+Slaughter the Strong	RIX	2018-06-27 20:29:47	1
+Tetzimoc, Primal Death	RIX	2018-06-27 20:29:56	1
+Tilonalli's Summoner	RIX	2018-06-27 20:30:14	1
+World Shaper	RIX	2018-06-27 20:30:33	1
+Zetalpa, Primal Dawn	RIX	2018-06-27 20:30:42	1
+Puresight Merrow	SHM	2018-06-27 20:31:07	4
+Witherscale Wurm	SHM	2018-06-27 20:31:40	1
+Fevered Convulsions	TMP	2018-06-27 20:31:48	1
+Minion of the Wastes	TMP	2018-06-27 20:31:55	1
+Shambling Swarm	TOR	2018-06-27 20:32:03	1
+Eastern Paladin	USG	2018-06-27 20:32:11	1
+Order of Yawgmoth	USG	2018-06-27 20:32:18	1
+Waylay	USG	2018-06-27 20:32:26	1
+Western Paladin	USG	2018-06-27 20:32:32	1
+Witch Engine	USG	2018-06-27 20:32:40	1
+Witch Engine	USG	2018-06-27 20:32:40	1
+Witch Engine	USG	2018-06-27 20:32:44	-1
+Serrated Biskelion	WTH	2018-06-27 20:32:50	1
+Northern Paladin	7ED	2018-06-27 20:33:02	1
+Whirlpool Warrior	APC	2018-06-27 20:33:14	1
+Lovisa Coldeyes	DDS	2018-06-27 20:33:20	1
+Paladin en-Vec	EXO	2018-06-27 20:33:31	1
+God-Pharaoh's Gift	HOU	2018-06-27 20:33:37	1
+God-Pharaoh's Gift	HOU	2018-06-27 20:33:38	1
+Massacre	NEM	2018-06-27 20:33:50	1
+Oppression	USG	2018-06-27 20:34:03	1
+Unearth	A25	2018-07-07 20:45:02	1
+Evolving Wilds	RIX	2018-07-07 20:45:23	1
+Merfolk Trickster	DOM	2018-07-07 20:46:07	1
+Time of Ice	DOM	2018-07-07 20:46:21	1
+Memorial to War	DOM	2018-07-07 20:46:29	1
+Merfolk Trickster	DOM	2018-07-07 20:46:38	1
+Memorial to Glory	DOM	2018-07-07 20:46:47	1
+Limits of Solidarity	AKH	2018-07-07 20:47:02	1
+Recall	CHR	2018-10-23 21:02:09	1
+Arena of the Ancients	CHR	2018-10-23 21:02:21	1
+Ritual of the Machine	ALL	2018-10-23 21:02:29	1
+Apocalypse	TMP	2018-10-23 21:02:36	1
+Forcemage Advocate	JUD	2018-10-23 21:02:44	1
+Phantom Tiger	JUD	2018-10-23 21:02:51	1
+Hunters' Feast	M11	2018-10-23 21:03:03	1
+Congregate	M14	2018-10-23 21:03:16	1
+Stromkirk Occultist	EMN	2018-10-23 21:03:23	1
+Servo Exhibition	KLD	2018-10-23 21:03:32	1
+Ovalchase Daredevil	KLD	2018-10-23 21:03:42	1
+Fateful Showdown	KLD	2018-10-23 21:04:34	1
+Oketra's Last Mercy	HOU	2018-10-23 21:04:45	1
+Kefnet's Last Word	HOU	2018-10-23 21:04:55	1
+Hazoret's Undying Fury	HOU	2018-10-23 21:05:05	1
+Refuse	HOU	2018-10-23 21:05:11	1
+Cooperate	HOU	2018-10-23 21:05:11	1
+Heartless Pillage	XLN	2018-10-23 21:05:44	1
+Thallid Soothsayer	DOM	2018-10-23 21:05:53	1
+Untamed Kavu	DOM	2018-10-23 21:06:00	1
+Urza's Tome	DOM	2018-10-23 21:06:06	1
+Memorial to War	DOM	2018-10-23 21:06:13	1
+Rustwing Falcon	M19	2018-10-23 21:06:24	4
+Trusty Packbeast	M19	2018-10-23 21:06:39	1
+Aethershield Artificer	M19	2018-10-23 21:06:46	1
+Ajani's Welcome	M19	2018-10-23 21:07:21	1
+Aegis of the Heavens	M19	2018-10-23 21:07:27	1
+Surge Mare	M19	2018-10-23 21:07:36	1
+Exclusion Mage	M19	2018-10-23 21:10:59	2
+Mirror Image	M19	2018-10-23 21:11:06	1
+Salvager of Secrets	M19	2018-10-23 21:11:15	1
+Psychic Corrosion	M19	2018-10-23 21:11:22	1
+Stitcher's Supplier	M19	2018-10-23 21:11:29	1
+Fell Specter	M19	2018-10-23 21:11:36	1
+Abnormal Endurance	M19	2018-10-23 21:11:50	4
+Blood Divination	M19	2018-10-23 21:12:00	1
+Dark-Dweller Oracle	M19	2018-10-23 21:12:08	1
+Goblin Instigator	M19	2018-10-23 21:12:15	4
+Catalyst Elemental	M19	2018-10-23 21:12:26	4
+Volley Veteran	M19	2018-10-23 21:12:37	1
+Siegebreaker Giant	M19	2018-10-23 21:12:44	1
+Thud	M19	2018-10-23 21:12:50	4
+Dryad Greenseeker	M19	2018-10-23 21:14:14	1
+Druid of Horns	M19	2018-10-23 21:14:20	1
+Vigilant Baloth	M19	2018-10-23 21:14:26	1
+Ghastbark Twins	M19	2018-10-23 21:14:34	1
+Talons of Wildwood	M19	2018-10-23 21:14:49	1
+Colossal Majesty	M19	2018-10-23 21:14:56	1
+Psychic Symbiont	M19	2018-10-23 21:15:05	1
+Brawl-Bash Ogre	M19	2018-10-23 21:15:15	1
+Draconic Disciple	M19	2018-10-23 21:15:22	1
+Draconic Disciple	M19	2018-10-23 21:15:29	1
+Satyr Enchanter	M19	2018-10-23 21:15:36	1
+Satyr Enchanter	M19	2018-10-23 21:15:45	2
+Skyrider Patrol	M19	2018-10-23 21:15:53	1
+Suspicious Bookcase	M19	2018-10-23 21:17:43	1
+Skyscanner	M19	2018-10-23 21:17:56	2
+Meteor Golem	M19	2018-10-23 21:18:02	2
+Haazda Marshal	GRN	2018-10-23 21:18:13	4
+Healer's Hawk	GRN	2018-10-23 21:18:20	4
+Hunted Witness	GRN	2018-10-23 21:18:29	4
+Flight of Equenauts	GRN	2018-10-23 21:18:45	1
+Demotion	GRN	2018-10-23 21:19:00	1
+Gird for Battle	GRN	2018-10-23 21:19:09	4
+Sworn Companions	GRN	2018-10-23 21:19:20	1
+Crush Contraband	GRN	2018-10-23 21:19:28	1
+Passwall Adept	GRN	2018-10-23 21:19:55	1
+Murmuring Mystic	GRN	2018-10-23 21:20:05	1
+Maximize Altitude	GRN	2018-10-23 21:20:23	4
+Unexplained Disappearance	GRN	2018-10-23 21:20:35	1
+Guild Summit	GRN	2018-10-23 21:20:44	4
+Selective Snare	GRN	2018-10-23 21:20:52	1
+Pilfering Imp	GRN	2018-10-23 21:21:00	4
+Plaguecrafter	GRN	2018-10-23 21:21:29	1
+Undercity Necrolisk	GRN	2018-10-23 21:21:49	1
+Lotleth Giant	GRN	2018-10-23 21:22:06	1
+Vicious Rumors	GRN	2018-10-23 21:22:15	4
+Severed Strands	GRN	2018-10-23 21:23:10	3
+Torch Courier	GRN	2018-10-23 21:23:21	4
+Electrostatic Field	GRN	2018-10-23 21:23:33	4
+Fire Urchin	GRN	2018-10-23 21:23:45	4
+Goblin Cratermaker	GRN	2018-10-23 21:23:57	4
+Smelt-Ward Minotaur	GRN	2018-10-23 21:25:00	1
+Book Devourer	GRN	2018-10-23 21:25:07	1
+Lava Coil	GRN	2018-10-23 21:25:16	3
+Direct Current	GRN	2018-10-23 21:25:26	4
+Street Riot	GRN	2018-10-23 21:25:43	1
+Inescapable Blaze	GRN	2018-10-23 21:25:52	1
+Portcullis Vine	GRN	2018-10-23 21:26:05	1
+Kraul Harpooner	GRN	2018-10-23 21:26:12	1
+District Guide	GRN	2018-10-23 21:26:23	4
+Golgari Raiders	GRN	2018-10-23 21:26:32	1
+Affectionate Indrik	GRN	2018-10-23 21:26:39	1
+Arboretum Elemental	GRN	2018-10-23 21:26:47	2
+Pause for Reflection	GRN	2018-10-23 21:26:57	1
+Sprouting Renewal	GRN	2018-10-23 21:27:12	4
+Circuitous Route	GRN	2018-10-23 21:27:23	3
+House Guildmage	GRN	2018-10-23 21:27:33	1
+Nightveil Predator	GRN	2018-10-23 21:27:43	2
+Notion Rain	GRN	2018-10-23 21:27:54	4
+Beamsplitter Mage	GRN	2018-10-23 21:28:06	4
+League Guildmage	GRN	2018-10-23 21:28:17	1
+Crackling Drake	GRN	2018-10-23 21:28:33	4
+Beacon Bolt	GRN	2018-10-23 21:28:47	4
+Sonic Assault	GRN	2018-10-23 21:28:58	4
+Hypothesizzle	GRN	2018-10-23 21:29:15	4
+Glowspore Shaman	GRN	2018-10-23 21:29:28	1
+Swarm Guildmage	GRN	2018-10-23 21:29:34	1
+Rhizome Lurcher	GRN	2018-10-23 21:29:42	1
+Golgari Findbroker	GRN	2018-10-23 21:29:50	2
+Molderhulk	GRN	2018-10-23 21:30:01	1
+Boros Challenger	GRN	2018-10-23 21:30:18	1
+Legion Guildmage	GRN	2018-10-23 21:30:24	1
+Truefire Captain	GRN	2018-10-23 21:30:32	1
+Swathcutter Giant	GRN	2018-10-23 21:30:38	1
+Justice Strike	GRN	2018-10-23 21:30:48	1
+Conclave Guildmage	GRN	2018-10-23 21:30:57	1
+Centaur Peacemaker	GRN	2018-10-23 21:31:03	4
+Ledev Champion	GRN	2018-10-23 21:31:37	3
+Sumala Woodshaper	GRN	2018-10-23 21:31:51	2
+Conclave Cavalier	GRN	2018-10-23 21:32:02	4
+Rosemane Centaur	GRN	2018-10-23 21:32:22	4
+Worldsoul Colossus	GRN	2018-10-23 21:32:39	2
+Join Shields	GRN	2018-10-23 21:32:45	1
+Piston-Fist Cyclops	GRN	2018-10-23 21:32:56	4
+Vernadi Shieldmate	GRN	2018-10-23 21:33:25	4
+Discovery	GRN	2018-10-23 21:33:38	1
+Dispersal	GRN	2018-10-23 21:33:38	1
+Invent	GRN	2018-10-23 21:33:45	1
+Invert	GRN	2018-10-23 21:33:45	1
+Status	GRN	2018-10-23 21:34:06	1
+Statue	GRN	2018-10-23 21:34:06	1
+Integrity	GRN	2018-10-23 21:34:21	4
+Intervention	GRN	2018-10-23 21:34:21	4
+Flower	GRN	2018-10-23 21:34:28	1
+Flourish	GRN	2018-10-23 21:34:28	1
+Wand of Vertebrae	GRN	2018-10-23 21:34:36	1
+Glaive of the Guildpact	GRN	2018-10-23 21:34:48	1
+Dimir Locket	GRN	2018-10-23 21:34:55	1
+Izzet Locket	GRN	2018-10-23 21:35:00	1
+Boros Locket	GRN	2018-10-23 21:35:06	1
+Golgari Locket	GRN	2018-10-23 21:35:11	1
+Selesnya Locket	GRN	2018-10-23 21:35:19	1
+Gateway Plaza	GRN	2018-10-23 21:35:25	1
+Dimir Guildgate	GRN	2018-10-23 21:35:44	2
+Dimir Guildgate	GRN	2018-10-23 21:36:23	-1
+Dimir Guildgate	GRN	2018-10-23 21:36:27	1
+Izzet Guildgate	GRN	2018-10-23 21:36:43	1
+Izzet Guildgate	GRN	2018-10-23 21:36:44	1
+Golgari Guildgate	GRN	2018-10-23 21:36:49	1
+Golgari Guildgate	GRN	2018-10-23 21:36:51	1
+Boros Guildgate	GRN	2018-10-23 21:36:55	1
+Boros Guildgate	GRN	2018-10-23 21:36:58	1
+Selesnya Guildgate	GRN	2018-10-23 21:37:02	1
+Selesnya Guildgate	GRN	2018-10-23 21:37:04	1
+Kari Zev's Expertise	AER	2018-11-06 18:24:50	1
+Kari Zev, Skyship Raider	AER	2018-11-06 18:24:51	1
+Renegade Rallier	AER	2018-11-06 18:25:05	4
+Rishkar, Peema Renegade	AER	2018-11-06 18:25:15	1
+Treasure Keeper	AER	2018-11-06 18:29:32	1
+Ahn-Crop Champion	AKH	2018-11-06 22:49:55	1
+Cast Out	AKH	2018-11-06 22:50:03	4
+Censor	AKH	2018-11-06 22:50:15	4
+Gift of Paradise	AKH	2018-11-06 22:50:52	3
+Haze of Pollen	AKH	2018-11-06 22:51:02	4
+Hieroglyphic Illumination	AKH	2018-11-06 22:51:21	4
+Rags	AKH	2018-11-06 22:51:32	1
+Riches	AKH	2018-11-06 22:51:32	1
+Shadow of the Grave	AKH	2018-11-06 22:51:44	4
+Splendid Agony	AKH	2018-11-06 22:51:57	4
+Vizier of the Anointed	HOU	2018-11-06 22:52:11	4
+Vizier of the Anointed	HOU	2018-11-06 22:52:15	-4
+Vizier of Tumbling Sands	AKH	2018-11-06 22:52:18	4
+Abundant Growth	AVR	2018-11-06 22:52:39	2
+Najeela, the Blade-Blossom	BBD	2018-11-06 22:52:48	1
+Vigor	BBD	2018-11-06 22:53:01	1
+Aminatou's Augury	C18	2018-11-06 22:53:10	1
+Bant Charm	C18	2018-11-06 22:53:19	1
+Boreas Charger	C18	2018-11-06 22:53:27	1
+Crash of Rhino Beetles	C18	2018-11-06 22:53:35	1
+Elderwood Scion	C18	2018-11-06 22:53:46	1
+Empyrial Storm	C18	2018-11-06 22:53:53	1
+Esper Charm	ALA	2018-11-06 22:54:02	1
+Esper Charm	C18	2018-11-06 22:54:03	1
+Esper Charm	ALA	2018-11-06 22:54:07	-1
+Ever-Watching Threshold	C18	2018-11-06 22:54:18	1
+Forge of Heroes	C18	2018-11-06 22:54:26	1
+Genesis Storm	C18	2018-11-06 22:54:33	1
+Loyal Apprentice	C18	2018-11-06 22:54:40	1
+Loyal Drake	C18	2018-11-06 22:54:43	1
+Loyal Guardian	C18	2018-11-06 22:54:45	1
+Loyal Unicorn	C18	2018-11-06 22:54:47	1
+Magus of the Balance	C18	2018-11-06 22:54:55	1
+Mountain Valley	C18	2018-11-06 22:55:04	1
+Night Incarnate	C18	2018-11-06 22:55:11	1
+Nylea's Colossus	C18	2018-11-06 22:55:26	1
+Octopus Umbra	C18	2018-11-06 22:55:53	1
+Skull Storm	C18	2018-11-06 22:56:05	1
+Sower of Discord	C18	2018-11-06 22:56:13	1
+Thopter Spy Network	C18	2018-11-06 22:56:20	1
+Turntimber Sower	C18	2018-11-06 22:56:27	1
+Varchild, Betrayer of Kjeldor	C18	2018-11-06 22:56:36	1
+Aether Tunnel	M19	2018-11-06 22:56:44	1
+Apex of Power	M19	2018-11-06 22:56:52	1
+Arcades, the Strategist	M19	2018-11-06 22:56:59	1
+Arcane Encyclopedia	M19	2018-11-06 22:57:12	1
+Chaos Wand	M19	2018-11-06 22:57:23	1
+Departed Deckhand	M19	2018-11-06 22:57:31	1
+Desecrated Tomb	M19	2018-11-06 22:57:41	1
+Dragon's Hoard	M19	2018-11-06 22:57:49	1
+Goreclaw, Terror of Qal Sisma	M19	2018-11-06 22:57:56	1
+Gravewaker	M19	2018-11-06 22:58:04	1
+Hungering Hydra	M19	2018-11-06 22:58:13	1
+Isareth the Awakener	M19	2018-11-06 22:58:20	1
+Lathliss, Dragon Queen	M19	2018-11-06 22:58:28	1
+Lena, Selfless Champion	M19	2018-11-06 22:58:35	1
+Liliana's Contract	M19	2018-11-06 22:58:49	1
+Metamorphic Alteration	M19	2018-11-06 22:59:56	1
+Militia Bugler	M19	2018-11-06 23:00:05	1
+Open the Graves	M19	2018-11-06 23:00:12	1
+Prodigious Growth	M19	2018-11-06 23:00:53	1
+Regal Bloodlord	M19	2018-11-06 23:01:01	1
+Runic Armasaur	M19	2018-11-06 23:01:20	1
+Sarkhan's Unsealing	M19	2018-11-06 23:01:31	1
+Sigiled Sword of Valeron	M19	2018-11-06 23:01:42	1
+Skyscanner	M19	2018-11-06 23:02:07	2
+Spit Flame	M19	2018-11-06 23:02:24	4
+Suncleanser	M19	2018-11-06 23:02:33	1
+Transmogrifying Wand	M19	2018-11-06 23:06:51	1
+Valiant Knight	M19	2018-11-06 23:06:58	1
+Evra, Halcyon Witness	DOM	2018-11-06 23:07:04	1
+Fall of the Thran	DOM	2018-11-06 23:07:19	1
+Kamahl's Druidic Vow	DOM	2018-11-06 23:07:31	1
+Llanowar Scout	DOM	2018-11-06 23:07:41	1
+Song of Freyalise	DOM	2018-11-06 23:07:57	1
+Sporecrown Thallid	DOM	2018-11-06 23:08:09	3
+Traxos, Scourge of Kroog	DOM	2018-11-06 23:08:27	1
+Urza's Ruinous Blast	DOM	2018-11-06 23:09:16	1
+Beacon of Tomorrows	DDS	2018-11-06 23:09:28	1
+Phyrexian Colossus	DDE	2018-11-06 23:09:42	1
+Dawn's Reflection	5DN	2018-11-06 23:09:59	3
+Assure	GRN	2018-11-06 23:12:53	1
+Assemble	GRN	2018-11-06 23:12:53	1
+Camaraderie	GRN	2018-11-06 23:13:00	1
+Charnel Troll	GRN	2018-11-06 23:13:06	1
+Circuitous Route	GRN	2018-11-06 23:13:14	1
+Citywide Bust	GRN	2018-11-06 23:13:21	1
+Dawn of Hope	GRN	2018-11-06 23:13:30	1
+Emmara, Soul of the Accord	GRN	2018-11-06 23:13:37	1
+Erratic Cyclops	GRN	2018-11-06 23:13:52	1
+Firemind's Research	GRN	2018-11-06 23:14:00	1
+Gruesome Menagerie	GRN	2018-11-06 23:14:21	1
+Midnight Reaper	GRN	2018-11-06 23:14:30	1
+Murmuring Mystic	GRN	2018-11-06 23:14:48	3
+Niv-Mizzet, Parun	GRN	2018-11-06 23:14:57	1
+Omnispell Adept	GRN	2018-11-06 23:15:21	1
+Radical Idea	GRN	2018-11-06 23:15:32	4
+Response	GRN	2018-11-06 23:15:43	1
+Resurgence	GRN	2018-11-06 23:15:43	1
+Vivid Revival	GRN	2018-11-06 23:15:53	1
+Abandoned Sarcophagus	HOU	2018-11-06 23:16:03	2
+Djeru, With Eyes Open	HOU	2018-11-06 23:16:13	1
+Hour of Devastation	HOU	2018-11-06 23:16:29	1
+Rampaging Hippo	HOU	2018-11-06 23:16:38	4
+Razaketh's Rite	HOU	2018-11-06 23:16:50	3
+Striped Riverwinder	HOU	2018-11-06 23:17:04	4
+Dead Weight	ISD	2018-11-06 23:17:17	1
+Deeproot Champion	XLN	2018-11-06 23:17:26	1
+Fell Flagship	XLN	2018-11-06 23:17:34	1
+Goring Ceratops	XLN	2018-11-06 23:20:51	1
+Herald of Secret Streams	XLN	2018-11-06 23:21:00	1
+Tilonalli's Skinshifter	XLN	2018-11-06 23:21:08	1
+Valor	JUD	2018-11-06 23:21:18	1
+Eliminate the Competition	KLD	2018-11-06 23:21:33	1
+Filigree Familiar	KLD	2018-11-06 23:22:02	4
+Glimmer of Genius	KLD	2018-11-06 23:22:22	2
+Saheeli's Artistry	KLD	2018-11-06 23:23:00	1
+Smuggler's Copter	KLD	2018-11-06 23:39:09	1
+Wildest Dreams	KLD	2018-11-06 23:39:16	1
+Rocky Tar Pit	MIR	2018-11-06 23:39:24	1
+Vona's Hunger	RIX	2018-11-06 23:39:32	1
+Weirding Wood	SOI	2018-11-06 23:39:42	3
+Weirding Wood	SOI	2018-11-06 23:39:53	-1
+Skyshroud Ranger	TMP	2018-11-06 23:40:12	1
+Radiant's Judgment	ULG	2018-11-06 23:40:25	4
+Expunge	USG	2018-11-06 23:40:38	3
+Rescind	USG	2018-11-06 23:40:46	4
+Waterspout Djinn	VIS	2018-11-06 23:40:57	4
+Waterspout Djinn	VIS	2018-11-06 23:41:00	-3
+Progenitus	CON	2018-11-06 23:41:21	1
+Skyship Stalker	KLD	2018-11-06 23:41:37	1
+Heart of Kiran	AER	2018-11-06 23:41:48	1
+Angel of Sanctions	AKH	2018-11-06 23:41:56	1
+Bontu the Glorified	AKH	2018-11-06 23:42:05	1
+Cut	AKH	2018-11-06 23:42:14	1
+Ribbons	AKH	2018-11-06 23:42:14	1
+Dusk	AKH	2018-11-06 23:42:23	1
+Dawn	AKH	2018-11-06 23:42:23	1
+Fetid Pools	AKH	2018-11-06 23:42:30	4
+Glorybringer	AKH	2018-11-06 23:42:44	1
+Irrigated Farmland	AKH	2018-11-06 23:42:52	4
+Kefnet the Mindful	AKH	2018-11-06 23:43:02	1
+Never	AKH	2018-11-06 23:43:12	1
+Return	AKH	2018-11-06 23:43:12	1
+Pull from Tomorrow	AKH	2018-11-06 23:43:19	1
+Scattered Groves	AKH	2018-11-06 23:43:28	4
+Sheltered Thicket	AKH	2018-11-06 23:43:37	4
+Sweltering Suns	AKH	2018-11-06 23:43:48	4
+Vizier of the Menagerie	AKH	2018-11-06 23:43:56	1
+Ruhan of the Fomori	CMD	2018-11-06 23:44:03	1
+Enchantress's Presence	C18	2018-11-06 23:44:11	1
+Endless Atlas	C18	2018-11-06 23:44:21	1
+Entreat the Dead	C18	2018-11-06 23:44:27	1
+Isolated Watchtower	C18	2018-11-06 23:44:36	1
+Lord Windgrace	C18	2018-11-06 23:44:44	1
+Yennett, Cryptic Sovereign	C18	2018-11-06 23:44:51	1
+Demonlord Belzenlok	DOM	2018-11-06 23:44:57	1
+Den Protector	DTK	2018-11-06 23:45:08	1
+Jagged-Scar Archers	DDU	2018-11-06 23:45:23	3
+Conclave Tribunal	GRN	2018-11-06 23:45:42	4
+Bontu's Last Reckoning	HOU	2018-11-06 23:45:50	1
+Recoil	INV	2018-11-06 23:45:59	3
+Dowsing Dagger	XLN	2018-11-06 23:46:11	1
+Lost Vale	XLN	2018-11-06 23:46:11	1
+River's Rebuke	XLN	2018-11-06 23:46:28	1
+Wakening Sun's Avatar	XLN	2018-11-06 23:46:36	1
+Nyx-Fleece Ram	JOU	2018-11-06 23:46:46	3
+Angel of Invention	KLD	2018-11-06 23:47:00	1
+Combustible Gearhulk	KLD	2018-11-06 23:47:07	1
+Fumigate	KLD	2018-11-06 23:47:17	1
+Wingmate Roc	KTK	2018-11-06 23:47:23	1
+Chandra, Fire of Kaladesh	ORI	2018-11-06 23:47:36	2
+Chandra, Roaring Flame	ORI	2018-11-06 23:47:36	2
+Chamber of Manipulation	ODY	2018-11-06 23:50:42	1
+Complicate	ONS	2018-11-06 23:50:50	3
+Tetzimoc, Primal Death	RIX	2018-11-06 23:51:01	1
+Olivia, Mobilized for War	SOI	2018-11-06 23:51:10	1
+Xenagos, the Reveler	THS	2018-11-06 23:51:22	1
+Miscalculation	ULG	2018-11-06 23:51:33	4
