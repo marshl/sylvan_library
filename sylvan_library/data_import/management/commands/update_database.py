@@ -246,9 +246,9 @@ class Command(BaseCommand):
 
                 self.update_card_printing_language(printing_obj, english)
 
-                if staged_card.has_foreign_names():
-                    for lang in staged_card.get_foreign_names():
-                        self.update_card_printing_language(printing_obj, lang)
+                if staged_card.has_foreign_data():
+                    for foreign_info in staged_card.get_foreign_data():
+                        self.update_card_printing_language(printing_obj, foreign_info)
 
         logger.info('Card list updated')
 
@@ -332,8 +332,15 @@ class Command(BaseCommand):
 
         return printing
 
-    def update_card_printing_language(self, printing_obj, lang):
-        lang_obj = Language.objects.get(name=lang['language'])
+    def update_card_printing_language(self, printing_obj, foreign_data):
+
+        if 'name' not in foreign_data:
+            return None
+
+        try:
+            lang_obj = Language.objects.get(name=foreign_data['language'])
+        except Language.DoesNotExist:
+            raise Exception(f"Language {foreign_data['language']} not found")
 
         cardlang = CardPrintingLanguage.objects.filter(
             card_printing_id=printing_obj.id,
@@ -347,8 +354,10 @@ class Command(BaseCommand):
         cardlang = CardPrintingLanguage(
             card_printing=printing_obj,
             language=lang_obj,
-            card_name=lang['name'],
-            multiverse_id=lang.get('multiverseid'))
+            card_name=foreign_data['name'],
+            flavour_text=foreign_data.get('flavorText'),
+            type=foreign_data.get('type'),
+            multiverse_id=foreign_data.get('multiverseid'))
 
         logger.info(f'Created new printing language {cardlang}', )
         cardlang.full_clean()
@@ -379,14 +388,20 @@ class Command(BaseCommand):
 
                 self.update_physical_card(printlang_obj, staged_card)
 
-                if staged_card.has_foreign_names():
-                    for card_language in staged_card.get_foreign_names():
+                if staged_card.has_foreign_data():
+                    for card_language in staged_card.get_foreign_data():
+                        if not card_language.get('name'):
+                            continue
+
                         lang_obj = Language.objects.get(
                             name=card_language['language'])
 
-                        printlang_obj = CardPrintingLanguage.objects.get(
-                            card_printing=printing_obj,
-                            language=lang_obj)
+                        try:
+                            printlang_obj = CardPrintingLanguage.objects.get(
+                                card_printing=printing_obj,
+                                language=lang_obj)
+                        except CardPrintingLanguage.DoesNotExist:
+                            raise Exception(f'Could not find CardPrintingLanguage for {printing_obj} {lang_obj}')
 
                         self.update_physical_card(printlang_obj, staged_card)
 
@@ -427,10 +442,12 @@ class Command(BaseCommand):
                         f'Will not link {staged_card.get_name()} to {link_card} as they separate cards')
 
                     continue
-
-                link_print_lang = CardPrintingLanguage.objects.get(
-                    card_printing=link_print,
-                    language=printlang.language)
+                try:
+                    link_print_lang = CardPrintingLanguage.objects.get(
+                        card_printing=link_print,
+                        language=printlang.language)
+                except CardPrintingLanguage.DoesNotExist:
+                    continue
 
                 linked_language_objs.append(link_print_lang)
 

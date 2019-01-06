@@ -172,6 +172,8 @@ class PhysicalCard(models.Model):
 class CardPrintingLanguage(models.Model):
     language = models.ForeignKey('Language', related_name='cards')
     card_name = models.CharField(max_length=200)
+    flavour_text = models.CharField(max_length=500, blank=True, null=True)
+    type = models.CharField(max_length=200, blank=True, null=True)
     multiverse_id = models.IntegerField(blank=True, null=True)
 
     card_printing = models.ForeignKey(CardPrinting, related_name='printed_languages')
