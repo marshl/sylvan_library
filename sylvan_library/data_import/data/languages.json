@@ -4,6 +4,14 @@
     "code": "en"
   },
   {
+    "name": "Ancient Greek",
+    "code": null
+  },
+  {
+    "name": "Arabic",
+    "code": null
+  },
+  {
     "name": "Chinese Simplified",
     "code": "tw"
   },
@@ -20,12 +28,24 @@
     "code": "de"
   },
   {
+    "name": "Hebrew",
+    "code": null
+  },
+  {
     "name": "Italian",
     "code": "it"
   },
   {
     "name": "Japanese",
     "code": "jp"
+  },
+  {
+    "name": "Korean",
+    "code": null
+  },
+  {
+    "name": "Latin",
+    "code": null
   },
   {
     "name": "Portuguese (Brazil)",
@@ -36,11 +56,11 @@
     "code": "ru"
   },
   {
-    "name": "Spanish",
-    "code": "es"
+    "name": "Sanskrit",
+    "code": null
   },
   {
-    "name": "Korean",
-    "code": null
+    "name": "Spanish",
+    "code": "es"
   }
 ]
