@@ -38,8 +38,11 @@ class Command(BaseCommand):
 
                     card = Card.objects.get(name=name)
                     logger.info(f'Card ID: {card.id}')
+                    try:
+                        cardset = Set.objects.get(code=setcode)
+                    except Set.DoesNotExist:
+                        raise Exception(f"Could not find the set {setcode} for {name}")
 
-                    cardset = Set.objects.get(code=setcode)
                     logger.info(f'Set ID: {cardset.id}')
 
                     printing = CardPrinting.objects.filter(
