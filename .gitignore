@@ -118,3 +118,5 @@ sylvan_library/data_import/backup/
 sylvan_library/website/static/jquery/
 sylvan_library/data_import/data/AllSets.json
 shell/
+sylvan_library/usercards.txt
+sylvan_library/cardchanges.txt
