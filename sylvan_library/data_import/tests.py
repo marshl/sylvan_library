@@ -12,15 +12,15 @@ class StagedCardTestCase(TestCase):
         self.assertTrue(staged_card.is_reserved())
 
     def test_colour_weight(self):
-        staged_card = StagedCard({'manaCost': '{1}{G}{G}', 'cmc': 3})
+        staged_card = StagedCard({'manaCost': '{1}{G}{G}', 'convertedManaCost': 3})
         self.assertEquals(2, staged_card.get_colour_weight())
 
     def test_colour_weight_colourless(self):
-        staged_card = StagedCard({'manaCost': '{11}', 'cmc': 11})
+        staged_card = StagedCard({'manaCost': '{11}', 'convertedManaCost': 11})
         self.assertEquals(0, staged_card.get_colour_weight())
 
     def test_colour_weight_heavy(self):
-        staged_card = StagedCard({'manaCost': '{B}{B}{B}{B}', 'cmc': 4})
+        staged_card = StagedCard({'manaCost': '{B}{B}{B}{B}', 'convertedManaCost': 4})
         self.assertEquals(4, staged_card.get_colour_weight())
 
     def test_colour_weight_none(self):
