@@ -290,7 +290,7 @@ class StagedCard:
 
 class StagedSet:
     def __init__(self, code, value_dict):
-        self.code = code
+        self.code = code.upper()
         self.value_dict = value_dict
         self.staged_cards = list()
 

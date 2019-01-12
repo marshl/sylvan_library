@@ -1,4 +1,5 @@
 import json
+import os
 from datetime import date
 
 from data_import.staging import *
@@ -8,23 +9,17 @@ from data_import import _paths
 class JsonImporter:
     def __init__(self):
         self.sets = list()
-        pass
-
-    def parse_json(self):
-        f = open(_paths.json_data_path, 'r', encoding="utf8")
-        json_data = json.load(f, encoding='UTF-8')
-        f.close()
-        return json_data
 
     def import_data(self):
-        json_data = self.parse_json()
+        for set_file in [os.path.join(_paths.set_folder, s) for s in os.listdir(_paths.set_folder)]:
+            if not set_file.endswith('.json'):
+                continue
 
-        raw_sets = sorted(
-            json_data.items(),
-            key=lambda card_set: card_set[1]["releaseDate"] or str(date.max))
+            with open(set_file, 'r', encoding="utf8") as f:
+                set_data = json.load(f, encoding='UTF-8')
+                self.add_set(set_data['code'], set_data)
 
-        for raw_set in raw_sets:
-            self.add_set(raw_set[0], raw_set[1])
+        self.sets.sort(key=lambda s: s.get_release_date() or str(date.max))
 
     def add_set(self, code, json_set):
         s = StagedSet(code, json_set)
