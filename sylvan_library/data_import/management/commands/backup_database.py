@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from sylvan_library.database_connections import DATABASES as database_list
+from database_connections import DATABASES as database_list
 import os
 import subprocess
 import datetime

@@ -1,7 +1,7 @@
 # Django settings for recruitment project.
 import os
 from os import path
-from sylvan_library.settings.secrets import get_secret
+from settings.secrets import get_secret
 import hashlib
 
 BASE_DIR = path.dirname(path.dirname(os.path.abspath(__file__)))

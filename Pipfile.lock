@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "0ccff3bd5708b76bca90b69bb29bfa5774c85b2c11b3cbaead2a902a66abc5c0"
+            "sha256": "61b116f610b00beba4ce35cc7d3c62a8c828360ecc142265b82b2de2c66d7937"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -68,6 +68,14 @@
             ],
             "markers": "python_version != '3.2.*' and python_version != '3.0.*' and python_version != '3.3.*' and python_version != '3.1.*' and python_version >= '2.7'",
             "version": "==2.8"
+        },
+        "ijson": {
+            "hashes": [
+                "sha256:ef5f9f6bf9e44f2e1721e72bcc82c7ac6bb012b525e0f8642dedf7ddc44cf474",
+                "sha256:eff9ce137698dcb565420497050955cb811892eb073ea1c09d92ecaf671bd7f7"
+            ],
+            "index": "pypi",
+            "version": "==2.3"
         },
         "psycopg2": {
             "hashes": [

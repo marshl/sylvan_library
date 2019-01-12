@@ -10,6 +10,7 @@ Django = "==1.11.4"
 django-extensions = "*"
 django-widget-tweaks = "*"
 requests = "*"
+ijson = "*"
 
 [dev-packages]
 jupyter_core = "==4.4.0"

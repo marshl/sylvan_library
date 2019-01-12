@@ -1,7 +1,7 @@
 # Settings to be used in a production environment.
 from __future__ import absolute_import
 
-from .base import *
+from settings.base import *
 
 
 DEBUG = False

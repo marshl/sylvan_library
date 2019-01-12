@@ -1,7 +1,7 @@
 # Settings file used for local development.
 from __future__ import absolute_import
 from datetime import datetime
-from .base import *
+from settings.base import *
 
 DEBUG = True
 # JIRA_ISSUE_COLLECTOR = False
