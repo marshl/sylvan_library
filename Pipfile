@@ -11,6 +11,7 @@ django-extensions = "*"
 django-widget-tweaks = "*"
 requests = "*"
 ijson = "*"
+django-environ = "*"
 
 [dev-packages]
 jupyter_core = "==4.4.0"
