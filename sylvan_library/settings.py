@@ -7,7 +7,6 @@ environ.Env.read_env()  # reading .env file
 SITE_ROOT = root()
 
 DEBUG = env('DEBUG')  # False if not in os.environ
-TEMPLATE_DEBUG = DEBUG
 
 DATABASES = {
     'default': env.db(),  # Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ

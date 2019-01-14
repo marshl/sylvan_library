@@ -48,7 +48,7 @@ class Set(models.Model):
     release_date = models.DateField(blank=True, null=True)
     name = models.CharField(max_length=200, unique=True)
 
-    block = models.ForeignKey(Block, null=True, blank=True, related_name='sets')
+    block = models.ForeignKey(Block, null=True, blank=True, related_name='sets', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -150,9 +150,9 @@ class CardPrinting(models.Model):
     # The date may not be accurate to an exact day and month, thus only a partial date may be set
     release_date = models.DateField(blank=True, null=True)
 
-    set = models.ForeignKey(Set, related_name='card_printings')
-    card = models.ForeignKey(Card, related_name='printings')
-    rarity = models.ForeignKey(Rarity, related_name='card_printings')
+    set = models.ForeignKey(Set, related_name='card_printings', on_delete=models.CASCADE)
+    card = models.ForeignKey(Card, related_name='printings', on_delete=models.CASCADE)
+    rarity = models.ForeignKey(Rarity, related_name='card_printings', on_delete=models.CASCADE)
 
     # Set to true if this card was only released as part of a core box set.
     # These are technically part of the core sets and are tournament legal despite not being available in boosters.
@@ -170,13 +170,13 @@ class PhysicalCard(models.Model):
 
 
 class CardPrintingLanguage(models.Model):
-    language = models.ForeignKey('Language', related_name='cards')
+    language = models.ForeignKey('Language', related_name='cards', on_delete=models.CASCADE)
     card_name = models.CharField(max_length=200)
     flavour_text = models.CharField(max_length=500, blank=True, null=True)
     type = models.CharField(max_length=200, blank=True, null=True)
     multiverse_id = models.IntegerField(blank=True, null=True)
 
-    card_printing = models.ForeignKey(CardPrinting, related_name='printed_languages')
+    card_printing = models.ForeignKey(CardPrinting, related_name='printed_languages', on_delete=models.CASCADE)
 
     physical_cards = models.ManyToManyField(PhysicalCard, related_name='printed_languages')
 
@@ -202,8 +202,8 @@ class CardPrintingLanguage(models.Model):
 class UserOwnedCard(models.Model):
     count = models.IntegerField()
 
-    physical_card = models.ForeignKey(PhysicalCard, related_name='ownerships')
-    owner = models.ForeignKey(User, related_name='owned_cards')
+    physical_card = models.ForeignKey(PhysicalCard, related_name='ownerships', on_delete=models.CASCADE)
+    owner = models.ForeignKey(User, related_name='owned_cards', on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ('physical_card', 'owner')
@@ -216,8 +216,8 @@ class UserCardChange(models.Model):
     date = models.DateTimeField()
     difference = models.IntegerField()
 
-    physical_card = models.ForeignKey(PhysicalCard, related_name='user_changes')
-    owner = models.ForeignKey(User, related_name='card_changes')
+    physical_card = models.ForeignKey(PhysicalCard, related_name='user_changes', on_delete=models.CASCADE)
+    owner = models.ForeignKey(User, related_name='card_changes', on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.date} {self.difference} {self.physical_card}'
@@ -227,7 +227,7 @@ class CardRuling(models.Model):
     date = models.DateField()
     text = models.CharField(max_length=4000)
 
-    card = models.ForeignKey(Card, related_name='rulings')
+    card = models.ForeignKey(Card, related_name='rulings', on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ('date', 'text', 'card')
@@ -237,8 +237,8 @@ class CardRuling(models.Model):
 
 
 class CardLegality(models.Model):
-    card = models.ForeignKey(Card, related_name='legalities')
-    format = models.ForeignKey(Format, related_name='card_legalities')
+    card = models.ForeignKey(Card, related_name='legalities', on_delete=models.CASCADE)
+    format = models.ForeignKey(Format, related_name='card_legalities', on_delete=models.CASCADE)
     restriction = models.CharField(max_length=50, choices=CARD_LEGALITY_RESTRICTION_CHOICES)
 
     class Meta:
@@ -254,7 +254,7 @@ class CardLegality(models.Model):
 
 class CardTag(models.Model):
     name = models.CharField(max_length=200)
-    owner = models.ForeignKey(User, related_name='card_tags')
+    owner = models.ForeignKey(User, related_name='card_tags', on_delete=models.CASCADE)
     cards = models.ManyToManyField(Card, related_name='tags')
 
     def __str__(self):
@@ -266,7 +266,7 @@ class Deck(models.Model):
     last_modified = models.DateField()
 
     name = models.CharField(max_length=200)
-    owner = models.ForeignKey(User, related_name='decks')
+    owner = models.ForeignKey(User, related_name='decks', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -275,8 +275,8 @@ class Deck(models.Model):
 class DeckCard(models.Model):
     count = models.IntegerField()
 
-    card = models.ForeignKey(Card, related_name='deck_cards')
-    deck = models.ForeignKey(Deck, related_name='cards')
+    card = models.ForeignKey(Card, related_name='deck_cards', on_delete=models.CASCADE)
+    deck = models.ForeignKey(Deck, related_name='cards', on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.card} in {self.deck}'
