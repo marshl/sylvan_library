@@ -2,6 +2,7 @@ import datetime, re
 from functools import total_ordering
 
 from cards.models import Colour, Card
+from cards.colour import colour_codes_to_flags, colour_names_to_flags
 
 COLOUR_NAME_TO_FLAG = {
     'white': Card.colour_flags.white,
@@ -51,11 +52,16 @@ COLOUR_TO_SORT_KEY = {
     int(Card.colour_flags.red | Card.colour_flags.white | Card.colour_flags.black): 24,
     int(Card.colour_flags.green | Card.colour_flags.blue | Card.colour_flags.red): 25,
 
-    int(Card.colour_flags.white | Card.colour_flags.blue | Card.colour_flags.black | Card.colour_flags.red): 26,
-    int(Card.colour_flags.blue | Card.colour_flags.black | Card.colour_flags.red | Card.colour_flags.green): 27,
-    int(Card.colour_flags.black | Card.colour_flags.red | Card.colour_flags.green | Card.colour_flags.white): 28,
-    int(Card.colour_flags.red | Card.colour_flags.green | Card.colour_flags.white | Card.colour_flags.blue): 29,
-    int(Card.colour_flags.green | Card.colour_flags.white | Card.colour_flags.blue | Card.colour_flags.black): 30,
+    int(
+        Card.colour_flags.white | Card.colour_flags.blue | Card.colour_flags.black | Card.colour_flags.red): 26,
+    int(
+        Card.colour_flags.blue | Card.colour_flags.black | Card.colour_flags.red | Card.colour_flags.green): 27,
+    int(
+        Card.colour_flags.black | Card.colour_flags.red | Card.colour_flags.green | Card.colour_flags.white): 28,
+    int(
+        Card.colour_flags.red | Card.colour_flags.green | Card.colour_flags.white | Card.colour_flags.blue): 29,
+    int(
+        Card.colour_flags.green | Card.colour_flags.white | Card.colour_flags.blue | Card.colour_flags.black): 30,
 
     int(Card.colour_flags.white | Card.colour_flags.blue | Card.colour_flags.black
         | Card.colour_flags.red | Card.colour_flags.green): 31,
@@ -116,12 +122,10 @@ class StagedCard:
         return self.value_dict.get('convertedManaCost') or 0
 
     def get_colour(self):
-        result = 0
         if 'colors' in self.value_dict:
-            for colour_name in self.value_dict['colors']:
-                result |= COLOUR_CODE_TO_FLAG[colour_name.lower()]
-
-        return result
+            return colour_names_to_flags(self.value_dict['colors'])
+        else:
+            return 0
 
     def get_colour_sort_key(self):
         return COLOUR_TO_SORT_KEY[int(self.get_colour())]
@@ -137,12 +141,10 @@ class StagedCard:
             return self.get_cmc() - int(generic_mana.group(0))
 
     def get_colour_identity(self):
-        result = 0
         if 'colorIdentity' in self.value_dict:
-            for colour_code in self.value_dict['colorIdentity']:
-                result |= COLOUR_CODE_TO_FLAG[colour_code.lower()]
-
-        return result
+            return colour_codes_to_flags(self.value_dict['colorIdentity'])
+        else:
+            return 0
 
     def get_colour_count(self):
         return bin(self.get_colour()).count('1')
