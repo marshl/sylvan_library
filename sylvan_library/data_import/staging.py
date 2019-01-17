@@ -123,7 +123,7 @@ class StagedCard:
 
     def get_colour(self):
         if 'colors' in self.value_dict:
-            return colour_names_to_flags(self.value_dict['colors'])
+            return colour_codes_to_flags(self.value_dict['colors'])
         else:
             return 0
 
