@@ -1,3 +1,7 @@
+"""
+Module for all django settings
+"""
+
 import environ
 
 root = environ.Path(__file__) - 3  # three folder back (/a/b/c/ - 3 = /)
@@ -19,7 +23,8 @@ MEDIA_URL = 'media/'
 STATIC_ROOT = public_root('static')
 STATIC_URL = '/static/'
 
-SECRET_KEY = env('SECRET_KEY')  # Raises ImproperlyConfigured exception if SECRET_KEY not in os.environ
+# Raises ImproperlyConfigured exception if SECRET_KEY not in os.environ
+SECRET_KEY = env('SECRET_KEY')
 
 ROOT_URLCONF = 'sylvan_library.urls'
 
@@ -52,4 +57,3 @@ TEMPLATES = [
         },
     },
 ]
-
