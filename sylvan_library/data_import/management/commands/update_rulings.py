@@ -1,4 +1,4 @@
-import logging, time
+import logging
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -17,7 +17,9 @@ class Command(BaseCommand):
         importer.import_data()
 
         staged_sets = importer.get_staged_sets()
-        self.update_ruling_list(staged_sets)
+
+        with(transaction.atomic()):
+            self.update_ruling_list(staged_sets)
 
     def update_ruling_list(self, staged_sets):
         logger.info('Updating card rulings')
@@ -30,7 +32,10 @@ class Command(BaseCommand):
                 if not staged_card.has_rulings():
                     continue
 
-                card_obj = Card.objects.get(name=staged_card.get_name())
+                try:
+                    card_obj = Card.objects.get(name=staged_card.get_name())
+                except Card.DoesNotExist as ex:
+                    raise Exception(f'Could not find card {staged_card.get_name()}: {ex}')
 
                 for ruling in staged_card.get_rulings():
                     ruling, created = CardRuling.objects.get_or_create(
