@@ -1,5 +1,5 @@
 """
-Module for custom template filter to replace mana symbols such as {G} and {2/R} with MTGFont tags
+Module for a custom template filter to replace mana symbols such as {G} and {2/R} with MTGFont tags
 """
 
 import re

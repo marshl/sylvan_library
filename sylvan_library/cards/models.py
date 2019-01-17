@@ -192,7 +192,7 @@ class CardPrintingLanguage(models.Model):
 
         ms = str(self.multiverse_id)
         # Break up images over multiple folders to stop too many being placed in one folder
-        return path.join('static', 'card_images',
+        return path.join('card_images',
                          ms[0:1],
                          ms[0:2] if len(ms) >= 2 else '',
                          ms[0:3] if len(ms) >= 3 else '',
