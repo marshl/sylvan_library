@@ -2,7 +2,7 @@ import datetime, re
 from functools import total_ordering
 
 from cards.models import Colour, Card
-from cards.colour import colour_codes_to_flags, colour_names_to_flags
+from cards.colour import ColourUtils
 
 COLOUR_NAME_TO_FLAG = {
     'white': Card.colour_flags.white,
@@ -123,7 +123,7 @@ class StagedCard:
 
     def get_colour(self):
         if 'colors' in self.value_dict:
-            return colour_codes_to_flags(self.value_dict['colors'])
+            return ColourUtils.colour_codes_to_flags(self.value_dict['colors'])
         else:
             return 0
 
@@ -142,7 +142,7 @@ class StagedCard:
 
     def get_colour_identity(self):
         if 'colorIdentity' in self.value_dict:
-            return colour_codes_to_flags(self.value_dict['colorIdentity'])
+            return ColourUtils.colour_codes_to_flags(self.value_dict['colorIdentity'])
         else:
             return 0
 
