@@ -241,7 +241,7 @@ class Command(BaseCommand):
                 english = {
                     'language': 'English',
                     'name': staged_card.get_name(),
-                    'multiverseid': staged_card.get_multiverse_id()
+                    'multiverseId': staged_card.get_multiverse_id()
                 }
 
                 self.update_card_printing_language(printing_obj, english)
@@ -357,7 +357,7 @@ class Command(BaseCommand):
             card_name=foreign_data['name'],
             flavour_text=foreign_data.get('flavorText'),
             type=foreign_data.get('type'),
-            multiverse_id=foreign_data.get('multiverseid'))
+            multiverse_id=foreign_data.get('multiverseId'))
 
         logger.info(f'Created new printing language {cardlang}', )
         cardlang.full_clean()
@@ -491,6 +491,8 @@ class Command(BaseCommand):
             if staged_set.get_code() not in self.sets_to_update:
                 logger.info(f'Skipping set {staged_set.get_name()}')
                 continue
+
+            logger.info(f'Finding legalities for {staged_set.get_name()}')
 
             for staged_card in staged_set.get_cards():
 
