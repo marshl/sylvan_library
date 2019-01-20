@@ -1,7 +1,11 @@
-import datetime, re
+"""
+Module for staging classes
+"""
+import datetime
+import re
 from functools import total_ordering
 
-from cards.models import Colour, Card
+from cards.models import Card
 from cards.colour import ColourUtils
 
 COLOUR_NAME_TO_FLAG = {
@@ -52,24 +56,28 @@ COLOUR_TO_SORT_KEY = {
     int(Card.colour_flags.red | Card.colour_flags.white | Card.colour_flags.black): 24,
     int(Card.colour_flags.green | Card.colour_flags.blue | Card.colour_flags.red): 25,
 
-    int(
-        Card.colour_flags.white | Card.colour_flags.blue | Card.colour_flags.black | Card.colour_flags.red): 26,
-    int(
-        Card.colour_flags.blue | Card.colour_flags.black | Card.colour_flags.red | Card.colour_flags.green): 27,
-    int(
-        Card.colour_flags.black | Card.colour_flags.red | Card.colour_flags.green | Card.colour_flags.white): 28,
-    int(
-        Card.colour_flags.red | Card.colour_flags.green | Card.colour_flags.white | Card.colour_flags.blue): 29,
-    int(
-        Card.colour_flags.green | Card.colour_flags.white | Card.colour_flags.blue | Card.colour_flags.black): 30,
+    int(Card.colour_flags.white | Card.colour_flags.blue
+        | Card.colour_flags.black | Card.colour_flags.red): 26,
+    int(Card.colour_flags.blue | Card.colour_flags.black
+        | Card.colour_flags.red | Card.colour_flags.green): 27,
+    int(Card.colour_flags.black | Card.colour_flags.red
+        | Card.colour_flags.green | Card.colour_flags.white): 28,
+    int(Card.colour_flags.red | Card.colour_flags.green
+        | Card.colour_flags.white | Card.colour_flags.blue): 29,
+    int(Card.colour_flags.green | Card.colour_flags.white
+        | Card.colour_flags.blue | Card.colour_flags.black): 30,
 
     int(Card.colour_flags.white | Card.colour_flags.blue | Card.colour_flags.black
         | Card.colour_flags.red | Card.colour_flags.green): 31,
 }
 
 
+# pylint: disable=too-many-public-methods
 @total_ordering
 class StagedCard:
+    """
+    Class for staging a card record from json
+    """
     def __init__(self, value_dict):
         self.value_dict = value_dict
         self.number = value_dict.get('number')
@@ -134,7 +142,7 @@ class StagedCard:
         if not self.get_mana_cost():
             return 0
 
-        generic_mana = re.search('(\d+)', self.get_mana_cost())
+        generic_mana = re.search(r'(\d+)', self.get_mana_cost())
         if not generic_mana:
             return self.get_cmc()
         else:
@@ -283,7 +291,7 @@ class StagedCard:
         return self.value_dict['name']
 
     def pow_tuff_to_num(self, val):
-        match = re.search('(-?[\d.]+)', str(val))
+        match = re.search(r'(-?[\d.]+)', str(val))
         if match:
             return match.group()
 
@@ -291,6 +299,9 @@ class StagedCard:
 
 
 class StagedSet:
+    """
+    Class for staging a set record from json
+    """
     def __init__(self, code, value_dict):
         self.code = code.upper()
         self.value_dict = value_dict

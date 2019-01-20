@@ -1,16 +1,37 @@
-import sys, traceback
-from typing import List
+"""
+Module for the verify_database command
+"""
+import sys
+import traceback
 
 from django.core.management.base import BaseCommand
 from django.db.models import Count
 
-from cards.models import *
+from cards.models import (
+    Block,
+    Card,
+    CardPrinting,
+    Language,
+    Rarity,
+    Set,
+)
 
 
+# pylint: disable=too-many-public-methods
 class Command(BaseCommand):
+    """
+    The command to verify that the database update was successful
+    In a way this could be considered a kind of unit test, but it is meant to be
+    applied on actual production data, and just verifies that the data is in the correct state.
+
+    Note that some of these tests may fail occasionally, probably due to changes in the API.
+    """
     help = 'Verifies that database update was successful'
 
     class VerificationFailure:
+        """
+        The class for a failed verification, including the stack trace (if an exception was raised)
+        """
         def __init__(self, message, stack_trace):
             self.message = message
             self.stack_trace = stack_trace
@@ -29,41 +50,51 @@ class Command(BaseCommand):
             (getattr(self, method))()
 
         total_tests = self.successful_tests + self.failed_tests
-
-        print(f'\n\n{total_tests} Tests Run ({self.successful_tests} Successful, {self.failed_tests} Failed)')
+        print('\n\n')
+        print(f'{total_tests} Tests Run')
+        print(f'{self.successful_tests} Successful')
+        print(f'{self.failed_tests} Failed)')
         for error in self.error_messages:
-            # print(f'{error.message}\n{error.stack_trace}')
             print(error.message)
 
     def test_blocks(self):
-        self.assert_true(Block.objects.filter(name='Ice Age').exists(), 'Ice Age block should exist')
-        self.assert_true(Block.objects.filter(name='Ravnica').exists(), 'Ravnica block should exist')
+        self.assert_true(Block.objects.filter(name='Ice Age').exists(),
+                         'Ice Age block should exist')
+        self.assert_true(Block.objects.filter(name='Ravnica').exists(),
+                         'Ravnica block should exist')
         self.assert_true(Block.objects.filter(name='Ixalan').exists(), 'Ixalan block should exist')
-        self.assert_false(Block.objects.filter(name='Weatherlight').exists(), 'Weatherlight block should not exist')
+        self.assert_false(Block.objects.filter(name='Weatherlight').exists(),
+                          'Weatherlight block should not exist')
 
         self.assert_true(Block.objects.get(name='Ice Age').release_date < Block.objects.get(
             name='Onslaught').release_date, 'Ice Age should be released before Onslaught')
 
-        self.assert_true(Block.objects.get(name='Mirrodin').sets.count() == 3, 'Mirrodin should have 3 sets')
-        self.assert_true(Block.objects.get(name='Time Spiral').sets.count() == 4, 'Time Spiral should have 4 sets')
-        self.assert_true(Block.objects.get(name='Amonkhet').sets.count() == 5, "Amonkhet blockshould have 5 sets")
+        self.assert_true(Block.objects.get(name='Mirrodin').sets.count() == 3,
+                         'Mirrodin should have 3 sets')
+        self.assert_true(Block.objects.get(name='Time Spiral').sets.count() == 4,
+                         'Time Spiral should have 4 sets')
+        self.assert_true(Block.objects.get(name='Amonkhet').sets.count() == 5,
+                         "Amonkhet blockshould have 5 sets")
 
     def test_sets(self):
         self.assert_true(Set.objects.get(code='ONS').block.name == 'Onslaught',
                          'Onslaught should be in the Onslaught block')
         self.assert_true(Set.objects.get(code='WTH').block.name == 'Mirage',
                          'Weatherlight should be in the Mirage block')
-        self.assert_true(Set.objects.get(code='CSP').block.name == 'Ice Age', 'Coldsnap should be in the Ice Age block')
+        self.assert_true(Set.objects.get(code='CSP').block.name == 'Ice Age',
+                         'Coldsnap should be in the Ice Age block')
 
     def test_rarities(self):
         self.assert_true(Rarity.objects.filter(symbol='R').exists(), 'The rare rarity should exist')
 
         self.assert_true(
-            Rarity.objects.get(symbol='C').display_order < Rarity.objects.get(symbol='U').display_order,
+            Rarity.objects.get(symbol='C').display_order < Rarity.objects.get(
+                symbol='U').display_order,
             'Common rarity should be displayed before uncommon rarity')
 
     def test_card_printings(self):
-        self.assert_true(Card.objects.annotate(printing_count=Count('printings')).filter(printing_count=0).count() == 0,
+        self.assert_true(Card.objects.annotate(printing_count=Count('printings')).filter(
+            printing_count=0).count() == 0,
                          'There should be at least one printing for every card')
 
     def test_card_name(self):
@@ -179,13 +210,15 @@ class Command(BaseCommand):
         self.assert_card_colour_eq('Glory Seeker', Card.colour_flags.white)
 
         # Multicoloured card
-        self.assert_card_colour_eq('Dark Heart of the Wood', Card.colour_flags.black | Card.colour_flags.green)
+        self.assert_card_colour_eq('Dark Heart of the Wood',
+                                   Card.colour_flags.black | Card.colour_flags.green)
 
         self.assert_card_colour_eq('Progenitus', wubrg)
         self.assert_card_colour_eq('Reaper King', wubrg)
 
         # Hybrid card
-        self.assert_card_colour_eq('Azorius Guildmage', Card.colour_flags.white | Card.colour_flags.blue)
+        self.assert_card_colour_eq('Azorius Guildmage',
+                                   Card.colour_flags.white | Card.colour_flags.blue)
 
         # Colour indicator cards
         self.assert_card_colour_eq('Transguild Courier', wubrg)
@@ -198,7 +231,8 @@ class Command(BaseCommand):
 
         # Different colour transform card
         self.assert_card_colour_eq('Garruk Relentless', Card.colour_flags.green)
-        self.assert_card_colour_eq('Garruk, the Veil-Cursed', Card.colour_flags.black | Card.colour_flags.green)
+        self.assert_card_colour_eq('Garruk, the Veil-Cursed',
+                                   Card.colour_flags.black | Card.colour_flags.green)
 
         # Colour identity cards
         self.assert_card_colour_eq('Bosh, Iron Golem', 0)
@@ -232,18 +266,21 @@ class Command(BaseCommand):
 
         # Symbol in rules cards
         self.assert_card_colour_identity_eq('Bosh, Iron Golem', Card.colour_flags.red)
-        self.assert_card_colour_identity_eq('Dawnray Archer', Card.colour_flags.white | Card.colour_flags.blue)
+        self.assert_card_colour_identity_eq('Dawnray Archer',
+                                            Card.colour_flags.white | Card.colour_flags.blue)
         self.assert_card_colour_identity_eq('Obelisk of Alara', wubrg)
 
         # Hybrid cards
-        self.assert_card_colour_identity_eq('Azorius Guildmage', Card.colour_flags.white | Card.colour_flags.blue)
+        self.assert_card_colour_identity_eq('Azorius Guildmage',
+                                            Card.colour_flags.white | Card.colour_flags.blue)
 
         # Split cards
         self.assert_card_colour_identity_eq('Wear', Card.colour_flags.white | Card.colour_flags.red)
         self.assert_card_colour_identity_eq('Tear', Card.colour_flags.white | Card.colour_flags.red)
 
         # Flip cards
-        self.assert_card_colour_identity_eq('Garruk Relentless', Card.colour_flags.black | Card.colour_flags.green)
+        self.assert_card_colour_identity_eq('Garruk Relentless',
+                                            Card.colour_flags.black | Card.colour_flags.green)
         self.assert_card_colour_identity_eq('Garruk, the Veil-Cursed',
                                             Card.colour_flags.black | Card.colour_flags.green)
         self.assert_card_colour_identity_eq('Gisela, the Broken Blade', Card.colour_flags.white)
@@ -419,18 +456,20 @@ class Command(BaseCommand):
         self.assert_card_rules_eq('Forest', '({T}: Add {G}.)')
         self.assert_card_rules_eq('Snow-Covered Swamp', '({T}: Add {B}.)')
 
-        self.assert_card_rules_eq('Air Elemental',
-                                  "Flying (This creature can't be blocked except by creatures with flying or reach.)")
+        self.assert_card_rules_eq(
+            'Air Elemental',
+            "Flying (This creature can't be blocked except by creatures with flying or reach.)")
         self.assert_card_rules_eq('Thunder Spirit', 'Flying, first strike')
         self.assert_card_rules_eq('Dark Ritual', 'Add {B}{B}{B}.')
         self.assert_card_rules_eq('Palladium Myr', '{T}: Add {C}{C}.')
-        self.assert_card_rules_eq('Ice Cauldron',
-                                  "{X}, {T}: Put a charge counter on Ice Cauldron and exile a nonland card from your " +
-                                  "hand. You may cast that card for as long as it remains exiled. Note the type and " +
-                                  "amount of mana spent to pay this activation cost. Activate this ability only if " +
-                                  "there are no charge counters on Ice Cauldron.\n{T}, Remove a charge counter from " +
-                                  "Ice Cauldron: Add Ice Cauldron's last noted type and amount of mana. "
-                                  "Spend this mana only to cast the last card exiled with Ice Cauldron.")
+        self.assert_card_rules_eq(
+            'Ice Cauldron',
+            "{X}, {T}: Put a charge counter on Ice Cauldron and exile a nonland card from your " +
+            "hand. You may cast that card for as long as it remains exiled. Note the type and " +
+            "amount of mana spent to pay this activation cost. Activate this ability only if " +
+            "there are no charge counters on Ice Cauldron.\n{T}, Remove a charge counter from " +
+            "Ice Cauldron: Add Ice Cauldron's last noted type and amount of mana. "
+            "Spend this mana only to cast the last card exiled with Ice Cauldron.")
 
     def test_card_layouts(self):
         self.assert_card_layout_eq('Glory Seeker', 'normal')
@@ -456,29 +495,24 @@ class Command(BaseCommand):
         self.assert_card_layout_eq('Bruna, the Fading Light', 'meld')
         self.assert_card_layout_eq('Brisela, Voice of Nightmares', 'meld')
 
-        # self.assert_true(Card.objects.filter(
-        #     printings__in=CardPrinting.objects.filter(set=Set.objects.get(name='Vanguard')).all()). \
-        #                  exclude(layout='vanguard').count() == 0,
-        #                  'All cards in Vanguard should have the vanguard layout')
-        #
-        # self.assert_true(Card.objects.exclude(
-        #     printings__in=CardPrinting.objects.filter(set=Set.objects.get(name='Vanguard')).all()). \
-        #                  filter(layout='vanguard').count() == 0,
-        #                  'No cards outside of Vanguard should have the vanguard layout')
-
     def test_cardprinting_flavour(self):
-        self.assert_cardprinting_flavour_eq('Goblin Chieftain', 'M10',
-                                            '"We are goblinkind, heirs to the mountain empires of chieftains past. ' +
-                                            'Rest is death to us, and arson is our call to war."')
+        self.assert_cardprinting_flavour_eq(
+            'Goblin Chieftain', 'M10',
+            '"We are goblinkind, heirs to the mountain empires of chieftains past. ' +
+            'Rest is death to us, and arson is our call to war."')
 
         self.assert_cardprinting_flavour_eq('Goblin Chieftain', 'M12',
                                             '''"It's time for the 'Smash, Smash' song!"''')
 
         self.assert_cardprinting_flavour_eq("Land Aid '04", 'UNH', None)
-        self.assert_cardprinting_flavour_eq('Goblin Balloon Brigade', 'M11',
-                                            '"The enemy is getting too close! Quick! Inflate the toad!"')
-        self.assert_cardprinting_flavour_eq('Lhurgoyf', 'ICE',
-                                            '''"Ach! Hans, run! It's the Lhurgoyf!" —Saffi Eriksdotter, last words''')
+        self.assert_cardprinting_flavour_eq(
+            'Goblin Balloon Brigade',
+            'M11',
+            '"The enemy is getting too close! Quick! Inflate the toad!"')
+        self.assert_cardprinting_flavour_eq(
+            'Lhurgoyf',
+            'ICE',
+            '''"Ach! Hans, run! It's the Lhurgoyf!" —Saffi Eriksdotter, last words''')
 
         self.assert_cardprinting_flavour_eq('Magma Mine', 'VIS', 'BOOM!')
 
@@ -488,19 +522,24 @@ class Command(BaseCommand):
         self.assert_cardprinting_artist_eq('Benalish Hero', 'LEB', 'Douglas Shuler')
 
         # Combination
-        self.assert_cardprinting_artist_eq('Wound Reflection', 'SHM', 'Terese Nielsen & Ron Spencer')
+        self.assert_cardprinting_artist_eq('Wound Reflection', 'SHM',
+                                           'Terese Nielsen & Ron Spencer')
 
         # Unhinged
-        self.assert_cardprinting_artist_eq('Persecute Artist', 'UNH', 'Rebecca “Don\'t Mess with Me” Guay')
-        self.assert_cardprinting_artist_eq('Fascist Art Director', 'UNH', 'Edward P. “Feed Me” Beard, Jr.')
+        self.assert_cardprinting_artist_eq('Persecute Artist', 'UNH',
+                                           'Rebecca “Don\'t Mess with Me” Guay')
+        self.assert_cardprinting_artist_eq('Fascist Art Director', 'UNH',
+                                           'Edward P. “Feed Me” Beard, Jr.')
         self.assert_cardprinting_artist_eq('Atinlay Igpay', 'UNH', 'Evkay Alkerway')
 
     def test_cardprinting_collectornum(self):
 
         brothers_yamazaki = Card.objects.get(name='Brothers Yamazaki')
         kamigawa = Set.objects.get(name='Champions of Kamigawa')
-        brother_a = CardPrinting.objects.get(card=brothers_yamazaki, set=kamigawa, number__endswith='a')
-        brother_b = CardPrinting.objects.get(card=brothers_yamazaki, set=kamigawa, number__endswith='b')
+        brother_a = CardPrinting.objects.get(card=brothers_yamazaki, set=kamigawa,
+                                             number__endswith='a')
+        brother_b = CardPrinting.objects.get(card=brothers_yamazaki, set=kamigawa,
+                                             number__endswith='b')
 
         self.assert_true(brother_a.number[:-1] == brother_b.number[:-1],
                          'Brothers Yamazaki should have the same collector number')
@@ -523,15 +562,19 @@ class Command(BaseCommand):
         bruna_printlang = bruna.printings.get(set=emn).printed_languages.get(language=english)
         brisela_printlang = brisela.printings.get(set=emn).printed_languages.get(language=english)
 
-        self.assert_true(gisela_printlang.physical_cards.count() == 1, 'Gisela should only have one physical card')
-        self.assert_true(bruna_printlang.physical_cards.count() == 1, 'Bruna should only have one physical card')
-        self.assert_true(brisela_printlang.physical_cards.count() == 2, 'Brisela should have two physical cards')
+        self.assert_true(gisela_printlang.physical_cards.count() == 1,
+                         'Gisela should only have one physical card')
+        self.assert_true(bruna_printlang.physical_cards.count() == 1,
+                         'Bruna should only have one physical card')
+        self.assert_true(brisela_printlang.physical_cards.count() == 2,
+                         'Brisela should have two physical cards')
 
     def assert_card_exists(self, card_name: str):
         self.assert_true(Card.objects.filter(name=card_name).exists(), f'{card_name} should exist')
 
     def assert_card_not_exists(self, card_name: str):
-        self.assert_false(Card.objects.filter(name=card_name).exists(), f'{card_name} should not exist')
+        self.assert_false(Card.objects.filter(name=card_name).exists(),
+                          f'{card_name} should not exist')
 
     def assert_card_cost_eq(self, card_name: str, cost: str):
         self.assert_card_name_attr_eq(card_name, 'cost', cost)
@@ -553,8 +596,8 @@ class Command(BaseCommand):
     def assert_card_colour_count_eq(self, card_name: str, colour_count):
         self.assert_card_name_attr_eq(card_name, 'colour_count', colour_count)
 
-    def assert_card_type_eq(self, card_name: str, type):
-        self.assert_card_name_attr_eq(card_name, 'type', type)
+    def assert_card_type_eq(self, card_name: str, card_type):
+        self.assert_card_name_attr_eq(card_name, 'type', card_type)
 
     def assert_card_subtype_eq(self, card_name: str, subtype):
         self.assert_card_name_attr_eq(card_name, 'subtype', subtype)
@@ -597,17 +640,19 @@ class Command(BaseCommand):
     def assert_cardprinting_artist_eq(self, card_name: str, setcode: str, artist: str):
         self.assert_cardprinting_name_attr_eq(card_name, setcode, 'artist', artist)
 
-    def assert_cardprinting_name_attr_eq(self, card_name: str, setcode: str, attr_name: str, attr_value):
+    def assert_cardprinting_name_attr_eq(self, card_name: str, setcode: str, attr_name: str,
+                                         attr_value):
         if not Card.objects.filter(name=card_name).exists() or \
                 not Set.objects.filter(code=setcode).exists() or \
                 not CardPrinting.objects.filter(
                     card=Card.objects.get(name=card_name), set=Set.objects.get(code=setcode)):
-            self.assert_true(False, f'Card Printing "{card_name}" in "{setcode}" could not be found')
+            self.assert_true(False,
+                             f'Card Printing "{card_name}" in "{setcode}" could not be found')
             return
 
         card = Card.objects.get(name=card_name)
-        s = Set.objects.get(code=setcode)
-        cardprinting = CardPrinting.objects.filter(card=card, set=s).first()
+        card_set = Set.objects.get(code=setcode)
+        cardprinting = CardPrinting.objects.filter(card=card, set=card_set).first()
         self.assert_obj_attr_eq(cardprinting, attr_name, attr_value)
 
     def assert_obj_attr_eq(self, obj, attr_name: str, expected):

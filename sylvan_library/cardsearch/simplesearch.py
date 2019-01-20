@@ -1,7 +1,26 @@
+"""
+The module for the simple search form
+"""
+from cards.models import Card
+
 from cardsearch.card_search import CardSearch
-from cardsearch.parameters import *
+from cardsearch.parameters import (
+    OrParam,
+    CardNameParam,
+    CardRulesTextParam,
+    CardTypeParam,
+    CardSubtypeParam,
+    CardColourParam,
+    NotParam,
+    CardSetParam,
+    CardMulticolouredOnlyParam,
+)
+
 
 class SimpleSearch:
+    """
+    A simple flat search
+    """
 
     def __init__(self):
         self.text = None
@@ -48,8 +67,8 @@ class SimpleSearch:
                 exclude_param = NotParam()
                 root_param.add_parameter(exclude_param)
                 for colour in [c for c in Card.colour_flags.values() if c not in self.colours]:
-                    p = CardColourParam(colour)
-                    exclude_param.add_parameter(p)
+                    param = CardColourParam(colour)
+                    exclude_param.add_parameter(param)
 
         if self.set:
             root_param.add_parameter(CardSetParam(self.set))

@@ -1,3 +1,7 @@
+"""
+Models for cards
+"""
+
 import random
 from os import path
 
@@ -29,6 +33,9 @@ CARD_LEGALITY_RESTRICTION_CHOICES = (
 
 
 class Block(models.Model):
+    """
+    Model for a block of sets
+    """
     name = models.CharField(max_length=200, unique=True)
     release_date = models.DateField(blank=True, null=True)
 
@@ -37,6 +44,9 @@ class Block(models.Model):
 
 
 class Format(models.Model):
+    """
+    Model for a format of cards
+    """
     name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
@@ -44,17 +54,24 @@ class Format(models.Model):
 
 
 class Set(models.Model):
+    """
+    Model for a set of cards
+    """
     code = models.CharField(max_length=10, unique=True)
     release_date = models.DateField(blank=True, null=True)
     name = models.CharField(max_length=200, unique=True)
 
-    block = models.ForeignKey(Block, null=True, blank=True, related_name='sets', on_delete=models.CASCADE)
+    block = models.ForeignKey(Block, null=True, blank=True, related_name='sets',
+                              on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
 
 
 class Rarity(models.Model):
+    """
+    Model for a card rarity
+    """
     symbol = models.CharField(max_length=5, unique=True)
     name = models.CharField(max_length=30, unique=True)
     display_order = models.IntegerField(unique=True)
@@ -64,6 +81,9 @@ class Rarity(models.Model):
 
 
 class Colour(models.Model):
+    """
+    Model for a card's colour
+    """
     symbol = models.CharField(max_length=1, unique=True)
     name = models.CharField(max_length=15, unique=True)
     display_order = models.IntegerField(unique=True)
@@ -94,6 +114,9 @@ class Colour(models.Model):
 
 
 class Card(models.Model):
+    """
+    Model for a unique card
+    """
     name = models.CharField(max_length=200, unique=True)
 
     cost = models.CharField(max_length=50, blank=True, null=True)
@@ -131,6 +154,9 @@ class Card(models.Model):
 
 
 class CardPrinting(models.Model):
+    """
+    Model for a certain card printed in a certain set
+    """
     flavour_text = models.CharField(max_length=500, blank=True, null=True)
     artist = models.CharField(max_length=100)
     number = models.CharField(max_length=10, blank=True, null=True)
@@ -155,7 +181,8 @@ class CardPrinting(models.Model):
     rarity = models.ForeignKey(Rarity, related_name='card_printings', on_delete=models.CASCADE)
 
     # Set to true if this card was only released as part of a core box set.
-    # These are technically part of the core sets and are tournament legal despite not being available in boosters.
+    # These are technically part of the core sets and are tournament
+    # legal despite not being available in boosters.
     is_starter = models.BooleanField()
 
     def __str__(self):
@@ -163,6 +190,9 @@ class CardPrinting(models.Model):
 
 
 class PhysicalCard(models.Model):
+    """
+    Model for joining one or more CardPrintingLanguages into a single card that can be owned
+    """
     layout = models.CharField(max_length=50, choices=CARD_LAYOUT_CHOICES)
 
     def __str__(self):
@@ -170,17 +200,24 @@ class PhysicalCard(models.Model):
 
 
 class CardPrintingLanguage(models.Model):
+    """
+    Model for a card printed in a certain set of a certain language
+    """
     language = models.ForeignKey('Language', related_name='cards', on_delete=models.CASCADE)
     card_name = models.CharField(max_length=200)
     flavour_text = models.CharField(max_length=500, blank=True, null=True)
     type = models.CharField(max_length=200, blank=True, null=True)
     multiverse_id = models.IntegerField(blank=True, null=True)
 
-    card_printing = models.ForeignKey(CardPrinting, related_name='printed_languages', on_delete=models.CASCADE)
+    card_printing = models.ForeignKey(CardPrinting, related_name='printed_languages',
+                                      on_delete=models.CASCADE)
 
     physical_cards = models.ManyToManyField(PhysicalCard, related_name='printed_languages')
 
     class Meta:
+        """
+        Meta information for CardPrintingLanguages
+        """
         unique_together = ('language', 'card_name', 'card_printing')
 
     def __str__(self):
@@ -190,22 +227,29 @@ class CardPrintingLanguage(models.Model):
         if self.multiverse_id is None:
             return None
 
-        ms = str(self.multiverse_id)
+        multiverse_string = str(self.multiverse_id)
         # Break up images over multiple folders to stop too many being placed in one folder
         return path.join('card_images',
-                         ms[0:1],
-                         ms[0:2] if len(ms) >= 2 else '',
-                         ms[0:3] if len(ms) >= 3 else '',
-                         ms + '.jpg')
+                         multiverse_string[0:1],
+                         multiverse_string[0:2] if len(multiverse_string) >= 2 else '',
+                         multiverse_string[0:3] if len(multiverse_string) >= 3 else '',
+                         multiverse_string + '.jpg')
 
 
 class UserOwnedCard(models.Model):
+    """
+    Model for a user owned a number of physical cards
+    """
     count = models.IntegerField()
 
-    physical_card = models.ForeignKey(PhysicalCard, related_name='ownerships', on_delete=models.CASCADE)
+    physical_card = models.ForeignKey(PhysicalCard, related_name='ownerships',
+                                      on_delete=models.CASCADE)
     owner = models.ForeignKey(User, related_name='owned_cards', on_delete=models.CASCADE)
 
     class Meta:
+        """
+        Meta information for the UserOwnedCard class
+        """
         unique_together = ('physical_card', 'owner')
 
     def __str__(self):
@@ -213,10 +257,14 @@ class UserOwnedCard(models.Model):
 
 
 class UserCardChange(models.Model):
+    """
+    Model for a change in the number of cards that a user owns
+    """
     date = models.DateTimeField()
     difference = models.IntegerField()
 
-    physical_card = models.ForeignKey(PhysicalCard, related_name='user_changes', on_delete=models.CASCADE)
+    physical_card = models.ForeignKey(PhysicalCard, related_name='user_changes',
+                                      on_delete=models.CASCADE)
     owner = models.ForeignKey(User, related_name='card_changes', on_delete=models.CASCADE)
 
     def __str__(self):
@@ -224,12 +272,18 @@ class UserCardChange(models.Model):
 
 
 class CardRuling(models.Model):
+    """
+    Model for a ruling made on a card
+    """
     date = models.DateField()
     text = models.CharField(max_length=4000)
 
     card = models.ForeignKey(Card, related_name='rulings', on_delete=models.CASCADE)
 
     class Meta:
+        """
+        Meta configuration for the CardRuling class
+        """
         unique_together = ('date', 'text', 'card')
 
     def __str__(self):
@@ -237,11 +291,17 @@ class CardRuling(models.Model):
 
 
 class CardLegality(models.Model):
+    """
+    Model for a restriction on the legality of a card in a format
+    """
     card = models.ForeignKey(Card, related_name='legalities', on_delete=models.CASCADE)
     format = models.ForeignKey(Format, related_name='card_legalities', on_delete=models.CASCADE)
     restriction = models.CharField(max_length=50, choices=CARD_LEGALITY_RESTRICTION_CHOICES)
 
     class Meta:
+        """
+        Meta configuration for the CardLegality class
+        """
         unique_together = (
             'card',
             'format',
@@ -253,6 +313,9 @@ class CardLegality(models.Model):
 
 
 class CardTag(models.Model):
+    """
+    Model for a user owned tag that can be applied to many cards
+    """
     name = models.CharField(max_length=200)
     owner = models.ForeignKey(User, related_name='card_tags', on_delete=models.CASCADE)
     cards = models.ManyToManyField(Card, related_name='tags')
@@ -262,6 +325,9 @@ class CardTag(models.Model):
 
 
 class Deck(models.Model):
+    """
+    Model for a user owned deck of cards
+    """
     date_created = models.DateField()
     last_modified = models.DateField()
 
@@ -273,6 +339,9 @@ class Deck(models.Model):
 
 
 class DeckCard(models.Model):
+    """
+    Model for a card in a Deck
+    """
     count = models.IntegerField()
 
     card = models.ForeignKey(Card, related_name='deck_cards', on_delete=models.CASCADE)
@@ -283,6 +352,9 @@ class DeckCard(models.Model):
 
 
 class Language(models.Model):
+    """
+    Model for a language that a card could be printed in
+    """
     name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):

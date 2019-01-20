@@ -1,17 +1,27 @@
-from django.core.management.base import BaseCommand
-
+"""
+Module for the download_card_images command
+"""
 import os
-import requests
+import logging
 import queue
 import threading
 import random
 import time
 
+import requests
+
+from django.core.management.base import BaseCommand
+
 from cards.models import CardPrintingLanguage, Language
+
+logger = logging.getLogger('django')
 
 
 class Command(BaseCommand):
-    help = 'Downloads the MtG JSON data file'
+    """
+    The command for download card images from gatherer
+    """
+    help = 'Downloads card images from gatherer'
 
     download_thread_count = 8
 
@@ -34,9 +44,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        if options['download_all_languages'] and not Language.objects.filter(name='English').exists():
-            print('Only english card images are downloaded by default, but the English Language '
-                  'object does not exist. Please run `update_database` first')
+        if options['download_all_languages'] \
+                and not Language.objects.filter(name='English').exists():
+            logger.log(
+                'Only english card images are downloaded by default, but the English Language '
+                'object does not exist. Please run `update_database` first')
             return
 
         image_download_queue = queue.Queue()
@@ -49,6 +61,7 @@ class Command(BaseCommand):
             image_download_queue.put(cpl)
 
         for i in range(1, self.download_thread_count):
+            logger.info('Starting thread %d', i)
             thread = ImageDownloadThread(image_download_queue, options['sleep_between_downloads'])
             thread.setDaemon(True)
             thread.start()
@@ -57,6 +70,10 @@ class Command(BaseCommand):
 
 
 class ImageDownloadThread(threading.Thread):
+    """
+    The thread object for downloading a card
+    """
+
     def __init__(self, printlang_queue, random_sleep):
         threading.Thread.__init__(self)
         self.printlang_queue = printlang_queue
@@ -69,7 +86,13 @@ class ImageDownloadThread(threading.Thread):
             self.printlang_queue.task_done()
 
 
-def download_image_for_card(printing_language, random_sleep):
+def download_image_for_card(printing_language: CardPrintingLanguage, random_sleep: bool) -> None:
+    """
+    Downloads the image for a single card
+    :param printing_language:
+    :param random_sleep:
+    :return:
+    """
     image_path = printing_language.get_image_path()
     image_path = os.path.join('website', 'static', image_path)
 

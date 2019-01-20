@@ -1,15 +1,31 @@
+"""
+The module for the import_usercards command
+"""
+
 import logging
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.contrib.auth.models import User
 
-from cards.models import *
+from cards.models import (
+    Card,
+    CardPrinting,
+    CardPrintingLanguage,
+    Language,
+    PhysicalCard,
+    Set,
+    UserOwnedCard,
+)
 
 logger = logging.getLogger('django')
 
 
 class Command(BaseCommand):
-    help = 'Imports a list of user owned cards from a csv file'
+    """
+    The command for importing user cards from a tab separated file
+    """
+    help = 'Imports a list of user owned cards from a tsv file'
 
     def add_arguments(self, parser):
 
@@ -26,34 +42,34 @@ class Command(BaseCommand):
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
-            logger.error(f'Cannot find user with name {username}')
+            logger.error('Cannot find user with name %s', username)
             return
 
-        with(transaction.atomic()):
+        with transaction.atomic():
             user.owned_cards.all().delete()
 
-            with open(filename, 'r') as f:
-                for line in f:
+            with open(filename, 'r') as file:
+                for line in file:
                     (name, number, setcode) = line.rstrip().split('\t')
 
                     card = Card.objects.get(name=name)
-                    logger.info(f'Card ID: {card.id}')
+                    logger.info('Card ID: %s', card.id)
                     try:
                         cardset = Set.objects.get(code=setcode)
                     except Set.DoesNotExist:
                         raise Exception(f"Could not find the set {setcode} for {name}")
 
-                    logger.info(f'Set ID: {cardset.id}')
+                    logger.info('Set ID: %s', cardset.id)
 
                     printing = CardPrinting.objects.filter(
                         card=card,
                         set=cardset).first()
-                    logger.info(f'CardPrinting ID: {printing.id}')
+                    logger.info('CardPrinting ID: %s', printing.id)
 
                     printlang = CardPrintingLanguage.objects.get(
                         card_printing=printing,
                         language=english)
-                    logger.info(f'CardPrintingLanguage ID: {printlang.id}')
+                    logger.info('CardPrintingLanguage ID: %s', printlang.id)
 
                     physcards = PhysicalCard.objects.filter(
                         printed_languages=printlang)

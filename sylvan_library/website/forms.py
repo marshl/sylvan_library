@@ -1,8 +1,15 @@
+"""
+Forms for the website module
+"""
+
 from django import forms
 from cardsearch import parameters
 
 
 class SearchForm(forms.Form):
+    """
+    The primary search form
+    """
     card_name = forms.CharField(required=False)
     rules_text = forms.CharField(required=False)
     cmc = forms.IntegerField(required=False)
@@ -17,11 +24,15 @@ class SearchForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(SearchForm, self).__init__(*args, **kwargs)
 
-        for colour, symbol in self.colour_list().items():
+        for colour in self.colour_list():
             self.fields['colour_' + colour] = forms.BooleanField(required=False)
             self.fields['colourid_' + colour] = forms.BooleanField(required=False)
 
-    def colour_list(self):
+    def colour_list(self) -> dict:
+        """
+        Gets the list of colours to be used in the form
+        :return: A dict of colours
+        """
         return {
             'white': 'w',
             'blue': 'u',
@@ -31,10 +42,18 @@ class SearchForm(forms.Form):
             'colourless': 'c'
         }
 
-    def colour_fields(self):
+    def colour_fields(self) -> dict:
+        """
+        Gets all the colour fields
+        :return:
+        """
         for colour, symbol in self.colour_list().items():
             yield {'field': self['colour_' + colour], 'symbol': symbol}
 
-    def colour_identity_fields(self):
+    def colour_identity_fields(self) -> dict:
+        """
+        Gets all the colour identity fields
+        :return: A dictionary of fields
+        """
         for colour, symbol in self.colour_list().items():
             yield {'field': self['colourid_' + colour], 'symbol': symbol}

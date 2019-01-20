@@ -1,42 +1,75 @@
-from django.shortcuts import render
-from django.http import HttpResponse
-from cards.models import Card, Set
-from django.shortcuts import get_object_or_404
-from django.http import HttpResponseRedirect
-import random
+"""
+Module for all website views
+"""
 import logging
+import random
 
-from cards.models import *
-from cardsearch.card_search import *
-from cardsearch.simplesearch import *
-from cardsearch.fieldsearch import *
-from .forms import *
+from django.http import HttpResponseRedirect, HttpResponse
+from django.shortcuts import render
+from django.shortcuts import get_object_or_404
+
+from cards.models import (
+    Card,
+    Set,
+    CardPrintingLanguage,
+    UserOwnedCard,
+)
+from website.forms import SearchForm
+from cardsearch.fieldsearch import FieldSearch
 
 logger = logging.getLogger('django')
 
 
-def index(request):
+def index(request) -> HttpResponse:
+    """
+    The index page of this site
+    :param request: The
+    :return:
+    """
     context = {'sets': Set.objects.all()}
     return render(request, 'website/index.html', context)
 
 
-def card_detail(request, card_id):
+def card_detail(request, card_id) -> HttpResponse:
+    """
+
+    :param request:
+    :param card_id:
+    :return:
+    """
     card = get_object_or_404(Card, pk=card_id)
     context = {'card': card}
     return render(request, 'website/card_detail.html', context)
 
 
-def set_detail(request, set_code):
+def set_detail(request, set_code) -> HttpResponse:
+    """
+    The
+    :param request:
+    :param set_code:
+    :return:
+    """
     set_obj = get_object_or_404(Set, code=set_code)
     context = {'set': set_obj}
     return render(request, 'website/set.html', context)
 
 
-def usercard_form(request):
+def usercard_form(request) -> HttpResponse:
+    """
+    The form where a user can update their list of cards
+    :param request: The user's request
+    :return: The HTTP response
+    """
     return render(request, 'website/usercard_form.html')
 
 
-def add_card(request, printlang_id):
+def add_card(request, printlang_id) -> HttpResponse:
+    """
+    Adds a card to the user's cards
+    :param request: The user's request
+    :param printlang_id: The CardPrintingLanguage ID
+    :return: The HTTP response
+    """
     cardlang = CardPrintingLanguage.objects.get(id=printlang_id)
     phys = cardlang.physicalcardlink_set.first().physical_card
 
@@ -46,13 +79,24 @@ def add_card(request, printlang_id):
     return render(request, 'website/add_card.html')
 
 
-def random_card(request):
+# pylint: disable=unused-argument
+def random_card(request) -> HttpResponse:
+    """
+    Gets a random card and redirects the user to that page
+    :param request: The user's request
+    :return: The HTTP response
+    """
     card = random.choice(Card.objects.all())
 
     return HttpResponseRedirect('../card/{0}'.format(card.id))
 
 
-def simple_search(request):
+def simple_search(request) -> HttpResponse:
+    """
+    The simple search form
+    :param request: The user's request
+    :return: The HTTP Response
+    """
     form = SearchForm(request.GET)
     results = []
     if form.is_valid():
@@ -95,16 +139,17 @@ def simple_search(request):
         search.exclude_unselected_colour_identities = bool(form.data.get('exclude_colours'))
         search.match_colour_identities_exactly = bool(form.data.get('match_colours'))
 
-
         results = search.get_query()[:10]
 
     return render(request, 'website/simple_search.html',
                   {'form': form, 'results': results})
 
 
+# pylint: disable=unused-argument, missing-docstring
 def advanced_search(request):
     return 'advanced search'
 
 
+# pylint: disable=unused-argument, missing-docstring
 def search_results(request):
     return 'search results'

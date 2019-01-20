@@ -1,7 +1,11 @@
+"""
+Urls for the website app
+"""
 from django.conf.urls import url
 
 from website import views
 
+# pylint: disable=invalid-name
 app_name = 'website'
 urlpatterns = [
     url(r'^$', views.index, name='index'),

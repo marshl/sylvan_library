@@ -1,11 +1,22 @@
-from django.test import TestCase
+"""
+Unit tests for the cards module
+"""
 
-from cards.models import *
+from cards.models import (
+    Card,
+    CardPrinting,
+    Rarity,
+    Set,
+)
 
 
 # Create your tests here.
-
-def create_test_card(fields: dict = {}):
+def create_test_card(fields: dict) -> Card:
+    """
+    Creates a test card with fields from the given dict
+    :param fields: The fields to populate
+    :return: A card object
+    """
     card = Card()
     card.name = 'undefined'
     card.cmc = 0
@@ -24,7 +35,14 @@ def create_test_card(fields: dict = {}):
     return card
 
 
-def create_test_card_printing(card: Card, set_obj: Set, fields: dict = {}):
+def create_test_card_printing(card: Card, set_obj: Set, fields: dict) -> CardPrinting:
+    """
+    Creates a test CardPrinting object with values set to passed fields
+    :param card: The card for the printing
+    :param set_obj: The set the card is in
+    :param fields: Other fields
+    :return: A test CardPrinting
+    """
     printing = CardPrinting()
     printing.card = card
     printing.set = set_obj
@@ -38,7 +56,14 @@ def create_test_card_printing(card: Card, set_obj: Set, fields: dict = {}):
     return printing
 
 
-def create_test_set(name: str, setcode: str, fields: dict = {}):
+def create_test_set(name: str, setcode: str, fields: dict) -> Set:
+    """
+    Creates a test Set with the input values
+    :param name: The name of the set
+    :param setcode: The code of the set
+    :param fields: Other fields
+    :return: A set object
+    """
     set_obj = Set(name=name, code=setcode)
 
     for key, value in fields.items():
@@ -49,8 +74,15 @@ def create_test_set(name: str, setcode: str, fields: dict = {}):
     return set_obj
 
 
-def create_test_rarity(name: str, symbol: str):
+def create_test_rarity(name: str, symbol: str) -> Rarity:
+    """
+    Creates a test rarity with the given values
+    :param name: The name of the rarity
+    :param symbol: The rarity symbl
+    :return: The dummy rarity object
+    """
     rarity = Rarity(name=str, symbol=symbol)
+    rarity.name = name
     rarity.display_order = 1
     rarity.save()
     return rarity

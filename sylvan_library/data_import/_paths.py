@@ -1,12 +1,15 @@
+"""
+Module for all useful file paths
+"""
 from os import path
 
-json_zip_download_url = "https://mtgjson.com/v4/json/AllSets.json.zip"
-data_folder = path.abspath('data_import/data')
-set_folder = path.join(data_folder, 'sets')
-json_zip_path = path.join(data_folder, 'AllSets-x.json.zip')
-json_data_path = path.join(data_folder, 'AllSets.json')
-pretty_json_path = path.join(data_folder, 'AllSets-x-pretty.json')
+JSON_ZIP_DOWNLOAD_URL = "https://mtgjson.com/v4/json/AllSets.json.zip"
+DATA_FOLDER = path.abspath('data_import/data')
+SET_FOLDER = path.join(DATA_FOLDER, 'sets')
+JSON_ZIP_PATH = path.join(DATA_FOLDER, 'AllSets-x.json.zip')
+JSON_DATA_PATH = path.join(DATA_FOLDER, 'AllSets.json')
+PRETTY_JSON_PATH = path.join(DATA_FOLDER, 'AllSets-x-pretty.json')
 
-language_json_path = path.join(data_folder, 'languages.json')
-colour_json_path = path.join(data_folder, 'colours.json')
-rarity_json_path = path.join(data_folder, 'rarities.json')
+LANGUAGE_JSON_PATH = path.join(DATA_FOLDER, 'languages.json')
+COLOUR_JSON_PATH = path.join(DATA_FOLDER, 'colours.json')
+RARITY_JSON_PATH = path.join(DATA_FOLDER, 'rarities.json')

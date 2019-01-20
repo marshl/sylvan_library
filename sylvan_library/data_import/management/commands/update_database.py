@@ -1,24 +1,50 @@
-import logging, time
+"""
+Module for the update_database command
+"""
+import logging
+import time
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from cards.models import *
-from data_import.importers import *
+from cards.models import (
+    Block,
+    Card,
+    CardLegality,
+    CardPrinting,
+    CardPrintingLanguage,
+    Colour,
+    Format,
+    Language,
+    PhysicalCard,
+    Rarity,
+    Set,
+)
+from data_import.importers import (
+    JsonImporter,
+)
+from data_import.staging import StagedCard
 
 logger = logging.getLogger('django')
 
 
 class Command(BaseCommand):
-    help = 'Downloads the MtG JSON data file'
+    """
+    The command for updating hte database
+    """
+    help = 'Uses the downloaded JSON files to update the database, ' \
+           'including creating cards, set and rarities\n' \
+           'Use the update_rulings command to update rulings'
 
-    # Keep track of which sets are new, so that printing information for existing sets doesn't have to be parsed
+    # Keep track of which sets are new, so that printing information for
+    #  existing sets doesn't have to be parsed
     sets_to_update = []
 
     # Keep track of which cards have been updated, so that reprints don't trigger pointless updates
     updated_cards = []
 
     force_update = False
+    start_time = None
 
     update_counts = {'rarities_created': 0, 'rarities_updated': 0,
                      'colours_created': 0, 'colours_updated': 0,
@@ -47,7 +73,7 @@ class Command(BaseCommand):
             action='store_true',
             dest='force_update',
             default=False,
-            help='Forces an update of sets that already exist, and cards that have already been added',
+            help='Forces an update of sets that already exist, and cards that are already added',
         )
 
         parser.add_argument(
@@ -72,7 +98,7 @@ class Command(BaseCommand):
         if options['no_transaction']:
             self.update_database(importer)
         else:
-            with(transaction.atomic()):
+            with transaction.atomic():
                 self.update_database(importer)
 
         self.log_stats()
@@ -97,10 +123,10 @@ class Command(BaseCommand):
         for colour in data_importer.import_colours():
             colour_obj = Colour.objects.filter(symbol=colour['symbol']).first()
             if colour_obj is not None:
-                logger.info(f'Updating existing colour {colour_obj}')
+                logger.info('Updating existing colour %s', colour_obj)
                 self.update_counts['colours_updated'] += 1
             else:
-                logger.info(f"Creating new colour {colour['name']}")
+                logger.info('Creating new colour %s', colour['name'])
                 colour_obj = Colour(symbol=colour['symbol'],
                                     name=colour['name'],
                                     display_order=colour['display_order'],
@@ -116,14 +142,14 @@ class Command(BaseCommand):
         for rarity in data_importer.import_rarities():
             rarity_obj = Rarity.objects.filter(symbol=rarity['symbol']).first()
             if rarity_obj is not None:
-                logger.info(f'Updating existing rarity {rarity_obj.name}')
+                logger.info('Updating existing rarity %s', rarity_obj.name)
                 rarity_obj.name = rarity['name']
                 rarity_obj.display_order = rarity['display_order']
                 rarity_obj.full_clean()
                 rarity_obj.save()
                 self.update_counts['rarities_updated'] += 1
             else:
-                logger.info(f"Creating new rarity {rarity['name']}")
+                logger.info('Creating new rarity %s', rarity['name'])
 
                 rarity_obj = Rarity(
                     symbol=rarity['symbol'],
@@ -142,12 +168,12 @@ class Command(BaseCommand):
         for lang in data_importer.import_languages():
             language_obj = Language.objects.filter(name=lang['name']).first()
             if language_obj is not None:
-                logger.info(f"Updating language: {lang['name']}", )
+                logger.info("Updating language: %s", lang['name'])
                 language_obj.full_clean()
                 language_obj.save()
                 self.update_counts['languages_updated'] += 1
             else:
-                logger.info(f"Creating new language: {lang['name']}")
+                logger.info("Creating new language: %s", lang['name'])
                 language_obj = Language(name=lang['name'])
                 language_obj.full_clean()
                 language_obj.save()
@@ -162,19 +188,19 @@ class Command(BaseCommand):
 
             # Ignore sets that have no block
             if not staged_set.has_block():
-                logger.info(f'Ignoring {staged_set.get_name()}')
+                logger.info('Ignoring %s', staged_set.get_name())
                 continue
 
             block = Block.objects.filter(name=staged_set.get_block()).first()
 
             if block is not None:
-                logger.info(f'Block {block.name} already exists')
+                logger.info('Block %s already exists', block.name)
             else:
                 block = Block(
                     name=staged_set.get_block(),
                     release_date=staged_set.get_release_date())
 
-                logger.info(f'Created block {block.name}')
+                logger.info('Created block %s', block.name)
                 block.full_clean()
                 block.save()
                 self.update_counts['blocks_created'] += 1
@@ -184,32 +210,32 @@ class Command(BaseCommand):
     def update_set_list(self, staged_sets):
         logger.info('Updating set list')
 
-        for s in staged_sets:
-            set_obj = Set.objects.filter(code=s.get_code()).first()
+        for staged_set in staged_sets:
+            set_obj = Set.objects.filter(code=staged_set.get_code()).first()
 
             if set_obj is None:
 
-                logger.info(f'Creating set {s.get_name()} ({s.code})')
-                block = Block.objects.filter(name=s.get_block()).first()
+                logger.info('Creating set %s (%s)', staged_set.get_name(), staged_set.code)
+                block = Block.objects.filter(name=staged_set.get_block()).first()
 
                 set_obj = Set(
-                    code=s.get_code(),
-                    name=s.get_name(),
-                    release_date=s.get_release_date(),
+                    code=staged_set.get_code(),
+                    name=staged_set.get_name(),
+                    release_date=staged_set.get_release_date(),
                     block=block)
                 set_obj.full_clean()
                 set_obj.save()
                 self.update_counts['sets_created'] += 1
-                self.sets_to_update.append(s.get_code())
+                self.sets_to_update.append(staged_set.get_code())
 
             else:
-                logger.info(f'Set {s.get_name()} already exists, updating')
+                logger.info('Set %s already exists, updating', staged_set.get_name())
                 set_obj.full_clean()
                 set_obj.save()
                 self.update_counts['sets_updated'] += 1
 
                 if self.force_update:  # use the set anyway during a force update
-                    self.sets_to_update.append(s.get_code())
+                    self.sets_to_update.append(staged_set.get_code())
         logger.info('Set list updated')
 
     def update_card_list(self, staged_sets):
@@ -218,10 +244,10 @@ class Command(BaseCommand):
         for staged_set in staged_sets:
 
             if staged_set.get_code() not in self.sets_to_update:
-                logger.info(f'Ignoring set {staged_set.get_name()}')
+                logger.info('Ignoring set %s', staged_set.get_name())
                 continue
 
-            logger.info(f'Updating cards in set {staged_set.get_name()}')
+            logger.info('Updating cards in set %s', staged_set.get_name())
 
             set_obj = Set.objects.get(code=staged_set.get_code())
 
@@ -257,15 +283,15 @@ class Command(BaseCommand):
 
         if card is not None:
             if not self.force_update and staged_card.get_name() in self.updated_cards:
-                logger.info(f'{card} has already been updated')
+                logger.info('%s has already been updated', card)
                 self.update_counts['cards_ignored'] += 1
                 return card
 
-            logger.info(f'Updating existing card {card}')
+            logger.info('Updating existing card %s'.card)
             self.update_counts['cards_updated'] += 1
         else:
             card = Card(name=staged_card.get_name())
-            logger.info(f'Creating new card {card}')
+            logger.info('Creating new card %s', card)
             self.update_counts['cards_created'] += 1
 
         self.updated_cards.append(staged_card.get_name())
@@ -303,14 +329,14 @@ class Command(BaseCommand):
         printing = CardPrinting.objects.filter(json_id=staged_card.get_json_id()).first()
 
         if printing is not None:
-            logger.info(f'Updating card printing {printing}')
+            logger.info('Updating card printing %s', printing)
             self.update_counts['card_printings_updated'] += 1
         else:
             printing = CardPrinting(
                 card=card_obj,
                 set=set_obj,
             )
-            logger.info(f'Created new card printing {printing}')
+            logger.info('Created new card printing %s', printing)
             self.update_counts['card_printings_created'] += 1
 
         printing.number = staged_card.get_number()
@@ -347,7 +373,7 @@ class Command(BaseCommand):
             language_id=lang_obj.id).first()
 
         if cardlang is not None:
-            logger.info(f'Card printing language {cardlang} already exists')
+            logger.info('Card printing language %s already exists', cardlang)
             self.update_counts['printing_languages_skipped'] += 1
             return cardlang
 
@@ -359,7 +385,7 @@ class Command(BaseCommand):
             type=foreign_data.get('type'),
             multiverse_id=foreign_data.get('multiverseId'))
 
-        logger.info(f'Created new printing language {cardlang}', )
+        logger.info('Created new printing language %s', cardlang)
         cardlang.full_clean()
         cardlang.save()
         self.update_counts['printing_languages_created'] += 1
@@ -372,13 +398,10 @@ class Command(BaseCommand):
         for staged_set in staged_sets:
 
             if staged_set.get_code() not in self.sets_to_update:
-                logger.info(f'Skipping set {staged_set.get_name()}')
+                logger.info('Skipping set %s', staged_set.get_name())
                 continue
 
-            set_obj = Set.objects.get(code=staged_set.get_code())
-
             for staged_card in staged_set.get_cards():
-                card_obj = Card.objects.get(name=staged_card.get_name())
 
                 printing_obj = CardPrinting.objects.get(json_id=staged_card.get_json_id())
 
@@ -401,14 +424,16 @@ class Command(BaseCommand):
                                 card_printing=printing_obj,
                                 language=lang_obj)
                         except CardPrintingLanguage.DoesNotExist:
-                            raise Exception(f'Could not find CardPrintingLanguage for {printing_obj} {lang_obj}')
+                            raise Exception(
+                                'Could not find CardPrintingLanguage for {} {}'.format(
+                                    printing_obj, lang_obj))
 
                         self.update_physical_card(printlang_obj, staged_card)
 
     def update_physical_card(self, printlang: CardPrintingLanguage, staged_card: StagedCard):
 
         if printlang.physical_cards.exists():
-            logger.info(f'Physical link already exists for {printlang}')
+            logger.info('Physical link already exists for %s', printlang)
             self.update_counts['physical_cards_skipped'] += 1
             return
 
@@ -416,10 +441,10 @@ class Command(BaseCommand):
                 staged_card.get_name_count() == 3 and
                 printlang.card_printing.number and
                 printlang.card_printing.number[-1] == 'b'):
-            logger.info(f'Will not create card link for meld card {printlang}')
+            logger.info('Will not create card link for meld card%s', printlang)
             return
 
-        logger.info(f'Updating physical cards for {printlang}')
+        logger.info('Updating physical cards for %s', printlang)
 
         linked_language_objs = []
 
@@ -432,14 +457,17 @@ class Command(BaseCommand):
                     card=link_card,
                     set=printlang.card_printing.set).first()
                 if link_print is None:
-                    logger.error(f'Printing for link {link_card} in set {printlang.card_printing.set} not found')
+                    logger.error(
+                        'Printing for link %s in set %s not found',
+                        link_card, printlang.card_printing.set)
                     raise LookupError()
 
                 if (staged_card.get_layout() == 'meld' and
                         printlang.card_printing.number[-1] != 'b' and
                         link_print.number[-1] != 'b'):
                     logger.warning(
-                        f'Will not link {staged_card.get_name()} to {link_card} as they separate cards')
+                        'Will not link %s to %s as they separate cards',
+                        staged_card.get_name(), link_card)
 
                     continue
                 try:
@@ -465,7 +493,7 @@ class Command(BaseCommand):
         for staged_set in staged_sets:
 
             if staged_set.get_code() not in self.sets_to_update:
-                logger.info(f'Skipping set {staged_set.get_name()}')
+                logger.info('Skipping set %s', staged_set.get_name())
                 continue
 
             cards = staged_set.get_cards()
@@ -473,7 +501,7 @@ class Command(BaseCommand):
             for staged_card in [x for x in cards if x.has_other_names()]:
                 card_obj = Card.objects.get(name=staged_card.get_name())
 
-                logger.info(f'Finding card links for {staged_card.get_name()}')
+                logger.info('Finding card links for %s', staged_card.get_name())
 
                 for link_name in staged_card.get_other_names():
                     link_card = Card.objects.get(name=link_name)
@@ -489,10 +517,10 @@ class Command(BaseCommand):
 
         for staged_set in staged_sets:
             if staged_set.get_code() not in self.sets_to_update:
-                logger.info(f'Skipping set {staged_set.get_name()}')
+                logger.info('Skipping set %s', staged_set.get_name())
                 continue
 
-            logger.info(f'Finding legalities for {staged_set.get_name()}')
+            logger.info('Finding legalities for %s', staged_set.get_name())
 
             for staged_card in staged_set.get_cards():
 
@@ -510,13 +538,14 @@ class Command(BaseCommand):
                     legality, created = CardLegality.objects.get_or_create(
                         card=card_obj, format=format_obj, restriction=legality
                     )
-                    self.update_counts['legalities_created' if created else 'legalities_updated'] += 1
+                    self.update_counts[
+                        'legalities_created' if created else 'legalities_updated'] += 1
 
                 cards_updated.append(staged_card.get_name())
 
     def log_stats(self):
-        logger.info('\n' + ('=' * 80) + '\n\nUpdate complete:\n')
+        logger.info('%s', '\n' + ('=' * 80) + '\n\nUpdate complete:\n')
         elapsed_time = time.time() - self.start_time
-        logger.info(f'Time elapsed: {time.strftime("%H:%M:%S", time.gmtime(elapsed_time))}')
+        logger.info('Time elapsed: %s', time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
         for key, value in self.update_counts.items():
-            logger.info(f'{key}: {value}')
+            logger.info('%s %s', key, value)

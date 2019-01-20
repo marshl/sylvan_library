@@ -1,22 +1,48 @@
+"""
+Module for the reset_database command
+"""
 from django.core.management.base import BaseCommand
-
-from cards.models import *
 from django.db import connection
+
+from cards.models import (
+    Block,
+    Card,
+    CardLegality,
+    CardPrinting,
+    CardPrintingLanguage,
+    CardRuling,
+    CardTag,
+    Colour,
+    Deck,
+    DeckCard,
+    Format,
+    Language,
+    PhysicalCard,
+    Rarity,
+    Set,
+    UserCardChange,
+    UserOwnedCard,
+)
 from data_import import _query
 
 
 class Command(BaseCommand):
-    help = 'Downloads the MtG JSON data file'
+    """
+    Command for soft resetting the database
+    """
+    help = 'Delete all records from all tables without dropping the tables'
 
     def truncate_model(self, model_obj):
         print('Truncating {0}... '.format(model_obj.__name__), end='')
         model_obj.objects.all().delete()
+        # pylint: disable=protected-access
         self.reset_sequence(model_obj.objects.model._meta.db_table)
         print('Done')
 
     def reset_sequence(self, table_name):
         with connection.cursor() as cursor:
-            cursor.execute(f"SELECT setval(pg_get_serial_sequence('\"{table_name}\"','id'), 1, false);")
+            cursor.execute(
+                f"SELECT setval(pg_get_serial_sequence('\"{table_name}\"','id'), 1, false);")
 
     def handle(self, *args, **options):
         confirm = _query.query_yes_no(

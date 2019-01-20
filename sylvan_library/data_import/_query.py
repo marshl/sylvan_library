@@ -1,3 +1,6 @@
+"""
+The module for the query_yes_no function
+"""
 import sys
 
 
@@ -31,4 +34,4 @@ def query_yes_no(question, default="yes"):
             return valid[choice]
         else:
             sys.stdout.write(
-                 "Please respond with 'yes' or 'no' (or 'y' or 'n').\n")
+                "Please respond with 'yes' or 'no' (or 'y' or 'n').\n")

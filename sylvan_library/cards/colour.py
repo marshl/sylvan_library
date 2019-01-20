@@ -4,6 +4,9 @@ Utility class for colours
 
 
 class ColourUtils:
+    """
+    Utility class for colours
+    """
     white = 1
     blue = 2
     black = 4

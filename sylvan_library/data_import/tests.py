@@ -1,8 +1,16 @@
+"""
+The module for staging tests
+"""
 from django.test import TestCase
-from data_import.staging import *
+from data_import.staging import (
+    StagedCard
+)
 
 
 class StagedCardTestCase(TestCase):
+    """
+    The tests cases for StagedCard
+    """
     def test_get_type(self):
         staged_card = StagedCard({'types': ['Legendary', 'Creature']})
         self.assertEqual(staged_card.get_types(), 'Legendary Creature')
@@ -13,16 +21,16 @@ class StagedCardTestCase(TestCase):
 
     def test_colour_weight(self):
         staged_card = StagedCard({'manaCost': '{1}{G}{G}', 'convertedManaCost': 3})
-        self.assertEquals(2, staged_card.get_colour_weight())
+        self.assertEqual(2, staged_card.get_colour_weight())
 
     def test_colour_weight_colourless(self):
         staged_card = StagedCard({'manaCost': '{11}', 'convertedManaCost': 11})
-        self.assertEquals(0, staged_card.get_colour_weight())
+        self.assertEqual(0, staged_card.get_colour_weight())
 
     def test_colour_weight_heavy(self):
         staged_card = StagedCard({'manaCost': '{B}{B}{B}{B}', 'convertedManaCost': 4})
-        self.assertEquals(4, staged_card.get_colour_weight())
+        self.assertEqual(4, staged_card.get_colour_weight())
 
     def test_colour_weight_none(self):
         staged_card = StagedCard({})
-        self.assertEquals(0, staged_card.get_colour_weight())
+        self.assertEqual(0, staged_card.get_colour_weight())

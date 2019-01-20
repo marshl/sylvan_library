@@ -1,12 +1,27 @@
-from cardsearch.card_search import CardSearch
-from cardsearch.parameters import *
-
+"""
+The module for the field search class
+"""
 import logging
+
+from cards.models import Card
+from cardsearch.card_search import CardSearch
+from cardsearch.parameters import (
+    CardNameParam,
+    CardRulesTextParam,
+    CardCmcParam,
+    OrParam,
+    CardColourParam,
+    NotParam,
+    CardColourIdentityParam,
+)
 
 logger = logging.getLogger('django')
 
 
 class FieldSearch:
+    """
+    The search form for a series of different fields
+    """
 
     def __init__(self):
         self.card_name = None
@@ -28,15 +43,15 @@ class FieldSearch:
         root_param = searcher.root_parameter
 
         if self.card_name:
-            logger.info(f'Searching for card name {self.card_name}')
+            logger.info('Searching for card name %s', self.card_name)
             root_param.add_parameter(CardNameParam(self.card_name))
 
         if self.rules_text:
-            logger.info(f'Searching for rules text {self.rules_text}')
+            logger.info('Searching for rules text %s', self.rules_text)
             root_param.add_parameter(CardRulesTextParam(self.rules_text))
 
         if self.cmc is not None:
-            logger.info(f'Searching for CMC {self.cmc}/{self.cmc_operator}')
+            logger.info('Searching for CMC %s/%s', self.cmc, self.cmc_operator)
             root_param.add_parameter(CardCmcParam(self.cmc, self.cmc_operator))
 
         if self.colours:
@@ -53,8 +68,8 @@ class FieldSearch:
                 exclude_param = NotParam()
                 root_param.add_parameter(exclude_param)
                 for colour in [c for c in Card.colour_flags.values() if c not in self.colours]:
-                    p = CardColourParam(colour)
-                    exclude_param.add_parameter(p)
+                    param = CardColourParam(colour)
+                    exclude_param.add_parameter(param)
 
         if self.colour_identities:
             if self.match_colour_identities_exactly:
@@ -69,8 +84,9 @@ class FieldSearch:
             if self.exclude_unselected_colour_identities:
                 exclude_param = NotParam()
                 root_param.add_parameter(exclude_param)
-                for colour in [c for c in Card.colour_flags.values() if c not in self.colour_identities]:
-                    p = CardColourIdentityParam(colour)
-                    exclude_param.add_parameter(p)
+                for colour in [c for c in Card.colour_flags.values()
+                               if c not in self.colour_identities]:
+                    param = CardColourIdentityParam(colour)
+                    exclude_param.add_parameter(param)
 
         return searcher.result_search()

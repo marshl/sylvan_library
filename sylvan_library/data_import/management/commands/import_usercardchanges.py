@@ -1,6 +1,11 @@
+"""
+The module for the import_usercardchanges command
+"""
+
+import logging
+
 from datetime import datetime
 from pytz import utc
-import logging
 
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
@@ -12,6 +17,10 @@ logger = logging.getLogger('django')
 
 
 class Command(BaseCommand):
+    """
+    The command for importing user card changes from a tab separated file
+    Tis will delete all cards that the user has
+    """
     help = 'Imports user card changes from a tab separated file'
 
     def add_arguments(self, parser):
@@ -35,9 +44,9 @@ class Command(BaseCommand):
 
         user.card_changes.all().delete()
 
-        with open(filename, 'r') as f:
+        with open(filename, 'r') as file:
 
-            for line in f:
+            for line in file:
 
                 logger.info(line)
                 (name, setcode, datestr, number) = line.rstrip().split('\t')
@@ -45,20 +54,20 @@ class Command(BaseCommand):
                 date = utc.localize(date)
 
                 card = Card.objects.get(name=name)
-                logger.info(f'Card: {card}')
+                logger.info('Card: %s', card)
 
                 cardset = Set.objects.get(code=setcode)
-                logger.info(f'Set: {cardset}')
+                logger.info('Set: %s', cardset)
 
                 printing = CardPrinting.objects.filter(
                     card=card,
                     set=cardset).first()
-                logger.info(f'CardPrinting: {printing}')
+                logger.info('CardPrinting: %s', printing)
 
                 printlang = CardPrintingLanguage.objects.get(
                     card_printing=printing,
                     language=english)
-                logger.info(f'CardPrintingLanguage: {printlang}')
+                logger.info('CardPrintingLanguage: %s', printlang)
 
                 physcards = PhysicalCard.objects.filter(
                     printed_languages=printlang)
