@@ -2,6 +2,7 @@
 The module for the import_usercards command
 """
 
+
 import logging
 
 from django.core.management.base import BaseCommand
@@ -17,6 +18,7 @@ from cards.models import (
     Set,
     UserOwnedCard,
 )
+from _query import query_yes_no
 
 logger = logging.getLogger('django')
 
@@ -50,6 +52,7 @@ class Command(BaseCommand):
 
             with open(filename, 'r') as file:
                 for line in file:
+                    logger.info(line)
                     (name, number, setcode) = line.rstrip().split('\t')
 
                     card = Card.objects.get(name=name)
@@ -74,11 +77,21 @@ class Command(BaseCommand):
                     physcards = PhysicalCard.objects.filter(
                         printed_languages=printlang)
 
-                    if UserOwnedCard.objects.filter(
-                            physical_card__in=physcards,
-                            owner=user).exists():
-                        logger.info('Other half of this card already has been added')
-                        continue
+                    existing_rec = UserOwnedCard.objects.filter(
+                        physical_card__in=physcards,
+                        owner=user)
+                    if existing_rec.exists():
+                        if card.links.exists():
+                            logger.info('Other half of this card already has been added')
+                            continue
+                        else:
+                            existing_rec = existing_rec.first()
+                            result = query_yes_no(
+                                f'{existing_rec} already exists, do you want to add to it?')
+                            if result:
+                                existing_rec.count += int(number)
+                                existing_rec.save()
+                            continue
 
                     for phys in physcards:
                         usercard = UserOwnedCard(
