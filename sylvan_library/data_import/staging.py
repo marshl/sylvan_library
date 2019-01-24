@@ -118,7 +118,8 @@ class StagedCard:
         if self.value_dict['name'] == 'B.F.M. (Big Furry Monster)':
             if self.value_dict['number'] == '28':
                 return 'B.F.M. (Big Furry Monster) (left)'
-            elif self.value_dict['number'] == '29':
+
+            if self.value_dict['number'] == '29':
                 return 'B.F.M. (Big Furry Monster) (right)'
 
         return self.value_dict['name']
@@ -132,8 +133,8 @@ class StagedCard:
     def get_colour(self):
         if 'colors' in self.value_dict:
             return ColourUtils.colour_codes_to_flags(self.value_dict['colors'])
-        else:
-            return 0
+
+        return 0
 
     def get_colour_sort_key(self):
         return COLOUR_TO_SORT_KEY[int(self.get_colour())]
@@ -145,8 +146,8 @@ class StagedCard:
         generic_mana = re.search(r'(\d+)', self.get_mana_cost())
         if not generic_mana:
             return self.get_cmc()
-        else:
-            return self.get_cmc() - int(generic_mana.group(0))
+
+        return self.get_cmc() - int(generic_mana.group(0))
 
     def get_colour_identity(self):
         if 'colorIdentity' in self.value_dict:

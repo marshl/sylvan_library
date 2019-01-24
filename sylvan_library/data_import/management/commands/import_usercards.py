@@ -2,7 +2,6 @@
 The module for the import_usercards command
 """
 
-
 import logging
 
 from django.core.management.base import BaseCommand

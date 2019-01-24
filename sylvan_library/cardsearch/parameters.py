@@ -126,8 +126,7 @@ class CardRulesTextParam(CardSearchParam):
             return Card.objects.extra(
                 where=["rules_text ILIKE '%%' || REPLACE(%s, '~', name) || '%%'"],
                 params=[self.card_rules])
-        else:
-            return Card.objects.filter(rules_text__icontains=self.card_rules)
+        return Card.objects.filter(rules_text__icontains=self.card_rules)
 
 
 class CardTypeParam(CardSearchParam):
