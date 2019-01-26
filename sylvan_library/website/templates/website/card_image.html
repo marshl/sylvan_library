@@ -2,5 +2,7 @@
 {% load staticfiles %}
 
 {% block content %}
-    <img src="{% static card|card_image_url|safe %}" alt="{{ card.name }}"/>
+    <img class="listImg"
+         src="{% static card|card_image_url|safe %}" alt="{{ card.name }}"
+         style="width: 100px; border-radius: 10px; cursor: pointer;"/>
 {% endblock %}

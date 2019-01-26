@@ -1,19 +1,208 @@
 {% load mtg_font %}
 
 {% block content %}
-    <div class="card-result">
-        <div class="card-image">
-            {% include "website/card_image.html" with card=card %}
-        </div>
-        <div class="card-content">
-        </div>
+    <div class="sk-hits-list-hit sk-hits-list__item" style="display:block;">
+        <div style="display:flex;">
+            <div class="listImgDiv ">
+                <!--<img class="clicked listImg"
+                     src="https://image.deckbrew.com/mtg/multiverseid/202486.jpg"
+                     style="border-radius: 10px; cursor: pointer;"
+                     width="100">-->
+                {% include "website/card_image.html" with card=card %}
+            </div>
 
-        <div class="card-title">
-            {{ card.name }} {{ card.cost | replace_mtg_font_symbols | safe }}
-        </div>
+            <div style="width:100%;">
+                <div style="display:flex;">
+                    <div class="sk-hits-list-hit__details" style="display:inline-block;">
+                        <h2 class="sk-hits-list-hit__title">
+                            <a href="http://mtg-hunter.com/?q=Terror" target="_blank">{{ card.name }}</a>
+                            <!--<span> </span>
+                            <img src="./src/img/1.png" height="15px">
+                            <img src="./src/img/b.png" height="15px">
+                            -->
+                            {{ card.cost | replace_mtg_font_symbols | safe }}
+                            <span> (</span><span>{{ card.cmc | floatformat }}</span><span>)</span>
+                            <!--<span></span>
+                            <span> </span>-->
+                            <!--<span class="disqus-comment-count"
+                                  data-disqus-identifier="202486"
+                                  style="font-variant:small-caps;float:right;cursor:pointer;padding-right:8px;font-size:smaller;"
+                            >0 Comments</span>-->
+                        </h2>
+                        <div style="display:inline-flex;" class="sk-hits-list-hit__subtitle typeLine">
+                            <div style="display:inline-flex;">
+                                <span class="sk-tag-filter">{{ card.type }}</span>
+                                {% if card.subtype %}
+                                    <span>&ndash;</span>
+                                    <span>{{ card.subtype }}</span>
+                                {% endif %}
+                            </div>
+                            <span></span>
+                        </div>
+                        <h3 class="sk-hits-list-hit__subtitle">
+                            <div>
+                                {{ card.rules_text | replace_mtg_font_symbols | safe }}
+                            </div>
+                            <div>
 
-        <div class="card-rules">
-            {{ card.rules_text | replace_mtg_font_symbols | safe }}
+                            </div>
+                        </h3>
+                    </div>
+                    <div style="width:80px;position:relative;right:10px;text-align:center;padding-left:5px;">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                    <div style="width:150px;position:relative;right:10px;display:inline-block;">
+                        <p style="text-align:center;max-height:200px;overflow-y:scroll;">
+
+                            {% for printing in card.printings.all %}
+                                <i class="ss
+                                ss-{{ printing.set.code | lower }}
+                                ss-{{ printing.rarity.name | lower }}"
+                                   title="{{ printing.set.name }}"></i>
+                            {% endfor %}
+                            <!--<img class="setIcon C" src="./src/img/sets/limitededitionalpha-C.jpg"
+                                 title="Limited Edition Alpha">
+                            <img class="setIcon C" src="./src/img/sets/limitededitionbeta-C.jpg"
+                                 title="Limited Edition Beta">
+                            <img class="setIcon C" src="./src/img/sets/unlimitededition-C.jpg"
+                                 title="Unlimited Edition">
+                            <img class="setIcon C" src="./src/img/sets/revisededition-C.jpg" title="Revised Edition">
+                            <img class="setIcon C" src="./src/img/sets/fourthedition-C.jpg" title="Fourth Edition">
+                            <img class="setIcon C" src="./src/img/sets/fifthedition-C.jpg" title="Fifth Edition">
+                            <img class="setIcon C" src="./src/img/sets/classicsixthedition-C.jpg"
+                                 title="Classic Sixth Edition">
+                            <img class="setIcon C" src="./src/img/sets/battleroyaleboxset-C.jpg"
+                                 title="Battle Royale Box Set">
+                            <img class="setIcon C" src="./src/img/sets/starter2000-C.jpg" title="Starter 2000">
+                            <img class="setIcon C" src="./src/img/sets/beatdownboxset-C.jpg" title="Beatdown Box Set">
+                            <img class="setIcon C" src="./src/img/sets/mirrodin-C.jpg" title="Mirrodin">
+                            <img class="setIcon C" src="./src/img/sets/tenthedition-C.jpg" title="Tenth Edition">
+                            <img class="clicked setIcon C" src="./src/img/sets/masterseditioniv-C.jpg"
+                                 title="Masters Edition IV"> -->
+                        </p>
+                    </div>
+                </div>
+                <div class="sk-hits-list-hit__details">
+                    <div class="ReactTabs react-tabs">
+                        <ul class="ReactTabs__TabList" role="tablist">
+                            <li class="ReactTabs__Tab ReactTabs__Tab--selected" role="tab" id="react-tabs-80"
+                                aria-selected="true" aria-expanded="true" aria-disabled="false"
+                                aria-controls="react-tabs-81"
+                                tabindex="0" selected="selected">Details
+                            </li>
+                            <li class="ReactTabs__Tab" role="tab" id="react-tabs-82" aria-selected="false"
+                                aria-expanded="false" aria-disabled="false" aria-controls="react-tabs-83">
+                                Rulings
+                            </li>
+                            <li class="ReactTabs__Tab" role="tab" id="react-tabs-84" aria-selected="false"
+                                aria-expanded="false" aria-disabled="false" aria-controls="react-tabs-85">
+                                Languages
+                            </li>
+                            <li class="ReactTabs__Tab" role="tab" id="react-tabs-86" aria-selected="false"
+                                aria-expanded="false" aria-disabled="false" aria-controls="react-tabs-87">
+                                10 closest cards
+                            </li>
+                            <li class="ReactTabs__Tab" role="tab" id="react-tabs-88" aria-selected="false"
+                                aria-expanded="false" aria-disabled="false" aria-controls="react-tabs-89">
+                                Comments
+                            </li>
+                        </ul>
+                        <div class="ReactTabs__TabPanel ReactTabs__TabPanel--selected" role="tabpanel"
+                             id="react-tabs-81" aria-labelledby="react-tabs-80">
+                            <div class="extraDetails">
+                                <div></div>
+                                <div>
+                                    <span class="sk-hits-list-hit__subtitle">
+                                        <b>Set: </b>
+                                    </span>
+                                    <div class="sk-hits-list-hit__subtitle" style="display:inline-flex;">
+                                        <span class="sk-tag-filter">Masters Edition IV</span>
+                                    </div>
+                                    <span class="sk-hits-list-hit__subtitle"> (#99)</span>
+                                    <br/>
+                                    <span class="sk-hits-list-hit__subtitle">
+                                        <b>Artist: </b>
+                                    </span>
+                                    <div class="sk-hits-list-hit__subtitle" style="display:inline-flex;">
+                                        <span class="sk-tag-filter">Ron Spencer</span>
+                                    </div>
+                                    <br>
+                                </div>
+                                <div>
+                                    <span class="sk-hits-list-hit__subtitle">
+                                        <b>Legalities: </b>
+                                    </span>
+                                    <div>
+                                        <div class="sk-hits-list-hit__subtitle" style="display:inline-flex;">
+                                            <span class="sk-tag-filter">Commander</span>
+                                        </div>
+                                        <span class="sk-hits-list-hit__subtitle legal">: Legal</span>
+                                        <br/>
+                                    </div>
+                                    <div>
+                                        <div class="sk-hits-list-hit__subtitle" style="display:inline-flex;">
+                                            <span class="sk-tag-filter">Legacy</span>
+                                        </div>
+                                        <span class="sk-hits-list-hit__subtitle legal">: Legal</span>
+                                        <br/>
+                                    </div>
+                                    <div>
+                                        <div class="sk-hits-list-hit__subtitle" style="display:inline-flex;">
+                                            <span class="sk-tag-filter">Mirrodin Block</span>
+                                        </div>
+                                        <span class="sk-hits-list-hit__subtitle legal">: Legal</span>
+                                        <br/>
+                                    </div>
+                                    <div>
+                                        <div class="sk-hits-list-hit__subtitle" style="display:inline-flex;">
+                                            <span class="sk-tag-filter">Modern</span>
+                                        </div>
+                                        <span class="sk-hits-list-hit__subtitle legal">: Legal</span>
+                                        <br/>
+                                    </div>
+                                    <div>
+                                        <div class="sk-hits-list-hit__subtitle" style="display:inline-flex;">
+                                            <span class="sk-tag-filter">Vintage</span>
+                                        </div>
+                                        <span class="sk-hits-list-hit__subtitle legal">: Legal</span>
+                                        <br/>
+                                    </div>
+                                    <div>
+                                        <div class="sk-hits-list-hit__subtitle" style="display:inline-flex;">
+                                            <span class="sk-tag-filter">Penny Dreadful</span>
+                                        </div>
+                                        <span class="sk-hits-list-hit__subtitle legal">: Legal</span>
+                                        <br/>
+                                    </div>
+                                    <div>
+                                        <div class="sk-hits-list-hit__subtitle" style="display:inline-flex;">
+                                            <span class="sk-tag-filter">Pauper (MTGO)</span>
+                                        </div>
+                                        <span class="sk-hits-list-hit__subtitle legal">: Legal</span>
+                                        <br/>
+                                    </div>
+                                </div>
+                                <div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ReactTabs__TabPanel" role="tabpanel" id="react-tabs-83"
+                             aria-labelledby="react-tabs-82" style="display:none;"></div>
+                        <div class="ReactTabs__TabPanel" role="tabpanel" id="react-tabs-85"
+                             aria-labelledby="react-tabs-84" style="display:none;"></div>
+                        <div class="ReactTabs__TabPanel" role="tabpanel" id="react-tabs-87"
+                             aria-labelledby="react-tabs-86" style="display:none;"></div>
+                        <div class="ReactTabs__TabPanel" role="tabpanel" id="react-tabs-89"
+                             aria-labelledby="react-tabs-88" style="display:none;"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
+
 {% endblock %}
