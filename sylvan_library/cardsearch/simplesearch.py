@@ -2,8 +2,8 @@
 The module for the simple search form
 """
 from cards.models import Card
+from cardsearch.base_search import BaseSearch
 
-from cardsearch.card_search import CardSearch
 from cardsearch.parameters import (
     OrParam,
     CardNameParam,
@@ -16,8 +16,10 @@ from cardsearch.parameters import (
     CardMulticolouredOnlyParam,
 )
 
+from cardsearch.base_search import BaseSearch
 
-class SimpleSearch:
+
+class SimpleSearch(BaseSearch):
     """
     A simple flat search
     """
@@ -36,10 +38,9 @@ class SimpleSearch:
         self.card_type = False
         self.sort_order = None
 
-    def get_query(self):
+    def build_parameters(self):
 
-        searcher = CardSearch()
-        root_param = searcher.root_parameter
+        root_param = self.root_parameter
 
         if self.text:
             text_root = root_param.add_parameter(OrParam())
@@ -78,5 +79,3 @@ class SimpleSearch:
 
         if self.card_type:
             root_param.add_parameter(CardTypeParam(self.card_type))
-
-        return searcher.result_search()

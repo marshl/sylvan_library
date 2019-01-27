@@ -1,27 +1,31 @@
 {% load mtg_font %}
+{% load card_image %}
+{% load staticfiles %}
+
 
 {% block content %}
+
     <div class="sk-hits-list-hit sk-hits-list__item" style="display:block;">
         <div style="display:flex;">
             <div class="listImgDiv ">
-                <!--<img class="clicked listImg"
-                     src="https://image.deckbrew.com/mtg/multiverseid/202486.jpg"
+                <img class="clicked listImg"
+                     src="{% static result.selected_printing|card_printing_image_url|safe %}" alt="{{ card.name }}"
                      style="border-radius: 10px; cursor: pointer;"
-                     width="100">-->
-                {% include "website/card_image.html" with card=card %}
+                     width="100"/>
             </div>
 
             <div style="width:100%;">
                 <div style="display:flex;">
                     <div class="sk-hits-list-hit__details" style="display:inline-block;">
                         <h2 class="sk-hits-list-hit__title">
-                            <a href="http://mtg-hunter.com/?q=Terror" target="_blank">{{ card.name }}</a>
+                            <a href="{% url 'website:card_detail' card_id=result.card.id %}"
+                               target="_blank">{{ result.card.name }}</a>
                             <!--<span> </span>
                             <img src="./src/img/1.png" height="15px">
                             <img src="./src/img/b.png" height="15px">
                             -->
-                            {{ card.cost | replace_mtg_font_symbols | safe }}
-                            <span> (</span><span>{{ card.cmc | floatformat }}</span><span>)</span>
+                            {{ result.card.cost | replace_mtg_font_symbols | safe }}
+                            <span> (</span><span>{{ result.card.cmc | floatformat }}</span><span>)</span>
                             <!--<span></span>
                             <span> </span>-->
                             <!--<span class="disqus-comment-count"
@@ -31,17 +35,17 @@
                         </h2>
                         <div style="display:inline-flex;" class="sk-hits-list-hit__subtitle typeLine">
                             <div style="display:inline-flex;">
-                                <span class="sk-tag-filter">{{ card.type }}</span>
-                                {% if card.subtype %}
+                                <span class="sk-tag-filter">{{ result.card.type }}</span>
+                                {% if result.card.subtype %}
                                     <span>&ndash;</span>
-                                    <span>{{ card.subtype }}</span>
+                                    <span>{{ result.card.subtype }}</span>
                                 {% endif %}
                             </div>
                             <span></span>
                         </div>
                         <h3 class="sk-hits-list-hit__subtitle">
                             <div>
-                                {{ card.rules_text | replace_mtg_font_symbols | safe }}
+                                {{ result.card.rules_text | replace_mtg_font_symbols | safe }}
                             </div>
                             <div>
 
@@ -50,17 +54,22 @@
                     </div>
                     <div style="width:80px;position:relative;right:10px;text-align:center;padding-left:5px;">
                         <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
                     </div>
                     <div style="width:150px;position:relative;right:10px;display:inline-block;">
                         <p style="text-align:center;max-height:200px;overflow-y:scroll;">
 
-                            {% for printing in card.printings.all %}
-                                <i class="ss
+                            {% for printing in result.card.printings.all %}
+                                <i class="setIcon ss
                                 ss-{{ printing.set.code | lower }}
-                                ss-{{ printing.rarity.name | lower }}"
+                                ss-{{ printing.rarity.name | lower }}
+                                ss-2x
+                                {% if printing.rarity.symbol != 'C' %}
+                                    ss-grad
+                                {% endif %}
+                                {% if printing == result.selected_printing %}
+                                    clicked
+                                {% endif %}
+                                {{ printing.rarity.symbol }}"
                                    title="{{ printing.set.name }}"></i>
                             {% endfor %}
                             <!--<img class="setIcon C" src="./src/img/sets/limitededitionalpha-C.jpg"
@@ -87,15 +96,16 @@
                 </div>
                 <div class="sk-hits-list-hit__details">
                     <div class="ReactTabs react-tabs">
-                        <ul class="ReactTabs__TabList" role="tablist">
+                        <ul class="ReactTabs__TabList js-tabs" role="tablist">
                             <li class="ReactTabs__Tab ReactTabs__Tab--selected" role="tab" id="react-tabs-80"
                                 aria-selected="true" aria-expanded="true" aria-disabled="false"
                                 aria-controls="react-tabs-81"
-                                tabindex="0" selected="selected">Details
+                                tabindex="0" selected="selected">
+                                <a href="#card-detail-tab-{{ card.id }}">Details</a>
                             </li>
                             <li class="ReactTabs__Tab" role="tab" id="react-tabs-82" aria-selected="false"
                                 aria-expanded="false" aria-disabled="false" aria-controls="react-tabs-83">
-                                Rulings
+                                <a href="#card-rulings-tab-{{ card.id }}">Rulings</a>
                             </li>
                             <li class="ReactTabs__Tab" role="tab" id="react-tabs-84" aria-selected="false"
                                 aria-expanded="false" aria-disabled="false" aria-controls="react-tabs-85">
@@ -112,86 +122,19 @@
                         </ul>
                         <div class="ReactTabs__TabPanel ReactTabs__TabPanel--selected" role="tabpanel"
                              id="react-tabs-81" aria-labelledby="react-tabs-80">
-                            <div class="extraDetails">
-                                <div></div>
-                                <div>
-                                    <span class="sk-hits-list-hit__subtitle">
-                                        <b>Set: </b>
-                                    </span>
-                                    <div class="sk-hits-list-hit__subtitle" style="display:inline-flex;">
-                                        <span class="sk-tag-filter">Masters Edition IV</span>
-                                    </div>
-                                    <span class="sk-hits-list-hit__subtitle"> (#99)</span>
-                                    <br/>
-                                    <span class="sk-hits-list-hit__subtitle">
-                                        <b>Artist: </b>
-                                    </span>
-                                    <div class="sk-hits-list-hit__subtitle" style="display:inline-flex;">
-                                        <span class="sk-tag-filter">Ron Spencer</span>
-                                    </div>
-                                    <br>
-                                </div>
-                                <div>
-                                    <span class="sk-hits-list-hit__subtitle">
-                                        <b>Legalities: </b>
-                                    </span>
-                                    <div>
-                                        <div class="sk-hits-list-hit__subtitle" style="display:inline-flex;">
-                                            <span class="sk-tag-filter">Commander</span>
-                                        </div>
-                                        <span class="sk-hits-list-hit__subtitle legal">: Legal</span>
-                                        <br/>
-                                    </div>
-                                    <div>
-                                        <div class="sk-hits-list-hit__subtitle" style="display:inline-flex;">
-                                            <span class="sk-tag-filter">Legacy</span>
-                                        </div>
-                                        <span class="sk-hits-list-hit__subtitle legal">: Legal</span>
-                                        <br/>
-                                    </div>
-                                    <div>
-                                        <div class="sk-hits-list-hit__subtitle" style="display:inline-flex;">
-                                            <span class="sk-tag-filter">Mirrodin Block</span>
-                                        </div>
-                                        <span class="sk-hits-list-hit__subtitle legal">: Legal</span>
-                                        <br/>
-                                    </div>
-                                    <div>
-                                        <div class="sk-hits-list-hit__subtitle" style="display:inline-flex;">
-                                            <span class="sk-tag-filter">Modern</span>
-                                        </div>
-                                        <span class="sk-hits-list-hit__subtitle legal">: Legal</span>
-                                        <br/>
-                                    </div>
-                                    <div>
-                                        <div class="sk-hits-list-hit__subtitle" style="display:inline-flex;">
-                                            <span class="sk-tag-filter">Vintage</span>
-                                        </div>
-                                        <span class="sk-hits-list-hit__subtitle legal">: Legal</span>
-                                        <br/>
-                                    </div>
-                                    <div>
-                                        <div class="sk-hits-list-hit__subtitle" style="display:inline-flex;">
-                                            <span class="sk-tag-filter">Penny Dreadful</span>
-                                        </div>
-                                        <span class="sk-hits-list-hit__subtitle legal">: Legal</span>
-                                        <br/>
-                                    </div>
-                                    <div>
-                                        <div class="sk-hits-list-hit__subtitle" style="display:inline-flex;">
-                                            <span class="sk-tag-filter">Pauper (MTGO)</span>
-                                        </div>
-                                        <span class="sk-hits-list-hit__subtitle legal">: Legal</span>
-                                        <br/>
-                                    </div>
-                                </div>
-                                <div>
-
-                                </div>
-                            </div>
+                            {% include "website/search_result_details.html" with printing=result.selected_printing %}
                         </div>
                         <div class="ReactTabs__TabPanel" role="tabpanel" id="react-tabs-83"
-                             aria-labelledby="react-tabs-82" style="display:none;"></div>
+                             aria-labelledby="react-tabs-82" style="display:none;">
+                            <div class="extraDetails" id="card-rulings-tab-{{ result.card.id }}">
+                                <div>
+                                    <div><span class="sk-hits-list-hit__subtitle"><b>2015-06-22: </b></span><span
+                                            class="sk-hits-list-hit__subtitle"><div>Deep-Sea Terror's ability only checks as attackers are declared. After Deep-Sea Terror legally attacks, reducing the number of cards in your graveyard won't cause it to stop attacking.</div></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
                         <div class="ReactTabs__TabPanel" role="tabpanel" id="react-tabs-85"
                              aria-labelledby="react-tabs-84" style="display:none;"></div>
                         <div class="ReactTabs__TabPanel" role="tabpanel" id="react-tabs-87"

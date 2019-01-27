@@ -4,7 +4,6 @@ The module for the field search class
 import logging
 
 from cards.models import Card
-from cardsearch.card_search import CardSearch
 from cardsearch.parameters import (
     CardNameParam,
     CardRulesTextParam,
@@ -14,16 +13,19 @@ from cardsearch.parameters import (
     NotParam,
     CardColourIdentityParam,
 )
+from cardsearch.base_search import BaseSearch
 
 logger = logging.getLogger('django')
 
 
-class FieldSearch:
+class FieldSearch(BaseSearch):
     """
     The search form for a series of different fields
     """
 
     def __init__(self):
+        super().__init__()
+
         self.card_name = None
         self.rules_text = None
         self.cmc = None
@@ -37,10 +39,9 @@ class FieldSearch:
         self.exclude_unselected_colour_identities = False
         self.match_colour_identities_exactly = False
 
-    def get_query(self):
+    def build_parameters(self):
 
-        searcher = CardSearch()
-        root_param = searcher.root_parameter
+        root_param = self.root_parameter
 
         if self.card_name:
             logger.info('Searching for card name %s', self.card_name)
@@ -88,5 +89,3 @@ class FieldSearch:
                                if c not in self.colour_identities]:
                     param = CardColourIdentityParam(colour)
                     exclude_param.add_parameter(param)
-
-        return searcher.result_search()
