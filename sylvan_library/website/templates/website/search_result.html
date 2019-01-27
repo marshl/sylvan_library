@@ -101,45 +101,43 @@
                     </div>
                 </div>
                 <div class="sk-hits-list-hit__details">
-                    <div class="ReactTabs react-tabs">
-                        <ul class="ReactTabs__TabList js-tabs" role="tablist">
-                            <li class="ReactTabs__Tab ReactTabs__Tab--selected" role="tab" id="react-tabs-80"
-                                aria-selected="true" aria-expanded="true" aria-disabled="false"
-                                aria-controls="react-tabs-81"
-                                tabindex="0" selected="selected">
-                                <a href="#card-detail-tab-{{ card.id }}">Details</a>
+                    <div class="ReactTabs react-tabs js-card-result-tab-container">
+                        <ul class="ReactTabs__TabList" role="tablist">
+                            <li class="ReactTabs__Tab--selected js-card-result-tab"
+                                role="tab"
+                                id="card-result-tab-{{ result.card.id }}-details"
+                                data-target-tab="#card-result-tab-content-{{ result.card.id }}-details"
+                                aria-selected="true" aria-expanded="true">
+                                Details
                             </li>
-                            <li class="ReactTabs__Tab" role="tab" id="react-tabs-82" aria-selected="false"
-                                aria-expanded="false" aria-disabled="false" aria-controls="react-tabs-83">
-                                <a href="#card-rulings-tab-{{ card.id }}">Rulings</a>
+                            <li class="ReactTabs__Tab js-card-result-tab"
+                                role="tab"
+                                id="react-tabs-82"
+                                aria-selected="false"
+                                data-target-tab="#card-result-tab-content-{{ result.card.id }}-rulings"
+                                aria-expanded="false">
+                                Rulings
                             </li>
                             <li class="ReactTabs__Tab" role="tab" id="react-tabs-84" aria-selected="false"
-                                aria-expanded="false" aria-disabled="false" aria-controls="react-tabs-85">
+                                aria-expanded="false">
                                 Languages
                             </li>
                             <li class="ReactTabs__Tab" role="tab" id="react-tabs-86" aria-selected="false"
-                                aria-expanded="false" aria-disabled="false" aria-controls="react-tabs-87">
+                                aria-expanded="false">
                                 10 closest cards
                             </li>
                             <li class="ReactTabs__Tab" role="tab" id="react-tabs-88" aria-selected="false"
-                                aria-expanded="false" aria-disabled="false" aria-controls="react-tabs-89">
+                                aria-expanded="false">
                                 Comments
                             </li>
                         </ul>
-                        <div class="ReactTabs__TabPanel ReactTabs__TabPanel--selected" role="tabpanel"
-                             id="react-tabs-81" aria-labelledby="react-tabs-80">
+                        <div class="ReactTabs__TabPanel ReactTabs__TabPanel--selected js-card-result-tab-content" role="tabpanel"
+                             id="card-result-tab-content-{{ result.card.id }}-details">
                             {% include "website/search_result_details.html" with printing=result.selected_printing %}
                         </div>
-                        <div class="ReactTabs__TabPanel" role="tabpanel" id="react-tabs-83"
+                        <div class="ReactTabs__TabPanel js-card-result-tab-content" role="tabpanel" id="card-result-tab-content-{{ result.card.id }}-rulings"
                              aria-labelledby="react-tabs-82" style="display:none;">
-                            <div class="extraDetails" id="card-rulings-tab-{{ result.card.id }}">
-                                <div>
-                                    <div><span class="sk-hits-list-hit__subtitle"><b>2015-06-22: </b></span><span
-                                            class="sk-hits-list-hit__subtitle"><div>Deep-Sea Terror's ability only checks as attackers are declared. After Deep-Sea Terror legally attacks, reducing the number of cards in your graveyard won't cause it to stop attacking.</div></span>
-                                    </div>
-                                </div>
-                            </div>
-
+                            {% include "website/search_result_rulings.html" with card=result.card %}
                         </div>
                         <div class="ReactTabs__TabPanel" role="tabpanel" id="react-tabs-85"
                              aria-labelledby="react-tabs-84" style="display:none;"></div>
