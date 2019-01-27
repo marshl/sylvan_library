@@ -22,7 +22,11 @@ class BaseSearch:
 
     def get_results(self, page_number: int = 1, page_size: int = 25) -> List[SearchResult]:
         queryset = self.root_parameter.query()
-        paginator = Paginator(queryset, page_size)
+        self.add_sort_param(CardNameSortParam())
+        ordered_query = queryset.order_by(
+            *[order for sort_param in self.sort_params for order in sort_param.get_sort_list()])
+
+        paginator = Paginator(ordered_query, page_size)
         page = paginator.page(page_number)
         results = [SearchResult(card) for card in page]
         return results
@@ -34,14 +38,3 @@ class BaseSearch:
         :return:
         """
         self.sort_params.append(sort_param)
-
-    def result_search(self) -> QuerySet:
-        """
-        Creates and returns the search tree
-        :return:
-        """
-        result = self.root_parameter.query()
-        self.add_sort_param(CardNameSortParam())
-        result = result.order_by(
-            *[order for sort_param in self.sort_params for order in sort_param.get_sort_list()])
-        return result
