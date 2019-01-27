@@ -118,8 +118,9 @@
                                 aria-expanded="false">
                                 Rulings
                             </li>
-                            <li class="ReactTabs__Tab" role="tab" id="react-tabs-84" aria-selected="false"
-                                aria-expanded="false">
+                            <li class="ReactTabs__Tab js-card-result-tab" role="tab" id="react-tabs-84" aria-selected="false"
+                                aria-expanded="false"
+                            data-target-tab="#card-result-tab-content-{{ result.card.id }}-languages">
                                 Languages
                             </li>
                         </ul>
@@ -131,8 +132,10 @@
                              aria-labelledby="react-tabs-82" style="display:none;">
                             {% include "website/search_result_rulings.html" with card=result.card %}
                         </div>
-                        <div class="ReactTabs__TabPanel" role="tabpanel" id="react-tabs-85"
-                             aria-labelledby="react-tabs-84" style="display:none;"></div>
+                        <div class="ReactTabs__TabPanel" role="tabpanel" id="card-result-tab-content-{{ result.card.id }}-languages"
+                             aria-labelledby="react-tabs-84" style="display:none;">
+                            {% include "website/search_result_languages.html" with printing=result.selected_printing%}
+                        </div>
                     </div>
                 </div>
             </div>
