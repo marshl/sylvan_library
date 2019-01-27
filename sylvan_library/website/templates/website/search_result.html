@@ -1,11 +1,14 @@
 {% load mtg_font %}
 {% load card_image %}
+{% load card_ownership %}
 {% load staticfiles %}
 
 
 {% block content %}
 
-    <div class="sk-hits-list-hit sk-hits-list__item" style="display:block;">
+    <div class="sk-hits-list-hit sk-hits-list__item js-card-result"
+         data-card-id="{{ result.card.id }}"
+         style="display:block;">
         <div style="display:flex;">
             <div class="listImgDiv ">
                 <img class="clicked listImg"
@@ -20,6 +23,7 @@
                         <h2 class="sk-hits-list-hit__title">
                             <a href="{% url 'website:card_detail' card_id=result.card.id %}"
                                target="_blank">{{ result.card.name }}</a>
+
                             <!--<span> </span>
                             <img src="./src/img/1.png" height="15px">
                             <img src="./src/img/b.png" height="15px">
@@ -28,10 +32,12 @@
                             <span> (</span><span>{{ result.card.cmc | floatformat }}</span><span>)</span>
                             <!--<span></span>
                             <span> </span>-->
-                            <!--<span class="disqus-comment-count"
-                                  data-disqus-identifier="202486"
-                                  style="font-variant:small-caps;float:right;cursor:pointer;padding-right:8px;font-size:smaller;"
-                            >0 Comments</span>-->
+                            {% if request.user %}
+                                <span class="disqus-comment-count"
+                                      style="font-variant:small-caps;float:right;cursor:pointer;padding-right:8px;font-size:smaller;">
+                                    You own: {{ result.card|user_card_ownership_count:request.user }}
+                                </span>
+                            {% endif %}
                         </h2>
                         <div style="display:inline-flex;" class="sk-hits-list-hit__subtitle typeLine">
                             <div style="display:inline-flex;">
