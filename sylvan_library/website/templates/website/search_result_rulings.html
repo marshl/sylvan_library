@@ -1,0 +1,18 @@
+<div class="extraDetails">
+    {% if card.rulings.exists %}
+        <div>
+            {% for ruling in card.rulings.all %}
+                <div>
+                    <span class="sk-hits-list-hit__subtitle">
+                        <b>{{ ruling.date }}: </b>
+                    </span>
+                    <span class="sk-hits-list-hit__subtitle">
+                        <div>{{ ruling.text }}</div>
+                    </span>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <span class="sk-hits-list-hit__subtitle">No rulings!</span>
+    {% endif %}
+</div>

@@ -2,7 +2,6 @@ import abc
 
 from django.core.paginator import Paginator
 from cardsearch.search_result import SearchResult
-from django.db.models.query import QuerySet
 
 from cardsearch.parameters import AndParam, CardSortParam, CardNameSortParam
 
