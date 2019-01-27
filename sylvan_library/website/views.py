@@ -139,7 +139,8 @@ def simple_search(request) -> HttpResponse:
         search.exclude_unselected_colour_identities = bool(form.data.get('exclude_colours'))
         search.match_colour_identities_exactly = bool(form.data.get('match_colours'))
 
-        results = search.get_query()[:10]
+        search.build_parameters()
+        results = search.get_results()
 
     return render(request, 'website/simple_search.html',
                   {'form': form, 'results': results})
