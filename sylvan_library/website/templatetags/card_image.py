@@ -2,8 +2,7 @@
 Module for custom template filters to get the image paths of different card models
 """
 
-
-from os import path
+import os
 from django import template
 from cards.models import (
     Card,
@@ -16,6 +15,10 @@ from cards.models import (
 register = template.Library()
 
 
+def get_default_image():
+    return os.path.join('card_images', 'card_back.jpg')
+
+
 @register.filter(name='card_printing_language_image_url')
 def card_printing_language_image_url(printed_language: CardPrintingLanguage) -> str:
     """
@@ -23,7 +26,12 @@ def card_printing_language_image_url(printed_language: CardPrintingLanguage) -> 
     :param printed_language: The printed language to get an image for
     :return: The relative image path
     """
-    return printed_language.get_image_path()
+    path = printed_language.get_image_path()
+
+    if not path:
+        return get_default_image()
+
+    return path
 
 
 @register.filter(name='card_printing_image_url')
@@ -35,7 +43,13 @@ def card_printing_image_url(card_printing: CardPrinting) -> str:
     """
     printed_language = card_printing.printed_languages.get(
         language=Language.objects.get(name='English'))
-    return printed_language.get_image_path()
+
+    path = printed_language.get_image_path()
+
+    if not path:
+        return get_default_image()
+
+    return path
 
 
 @register.filter(name='card_image_url')
@@ -48,6 +62,6 @@ def card_image_url(card: Card) -> str:
     printing = card.printings.order_by('-set__release_date').first()
 
     if not printing:
-        return path.join('static', 'card_images', 'card_back.jpg')
+        return get_default_image()
 
     return card_printing_image_url(printing)
