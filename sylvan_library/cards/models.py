@@ -199,7 +199,16 @@ class PhysicalCard(models.Model):
     layout = models.CharField(max_length=50, choices=CARD_LAYOUT_CHOICES)
 
     def __str__(self):
-        return 'Physical ' + '//'.join([str(x) for x in self.printed_languages.all()])
+        return '//'.join([str(x) for x in self.printed_languages.all()])
+
+    def get_simple_string(self):
+        if self.printed_languages.count() == 1:
+            return str(self.printed_languages.first())
+
+        base = self.printed_languages.first()
+        return base.language.name + ' ' \
+               + '//'.join(p.card_printing.card.name for p in self.printed_languages.all()) \
+               + ' in ' + base.card_printing.set.name
 
 
 class CardPrintingLanguage(models.Model):

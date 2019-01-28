@@ -1,0 +1,20 @@
+{% block content %}
+    <div class="extraDetails">
+        {% if ownerships.exists %}
+            <div>
+            <span class="sk-hits-list-hit__subtitle">
+                <b>You own: </b>
+            </span>
+                {% for ownership in ownerships.all %}
+                    <div>
+                        <span class="sk-hits-list-hit__subtitle">
+                            {{ ownership.count }} {{ ownership.physical_card.get_simple_string }}
+                        </span>
+                        <br/>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+{% endblock %}

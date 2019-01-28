@@ -13,6 +13,7 @@ from cards.models import (
     CardPrinting,
     CardPrintingLanguage,
     Set,
+    UserCardChange,
     UserOwnedCard,
 )
 from website.forms import SearchForm
@@ -164,7 +165,7 @@ def ajax_search_result_details(request, printing_id: int) -> HttpResponse:
 
 
 def ajax_search_result_rulings(request, card_id: int) -> HttpResponse:
-    card= Card.objects.get(id=card_id)
+    card = Card.objects.get(id=card_id)
     return render(request, 'website/search_result_rulings.html', {'card': card})
 
 
@@ -178,3 +179,15 @@ def ajax_card_printing_image(request, printing_id: int) -> HttpResponse:
     printing = CardPrinting.objects.get(id=printing_id)
     return render(request, 'website/card_image.html',
                   {'printing': printing})
+
+
+def ajax_search_result_ownership(request, card_id: int) -> HttpResponse:
+    card = Card.objects.get(id=card_id)
+    ownerships = UserOwnedCard.objects.filter(owner_id=request.user.id) \
+        .filter(physical_card__printed_languages__card_printing__card__id=card_id) \
+        .order_by('physical_card__printed_languages__card_printing__set__release_date')
+    changes = UserCardChange.objects.filter(owner_id=request.user.id) \
+        .filter(physical_card__printed_languages__card_printing__card__id=card_id)\
+        .order_by('date')
+    return render(request, 'website/search_result_ownership.html',
+                  {'card': card, 'ownerships': ownerships, 'changes': changes})

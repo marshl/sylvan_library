@@ -69,13 +69,6 @@ $(function () {
         $result.find('.js-card-result-set-symbol').removeClass('clicked');
         $(this).addClass('clicked');
 
-        /*$.ajax('/website/ajax/card_printing_image/' + printing_id)
-            .done(function (content) {
-                $result.find('.js-card-result-image-container').html(content);
-                if ($result.data('is-expanded')) {
-                    $result.find('.js-card-result-image').addClass('clicked');
-                }
-            });*/
         $result.find('.js-card-result-image').attr('src', $(this).data('image-url'));
 
         loadTabDataForPrinting($result.data('card-id'), printing_id);
@@ -96,6 +89,11 @@ $(function () {
         $.ajax('/website/ajax/search_result_languages/' + printing_id)
             .done(function (result) {
                 $('#card-result-tab-content-' + card_id + '-languages').html(result);
+            });
+
+        $.ajax('/website/ajax/search_result_ownership/' + card_id)
+            .done(function (result) {
+                $('#card-result-tab-content-' + card_id + '-ownership').html(result);
             });
     }
 });
