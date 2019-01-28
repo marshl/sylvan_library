@@ -10,8 +10,9 @@ from django.shortcuts import get_object_or_404
 
 from cards.models import (
     Card,
-    Set,
+    CardPrinting,
     CardPrintingLanguage,
+    Set,
     UserOwnedCard,
 )
 from website.forms import SearchForm
@@ -154,3 +155,9 @@ def advanced_search(request):
 # pylint: disable=unused-argument, missing-docstring
 def search_results(request):
     return 'search results'
+
+
+def ajax_search_result_details(request, printing_id: int) -> HttpResponse:
+    printing = CardPrinting.objects.get(id=printing_id)
+    return render(request, 'website/search_result_details.html',
+                  {'printing': printing})

@@ -8,6 +8,7 @@
 
     <div class="sk-hits-list-hit sk-hits-list__item js-card-result"
          data-card-id="{{ result.card.id }}"
+         data-card-printing-id="{{ result.selected_printing.id }}"
          data-is-expanded="false"
          style="display:block;">
         <div style="display:flex;">
@@ -25,14 +26,10 @@
                             <a href="{% url 'website:card_detail' card_id=result.card.id %}"
                                target="_blank">{{ result.card.name }}</a>
 
-                            <!--<span> </span>
-                            <img src="./src/img/1.png" height="15px">
-                            <img src="./src/img/b.png" height="15px">
-                            -->
-                            {{ result.card.cost | replace_mtg_font_symbols | safe }}
+                            {% if result.card.cost %}
+                                {{ result.card.cost | replace_mtg_font_symbols | safe }}
+                            {% endif %}
                             <span> (</span><span>{{ result.card.cmc | floatformat }}</span><span>)</span>
-                            <!--<span></span>
-                            <span> </span>-->
                             {% if request.user %}
                                 <span class="disqus-comment-count"
                                       style="font-variant:small-caps;float:right;cursor:pointer;padding-right:8px;font-size:smaller;">
@@ -54,9 +51,6 @@
                             <div>
                                 {{ result.card.rules_text | replace_mtg_font_symbols | safe }}
                             </div>
-                            <div>
-
-                            </div>
                         </h3>
                     </div>
                     <div style="width:80px;position:relative;right:10px;text-align:center;padding-left:5px;">
@@ -66,10 +60,9 @@
                         <p style="text-align:center;max-height:200px;overflow-y:scroll;">
 
                             {% for printing in result.card.printings.all %}
-                                <i class="setIcon ss
+                                <i class="setIcon ss ss-2x js-card-result-set-symbol
                                 ss-{{ printing.set.code | lower }}
                                 ss-{{ printing.rarity.name | lower }}
-                                ss-2x
                                 {% if printing.rarity.symbol != 'C' %}
                                     ss-grad
                                 {% endif %}
@@ -77,27 +70,9 @@
                                     clicked
                                 {% endif %}
                                 {{ printing.rarity.symbol }}"
+                                   data-printing-id="{{ printing.id }}"
                                    title="{{ printing.set.name }}"></i>
                             {% endfor %}
-                            <!--<img class="setIcon C" src="./src/img/sets/limitededitionalpha-C.jpg"
-                                 title="Limited Edition Alpha">
-                            <img class="setIcon C" src="./src/img/sets/limitededitionbeta-C.jpg"
-                                 title="Limited Edition Beta">
-                            <img class="setIcon C" src="./src/img/sets/unlimitededition-C.jpg"
-                                 title="Unlimited Edition">
-                            <img class="setIcon C" src="./src/img/sets/revisededition-C.jpg" title="Revised Edition">
-                            <img class="setIcon C" src="./src/img/sets/fourthedition-C.jpg" title="Fourth Edition">
-                            <img class="setIcon C" src="./src/img/sets/fifthedition-C.jpg" title="Fifth Edition">
-                            <img class="setIcon C" src="./src/img/sets/classicsixthedition-C.jpg"
-                                 title="Classic Sixth Edition">
-                            <img class="setIcon C" src="./src/img/sets/battleroyaleboxset-C.jpg"
-                                 title="Battle Royale Box Set">
-                            <img class="setIcon C" src="./src/img/sets/starter2000-C.jpg" title="Starter 2000">
-                            <img class="setIcon C" src="./src/img/sets/beatdownboxset-C.jpg" title="Beatdown Box Set">
-                            <img class="setIcon C" src="./src/img/sets/mirrodin-C.jpg" title="Mirrodin">
-                            <img class="setIcon C" src="./src/img/sets/tenthedition-C.jpg" title="Tenth Edition">
-                            <img class="clicked setIcon C" src="./src/img/sets/masterseditioniv-C.jpg"
-                                 title="Masters Edition IV"> -->
                         </p>
                     </div>
                 </div>
@@ -134,7 +109,7 @@
                         <div class="ReactTabs__TabPanel ReactTabs__TabPanel--selected js-card-result-tab-content"
                              role="tabpanel"
                              id="card-result-tab-content-{{ result.card.id }}-details">
-                            {% include "website/search_result_details.html" with printing=result.selected_printing %}
+                            <!--{ % include "website/search_result_details.html" with printing=result.selected_printing % }-->
                         </div>
                         <div class="ReactTabs__TabPanel js-card-result-tab-content"
                              role="tabpanel"

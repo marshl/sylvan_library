@@ -35,7 +35,7 @@ $(function () {
     });
 
     $(this).on('click', '.js-card-result', function () {
-        if($(this).data('selected')) {
+        if ($(this).data('selected')) {
             return;
         }
 
@@ -50,5 +50,13 @@ $(function () {
         $image.addClass('clicked');
         $('.js-card-result-tab-container').slideUp();
         $(this).find('.js-card-result-tab-container').slideDown();
+
+        let printing_id = $(this).data('card-printing-id');
+        let card_id = $(this).data('card-id');
+
+        $.ajax('/website/ajax/search_result_details/' + printing_id)
+            .done(function (result) {
+                $('#card-result-tab-content-' + card_id + '-details').html(result);
+            });
     });
 });
