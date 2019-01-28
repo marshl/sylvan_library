@@ -30,5 +30,25 @@ $(function () {
         let $tabContentToShow = $($(this).data('target-tab'));
         $container.find('.js-card-result-tab-content').not($tabContentToShow).hide();
         $tabContentToShow.show();
+
+        return false;
+    });
+
+    $(this).on('click', '.js-card-result', function () {
+        if($(this).data('selected')) {
+            return;
+        }
+
+        $('.js-card-result').data('selected', false);
+        $(this).data('selected', true);
+
+        $('.js-card-result-expander').show();
+        $(this).find('.js-card-result-expander').hide();
+
+        let $image = $(this).find('.js-card-result-image');
+        $('.js-card-result-image').removeClass('clicked');
+        $image.addClass('clicked');
+        $('.js-card-result-tab-container').slideUp();
+        $(this).find('.js-card-result-tab-container').slideDown();
     });
 });
