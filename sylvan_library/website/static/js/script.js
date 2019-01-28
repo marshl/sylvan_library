@@ -35,12 +35,12 @@ $(function () {
     });
 
     $(this).on('click', '.js-card-result', function () {
-        if ($(this).data('selected')) {
+        if ($(this).data('is-expanded')) {
             return;
         }
 
-        $('.js-card-result').data('selected', false);
-        $(this).data('selected', true);
+        $('.js-card-result').data('is-expanded', false);
+        $(this).data('is-expanded', true);
 
         $('.js-card-result-expander').show();
         $(this).find('.js-card-result-expander').hide();
@@ -54,6 +54,35 @@ $(function () {
         let printing_id = $(this).data('card-printing-id');
         let card_id = $(this).data('card-id');
 
+        loadTabDataForPrinting(card_id, printing_id);
+    });
+
+    $(this).on('click', '.js-card-result-set-symbol', function () {
+        let $result = $(this).closest('.js-card-result');
+        let printing_id = Number($(this).data('card-printing-id'));
+
+        if (Number($result.data('card-printing-id')) === printing_id) {
+            return false;
+        }
+
+        $result.data('card-printing-id', printing_id);
+        $result.find('.js-card-result-set-symbol').removeClass('clicked');
+        $(this).addClass('clicked');
+
+        /*$.ajax('/website/ajax/card_printing_image/' + printing_id)
+            .done(function (content) {
+                $result.find('.js-card-result-image-container').html(content);
+                if ($result.data('is-expanded')) {
+                    $result.find('.js-card-result-image').addClass('clicked');
+                }
+            });*/
+        $result.find('.js-card-result-image').attr('src', $(this).data('image-url'));
+
+        loadTabDataForPrinting($result.data('card-id'), printing_id);
+        return false;
+    });
+
+    function loadTabDataForPrinting(card_id, printing_id) {
         $.ajax('/website/ajax/search_result_details/' + printing_id)
             .done(function (result) {
                 $('#card-result-tab-content-' + card_id + '-details').html(result);
@@ -68,5 +97,5 @@ $(function () {
             .done(function (result) {
                 $('#card-result-tab-content-' + card_id + '-languages').html(result);
             });
-    });
+    }
 });

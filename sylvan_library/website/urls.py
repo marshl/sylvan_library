@@ -23,4 +23,6 @@ urlpatterns = [
          name='ajax_search_result_rulings'),
     path('ajax/search_result_languages/<int:printing_id>/', views.ajax_search_result_languages,
          name='ajax_search_result_languages'),
+    path('ajax/card_printing_image/<int:printing_id>/', views.ajax_card_printing_image,
+         name='ajax_card_printing_image'),
 ]

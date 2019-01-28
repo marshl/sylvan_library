@@ -12,11 +12,8 @@
          data-is-expanded="false"
          style="display:block;">
         <div style="display:flex;">
-            <div class="listImgDiv">
-                <img class="listImg js-card-result-image"
-                     src="{% static result.selected_printing|card_printing_image_url|safe %}" alt="{{ card.name }}"
-                     style="border-radius: 10px; cursor: pointer;"
-                     width="100"/>
+            <div class="listImgDiv js-card-result-image-container">
+                {% include 'website/card_image.html' with printing=result.selected_printing %}
             </div>
 
             <div style="width:100%;">
@@ -53,7 +50,7 @@
                             </div>
                         </h3>
                     </div>
-                    <div style="width:80px;position:relative;right:10px;text-align:center;padding-left:5px;">
+                    <div style="width:80px; position:relative; right:10px; text-align:center; padding-left:5px;">
                         <div></div>
                     </div>
                     <div style="width:150px;position:relative;right:10px;display:inline-block;">
@@ -70,8 +67,9 @@
                                     clicked
                                 {% endif %}
                                 {{ printing.rarity.symbol }}"
-                                   data-printing-id="{{ printing.id }}"
-                                   title="{{ printing.set.name }}"></i>
+                                   data-card-printing-id="{{ printing.id }}"
+                                   data-image-url="{% static printing|card_printing_image_url|safe %}"
+                                   title="{{ printing.set.name }}{% if printing|user_cardprinting_ownership_count:request.user %} x {{ printing|user_cardprinting_ownership_count:request.user }}{% endif %}"></i>
                             {% endfor %}
                         </p>
                     </div>
@@ -86,20 +84,19 @@
                         <ul class="ReactTabs__TabList" role="tablist">
                             <li class="ReactTabs__Tab--selected js-card-result-tab"
                                 role="tab"
-                                id="card-result-tab-{{ result.card.id }}-details"
                                 data-target-tab="#card-result-tab-content-{{ result.card.id }}-details"
                                 aria-selected="true" aria-expanded="true">
                                 Details
                             </li>
                             <li class="ReactTabs__Tab js-card-result-tab"
                                 role="tab"
-                                id="react-tabs-82"
                                 aria-selected="false"
                                 data-target-tab="#card-result-tab-content-{{ result.card.id }}-rulings"
                                 aria-expanded="false">
                                 Rulings
                             </li>
-                            <li class="ReactTabs__Tab js-card-result-tab" role="tab" id="react-tabs-84"
+                            <li class="ReactTabs__Tab js-card-result-tab"
+                                role="tab"
                                 aria-selected="false"
                                 aria-expanded="false"
                                 data-target-tab="#card-result-tab-content-{{ result.card.id }}-languages">
@@ -113,12 +110,12 @@
                         <div class="ReactTabs__TabPanel js-card-result-tab-content"
                              role="tabpanel"
                              id="card-result-tab-content-{{ result.card.id }}-rulings"
-                             aria-labelledby="react-tabs-82" style="display:none;">
+                             style="display:none;">
                         </div>
                         <div class="ReactTabs__TabPanel js-card-result-tab-content"
                              role="tabpanel"
                              id="card-result-tab-content-{{ result.card.id }}-languages"
-                             aria-labelledby="react-tabs-84" style="display:none;">
+                             style="display:none;">
                         </div>
                     </div>
                 </div>

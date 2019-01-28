@@ -2,7 +2,8 @@
 {% load staticfiles %}
 
 {% block content %}
-    <img class="listImg"
-         src="{% static card|card_image_url|safe %}" alt="{{ card.name }}"
-         style="width: 100px; border-radius: 10px; cursor: pointer;"/>
+    <img class="listImg js-card-result-image"
+         src="{% static printing|card_printing_image_url|safe %}" alt="{{ printing.card.name }}"
+         style="border-radius: 10px; cursor: pointer;"
+         width="100"/>
 {% endblock %}

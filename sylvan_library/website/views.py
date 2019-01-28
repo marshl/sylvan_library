@@ -172,3 +172,9 @@ def ajax_search_result_languages(request, printing_id: int) -> HttpResponse:
     printing = CardPrinting.objects.get(id=printing_id)
     return render(request, 'website/search_result_languages.html',
                   {'printing': printing})
+
+
+def ajax_card_printing_image(request, printing_id: int) -> HttpResponse:
+    printing = CardPrinting.objects.get(id=printing_id)
+    return render(request, 'website/card_image.html',
+                  {'printing': printing})
