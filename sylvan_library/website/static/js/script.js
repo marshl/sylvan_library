@@ -58,5 +58,15 @@ $(function () {
             .done(function (result) {
                 $('#card-result-tab-content-' + card_id + '-details').html(result);
             });
+
+        $.ajax('/website/ajax/search_result_rulings/' + card_id)
+            .done(function (result) {
+                $('#card-result-tab-content-' + card_id + '-rulings').html(result);
+            });
+
+        $.ajax('/website/ajax/search_result_languages/' + printing_id)
+            .done(function (result) {
+                $('#card-result-tab-content-' + card_id + '-languages').html(result);
+            });
     });
 });

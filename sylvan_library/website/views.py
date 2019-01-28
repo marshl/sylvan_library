@@ -161,3 +161,14 @@ def ajax_search_result_details(request, printing_id: int) -> HttpResponse:
     printing = CardPrinting.objects.get(id=printing_id)
     return render(request, 'website/search_result_details.html',
                   {'printing': printing})
+
+
+def ajax_search_result_rulings(request, card_id: int) -> HttpResponse:
+    card= Card.objects.get(id=card_id)
+    return render(request, 'website/search_result_rulings.html', {'card': card})
+
+
+def ajax_search_result_languages(request, printing_id: int) -> HttpResponse:
+    printing = CardPrinting.objects.get(id=printing_id)
+    return render(request, 'website/search_result_languages.html',
+                  {'printing': printing})

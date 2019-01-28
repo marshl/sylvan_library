@@ -8,7 +8,7 @@ from website import views
 # pylint: disable=invalid-name
 app_name = 'website'
 urlpatterns = [
-    path(r'^$', views.index, name='index'),
+    path('', views.index, name='index'),
 
     path('card/<int:card_id>/', views.card_detail, name='card_detail'),
     path('set/<str:set_code>/', views.set_detail, name='set_detail'),
@@ -19,4 +19,8 @@ urlpatterns = [
     path('advanced_search/', views.advanced_search, name='advanced_search'),
     path('ajax/search_result_details/<int:printing_id>/', views.ajax_search_result_details,
          name='ajax_search_result_details'),
+    path('ajax/search_result_rulings/<int:card_id>/', views.ajax_search_result_rulings,
+         name='ajax_search_result_rulings'),
+    path('ajax/search_result_languages/<int:printing_id>/', views.ajax_search_result_languages,
+         name='ajax_search_result_languages'),
 ]

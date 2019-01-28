@@ -109,19 +109,16 @@
                         <div class="ReactTabs__TabPanel ReactTabs__TabPanel--selected js-card-result-tab-content"
                              role="tabpanel"
                              id="card-result-tab-content-{{ result.card.id }}-details">
-                            <!--{ % include "website/search_result_details.html" with printing=result.selected_printing % }-->
                         </div>
                         <div class="ReactTabs__TabPanel js-card-result-tab-content"
                              role="tabpanel"
                              id="card-result-tab-content-{{ result.card.id }}-rulings"
                              aria-labelledby="react-tabs-82" style="display:none;">
-                            {% include "website/search_result_rulings.html" with card=result.card %}
                         </div>
                         <div class="ReactTabs__TabPanel js-card-result-tab-content"
                              role="tabpanel"
                              id="card-result-tab-content-{{ result.card.id }}-languages"
                              aria-labelledby="react-tabs-84" style="display:none;">
-                            {% include "website/search_result_languages.html" with printing=result.selected_printing %}
                         </div>
                     </div>
                 </div>
