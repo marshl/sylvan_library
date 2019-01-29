@@ -19,6 +19,7 @@ jupyter-client = "==5.2.3"
 ipython = "*"
 pylint = "*"
 notebook = "*"
+django-debug-toolbar = "*"
 
 [requires]
 python_version = "3"
