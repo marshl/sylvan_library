@@ -105,17 +105,14 @@ ENV/
 sylvan_env/
 /.metadata
 
-secrets.json
 *.pyc
 *.jpg
 *.jpeg
-sylvan_library/sylvan_library/database_connections.py
 *.idea
 AllSets-*.json*
 sylvan_library/data_import/backup/
 *.bat
 *.ipynb
-sylvan_library/website/static/jquery/
 sylvan_library/data_import/data/AllSets.json
 shell/
 sylvan_library/usercards.txt

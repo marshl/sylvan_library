@@ -17,21 +17,21 @@ class MtgFontTestCase(TestCase):
         Test that a card with a {0} cost is converted correctly
         """
         mana_cost = '{R}'
-        self.assertEqual('<i class="mi mi-r mi-mana"></i>', replace_mtg_font_symbols(mana_cost))
+        self.assertEqual('<i class="ms ms-r ms-cost"></i>', replace_mtg_font_symbols(mana_cost))
 
     def test_simple_replace_lowercsae(self) -> None:
         """
         Test that a card with a lowercase cost is replaced correctly
         """
         mana_cost = '{u}'
-        self.assertEqual('<i class="mi mi-u mi-mana"></i>', replace_mtg_font_symbols(mana_cost))
+        self.assertEqual('<i class="ms ms-u ms-cost"></i>', replace_mtg_font_symbols(mana_cost))
 
     def test_phyrexian_replace(self) -> None:
         """
         Test that a phyrexian mana card is replaced correctly
         """
         mana_cost = '{W/P}'
-        self.assertEqual('<i class="mi mi-p mi-mana-w"></i>', replace_mtg_font_symbols(mana_cost))
+        self.assertEqual('<i class="ms ms-p ms-w ms-cost"></i>', replace_mtg_font_symbols(mana_cost))
 
     def test_hybrid_replace(self):
         """
@@ -39,7 +39,7 @@ class MtgFontTestCase(TestCase):
         """
         mana_cost = '{W/U}'
         self.assertEqual(
-            '<span class="mi-split"><i class="mi mi-w"></i> <i class="mi mi-u"></i></span>',
+            '<i class="ms ms-wu ms-cost"></i>',
             replace_mtg_font_symbols(mana_cost))
 
     def test_large_number_replace(self) -> None:
@@ -47,4 +47,4 @@ class MtgFontTestCase(TestCase):
         Test that a multiple numeral card is replaced correctly
         """
         mana_cost = '{11}'
-        self.assertEqual('<i class="mi mi-11 mi-mana"></i>', replace_mtg_font_symbols(mana_cost))
+        self.assertEqual('<i class="ms ms-11 ms-cost"></i>', replace_mtg_font_symbols(mana_cost))

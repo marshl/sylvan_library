@@ -23,39 +23,6 @@ def replace_mtg_font_symbols(text: str, scale: str = None) -> str:
     if text is None:
         return None
 
-    def get_colour_tag(symbol: str, is_phyrexian: bool = False, is_split: bool = False) -> str:
-        """
-        Converts a single colour string into it's corresponding tag
-
-        :param symbol: The symbol to replace (e.g. {B}, {11}, {W/P}
-        :param is_phyrexian: Whether this symbol is phyrexian or not
-        :param is_split: Whether this is a split symbol or not
-        :return:
-        """
-        if symbol == 't':
-            symbol = 'tap'
-        elif symbol == 'q':
-            symbol = 'untap'
-
-        classes = ['mi']
-
-        if scale is not None:
-            classes.append(f'mi-{scale}x')
-
-        if shadow:
-            classes.append('mi-shadow')
-
-        if is_phyrexian:
-            classes.append('mi-p')
-            classes.append(f'mi-mana-{symbol}')
-        else:
-            classes.append(f'mi-{symbol}')
-
-            if symbol not in ['chaos', 'e'] and not is_split:
-                classes.append('mi-mana')
-
-        return '<i class="' + ' '.join(classes) + '"></i>'
-
     def replace_symbol(match):
         """
         Replaces the given symbol with its colour tag
@@ -66,14 +33,31 @@ def replace_mtg_font_symbols(text: str, scale: str = None) -> str:
         :param match: The tet match to be replaced
         :return: The resulting symbol
         """
+        classes = ['ms']
+
+        if scale is not None:
+            classes.append(f'ms-{scale}x')
+
+        if shadow:
+            classes.append('ms-shadow')
+
         grp = match.groups()[0].lower()
+        symbol = grp
         if '/' in grp:
             if grp[-1] == 'p':
-                return get_colour_tag(grp[0], is_phyrexian=True)
+                classes.append('ms-p')
+                symbol = grp[0]
             else:
-                return '<span class="mi-split">' + ' '.join(
-                    [get_colour_tag(x, is_split=True) for x in grp.split('/')]) + '</span>'
-        else:
-            return get_colour_tag(grp)
+                symbol = grp.replace('/', '')
+
+        if symbol == 't':
+            symbol = 'tap'
+        elif symbol == 'q':
+            symbol = 'untap'
+
+        classes.append(f'ms-{symbol}')
+        classes.append(f'ms-cost')
+
+        return '<i class="' + ' '.join(classes) + '"></i>'
 
     return re.sub(r'{(.+?)}', replace_symbol, text)
