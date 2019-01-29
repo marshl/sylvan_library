@@ -120,3 +120,4 @@ sylvan_library/data_import/data/AllSets.json
 shell/
 sylvan_library/usercards.txt
 sylvan_library/cardchanges.txt
+sylvan_library/website/static/bower_components/
