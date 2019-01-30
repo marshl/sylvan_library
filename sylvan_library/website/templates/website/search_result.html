@@ -66,15 +66,21 @@
                                 {% if printing == result.selected_printing %}
                                     clicked
                                 {% endif %}
-                                {{ printing.rarity.symbol }}"
+                                    {{ printing.rarity.symbol }}"
                                        data-card-printing-id="{{ printing.id }}"
                                        data-image-url="{% static printing|card_printing_image_url|safe %}"
-                                       title="
-
-
-                                               {{ printing.set.name }}{% if render_usercards and printing|user_cardprinting_ownership_count:request.user %}
-x {{ printing|user_cardprinting_ownership_count:request.user }}{% endif %}">
-                                    </i>
+                                            {% if render_usercards %}
+                                                {% with ownership_count=printing|user_cardprinting_ownership_count:request.user %}
+                                                    {% if ownership_count > 0 %}
+                                       title="{{ printing.set.name }}&#013;x {{ ownership_count }}"
+                                                    {% else %}
+                                       title="{{ printing.set.name }}"
+                                                    {% endif %}
+                                                {% endwith %}
+                                            {% else %}
+                                       title="{{ printing.set.name }}"
+                                            {% endif %}
+                                    ></i>
                                 {% endfor %}
                             </p>
                         </div>
