@@ -1,10 +1,12 @@
+{% load param_replace %}
+
 {% block content %}
     <div class="sk-layout__result sk-results-list">
         <div class="sk-results-list__action-bar sk-action-bar">
             <div class="sk-action-bar-row">
                 <div class="sk-hits-stats" data-qa="hits-stats">
-                    <div class="sk-hits-stats__info" data-qa="info">7
-                        results found in 19ms
+                    <div class="sk-hits-stats__info" data-qa="info">
+                        {{ result_count }} results found
                     </div>
                 </div>
                 <div data-qa="options" class="sk-toggle">
@@ -120,27 +122,29 @@
                 {% include "website/search_result.html" with card=result %}
             {% endfor %}
         </div>
-        <div class="sk-pagination-navigation is-numbered">
-            <div data-qa="options" class="sk-toggle is-disabled">
-                <div class="sk-toggle-option sk-toggle__item is-disabled" data-qa="option"
-                     data-key="previous">
-                    <div data-qa="label" class="sk-toggle-option__text"
-                    >Previous
-                    </div>
-                </div>
-                <div class="sk-toggle-option sk-toggle__item is-active" data-qa="option" data-key="1"
-                >
-                    <div data-qa="label" class="sk-toggle-option__text"
-                    >1
-                    </div>
-                </div>
-                <div class="sk-toggle-option sk-toggle__item is-disabled" data-qa="option"
-                     data-key="next">
-                    <div data-qa="label" class="sk-toggle-option__text"
-                    >Next
-                    </div>
+        {% if page %}
+            <div class="sk-pagination-navigation is-numbered">
+                <div data-qa="options" class="sk-toggle">
+                    {% for page in page_info %}
+                        <div class="sk-toggle-option sk-toggle__item js-page-button
+                                    {% if not page.enabled %}is-disabled{% endif %}
+                                    {% if page.is_active %}is-active{% endif %}"
+                             data-qa="option"
+                             data-page-url="{% param_replace page=page.number %}">
+                            <div data-qa="label" class="sk-toggle-option__text">
+                                {% if page.is_previous %}
+                                    Previous
+                                {% elif page.is_next %}
+                                    Next
+                                {% elif page.is_placeholder %}
+                                    ...
+                                {% else %}
+                                    {{ page.number }}
+                                {% endif %}</div>
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
-        </div>
+        {% endif %}
     </div>
 {% endblock %}

@@ -7,6 +7,7 @@ import random
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
+from django.core.paginator import Paginator
 
 from cards.models import (
     Card,
@@ -101,6 +102,8 @@ def simple_search(request) -> HttpResponse:
     """
     form = SearchForm(request.GET)
     results = []
+    result_count = 0
+    page = None
     if form.is_valid():
         search = FieldSearch()
         search.card_name = form.data.get('card_name')
@@ -141,11 +144,20 @@ def simple_search(request) -> HttpResponse:
         search.exclude_unselected_colour_identities = bool(form.data.get('exclude_colours'))
         search.match_colour_identities_exactly = bool(form.data.get('match_colours'))
 
-        search.build_parameters()
-        results = search.get_results()
+        page_number = int(form.data.get('page')) or 1
 
-    return render(request, 'website/simple_search.html',
-                  {'form': form, 'results': results})
+        search.build_parameters()
+        search.search(page_number)
+        results = search.results
+        result_count = search.paginator.count
+
+        page = search.page
+
+    return render(request, 'website/simple_search.html', {
+        'form': form, 'results': results,
+        'result_count': result_count,
+        'page': page,
+        'page_info': search.get_page_info(page_number, 3)})
 
 
 # pylint: disable=unused-argument, missing-docstring
@@ -187,7 +199,7 @@ def ajax_search_result_ownership(request, card_id: int) -> HttpResponse:
         .filter(physical_card__printed_languages__card_printing__card__id=card_id) \
         .order_by('physical_card__printed_languages__card_printing__set__release_date')
     changes = UserCardChange.objects.filter(owner_id=request.user.id) \
-        .filter(physical_card__printed_languages__card_printing__card__id=card_id)\
+        .filter(physical_card__printed_languages__card_printing__card__id=card_id) \
         .order_by('date')
     return render(request, 'website/search_result_ownership.html',
                   {'card': card, 'ownerships': ownerships, 'changes': changes})
