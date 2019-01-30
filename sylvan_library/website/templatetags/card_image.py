@@ -16,7 +16,7 @@ register = template.Library()
 
 
 def get_default_image():
-    return os.path.join('card_images', 'card_back.jpg')
+    return os.path.join('card_back.jpg')
 
 
 @register.filter(name='card_printing_language_image_url')

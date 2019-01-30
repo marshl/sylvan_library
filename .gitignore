@@ -105,9 +105,6 @@ ENV/
 sylvan_env/
 /.metadata
 
-*.pyc
-*.jpg
-*.jpeg
 *.idea
 AllSets-*.json*
 sylvan_library/data_import/backup/
