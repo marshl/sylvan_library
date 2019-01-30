@@ -1,5 +1,5 @@
 """
-Module for a custom template filter to replace mana symbols such as {G} and {2/R} with MTGFont tags
+Module for a custom template filter to replace mana symbols such as {G} and {2/R} with mana tags
 """
 
 import re
@@ -10,8 +10,8 @@ from django import template
 register = template.Library()
 
 
-@register.filter(name='replace_mtg_font_symbols')
-def replace_mtg_font_symbols(text: str, scale: str = None) -> str:
+@register.filter(name='replace_mana_symbols')
+def replace_mana_symbols(text: str, scale: str = None) -> str:
     """
     Converts any mana symbols in the given string with CSS images
     :param text: The text to replace the
@@ -21,7 +21,7 @@ def replace_mtg_font_symbols(text: str, scale: str = None) -> str:
     shadow = False
 
     if text is None:
-        return None
+        return ''
 
     def replace_symbol(match):
         """

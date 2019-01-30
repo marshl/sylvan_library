@@ -1,4 +1,4 @@
-{% load mtg_font %}
+{% load mana_templates %}
 {% load card_image %}
 {% load card_ownership %}
 {% load staticfiles %}
@@ -24,7 +24,7 @@
                                    target="_blank">{{ result.card.name }}</a>
 
                                 {% if result.card.cost %}
-                                    {{ result.card.cost | replace_mtg_font_symbols | safe }}
+                                    {{ result.card.cost | replace_mana_symbols| safe }}
                                 {% endif %}
                                 <span> (</span><span>{{ result.card.cmc | floatformat }}</span><span>)</span>
                                 {% if render_usercards %}
@@ -46,7 +46,7 @@
                             </div>
                             <h3 class="sk-hits-list-hit__subtitle">
                                 <div>
-                                    {{ result.card.rules_text | replace_mtg_font_symbols | safe }}
+                                    {{ result.card.rules_text | replace_mana_symbols| safe }}
                                 </div>
                             </h3>
                         </div>
