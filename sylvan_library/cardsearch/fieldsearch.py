@@ -13,6 +13,8 @@ from cardsearch.parameters import (
     CardColourParam,
     NotParam,
     CardColourIdentityParam,
+    CardTypeParam,
+    CardSubtypeParam
 )
 from cardsearch.base_search import BaseSearch
 
@@ -30,6 +32,8 @@ class FieldSearch(BaseSearch):
         self.card_name = None
         self.rules_text = None
         self.flavour_text = None
+        self.type_text = None
+        self.subtype_text = None
         self.cmc = None
         self.cmc_operator = None
 
@@ -55,6 +59,12 @@ class FieldSearch(BaseSearch):
 
         if self.flavour_text:
             root_param.add_parameter(CardFlavourTextParam(self.flavour_text))
+
+        if self.type_text:
+            root_param.add_parameter(CardTypeParam(self.type_text))
+
+        if self.subtype_text:
+            root_param.add_parameter(CardSubtypeParam(self.subtype_text))
 
         if self.cmc is not None:
             logger.info('Searching for CMC %s/%s', self.cmc, self.cmc_operator)

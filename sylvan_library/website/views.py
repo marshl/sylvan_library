@@ -109,6 +109,8 @@ def simple_search(request) -> HttpResponse:
         search.card_name = form.data.get('card_name')
         search.rules_text = form.data.get('rules_text')
         search.flavour_text = form.data.get('flavour_text')
+        search.type_text = form.data.get('type_text')
+        search.subtype_text = form.data.get('subtype_text')
 
         if form.data.get('cmc'):
             logger.info('wasd')

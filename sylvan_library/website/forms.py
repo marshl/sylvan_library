@@ -13,6 +13,8 @@ class SearchForm(forms.Form):
     card_name = forms.CharField(required=False)
     rules_text = forms.CharField(required=False)
     flavour_text = forms.CharField(required=False)
+    type_text = forms.CharField(required=False)
+    subtype_text = forms.CharField(required=False)
     cmc = forms.IntegerField(required=False)
     cmc_operator = forms.ChoiceField(choices=parameters.NUMERICAL_OPERATOR_CHOICES, required=False)
 
