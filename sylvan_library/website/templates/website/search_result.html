@@ -38,7 +38,7 @@
                                 <div style="display:inline-flex;">
                                     <span class="sk-tag-filter">{{ result.card.type }}</span>
                                     {% if result.card.subtype %}
-                                        <span>&ndash;</span>
+                                        <span>&nbsp;&mdash;&nbsp;</span>
                                         <span>{{ result.card.subtype }}</span>
                                     {% endif %}
                                 </div>
@@ -48,6 +48,25 @@
                                 <div>
                                     {{ result.card.rules_text | replace_mana_symbols| safe }}
                                 </div>
+                                {% if result.card.power != None %}
+                                    <div class="sk-hits-list-hit__subtitle tagFiltered" style="display:inline-flex;">
+                                    <span style="color:#ddd;">
+                                        <b>P/T:</b>
+                                    </span>
+                                        <span>&nbsp;</span>
+                                        <span class="sk-tag-filter">{{ result.card.power }}</span>
+                                        <span>/</span>
+                                        <span class="sk-tag-filter">{{ result.card.toughness }}</span>
+                                        <br>
+                                    </div>
+                                {% elif result.card.loyalty != None %}
+                                    <span style="color:#ddd;">
+                                        <b>Loyalty:</b>
+                                    </span>
+                                    <span>&nbsp;</span>
+                                    <span class="sk-tag-filter">{{ result.card.loyalty }}</span>
+                                    <br>
+                                {% endif %}
                             </h3>
                         </div>
                         <div style="width:80px; position:relative; right:10px; text-align:center; padding-left:5px;">
