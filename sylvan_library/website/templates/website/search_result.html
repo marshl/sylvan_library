@@ -22,9 +22,8 @@
                             <h2 class="sk-hits-list-hit__title">
                                 <a href="{% url 'website:card_detail' card_id=result.card.id %}"
                                    target="_blank">{{ result.card.name }}</a>
-
                                 {% if result.card.cost %}
-                                    {{ result.card.cost | replace_mana_symbols| safe }}
+                                    {{ result.card.cost | replace_mana_symbols | shadowed | safe }}
                                 {% endif %}
                                 <span> (</span><span>{{ result.card.cmc | floatformat }}</span><span>)</span>
                                 {% if render_usercards %}
@@ -45,13 +44,15 @@
                                 <span></span>
                             </div>
                             <h3 class="sk-hits-list-hit__subtitle">
-                                <div>
-                                    {% if result.card.loyalty != None %}
-                                        {{ result.card.rules_text | linebreaks | replace_mana_symbols | replace_loyalty_symbols | safe }}
-                                    {% else %}
-                                        {{ result.card.rules_text | linebreaks | replace_mana_symbols  | safe }}
-                                    {% endif %}
-                                </div>
+                                {% if result.card.rules_text != None %}
+                                    <div>
+                                        {% if result.card.loyalty != None %}
+                                            {{ result.card.rules_text | linebreaks | replace_mana_symbols | replace_loyalty_symbols | safe }}
+                                        {% else %}
+                                            {{ result.card.rules_text | linebreaks | replace_mana_symbols  | safe }}
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
                                 {% if result.card.power != None %}
                                     <div class="sk-hits-list-hit__subtitle tagFiltered" style="display:inline-flex;">
                                     <span style="color:#ddd;">
