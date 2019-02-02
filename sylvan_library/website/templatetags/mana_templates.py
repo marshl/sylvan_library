@@ -86,6 +86,10 @@ def replace_mana_symbols(text: str, scale: str = None) -> str:
         elif symbol == 'q':
             symbol = 'untap'
 
+        if len(symbol) == 2 and symbol[0].lower() == 'h':
+            classes.append('ms-half')
+            symbol = symbol[1]
+
         classes.append(f'ms-{symbol}')
         classes.append(f'ms-cost')
 
