@@ -122,7 +122,7 @@
                 {% include "website/search_result.html" with card=result %}
             {% endfor %}
         </div>
-        {% if page %}
+        {% if page_info|length > 3 %}
             <div class="sk-pagination-navigation is-numbered">
                 <div data-qa="options" class="sk-toggle">
                     {% for page in page_info %}
