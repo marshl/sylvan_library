@@ -103,4 +103,32 @@ $(function () {
         }
         document.location.href = '?' + $(this).data('page-url');
     });
+
+    /**
+     * When a user changes the content of a filter field, it should show the "X" remove icon next to it
+     */
+    $(this).on('change keyup keydown', '.js-filter-field', function () {
+        $(this).closest('.js-filter').find('.js-remove-filter').toggleClass(
+            'is-hidden',
+            $(this).val().length === 0
+        );
+    });
+
+    /**
+     * When a user clicks on the "X" next to a input field, it should clear that field then hide itself
+     */
+    $(this).on('click', '.js-remove-filter', function () {
+        $(this).closest('.js-filter').find('.js-filter-field').val('').change();
+    });
+
+    $(this).on('click', '.js-filter-heading', function () {
+        let collapsed = !$(this).data('collapsed');
+        $(this).closest('.js-collapsible-filter-field')
+            .find('.js-filter-container')
+            .toggleClass('is-collapsed', collapsed);
+        // $(this).find('.js-collapse-arrow')
+        //     .removeClass('sk-arrow-down sk-arrow-right')
+        //     .addClass(collapsed ? 'sk-arrow-right' : 'sk-arrow-down');
+        $(this).data('collapsed', collapsed);
+    });
 });
