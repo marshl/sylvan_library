@@ -1,6 +1,6 @@
 import abc
 
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage
 from cardsearch.search_result import SearchResult
 
 from cardsearch.parameters import AndParam, CardSortParam, CardNameSortParam
@@ -40,7 +40,10 @@ class BaseSearch:
             *[order for sort_param in self.sort_params for order in sort_param.get_sort_list()])
 
         self.paginator = Paginator(ordered_query, page_size)
-        self.page = self.paginator.page(page_number)
+        try:
+            self.page = self.paginator.page(page_number)
+        except EmptyPage:
+            return
         self.results = [SearchResult(card) for card in self.page]
 
     def get_page_info(self, current_page, page_span):

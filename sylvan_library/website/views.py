@@ -104,8 +104,8 @@ def simple_search(request) -> HttpResponse:
     results = []
     result_count = 0
     page = None
+    search = FieldSearch()
     if form.is_valid():
-        search = FieldSearch()
         search.card_name = form.data.get('card_name')
         search.rules_text = form.data.get('rules_text')
 
@@ -144,7 +144,10 @@ def simple_search(request) -> HttpResponse:
         search.exclude_unselected_colour_identities = bool(form.data.get('exclude_colours'))
         search.match_colour_identities_exactly = bool(form.data.get('match_colours'))
 
-        page_number = int(form.data.get('page')) or 1
+        try:
+            page_number = int(form.data.get('page'))
+        except TypeError or ValueError:
+            page_number = 1
 
         search.build_parameters()
         search.search(page_number)
