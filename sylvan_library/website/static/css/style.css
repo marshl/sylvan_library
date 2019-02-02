@@ -3540,13 +3540,13 @@ body {
     top: 60px;
     bottom: 0;
     overflow-x: hidden;
-    overflow-y: hidden;
+    /*overflow-y: hidden;*/
     max-width: 262px
 }
 
-.sk-layout__filters:hover {
+/*.sk-layout__filters:hover {
     overflow-y: scroll
-}
+}*/
 
 ::-webkit-scrollbar-thumb {
     background-color: hsla(0, 0%, 100%, .2);
