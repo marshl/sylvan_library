@@ -12,22 +12,27 @@ register = template.Library()
 
 @register.filter(name='replace_loyalty_symbols')
 def replace_loyalty_symbols(text: str, scale: str = None) -> str:
-    def replace_symbol(match):
+    """
+    Converts any loyalty costs in the given string with CSS images
+    :param text: The text to change
+    :param scale: The size of the icons (either lg, 2x, 3x, 4x or 5x)
+    :return: The text with all loyalty costs converted to icons
+    """
+    def replace_symbol(loyalty_match):
         """
-        Replaces the given symbol with its colour tag
-        (or multiple colour tags in the case of hybrid mana)
+        Replaces the given symbol with its loyalty tag
 
         This function is nested so that it can access the values of the outer function,
         and it can't have arguments passed in as it is used in an re.sub() call
-        :param match: The tet match to be replaced
+        :param loyalty_match: The text match to be replaced
         :return: The resulting symbol
         """
-        m = re.search('(?P<sign>[+−]?)(?P<number>[\dx]+)', match.group())
+        m = re.search('(?P<sign>[+−]?)(?P<number>[\dx]+)', loyalty_match.group())
         sign = m.group('sign')
         number = m.group('number')
         classes = ['ms', 'ms-loyalty-' + number, 'ms-2x']
         if scale is not None:
-            classes.append(f'ms-{scale}x')
+            classes.append(f'ms-{scale}')
 
         if sign == '−':
             classes.append('ms-loyalty-down')
@@ -56,17 +61,16 @@ def replace_mana_symbols(text: str, scale: str = None) -> str:
     def replace_symbol(match):
         """
         Replaces the given symbol with its colour tag
-        (or multiple colour tags in the case of hybrid mana)
 
         This function is nested so that it can access the values of the outer function,
         and it can't have arguments passed in as it is used in an re.sub() call
-        :param match: The tet match to be replaced
+        :param match: The text match to be replaced
         :return: The resulting symbol
         """
         classes = ['ms']
 
         if scale is not None:
-            classes.append(f'ms-{scale}x')
+            classes.append(f'ms-{scale}')
 
         grp = match.groups()[0].lower()
         symbol = grp
