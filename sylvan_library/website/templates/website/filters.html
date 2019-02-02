@@ -106,6 +106,7 @@
                     </div>
                 </div>
             </div>
+            {% include 'website/text_filter.html' with title="Card name" field=form.card_name placeholder="Search card name" %}
             {% include 'website/text_filter.html' with title="Rules text" field=form.rules_text placeholder="Use ~ for card name" %}
             {% include 'website/text_filter.html' with title="Flavour text" field=form.flavour_text placeholder="Search flavour text" %}
 
