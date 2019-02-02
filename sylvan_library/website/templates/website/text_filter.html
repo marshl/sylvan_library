@@ -1,0 +1,12 @@
+{% extends "website/base_filter.html" %}
+{% load widget_tweaks %}
+{% block filter %}
+    <div class="sk-input-filter__icon"></div>
+    {% render_field field class="sk-input-filter__text js-filter-field" placeholder=placeholder %}
+    <input type="submit" value="search" class="sk-input-filter__action" data-qa="submit">
+    <div data-qa="remove"
+         class="sk-input-filter__remove
+           js-remove-filter
+           {% if not field %}is-hidden{% endif %}"></div>
+
+{% endblock %}

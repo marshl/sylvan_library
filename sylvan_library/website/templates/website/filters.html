@@ -106,27 +106,7 @@
                     </div>
                 </div>
             </div>
-            <div class="sk-panel filter--rulesText js-collapsible-filter-field"
-                 data-collapsed="{% if form.rules_text %}false{% else %}true{% endif %}">
-                <div class="sk-panel__header is-collapsable js-filter-heading">
-                    <span class="{% if form.rules_text %}sk-arrow-down{% else %}sk-arrow-right{% endif %} js-collapse-arrow"></span>
-                    <span>&nbsp;</span>
-                    <span>Rules text</span>
-                </div>
-                <div class="sk-panel__content js-filter-container">
-                    <div class="sk-input-filter js-filter">
-                        <form>
-                            <div class="sk-input-filter__icon"></div>
-                            {% render_field form.rules_text class="sk-input-filter__text js-filter-field" placeholder="Use ~ for card name" %}
-                            <input type="submit" value="search" class="sk-input-filter__action" data-qa="submit">
-                            <div data-qa="remove"
-                                 class="sk-input-filter__remove
-                                   js-remove-filter
-                                   {% if not form.rules_text %}is-hidden{% endif %}"></div>
-                        </form>
-                    </div>
-                </div>
-            </div>
+            {% include 'website/text_filter.html' with title="Rules text" field=form.rules_text placeholder="Use ~ for card name" %}
             <div class="sk-panel filter--flavourText">
                 <div class="sk-panel__header is-collapsable"><span
                         class="sk-arrow-right"></span><span
