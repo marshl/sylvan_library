@@ -46,7 +46,11 @@
                             </div>
                             <h3 class="sk-hits-list-hit__subtitle">
                                 <div>
-                                    {{ result.card.rules_text | replace_mana_symbols| safe }}
+                                    {% if result.card.loyalty != None %}
+                                        {{ result.card.rules_text | linebreaks | replace_mana_symbols | replace_loyalty_symbols | safe }}
+                                    {% else %}
+                                        {{ result.card.rules_text | linebreaks | replace_mana_symbols  | safe }}
+                                    {% endif %}
                                 </div>
                                 {% if result.card.power != None %}
                                     <div class="sk-hits-list-hit__subtitle tagFiltered" style="display:inline-flex;">

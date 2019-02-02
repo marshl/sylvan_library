@@ -4,12 +4,12 @@ Module for website test cases
 
 from django.test import TestCase
 
-from website.templatetags.mana_templates import replace_mana_symbols
+from website.templatetags.mana_templates import replace_mana_symbols, replace_loyalty_symbols
 
 
-class MtgFontTestCase(TestCase):
+class ManaReplaceTestCase(TestCase):
     """
-    Tests for the MTG Font string replacement functions
+    Tests for the mana string replacement functions
     """
 
     def test_simple_replace(self) -> None:
@@ -46,3 +46,33 @@ class MtgFontTestCase(TestCase):
         """
         mana_cost = '{11}'
         self.assertEqual('<i class="ms ms-11 ms-cost"></i>', replace_mana_symbols(mana_cost))
+
+
+class LoyaltyReplaceTestCase(TestCase):
+    """
+    Tests for the loyalty string replacement functions
+    """
+
+    def test_zero_replace(self) -> None:
+        """
+        Test that a card with a 0 loyalty cost ability is converted correctly
+        """
+        rules = '0: Some rules.'
+        self.assertEqual('<i class="ms ms-loyalty-0 ms-loyalty-zero"></i>: Some rules.',
+                         replace_loyalty_symbols(rules))
+
+    def test_positive_replace(self) -> None:
+        """
+        Test that a card with a positive loyalty cost ability is converted correctly
+        """
+        rules = '+5: Some rules.'
+        self.assertEqual('<i class="ms ms-loyalty-5 ms-loyalty-up"></i>: Some rules.',
+                         replace_loyalty_symbols(rules))
+
+    def test_negative_replace(self) -> None:
+        """
+        Test that a card with a negative loyalty cost ability is converted correctly
+        """
+        rules = '−3: Some rules.'
+        self.assertEqual('<i class="ms ms-loyalty-3 ms-loyalty-down"></i>: Some rules.',
+                         replace_loyalty_symbols(rules))

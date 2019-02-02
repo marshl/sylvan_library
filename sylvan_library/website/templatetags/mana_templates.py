@@ -10,6 +10,37 @@ from django import template
 register = template.Library()
 
 
+@register.filter(name='replace_loyalty_symbols')
+def replace_loyalty_symbols(text: str, scale: str = None) -> str:
+    def replace_symbol(match):
+        """
+        Replaces the given symbol with its colour tag
+        (or multiple colour tags in the case of hybrid mana)
+
+        This function is nested so that it can access the values of the outer function,
+        and it can't have arguments passed in as it is used in an re.sub() call
+        :param match: The tet match to be replaced
+        :return: The resulting symbol
+        """
+        m = re.search('(?P<sign>[+−]?)(?P<number>[\dx]+)', match.group())
+        sign = m.group('sign')
+        number = m.group('number')
+        classes = ['ms', 'ms-loyalty-' + number, 'ms-2x']
+        if scale is not None:
+            classes.append(f'ms-{scale}x')
+
+        if sign == '−':
+            classes.append('ms-loyalty-down')
+        elif sign == '+':
+            classes.append('ms-loyalty-up')
+        else:
+            classes.append('ms-loyalty-zero')
+
+        return '<i class="' + ' '.join(classes) + '"></i>'
+
+    return re.sub(r'([−+]?[\dx]+?)(?=:)', replace_symbol, text)
+
+
 @register.filter(name='replace_mana_symbols')
 def replace_mana_symbols(text: str, scale: str = None) -> str:
     """
@@ -18,7 +49,6 @@ def replace_mana_symbols(text: str, scale: str = None) -> str:
     :param scale: The size of the image (either lg, 2x, 3x, 4x or 5x)
     :return: The text with all mana symbols converted to icons
     """
-    shadow = False
 
     if text is None:
         return ''
@@ -37,9 +67,6 @@ def replace_mana_symbols(text: str, scale: str = None) -> str:
 
         if scale is not None:
             classes.append(f'ms-{scale}x')
-
-        if shadow:
-            classes.append('ms-shadow')
 
         grp = match.groups()[0].lower()
         symbol = grp
@@ -61,3 +88,16 @@ def replace_mana_symbols(text: str, scale: str = None) -> str:
         return '<i class="' + ' '.join(classes) + '"></i>'
 
     return re.sub(r'{(.+?)}', replace_symbol, text)
+
+
+@register.filter(name='shadowed')
+def shadowed(text: str) -> str:
+    """
+    Adds a shadow to any mana symbols in the given text
+    :param text: The text to replace the
+    :return: The text with all mana icons with a shadow added
+    """
+    if text is None:
+        return ''
+
+    return text.replace('ms-cost', 'ms-cost ms-shadow')
