@@ -107,27 +107,8 @@
                 </div>
             </div>
             {% include 'website/text_filter.html' with title="Rules text" field=form.rules_text placeholder="Use ~ for card name" %}
-            <div class="sk-panel filter--flavourText">
-                <div class="sk-panel__header is-collapsable"><span
-                        class="sk-arrow-right"></span><span
-                >&nbsp;</span><span>Flavour text</span>
-                </div>
-                <div class="sk-panel__content is-collapsed">
-                    <div class="sk-input-filter">
-                        <form>
-                            <div class="sk-input-filter__icon"></div>
-                            <input type="text" data-qa="input-filter" class="sk-input-filter__text"
-                                   placeholder="Search flavour text" value=""
-                            ><input type="submit" value="search"
-                                    class="sk-input-filter__action"
-                                    data-qa="submit"
-                        >
-                            <div data-qa="remove" class="sk-input-filter__remove is-hidden"
-                            ></div>
-                        </form>
-                    </div>
-                </div>
-            </div>
+            {% include 'website/text_filter.html' with title="Flavour text" field=form.flavour_text placeholder="Search flavour text" %}
+
             <div class="sk-panel filter--typeLine">
                 <div class="sk-panel__header is-collapsable"><span
                         class="sk-arrow-right"></span><span

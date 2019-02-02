@@ -108,6 +108,7 @@ def simple_search(request) -> HttpResponse:
     if form.is_valid():
         search.card_name = form.data.get('card_name')
         search.rules_text = form.data.get('rules_text')
+        search.flavour_text = form.data.get('flavour_text')
 
         if form.data.get('cmc'):
             logger.info('wasd')

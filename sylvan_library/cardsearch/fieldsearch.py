@@ -5,6 +5,7 @@ import logging
 
 from cards.models import Card
 from cardsearch.parameters import (
+    CardFlavourTextParam,
     CardNameParam,
     CardRulesTextParam,
     CardCmcParam,
@@ -28,6 +29,7 @@ class FieldSearch(BaseSearch):
 
         self.card_name = None
         self.rules_text = None
+        self.flavour_text = None
         self.cmc = None
         self.cmc_operator = None
 
@@ -50,6 +52,9 @@ class FieldSearch(BaseSearch):
         if self.rules_text:
             logger.info('Searching for rules text %s', self.rules_text)
             root_param.add_parameter(CardRulesTextParam(self.rules_text))
+
+        if self.flavour_text:
+            root_param.add_parameter(CardFlavourTextParam(self.flavour_text))
 
         if self.cmc is not None:
             logger.info('Searching for CMC %s/%s', self.cmc, self.cmc_operator)

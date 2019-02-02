@@ -129,6 +129,19 @@ class CardRulesTextParam(CardSearchParam):
         return Card.objects.filter(rules_text__icontains=self.card_rules)
 
 
+class CardFlavourTextParam(CardSearchParam):
+    """
+    The parameter for searching by a card's flavour text
+    """
+
+    def __init__(self, flavour_text):
+        super().__init__()
+        self.flavour_text = flavour_text
+
+    def query(self):
+        return Card.objects.filter(printings__flavour_text__icontains=self.flavour_text).distinct()
+
+
 class CardTypeParam(CardSearchParam):
     """
     The parameter for searching by a card's type or supertypes
