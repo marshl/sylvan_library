@@ -119,7 +119,10 @@ $(function () {
             url: '/website/ajax/search_result_set_summary/' + printing_id
         })
             .done(function (result) {
-                $('#card-result-' + card_id).find('.js-card-result-set-summary').html(result);
+                let $summary = $('#card-result-' + card_id).find('.js-card-result-set-summary');
+                let previousScroll  = $summary.find('p').get(0).scrollTop;
+                $summary.html(result);
+                $summary.find('p').get(0).scrollTop = previousScroll;
             });
     }
 
@@ -157,11 +160,18 @@ $(function () {
     });
 
     $(this).on('submit', '.js-change-card-ownership-form', function (event) {
+        let $form = $(this);
+        if ($form.data('disabled')) {
+            return;
+        }
         let $result = $(this).closest('.js-card-result');
         let card_id = Number($result.data('card-id'));
         let printing_id = Number($result.data('card-printing-id'));
+        let count = $form.find('input[name="count"]').val();
+        if (Number(count) === 0) {
+            return;
+        }
 
-        event.preventDefault();
         $.ajax({
             url: $(this).attr('action'),
             data: $(this).serialize(),
@@ -170,7 +180,15 @@ $(function () {
             loadOwnershipTab(card_id);
             loadOwnershipSummary(card_id);
             loadSetSummary(card_id, printing_id);
+            $form.find('input').prop('disabled', false);
+            $form.data('disabled', false);
+            $form.find('input[name="count"]').val('');
         });
+
+        $form.data('disabled', true);
+        $form.find('input').prop('disabled', true);
+
+        event.preventDefault();
         return false;
     });
 });
