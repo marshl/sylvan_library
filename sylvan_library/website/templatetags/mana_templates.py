@@ -27,14 +27,14 @@ def replace_loyalty_symbols(text: str, scale: str = None) -> str:
         :param loyalty_match: The text match to be replaced
         :return: The resulting symbol
         """
-        m = re.search('(?P<sign>[+−]?)(?P<number>[\dx]+)', loyalty_match.group())
+        m = re.search('(?P<sign>[+−\-]?)(?P<number>[\dx]+)', loyalty_match.group())
         sign = m.group('sign')
         number = m.group('number')
         classes = ['ms', 'ms-loyalty-' + number, 'ms-2x']
         if scale is not None:
             classes.append(f'ms-{scale}')
 
-        if sign == '−':
+        if sign == '−' or sign == '-':
             classes.append('ms-loyalty-down')
         elif sign == '+':
             classes.append('ms-loyalty-up')
@@ -43,7 +43,7 @@ def replace_loyalty_symbols(text: str, scale: str = None) -> str:
 
         return '<i class="' + ' '.join(classes) + '"></i>'
 
-    return re.sub(r'([−+]?[\dx]+?)(?=:)', replace_symbol, text)
+    return re.sub(r'([−+\-]?[\dx]+?)(?=:)', replace_symbol, text)
 
 
 @register.filter(name='replace_mana_symbols')
