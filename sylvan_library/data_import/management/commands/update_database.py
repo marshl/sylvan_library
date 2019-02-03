@@ -287,7 +287,7 @@ class Command(BaseCommand):
                 self.update_counts['cards_ignored'] += 1
                 return card
 
-            logger.info('Updating existing card %s'.card)
+            logger.info('Updating existing card %s', card)
             self.update_counts['cards_updated'] += 1
         else:
             card = Card(name=staged_card.get_name())
