@@ -1,18 +1,18 @@
 $(function () {
 
-    $('.js-toggle-option').on('click', function () {
-        $(this).siblings('.js-toggle-option').removeClass('is-active');
-        $(this).addClass('is-active');
-        $($(this).data('input-field')).val($(this).data('input-value'));
-    });
-
-    $('.js-colour-filter input').on('change', function () {
-        if (this.checked) {
-            $(this).closest('.js-colour-filter').addClass('is-active');
-        } else {
-            $(this).closest('.js-colour-filter').removeClass('is-active');
-        }
-    });
+    // $('.js-toggle-option').on('click', function () {
+    //     $(this).siblings('.js-toggle-option').removeClass('is-active');
+    //     $(this).addClass('is-active');
+    //     $($(this).data('input-field')).val($(this).data('input-value'));
+    // });
+    //
+    // $('.js-colour-filter input').on('change', function () {
+    //     if (this.checked) {
+    //         $(this).closest('.js-colour-filter').addClass('is-active');
+    //     } else {
+    //         $(this).closest('.js-colour-filter').removeClass('is-active');
+    //     }
+    // });
 
     $(this).on('click', '.js-card-result-tab-container .js-card-result-tab', function () {
         let $container = $(this).closest('.js-card-result-tab-container');
@@ -91,14 +91,35 @@ $(function () {
                 $('#card-result-tab-content-' + card_id + '-languages').html(result);
             });
 
-        $.ajax('/website/ajax/search_result_ownership/' + card_id)
-            .done(function (result) {
-                $('#card-result-tab-content-' + card_id + '-ownership').html(result);
-            });
+        loadOwnershipTab(card_id);
+
 
         $.ajax('/website/ajax/search_result_add/' + printing_id)
             .done(function (result) {
                 $('#card-result-tab-content-' + card_id + '-add').html(result);
+            });
+    }
+
+    function loadOwnershipTab(card_id) {
+        $.ajax('/website/ajax/search_result_ownership/' + card_id)
+            .done(function (result) {
+                $('#card-result-tab-content-' + card_id + '-ownership').html(result);
+            });
+    }
+
+    function loadOwnershipSummary(card_id) {
+        $.ajax('/website/ajax/ownership_summary/' + card_id)
+            .done(function (result) {
+                $('#card-result-' + card_id).find('.js-ownership-summary').html(result);
+            });
+    }
+
+    function loadSetSummary(card_id, printing_id) {
+        $.ajax({
+            url: '/website/ajax/search_result_set_summary/' + printing_id
+        })
+            .done(function (result) {
+                $('#card-result-' + card_id).find('.js-card-result-set-summary').html(result);
             });
     }
 
@@ -136,13 +157,19 @@ $(function () {
     });
 
     $(this).on('submit', '.js-change-card-ownership-form', function (event) {
+        let $result = $(this).closest('.js-card-result');
+        let card_id = Number($result.data('card-id'));
+        let printing_id = Number($result.data('card-printing-id'));
+
         event.preventDefault();
         $.ajax({
             url: $(this).attr('action'),
             data: $(this).serialize(),
             type: 'POST'
         }).done(function (result) {
-            alert(result)
+            loadOwnershipTab(card_id);
+            loadOwnershipSummary(card_id);
+            loadSetSummary(card_id, printing_id);
         });
         return false;
     });

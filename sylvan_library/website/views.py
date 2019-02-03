@@ -229,3 +229,18 @@ def ajax_change_card_ownership(request):
             return JsonResponse({'result': True})
     except PhysicalCard.DoesNotExist as ex:
         return JsonResponse({'result': False})
+
+
+def ajax_ownership_summary(request, card_id: int):
+    card = Card.objects.get(id=card_id)
+    return render(request, 'website/ownership_summary.html', {
+        'card': card,
+    })
+
+
+def ajax_search_result_set_summary(request, printing_id: int):
+    printing = CardPrinting.objects.get(id=printing_id)
+    return render(request, 'website/search_result_sets.html', {
+        'card': printing.card,
+        'selected_printing': printing,
+    })

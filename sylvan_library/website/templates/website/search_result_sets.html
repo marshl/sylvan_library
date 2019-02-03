@@ -1,0 +1,32 @@
+{% load card_ownership %}
+{% load card_image %}
+{% load staticfiles %}
+<p style="text-align:center;max-height:200px;overflow-y:scroll;">
+    {% for printing in card.printings.all %}
+        <i class="js-card-result-set-symbol
+                    setIcon ss ss-2x
+                    ss-{{ printing.set.code | lower }}
+                    ss-{{ printing.rarity.name | lower }}
+                    {% if printing.rarity.symbol != 'C' %}
+                        ss-grad
+                    {% endif %}
+                    {% if printing == selected_printing %}
+                        clicked
+                    {% endif %}
+                        {{ printing.rarity.symbol }}"
+           data-card-printing-id="{{ printing.id }}"
+           data-image-url="{% static printing|card_printing_image_url|safe %}"
+                {% if request.user.is_authenticated %}
+                    {% with ownership_count=printing|user_cardprinting_ownership_count:request.user %}
+                        {% if ownership_count > 0 %}
+           title="{{ printing.set.name }}&#013;x {{ ownership_count }}"
+                        {% else %}
+           title="{{ printing.set.name }}"
+                        {% endif %}
+                    {% endwith %}
+                {% else %}
+           title="{{ printing.set.name }}"
+                {% endif %}
+        ></i>
+    {% endfor %}
+</p>

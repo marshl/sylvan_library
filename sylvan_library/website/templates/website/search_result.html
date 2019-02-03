@@ -7,6 +7,7 @@
     {% block content %}
 
         <div class="sk-hits-list-hit sk-hits-list__item js-card-result"
+             id="card-result-{{ result.card.id }}"
              data-card-id="{{ result.card.id }}"
              data-card-printing-id="{{ result.selected_printing.id }}"
              data-is-expanded="false"
@@ -27,10 +28,9 @@
                                 {% endif %}
                                 <span> (</span><span>{{ result.card.cmc | floatformat }}</span><span>)</span>
                                 {% if render_usercards %}
-                                    <span class="disqus-comment-count"
-                                          style="font-variant:small-caps;float:right;cursor:pointer;padding-right:8px;font-size:smaller;">
-                                    You own: {{ result.card|user_card_ownership_count:request.user }}
-                                </span>
+                                    <span class="js-ownership-summary">
+                                        {% include 'website/ownership_summary.html' with card=result.card %}
+                                    </span>
                                 {% endif %}
                             </h2>
                             <div style="display:inline-flex;" class="sk-hits-list-hit__subtitle typeLine">
@@ -77,36 +77,9 @@
                         <div style="width:80px; position:relative; right:10px; text-align:center; padding-left:5px;">
                             <div></div>
                         </div>
-                        <div style="width:150px;position:relative;right:10px;display:inline-block;">
-                            <p style="text-align:center;max-height:200px;overflow-y:scroll;">
-
-                                {% for printing in result.card.printings.all %}
-                                    <i class="setIcon ss ss-2x js-card-result-set-symbol
-                                ss-{{ printing.set.code | lower }}
-                                ss-{{ printing.rarity.name | lower }}
-                                {% if printing.rarity.symbol != 'C' %}
-                                    ss-grad
-                                {% endif %}
-                                {% if printing == result.selected_printing %}
-                                    clicked
-                                {% endif %}
-                                    {{ printing.rarity.symbol }}"
-                                       data-card-printing-id="{{ printing.id }}"
-                                       data-image-url="{% static printing|card_printing_image_url|safe %}"
-                                            {% if render_usercards %}
-                                                {% with ownership_count=printing|user_cardprinting_ownership_count:request.user %}
-                                                    {% if ownership_count > 0 %}
-                                       title="{{ printing.set.name }}&#013;x {{ ownership_count }}"
-                                                    {% else %}
-                                       title="{{ printing.set.name }}"
-                                                    {% endif %}
-                                                {% endwith %}
-                                            {% else %}
-                                       title="{{ printing.set.name }}"
-                                            {% endif %}
-                                    ></i>
-                                {% endfor %}
-                            </p>
+                        <div style="width:150px;position:relative;right:10px;display:inline-block;"
+                        class="js-card-result-set-summary">
+                          {% include 'website/search_result_sets.html' with card=result.card selected_printing=result.selected_printing %}
                         </div>
                     </div>
                     <div class="sk-hits-list-hit__details">

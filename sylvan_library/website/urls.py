@@ -30,5 +30,9 @@ urlpatterns = [
     path('ajax/card_printing_image/<int:printing_id>/', views.ajax_card_printing_image,
          name='ajax_card_printing_image'),
     path('ajax/change_card_ownership', views.ajax_change_card_ownership,
-         name='ajax_change_card_ownership')
+         name='ajax_change_card_ownership'),
+    path('ajax/ownership_summary/<int:card_id>/', views.ajax_ownership_summary,
+         name='ajax_ownership_summary'),
+    path('ajax/search_result_set_summary/<int:printing_id>/', views.ajax_search_result_set_summary,
+         name='ajax_search_result_set_summary'),
 ]
