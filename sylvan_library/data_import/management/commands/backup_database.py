@@ -21,7 +21,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         for key, database in settings.DATABASES.items():
-            logger.log('Backing up database %s', key)
+            logger.info('Backing up database %s', key)
             os.environ['PGPASSWORD'] = database['PASSWORD']
             now = datetime.datetime.now()
             filename = database['NAME'] + '_' + re.sub(r'\D', '_', now.isoformat())
