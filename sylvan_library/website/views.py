@@ -4,20 +4,21 @@ Module for all website views
 import logging
 import random
 
-from django.http import HttpResponseRedirect, HttpResponse
+from django.db import transaction
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
-from django.core.paginator import Paginator
 
 from cards.models import (
     Card,
     CardPrinting,
     CardPrintingLanguage,
+    PhysicalCard,
     Set,
     UserCardChange,
     UserOwnedCard,
 )
-from website.forms import SearchForm
+from website.forms import SearchForm, ChangeCardOwnershipForm
 from cardsearch.fieldsearch import FieldSearch
 
 logger = logging.getLogger('django')
@@ -199,6 +200,13 @@ def ajax_card_printing_image(request, printing_id: int) -> HttpResponse:
                   {'printing': printing})
 
 
+def ajax_search_result_add(request, printing_id: int) -> HttpResponse:
+    printing = CardPrinting.objects.get(id=printing_id)
+    form = ChangeCardOwnershipForm(printing)
+    return render(request, 'website/search_result_add.html',
+                  {'form': form})
+
+
 def ajax_search_result_ownership(request, card_id: int) -> HttpResponse:
     card = Card.objects.get(id=card_id)
     ownerships = UserOwnedCard.objects.filter(owner_id=request.user.id) \
@@ -209,3 +217,15 @@ def ajax_search_result_ownership(request, card_id: int) -> HttpResponse:
         .order_by('date')
     return render(request, 'website/search_result_ownership.html',
                   {'card': card, 'ownerships': ownerships, 'changes': changes})
+
+
+def ajax_change_card_ownership(request):
+    try:
+        with transaction.atomic():
+            change_count = int(request.POST.get('count'))
+            physical_card_id = int(request.POST.get('printed_language'))
+            physical_card = PhysicalCard.objects.get(id=physical_card_id)
+            physical_card.apply_user_change(change_count, request.user)
+            return JsonResponse({'result': True})
+    except PhysicalCard.DoesNotExist as ex:
+        return JsonResponse({'result': False})

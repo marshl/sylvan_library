@@ -2,6 +2,7 @@
 Models for cards
 """
 
+import datetime
 import random
 from os import path
 
@@ -209,6 +210,31 @@ class PhysicalCard(models.Model):
         return base.language.name + ' ' \
                + '//'.join(p.card_printing.card.name for p in self.printed_languages.all()) \
                + ' in ' + base.card_printing.set.name
+
+    def apply_user_change(self, change_count: int, user: User):
+        if user is None:
+            return False
+
+        try:
+            existing_card = UserOwnedCard.objects.get(physical_card=self, owner=user)
+            existing_card.count += change_count
+            if existing_card.count <= 0:
+                existing_card.delete()
+            else:
+                existing_card.clean()
+                existing_card.save()
+        except UserOwnedCard.DoesNotExist:
+            if change_count <= 0:
+                return False
+            new_card = UserOwnedCard(count=change_count, owner=user, physical_card=self)
+            new_card.clean()
+            new_card.save()
+
+        change = UserCardChange(physical_card=self, owner=user, difference=change_count,
+                                date=datetime.datetime.now())
+        change.clean()
+        change.save()
+        return True
 
 
 class CardPrintingLanguage(models.Model):

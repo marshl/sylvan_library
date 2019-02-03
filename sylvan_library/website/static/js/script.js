@@ -95,6 +95,11 @@ $(function () {
             .done(function (result) {
                 $('#card-result-tab-content-' + card_id + '-ownership').html(result);
             });
+
+        $.ajax('/website/ajax/search_result_add/' + printing_id)
+            .done(function (result) {
+                $('#card-result-tab-content-' + card_id + '-add').html(result);
+            });
     }
 
     $(this).on('click', '.js-page-button', function () {
@@ -126,9 +131,19 @@ $(function () {
         $(this).closest('.js-collapsible-filter-field')
             .find('.js-filter-container')
             .toggleClass('is-collapsed', collapsed);
-        // $(this).find('.js-collapse-arrow')
-        //     .removeClass('sk-arrow-down sk-arrow-right')
-        //     .addClass(collapsed ? 'sk-arrow-right' : 'sk-arrow-down');
+
         $(this).data('collapsed', collapsed);
+    });
+
+    $(this).on('submit', '.js-change-card-ownership-form', function (event) {
+        event.preventDefault();
+        $.ajax({
+            url: $(this).attr('action'),
+            data: $(this).serialize(),
+            type: 'POST'
+        }).done(function (result) {
+            alert(result)
+        });
+        return false;
     });
 });

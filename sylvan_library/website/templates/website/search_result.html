@@ -145,6 +145,13 @@
                                         data-target-tab="#card-result-tab-content-{{ result.card.id }}-ownership">
                                         Ownership
                                     </li>
+                                    <li class="ReactTabs__Tab js-card-result-tab"
+                                        role="tab"
+                                        aria-selected="false"
+                                        aria-expanded="false"
+                                        data-target-tab="#card-result-tab-content-{{ result.card.id }}-add">
+                                        Add cards
+                                    </li>
                                 {% endif %}
                             </ul>
                             <div class="ReactTabs__TabPanel ReactTabs__TabPanel--selected js-card-result-tab-content"
@@ -165,6 +172,11 @@
                                 <div class="ReactTabs__TabPanel js-card-result-tab-content"
                                      role="tabpanel"
                                      id="card-result-tab-content-{{ result.card.id }}-ownership"
+                                     style="display:none;">
+                                </div>
+                                <div class="ReactTabs__TabPanel js-card-result-tab-content"
+                                     role="tabpanel"
+                                     id="card-result-tab-content-{{ result.card.id }}-add"
                                      style="display:none;">
                                 </div>
                             {% endif %}

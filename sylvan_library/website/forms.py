@@ -4,6 +4,38 @@ Forms for the website module
 
 from django import forms
 from cardsearch import parameters
+from cards.models import CardPrinting, Language
+
+
+def get_physical_card_key_pair(physical_card, printing):
+    return physical_card.id, f'{physical_card} ({printing.number})'
+
+
+class ChangeCardOwnershipForm(forms.Form):
+    count = forms.IntegerField()
+    printed_language = forms.ChoiceField(widget=forms.Select)
+
+    def __init__(self, printing: CardPrinting):
+        super().__init__()
+        english = Language.objects.get(name='English')
+        if printing.printed_languages.filter(language=english).exists():
+            english_print = printing.printed_languages.get(language=english)
+            choices = [get_physical_card_key_pair(physical_card, printing)
+                       for physical_card in english_print.physical_cards.all()]
+            choices.extend([
+                get_physical_card_key_pair(physical_card, printing)
+                for lang in printing.printed_languages.all()
+                for physical_card in lang.physical_cards.all()
+                if lang.language != english
+            ])
+        else:
+            choices = [
+                get_physical_card_key_pair(physical_card, printing)
+                for lang in printing.printed_languages.all()
+                for physical_card in lang.physical_cards.all()
+            ]
+
+        self.fields['printed_language'].choices = choices
 
 
 class SearchForm(forms.Form):
@@ -25,7 +57,7 @@ class SearchForm(forms.Form):
     match_colours_identity = forms.BooleanField(required=False)
 
     def __init__(self, *args, **kwargs):
-        super(SearchForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         for colour in self.colour_list():
             self.fields['colour_' + colour] = forms.BooleanField(required=False)
