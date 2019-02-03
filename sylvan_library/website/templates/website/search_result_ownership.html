@@ -15,6 +15,20 @@
                 {% endfor %}
             </div>
         {% endif %}
+        {% if changes %}
+            <span class="sk-hits-list-hit__subtitle">
+                <b>Changes: </b>
+            </span>
+            {% for change in changes %}
+                <div>
+                    <span class="sk-hits-list-hit__subtitle">
+                        {% if change.difference > 0 %}+{% endif %}{{ change.difference }}
+                        {{ change.date }} {{ change.physical_card }}
+                    </span>
+                    <br/>
+                </div>
+            {% endfor %}
+        {% endif %}
     </div>
 
 {% endblock %}
