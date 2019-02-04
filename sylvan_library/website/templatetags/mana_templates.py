@@ -27,10 +27,10 @@ def replace_loyalty_symbols(text: str, scale: str = None) -> str:
         :param loyalty_match: The text match to be replaced
         :return: The resulting symbol
         """
-        m = re.search('(?P<sign>[+−\-]?)(?P<number>[\dx]+)', loyalty_match.group())
+        m = re.search(r'(?P<sign>[+−\-]?)(?P<number>[\dx]+)', loyalty_match.group())
         sign = m.group('sign')
         number = m.group('number')
-        classes = ['ms', 'ms-loyalty-' + number, 'ms-2x']
+        classes = ['ms', 'ms-loyalty-' + number]
         if scale is not None:
             classes.append(f'ms-{scale}')
 

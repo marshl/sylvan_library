@@ -47,9 +47,9 @@
                                 {% if result.card.rules_text != None %}
                                     <div>
                                         {% if result.card.loyalty != None %}
-                                            {{ result.card.rules_text | linebreaks | replace_mana_symbols | replace_loyalty_symbols | safe }}
+                                            {{ result.card.rules_text | linebreaks | replace_mana_symbols | replace_loyalty_symbols:'2x' | safe }}
                                         {% else %}
-                                            {{ result.card.rules_text | linebreaks | replace_mana_symbols  | safe }}
+                                            {{ result.card.rules_text | linebreaks | replace_mana_symbols | safe }}
                                         {% endif %}
                                     </div>
                                 {% endif %}
@@ -78,8 +78,8 @@
                             <div></div>
                         </div>
                         <div style="width:150px;position:relative;right:10px;display:inline-block;"
-                        class="js-card-result-set-summary">
-                          {% include 'website/search_result_sets.html' with card=result.card selected_printing=result.selected_printing %}
+                             class="js-card-result-set-summary">
+                            {% include 'website/search_result_sets.html' with card=result.card selected_printing=result.selected_printing %}
                         </div>
                     </div>
                     <div class="sk-hits-list-hit__details">
