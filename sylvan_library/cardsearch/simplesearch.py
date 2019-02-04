@@ -16,8 +16,6 @@ from cardsearch.parameters import (
     CardMulticolouredOnlyParam,
 )
 
-from cardsearch.base_search import BaseSearch
-
 
 class SimpleSearch(BaseSearch):
     """
