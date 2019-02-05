@@ -30,6 +30,9 @@ $(function () {
         let $tabContentToShow = $($(this).data('target-tab'));
         $container.find('.js-card-result-tab-content').not($tabContentToShow).hide();
         $tabContentToShow.show();
+        if($tabContentToShow.find('input[type!="hidden"]').length) {
+            $tabContentToShow.find('input[type!="hidden"]').first().focus();
+        }
 
         return false;
     });
