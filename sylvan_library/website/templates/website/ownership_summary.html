@@ -1,6 +1,9 @@
 {% load card_ownership %}
-
-<span class="disqus-comment-count"
-      style="font-variant:small-caps;float:right;cursor:pointer;padding-right:8px;font-size:smaller;">
-You own: {{ card | user_card_ownership_count:request.user }}
-</span>
+{% with count=card|user_card_ownership_count:request.user %}
+    {% if count > 0 %}
+        <span class="disqus-comment-count"
+              style="font-variant:small-caps;float:right;cursor:pointer;padding-right:8px;font-size:smaller;">
+            You own: {{ count }}
+        </span>
+    {% endif %}
+{% endwith %}
