@@ -42,13 +42,20 @@ INSTALLED_APPS = [
     'widget_tweaks',
 ]
 
-MIDDLEWARE = (
+if DEBUG:
+    INSTALLED_APPS.append('debug_toolbar')
+    INTERNAL_IPS = ('127.0.0.1', 'localhost',)
+
+MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-)
+]
+
+if DEBUG:
+    MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
 
 TEMPLATES = [
     {
