@@ -2,8 +2,10 @@ import abc
 
 from django.core.paginator import Paginator, EmptyPage
 from cardsearch.search_result import SearchResult
+from django.db.models import prefetch_related_objects
 
 from cardsearch.parameters import AndParam, CardSortParam, CardNameSortParam
+
 
 class PageInfo:
     def __init__(self, number, is_enabled, is_active=False, is_previous=False, is_next=False,
@@ -33,15 +35,22 @@ class BaseSearch:
     def search(self, page_number: int = 1, page_size: int = 25) -> None:
         queryset = self.root_parameter.query()
         self.add_sort_param(CardNameSortParam())
-        ordered_query = queryset.order_by(
+        queryset = queryset.order_by(
             *[order for sort_param in self.sort_params for order in sort_param.get_sort_list()])
 
-        self.paginator = Paginator(ordered_query, page_size)
+        self.paginator = Paginator(queryset, page_size)
         try:
             self.page = self.paginator.page(page_number)
         except EmptyPage:
             return
-        self.results = [SearchResult(card) for card in self.page]
+        cards = list(self.page)
+        prefetch_related_objects(cards,
+                                 'printings__printed_languages__physical_cards__ownerships')
+        prefetch_related_objects(cards,
+                                 'printings__set')
+        prefetch_related_objects(cards,
+                                 'printings__rarity')
+        self.results = [SearchResult(card) for card in cards]
 
     def get_page_info(self, current_page, page_span):
         page_info = [PageInfo(page_number, True,
