@@ -17,16 +17,16 @@ class ChangeCardOwnershipForm(forms.Form):
 
     def __init__(self, printing: CardPrinting):
         super().__init__()
-        english = Language.objects.get(name='English')
-        if printing.printed_languages.filter(language=english).exists():
-            english_print = printing.printed_languages.get(language=english)
+        if any(pl for pl in printing.printed_languages.all()
+               if pl.language_id == Language.english().id):
+            english_print = next(pl for pl in printing.printed_languages if pl.language_id == Language.english().id)
             choices = [get_physical_card_key_pair(physical_card, printing)
                        for physical_card in english_print.physical_cards.all()]
             choices.extend([
                 get_physical_card_key_pair(physical_card, printing)
                 for lang in printing.printed_languages.all()
                 for physical_card in lang.physical_cards.all()
-                if lang.language != english
+                if lang.language_id != Language.english().id
             ])
         else:
             choices = [

@@ -186,9 +186,6 @@ class CardPrinting(models.Model):
     # legal despite not being available in boosters.
     is_starter = models.BooleanField()
 
-    class Meta:
-        ordering = ['set__release_date']
-
     def __str__(self):
         return f'{self.card} in {self.set}'
 
@@ -395,5 +392,14 @@ class Language(models.Model):
     """
     name = models.CharField(max_length=50, unique=True)
 
+    ENGLISH = None
+
     def __str__(self):
         return self.name
+
+    @staticmethod
+    def english():
+        if not Language.ENGLISH:
+            Language.ENGLISH = Language.objects.get(name='English')
+
+        return Language.ENGLISH

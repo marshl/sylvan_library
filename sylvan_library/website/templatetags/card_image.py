@@ -41,8 +41,7 @@ def card_printing_image_url(card_printing: CardPrinting) -> str:
     :param card_printing: The card printing to get the image for
     :return: The relative image path
     """
-    printed_language = card_printing.printed_languages.get(
-        language=Language.objects.get(name='English'))
+    printed_language = next(pl for pl in card_printing.printed_languages.all() if pl.language_id == Language.english().id)
 
     path = printed_language.get_image_path()
 
