@@ -1,3 +1,6 @@
+"""
+The module for the base search classes
+"""
 import abc
 
 from django.core.paginator import Paginator, EmptyPage
@@ -44,12 +47,10 @@ class BaseSearch:
         except EmptyPage:
             return
         cards = list(self.page)
-        prefetch_related_objects(cards,
-                                 'printings__printed_languages__physical_cards__ownerships')
-        prefetch_related_objects(cards,
-                                 'printings__set')
-        prefetch_related_objects(cards,
-                                 'printings__rarity')
+        prefetch_related_objects(cards, 'printings__printed_languages__physical_cards__ownerships')
+        prefetch_related_objects(cards, 'printings__set')
+        prefetch_related_objects(cards, 'printings__rarity')
+
         self.results = [SearchResult(card) for card in cards]
 
     def get_page_info(self, current_page, page_span):
