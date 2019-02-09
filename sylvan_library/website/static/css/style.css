@@ -959,7 +959,7 @@
     border: 1px solid #ccc
 }
 
-.sk-input-filter form {
+.sk-input-filter-form {
     display: flex;
     margin: 0;
     position: relative
@@ -2786,7 +2786,7 @@ body {
     border: 1px solid #444
 }
 
-.sk-input-filter form {
+.sk-input-filter-form {
     display: flex;
     margin: 0;
     position: relative

@@ -113,10 +113,8 @@ def simple_search(request) -> HttpResponse:
         search.type_text = form.data.get('type_text')
         search.subtype_text = form.data.get('subtype_text')
 
-        if form.data.get('cmc'):
-            logger.info('wasd')
-            search.cmc = int(form.data.get('cmc'))
-            search.cmc_operator = form.data.get('cmc_operator')
+        search.min_cmc = form.cleaned_data.get('min_cmc')
+        search.max_cmc = form.cleaned_data.get('max_cmc')
 
         if form.data.get('colour_white'):
             search.colours.append(Card.colour_flags.white)

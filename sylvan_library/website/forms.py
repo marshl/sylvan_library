@@ -47,8 +47,8 @@ class SearchForm(forms.Form):
     flavour_text = forms.CharField(required=False)
     type_text = forms.CharField(required=False)
     subtype_text = forms.CharField(required=False)
-    cmc = forms.IntegerField(required=False)
-    cmc_operator = forms.ChoiceField(choices=parameters.NUMERICAL_OPERATOR_CHOICES, required=False)
+    min_cmc = forms.IntegerField(required=False)
+    max_cmc = forms.IntegerField(required=False)
 
     exclude_colours = forms.BooleanField(required=False)
     match_colours = forms.BooleanField(required=False)

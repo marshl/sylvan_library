@@ -30,7 +30,7 @@ $(function () {
         let $tabContentToShow = $($(this).data('target-tab'));
         $container.find('.js-card-result-tab-content').not($tabContentToShow).hide();
         $tabContentToShow.show();
-        if($tabContentToShow.find('input[type!="hidden"]').length) {
+        if ($tabContentToShow.find('input[type!="hidden"]').length) {
             $tabContentToShow.find('input[type!="hidden"]').first().focus();
         }
 
@@ -123,7 +123,7 @@ $(function () {
         })
             .done(function (result) {
                 let $summary = $('#card-result-' + card_id).find('.js-card-result-set-summary');
-                let previousScroll  = $summary.find('p').get(0).scrollTop;
+                let previousScroll = $summary.find('p').get(0).scrollTop;
                 $summary.html(result);
                 $summary.find('p').get(0).scrollTop = previousScroll;
             });
@@ -193,5 +193,32 @@ $(function () {
 
         event.preventDefault();
         return false;
+    });
+
+    $('.js-slider-filter').each(function () {
+        let $slider = $(this);
+        let $filter = $slider.closest('.js-filter');
+        let values = [
+            $filter.find('.js-min-field').val(),
+            $filter.find('.js-max-field').val()
+        ];
+        if (values[1] === '') {
+            values[1] = $slider.data('max-value');
+        }
+        $slider.slider({
+            range: true,
+            min: $slider.data('min-value'),
+            max: $slider.data('max-value'),
+            values: values,
+            slide: function (event, ui) {
+                let min = ui.values[0];
+                let max = ui.values[1];
+                $filter.find('.js-lower-mark').text(min);
+                $filter.find('.js-upper-mark').text(max);
+                $filter.find('.js-min-field').val(min);
+                console.log($filter.find('.js-min-field'));
+                $filter.find('.js-max-field').val(max);
+            }
+        });
     });
 });

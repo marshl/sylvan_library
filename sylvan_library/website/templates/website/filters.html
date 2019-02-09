@@ -15,7 +15,7 @@
                     </div>
                 </div>
             </div>
-            <div class="sk-panel filter--paperPrice is-disabled">
+            <!-- <div class="sk-panel filter--paperPrice is-disabled">
                 <div class="sk-panel__header is-collapsable">
                     <span class="sk-arrow-right"></span>
                     <span>&nbsp;</span>
@@ -60,8 +60,8 @@
                         </form>
                     </div>
                 </div>
-            </div>
-            <div class="sk-panel filter--mtgoPrice is-disabled">
+            </div> -->
+            <!-- <div class="sk-panel filter--mtgoPrice is-disabled">
                 <div class="sk-panel__header is-collapsable"><span
                         class="sk-arrow-right"></span><span
                 >&nbsp;</span><span>MTGO Price</span>
@@ -93,19 +93,16 @@
                         <form class="sk-range-input"><input type="number"
                                                             class="sk-range-input__input"
                                                             value="0"
-                                                            placeholder="min"
-                        >
-                            <div class="sk-range-input__to-label">-
-                            </div>
-                            <input type="number" class="sk-range-input__input" value="160" placeholder="max"
-                            >
-                            <button type="submit" class="sk-range-input__submit"
-                            >Go
+                                                            placeholder="min">
+                            <div class="sk-range-input__to-label">-</div>
+                            <input type="number" class="sk-range-input__input" value="160" placeholder="max">
+                            <button type="submit" class="sk-range-input__submit">Go
                             </button>
                         </form>
                     </div>
                 </div>
-            </div>
+            </div> -->
+            {% include 'website/slider_filter.html' with title="CMC" field=form.min_cmc min_field=form.min_cmc max_field=form.max_cmc min_val=0 max_val=16 %}
             {% include 'website/text_filter.html' with title="Card name" field=form.card_name placeholder="Search card name" %}
             {% include 'website/text_filter.html' with title="Rules text" field=form.rules_text placeholder="Use ~ for card name" %}
             {% include 'website/text_filter.html' with title="Flavour text" field=form.flavour_text placeholder="Search flavour text" %}

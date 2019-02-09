@@ -34,8 +34,8 @@ class FieldSearch(BaseSearch):
         self.flavour_text = None
         self.type_text = None
         self.subtype_text = None
-        self.cmc = None
-        self.cmc_operator = None
+        self.min_cmc = None
+        self.max_cmc = None
 
         self.colours = []
         self.colour_identities = []
@@ -50,11 +50,9 @@ class FieldSearch(BaseSearch):
         root_param = self.root_parameter
 
         if self.card_name:
-            logger.info('Searching for card name %s', self.card_name)
             root_param.add_parameter(CardNameParam(self.card_name))
 
         if self.rules_text:
-            logger.info('Searching for rules text %s', self.rules_text)
             root_param.add_parameter(CardRulesTextParam(self.rules_text))
 
         if self.flavour_text:
@@ -66,9 +64,11 @@ class FieldSearch(BaseSearch):
         if self.subtype_text:
             root_param.add_parameter(CardSubtypeParam(self.subtype_text))
 
-        if self.cmc is not None:
-            logger.info('Searching for CMC %s/%s', self.cmc, self.cmc_operator)
-            root_param.add_parameter(CardCmcParam(self.cmc, self.cmc_operator))
+        if self.min_cmc is not None:
+            root_param.add_parameter(CardCmcParam(self.min_cmc, 'GTE'))
+
+        if self.max_cmc is not None:
+            root_param.add_parameter(CardCmcParam(self.max_cmc, 'LTE'))
 
         if self.colours:
             if self.match_colours_exactly:
