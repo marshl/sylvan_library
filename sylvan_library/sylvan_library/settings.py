@@ -5,12 +5,13 @@ Module for all django settings
 import environ
 
 root = environ.Path(__file__) - 3  # three folder back (/a/b/c/ - 3 = /)
-env = environ.Env(DEBUG=(bool, False), )  # set default values and casting
+env = environ.Env(DEBUG=(bool, False))  # set default values and casting
 environ.Env.read_env()  # reading .env file
 
 SITE_ROOT = root()
 
 DEBUG = env('DEBUG')  # False if not in os.environ
+DEBUG_TOOLBAR = DEBUG and env('DEBUG_TOOLBAR')
 
 DATABASES = {
     'default': env.db(),  # Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ
@@ -42,7 +43,7 @@ INSTALLED_APPS = [
     'widget_tweaks',
 ]
 
-if DEBUG:
+if DEBUG_TOOLBAR:
     INSTALLED_APPS.append('debug_toolbar')
     INTERNAL_IPS = ('127.0.0.1', 'localhost',)
 
@@ -54,7 +55,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
 ]
 
-if DEBUG:
+if DEBUG_TOOLBAR:
     MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
 
 TEMPLATES = [
