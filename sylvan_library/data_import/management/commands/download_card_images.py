@@ -97,4 +97,4 @@ class Command(BaseCommand):
                     card_image.save()
                     logger.info(f'\tDownloaded {printed_language}')
                 finally:
-                    time.sleep(random.random())
+                    time.sleep(random.random() * 0.25 + 0.1)
