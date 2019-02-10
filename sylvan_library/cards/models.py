@@ -407,3 +407,12 @@ class Language(models.Model):
             Language.ENGLISH = Language.objects.get(name='English')
 
         return Language.ENGLISH
+
+
+class CardImage(models.Model):
+    printed_language = models.OneToOneField(
+        CardPrintingLanguage,
+        related_name='image',
+        on_delete=models.CASCADE)
+
+    downloaded = models.BooleanField()

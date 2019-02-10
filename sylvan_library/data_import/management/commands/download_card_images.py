@@ -9,7 +9,7 @@ import requests
 
 from django.core.management.base import BaseCommand
 
-from cards.models import CardPrinting, CardPrintingLanguage, Language
+from cards.models import CardPrinting, CardPrintingLanguage, Language, CardImage
 
 logger = logging.getLogger('django')
 
@@ -48,8 +48,6 @@ class Command(BaseCommand):
                 'object does not exist. Please run `update_database` first')
             return
 
-        downloaded_paths = []
-
         for printing in CardPrinting.objects.all():
             if not printing.scryfall_id:
                 continue
@@ -62,17 +60,17 @@ class Command(BaseCommand):
                 if printed_language.language.code is None:
                     continue
 
-                image_path = os.path.join('website', 'static', printed_language.get_image_path())
-                if image_path in downloaded_paths:
-                    logger.warning(f'\tImage has already been downloaded: {image_path}')
-                    continue
-
-                downloaded_paths.append(image_path)
-                if os.path.exists(image_path):
+                if CardImage.objects.filter(printed_language=printed_language).exists():
                     logger.info(f'\tSkipping {printed_language}')
                     continue
 
-                logger.info(f'\t{printed_language}')
+                image_path = os.path.join('website', 'static', printed_language.get_image_path())
+
+                if os.path.exists(image_path):
+                    logger.info(f'\tSkipping {printed_language}')
+                    card_image = CardImage(printed_language=printed_language, downloaded=True)
+                    card_image.save()
+                    continue
 
                 if image_uri is None:
                     url = 'https://api.scryfall.com/cards/' + printing.scryfall_id
@@ -88,9 +86,15 @@ class Command(BaseCommand):
                 except requests.exceptions.HTTPError:
                     logger.warning(
                         f'\tCould not download {printed_language} ({localised_image_uri})')
+                    card_image = CardImage(printed_language=printed_language, downloaded=False)
+                    card_image.save()
                 else:
                     os.makedirs(os.path.dirname(image_path), exist_ok=True)
                     with open(image_path, 'wb') as output:
                         output.write(stream.content)
+
+                    card_image = CardImage(printed_language=printed_language, downloaded=True)
+                    card_image.save()
+                    logger.info(f'\tDownloaded {printed_language}')
                 finally:
                     time.sleep(random.random())
