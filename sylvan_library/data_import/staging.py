@@ -2,6 +2,7 @@
 Module for staging classes
 """
 import datetime
+import math
 import re
 from functools import total_ordering
 
@@ -295,6 +296,9 @@ class StagedCard:
         return self.value_dict['name']
 
     def pow_tuff_to_num(self, val):
+        if val == '\u221e':
+            return math.inf
+
         match = re.search(r'(-?[\d.]+)', str(val))
         if match:
             return match.group()
