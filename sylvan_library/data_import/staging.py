@@ -244,6 +244,9 @@ class StagedCard:
     def get_border_colour(self):
         return self.value_dict.get('borderColor')
 
+    def get_scryfall_id(self):
+        return self.value_dict.get('scryfallId')
+
     def get_release_date(self):
         if 'releaseDate' in self.value_dict:
             date_string = self.value_dict['releaseDate']

@@ -3,16 +3,13 @@ Module for the download_card_images command
 """
 import os
 import logging
-import queue
-import threading
 import random
 import time
-
 import requests
 
 from django.core.management.base import BaseCommand
 
-from cards.models import CardPrintingLanguage, Language
+from cards.models import CardPrinting, CardPrintingLanguage, Language
 
 logger = logging.getLogger('django')
 
@@ -51,67 +48,49 @@ class Command(BaseCommand):
                 'object does not exist. Please run `update_database` first')
             return
 
-        image_download_queue = queue.Queue()
+        downloaded_paths = []
 
-        card_filter = CardPrintingLanguage.objects.filter(multiverse_id__isnull=False)
-        if not options['download_all_languages']:
-            card_filter = card_filter.filter(language=Language.objects.get(name='English'))
+        for printing in CardPrinting.objects.all():
+            if not printing.scryfall_id:
+                continue
 
-        for cpl in card_filter:
-            image_download_queue.put(cpl)
+            image_uri = None
 
-        for i in range(1, self.download_thread_count):
-            logger.info('Starting thread %d', i)
-            thread = ImageDownloadThread(image_download_queue, options['sleep_between_downloads'])
-            thread.setDaemon(True)
-            thread.start()
+            logger.info(f'Downloading images for {printing}')
 
-        image_download_queue.join()
+            for printed_language in printing.printed_languages.all():
+                if printed_language.language.code is None:
+                    continue
 
+                image_path = os.path.join('website', 'static', printed_language.get_image_path())
+                if image_path in downloaded_paths:
+                    logger.warning(f'\tImage has already been downloaded: {image_path}')
+                    continue
 
-class ImageDownloadThread(threading.Thread):
-    """
-    The thread object for downloading a card
-    """
+                downloaded_paths.append(image_path)
+                if os.path.exists(image_path):
+                    logger.info(f'\tSkipping {printed_language}')
+                    continue
 
-    def __init__(self, printlang_queue, random_sleep):
-        threading.Thread.__init__(self)
-        self.printlang_queue = printlang_queue
-        self.has_random_sleep = random_sleep
+                logger.info(f'\t{printed_language}')
 
-    def run(self):
-        while True:
-            printing_language = self.printlang_queue.get()
-            download_image_for_card(printing_language, self.has_random_sleep)
-            self.printlang_queue.task_done()
+                if image_uri is None:
+                    url = 'https://api.scryfall.com/cards/' + printing.scryfall_id
+                    resp = requests.get(url=url)
+                    data = resp.json()
+                    image_uri = data['image_uris']['normal']
 
-
-def download_image_for_card(printing_language: CardPrintingLanguage, random_sleep: bool) -> None:
-    """
-    Downloads the image for a single card
-    :param printing_language:
-    :param random_sleep:
-    :return:
-    """
-    image_path = printing_language.get_image_path()
-    image_path = os.path.join('website', 'static', image_path)
-
-    os.makedirs(os.path.dirname(image_path), exist_ok=True)
-
-    if os.path.exists(image_path):
-        print(f'Already downloaded {printing_language} ({printing_language.multiverse_id})')
-        return
-
-    print(f'Downloading {printing_language} ({printing_language.multiverse_id})')
-
-    image_download_url = 'http://gatherer.wizards.com' + \
-                         '/Handlers/Image.ashx?multiverseid={0}&type=card'
-
-    stream = requests.get(
-        image_download_url.format(printing_language.multiverse_id))
-
-    with open(image_path, 'wb') as output:
-        output.write(stream.content)
-
-    if random_sleep:
-        time.sleep(random.random())
+                localised_image_uri = image_uri.replace('/en/',
+                                                        '/' + printed_language.language.code + '/')
+                stream = requests.get(localised_image_uri)
+                try:
+                    stream.raise_for_status()
+                except requests.exceptions.HTTPError:
+                    logger.warning(
+                        f'\tCould not download {printed_language} ({localised_image_uri})')
+                else:
+                    os.makedirs(os.path.dirname(image_path), exist_ok=True)
+                    with open(image_path, 'wb') as output:
+                        output.write(stream.content)
+                finally:
+                    time.sleep(random.random())

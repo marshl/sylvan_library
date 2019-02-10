@@ -169,15 +169,15 @@ class Command(BaseCommand):
             language_obj = Language.objects.filter(name=lang['name']).first()
             if language_obj is not None:
                 logger.info("Updating language: %s", lang['name'])
-                language_obj.full_clean()
-                language_obj.save()
                 self.update_counts['languages_updated'] += 1
             else:
                 logger.info("Creating new language: %s", lang['name'])
                 language_obj = Language(name=lang['name'])
-                language_obj.full_clean()
-                language_obj.save()
                 self.update_counts['languages_created'] += 1
+
+            language_obj.code = lang['code']
+            language_obj.full_clean()
+            language_obj.save()
 
         logger.info('Language update complete')
 
@@ -352,6 +352,7 @@ class Command(BaseCommand):
         printing.border_colour = staged_card.get_border_colour()
         printing.release_date = staged_card.get_release_date()
         printing.is_starter = staged_card.is_starter_printing()
+        printing.scryfall_id = staged_card.get_scryfall_id()
 
         printing.full_clean()
         printing.save()

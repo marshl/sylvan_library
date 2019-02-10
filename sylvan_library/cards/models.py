@@ -169,6 +169,8 @@ class CardPrinting(models.Model):
     # It is made up by doing an SHA1 hash of setCode + cardName + cardImageName
     json_id = models.CharField(max_length=40, unique=True)
 
+    scryfall_id = models.CharField(max_length=40, blank=True, null=True)
+
     # The border colour of the card if it differs from the border colour of the rest of the set
     # (e.g. basic lands in Unglued)
     border_colour = models.CharField(max_length=10, blank=True, null=True)
@@ -265,16 +267,11 @@ class CardPrintingLanguage(models.Model):
         return f'{self.language} {self.card_printing}'
 
     def get_image_path(self):
-        if self.multiverse_id is None:
-            return None
-
-        multiverse_string = str(self.multiverse_id)
-        # Break up images over multiple folders to stop too many being placed in one folder
-        return path.join('card_images',
-                         multiverse_string[0:1],
-                         multiverse_string[0:2] if len(multiverse_string) >= 2 else '',
-                         multiverse_string[0:3] if len(multiverse_string) >= 3 else '',
-                         multiverse_string + '.jpg')
+        return path.join(
+            'card_images',
+            self.language.code.lower(),
+            '_' + self.card_printing.set.code.lower(),
+            self.card_printing.number + '.jpg')
 
 
 class UserOwnedCard(models.Model):
@@ -397,6 +394,7 @@ class Language(models.Model):
     Model for a language that a card could be printed in
     """
     name = models.CharField(max_length=50, unique=True)
+    code = models.CharField(max_length=10, null=True, blank=True)
 
     ENGLISH = None
 
