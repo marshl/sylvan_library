@@ -7,7 +7,7 @@
             <span>&nbsp;</span>
             <span>{{ title }}</span>
         </div>
-        <div class="sk-panel__content js-filter-container {% if not field.value %}is-collapsed{% endif %}">
+        <div class="sk-panel__content js-filter-container {% if not enabled %}is-collapsed{% endif %}">
             <div class="sk-input-filter js-filter">
                 <div class="sk-input-filter-form">
                     {% block filter %}

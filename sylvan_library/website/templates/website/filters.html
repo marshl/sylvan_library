@@ -8,12 +8,13 @@
                     <span>Search</span>
                 </a>
             </div>
-            {% include 'website/slider_filter.html' with title="CMC" field=form.min_cmc min_field=form.min_cmc max_field=form.max_cmc min_val=0 max_val=16 %}
-            {% include 'website/text_filter.html' with title="Card name" field=form.card_name placeholder="Search card name" %}
-            {% include 'website/text_filter.html' with title="Rules text" field=form.rules_text placeholder="Use ~ for card name" %}
-            {% include 'website/text_filter.html' with title="Flavour text" field=form.flavour_text placeholder="Search flavour text" %}
-            {% include 'website/text_filter.html' with title="Type" field=form.type_text placeholder="Search card type" %}
-            {% include 'website/text_filter.html' with title="Subtype" field=form.subtype_text placeholder="Search card subtype" %}
+            <br/>
+            {% include 'website/slider_filter.html' with title="Converted Mana Cost" enabled=form.min_cmc.value min_field=form.min_cmc max_field=form.max_cmc min_val=0 max_val=16 %}
+            {% include 'website/text_filter.html' with title="Card name" enabled=form.card_name.value field=form.card_name placeholder="Search card name" %}
+            {% include 'website/text_filter.html' with title="Rules text" enabled=form.rules_text.value field=form.rules_text placeholder="Use ~ for card name" %}
+            {% include 'website/text_filter.html' with title="Flavour text" enabled=form.flavour_text.value field=form.flavour_text placeholder="Search flavour text" %}
+            {% include 'website/text_filter.html' with title="Type" enabled=form.type_text.value field=form.type_text placeholder="Search card type" %}
+            {% include 'website/text_filter.html' with title="Subtype" enabled=form.subtype_text.value field=form.subtype_text placeholder="Search card subtype" %}
 
             <div class="sk-panel filter--typeLine">
                 <div class="sk-panel__header is-collapsable"><span
