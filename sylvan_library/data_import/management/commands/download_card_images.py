@@ -33,19 +33,11 @@ class Command(BaseCommand):
             help='Download all foreign languages (only English cards are downloaded by default)'
         )
 
-        parser.add_argument(
-            '--sleepy',
-            action='store_true',
-            dest='sleep_between_downloads',
-            default=False,
-            help='Sleep a random amount between each image to prevent overloading the image server'
-        )
-
     def handle(self, *args, **options):
 
         if options['download_all_languages'] \
                 and not Language.objects.filter(name='English').exists():
-            logger.log(
+            logger.info(
                 'Only english card images are downloaded by default, but the English Language '
                 'object does not exist. Please run `update_database` first')
             return
@@ -62,36 +54,34 @@ class Command(BaseCommand):
                 continue
 
             base_image_uri = None
-            logger.info(f'Downloading images for {printing}')
+            logger.info('Queueing images for %s', printing)
             for printed_language in printing.printed_languages.all():
                 if printed_language.language.code is None:
                     continue
 
-                if CardImage.objects.filter(printed_language=printed_language).exists():
-                    logger.info(f'\tSkipping {printed_language}')
-                    continue
-
-                image_path = os.path.join('website', 'static', printed_language.get_image_path())
-
-                if os.path.exists(image_path):
-                    logger.info(f'\tSkipping {printed_language}')
-                    card_image = CardImage(printed_language=printed_language, downloaded=True)
-                    card_image.save()
-
+                if CardImage.objects.filter(printed_language=printed_language).exists()\
+                        or (not options['download_all_languages']
+                            and printed_language.language != Language.english()):
+                    logger.info('\tSkipping %s', printed_language)
                     continue
 
                 if base_image_uri is None:
                     url = 'https://api.scryfall.com/cards/' + printing.scryfall_id
                     resp = requests.get(url=url)
+                    resp.raise_for_status()
                     data = resp.json()
-                    base_image_uri = data['image_uris']['normal']
+                    base_image_uri = data['image_uris']['normal'] \
+                        .replace('/' + data['lang'] + '/', '/[language]/')
                     # Sleep after every request made to reduce server load
-                    time.sleep(random.random() * 0.25 + 0.1)
+                    time.sleep(random.random())
 
+                image_path = os.path.join('website', 'static', printed_language.get_image_path())
                 localised_image_uri = base_image_uri.replace(
-                    '/en/',
+                    '/[language]/',
                     f'/{printed_language.language.code}/')
                 image_download_queue.put((printed_language.id, localised_image_uri, image_path))
+                while image_download_queue.qsize() > self.download_thread_count * 2:
+                    time.sleep(1)
 
         image_download_queue.join()
 
@@ -115,7 +105,7 @@ class ImageDownloadThread(threading.Thread):
                 stream.raise_for_status()
             except requests.exceptions.HTTPError:
                 logger.warning(
-                    f'\tCould not download {printed_language} ({download_url})')
+                    '\tCould not download %s (%s)', printed_language, download_url)
                 card_image = CardImage(printed_language=printed_language, downloaded=False)
                 card_image.save()
             else:
@@ -125,6 +115,6 @@ class ImageDownloadThread(threading.Thread):
 
                 card_image = CardImage(printed_language=printed_language, downloaded=True)
                 card_image.save()
-                logger.info(f'\tDownloaded {printed_language}')
+                logger.info('\tDownloaded %s', printed_language)
 
             self.download_queue.task_done()
