@@ -49,17 +49,19 @@ class Command(BaseCommand):
             thread.setDaemon(True)
             thread.start()
 
-        for printing in CardPrinting.objects.all():
+        for printing in CardPrinting.objects.all() \
+                .prefetch_related('set') \
+                .prefetch_related('printed_languages__language'):
             if not printing.scryfall_id:
                 continue
 
             base_image_uri = None
-            logger.info('Queueing images for %s', printing)
+            logger.info('Queueing images for %s (%s)', printing, image_download_queue.qsize())
             for printed_language in printing.printed_languages.all():
                 if printed_language.language.code is None:
                     continue
 
-                if CardImage.objects.filter(printed_language=printed_language).exists()\
+                if CardImage.objects.filter(printed_language=printed_language).exists() \
                         or (not options['download_all_languages']
                             and printed_language.language != Language.english()):
                     logger.info('\tSkipping %s', printed_language)
@@ -70,10 +72,12 @@ class Command(BaseCommand):
                     resp = requests.get(url=url)
                     resp.raise_for_status()
                     data = resp.json()
+                    if 'image_uris' not in data:
+                        continue
                     base_image_uri = data['image_uris']['normal'] \
                         .replace('/' + data['lang'] + '/', '/[language]/')
                     # Sleep after every request made to reduce server load
-                    time.sleep(random.random())
+                    time.sleep(random.random() * 0.5)
 
                 image_path = os.path.join('website', 'static', printed_language.get_image_path())
                 localised_image_uri = base_image_uri.replace(
