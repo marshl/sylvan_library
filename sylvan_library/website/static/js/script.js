@@ -215,9 +215,12 @@ $(function () {
                 $filter.find('.js-lower-mark').text(min);
                 $filter.find('.js-upper-mark').text(max);
                 $filter.find('.js-min-field').val(min);
-                console.log($filter.find('.js-min-field'));
                 $filter.find('.js-max-field').val(max);
             }
         });
+    });
+
+    $(this).on('click', '.js-search-btn', function() {
+        $(this).closest('form').submit();
     });
 });
