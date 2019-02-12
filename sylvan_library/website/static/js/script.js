@@ -155,10 +155,9 @@ $(function () {
 
     $(this).on('click', '.js-filter-heading', function () {
         let collapsed = !$(this).data('collapsed');
-        $(this).closest('.js-collapsible-filter-field')
-            .find('.js-filter-container')
-            .toggleClass('is-collapsed', collapsed);
-
+        let $filterField = $(this).closest('.js-collapsible-filter-field');
+        $filterField.find('.js-filter-container').toggleClass('is-collapsed', collapsed);
+        $filterField.find('input').prop('disabled', collapsed);
         $(this).data('collapsed', collapsed);
     });
 
