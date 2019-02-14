@@ -5,7 +5,7 @@
     {% for printing in card.printings.all %}
         <i class="js-card-result-set-symbol
                     setIcon ss ss-2x
-                    ss-{{ printing.set.code | lower }}
+                    ss-{{ printing.set.get_keyrune_setcode }}
                     ss-{{ printing.rarity.name | lower }}
                     {% if printing.rarity.symbol != 'C' %}
                         ss-grad
