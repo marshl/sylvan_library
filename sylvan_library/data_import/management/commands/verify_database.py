@@ -1,6 +1,7 @@
 """
 Module for the verify_database command
 """
+import math
 import sys
 import traceback
 
@@ -365,6 +366,12 @@ class Command(BaseCommand):
         self.assert_card_num_power_eq('Progenitus', 10)
         self.assert_card_num_power_eq('Emrakul, the Aeons Torn', 15)
 
+        # Infinite creatures
+        self.assert_card_num_power_eq('Infinity Elemental', math.inf)
+
+        # Vehicles
+        self.assert_card_num_power_eq("Smuggler's Copter", 3)
+
         # Negative power creatures
         self.assert_card_num_power_eq('Spinal Parasite', -1)
 
@@ -377,6 +384,7 @@ class Command(BaseCommand):
         # + Cards
         self.assert_card_num_power_eq('Tarmogoyf', 0)
         self.assert_card_num_power_eq('Haunting Apparition', 1)
+
 
     def test_card_toughness(self):
         # Normal Cards
