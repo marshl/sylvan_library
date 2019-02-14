@@ -214,7 +214,6 @@ class Command(BaseCommand):
             set_obj = Set.objects.filter(code=staged_set.get_code()).first()
 
             if set_obj is None:
-
                 logger.info('Creating set %s (%s)', staged_set.get_name(), staged_set.code)
                 block = Block.objects.filter(name=staged_set.get_block()).first()
 
@@ -230,6 +229,7 @@ class Command(BaseCommand):
 
             else:
                 logger.info('Set %s already exists, updating', staged_set.get_name())
+                set_obj.name = staged_set.get_name()
                 set_obj.full_clean()
                 set_obj.save()
                 self.update_counts['sets_updated'] += 1
