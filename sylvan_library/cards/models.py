@@ -3,8 +3,9 @@ Models for cards
 """
 
 import datetime
+import os
 import random
-from os import path
+import re
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -267,11 +268,11 @@ class CardPrintingLanguage(models.Model):
         return f'{self.language} {self.card_printing}'
 
     def get_image_path(self):
-        return path.join(
+        return os.path.join(
             'card_images',
             self.language.code.lower(),
             '_' + self.card_printing.set.code.lower(),
-            self.card_printing.number + '.jpg')
+            re.sub('\W', 's', self.card_printing.number) + '.jpg')
 
 
 class UserOwnedCard(models.Model):
