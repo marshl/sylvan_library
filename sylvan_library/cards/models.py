@@ -293,7 +293,7 @@ class Set(models.Model):
             'PXLN': 'xln',
             'PXTC': 'xln',
             'PZEN': 'zen',
-            'TGTH': 'bng',
+            'TBTH': 'bng',
             'TDAG': 'ths',
             'TFTH': 'ths',
             'THP1': 'ths',
