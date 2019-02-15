@@ -72,10 +72,17 @@ class Command(BaseCommand):
                     resp = requests.get(url=url)
                     resp.raise_for_status()
                     data = resp.json()
-                    if 'image_uris' not in data:
+                    if 'image_uris' in data:
+                        base_image_uri = data['image_uris']['normal'] \
+                            .replace('/' + data['lang'] + '/', '/[language]/')
+                    if 'card_faces' in data:
+                        base_image_uri = next(card_face['image_uris']['normal'] \
+                                              .replace('/' + data['lang'] + '/', '/[language]/')
+                                              for card_face in data['card_faces']
+                                              if card_face['name'] == printing.card.name)
+                    else:
                         continue
-                    base_image_uri = data['image_uris']['normal'] \
-                        .replace('/' + data['lang'] + '/', '/[language]/')
+
                     # Sleep after every request made to reduce server load
                     time.sleep(random.random() * 0.5)
 
@@ -84,6 +91,7 @@ class Command(BaseCommand):
                     '/[language]/',
                     f'/{printed_language.language.code}/')
                 image_download_queue.put((printed_language.id, localised_image_uri, image_path))
+
                 while image_download_queue.qsize() > self.download_thread_count * 2:
                     time.sleep(1)
 

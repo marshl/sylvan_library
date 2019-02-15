@@ -558,11 +558,14 @@ class CardPrintingLanguage(models.Model):
         return f'{self.language} {self.card_printing}'
 
     def get_image_path(self):
+        image_name = re.sub(r'\W', 's', self.card_printing.number)
+        if self.card_printing.card.layout == 'transform':
+            image_name += '_' + self.card_printing.card.side
         return os.path.join(
             'card_images',
             self.language.code.lower(),
             '_' + self.card_printing.set.code.lower(),
-            re.sub('\W', 's', self.card_printing.number) + '.jpg')
+            image_name + '.jpg')
 
 
 class UserOwnedCard(models.Model):

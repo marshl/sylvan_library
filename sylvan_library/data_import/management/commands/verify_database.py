@@ -33,6 +33,7 @@ class Command(BaseCommand):
         """
         The class for a failed verification, including the stack trace (if an exception was raised)
         """
+
         def __init__(self, message, stack_trace):
             self.message = message
             self.stack_trace = stack_trace
@@ -384,7 +385,6 @@ class Command(BaseCommand):
         # + Cards
         self.assert_card_num_power_eq('Tarmogoyf', 0)
         self.assert_card_num_power_eq('Haunting Apparition', 1)
-
 
     def test_card_toughness(self):
         # Normal Cards
