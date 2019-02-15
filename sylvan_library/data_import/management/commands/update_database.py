@@ -318,6 +318,7 @@ class Command(BaseCommand):
         card.rules_text = staged_card.get_rules_text()
         card.original_text = staged_card.get_original_text()
         card.layout = staged_card.get_layout()
+        card.side = staged_card.get_side()
 
         card.is_reserved = staged_card.is_reserved()
         card.full_clean()

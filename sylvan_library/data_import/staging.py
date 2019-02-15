@@ -233,6 +233,9 @@ class StagedCard:
     def get_layout(self):
         return self.value_dict['layout']
 
+    def get_side(self):
+        return self.value_dict.get('side')
+
     def get_legalities(self):
         return self.value_dict['legalities'] if 'legalities' in self.value_dict else []
 
