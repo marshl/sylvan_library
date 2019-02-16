@@ -42,8 +42,9 @@ class Command(BaseCommand):
                 'object does not exist. Please run `update_database` first')
             return
 
-        image_download_queue = queue.Queue()
+        root_dir = os.path.join('website', 'static')
 
+        image_download_queue = queue.Queue()
         for i in range(1, self.download_thread_count):
             thread = ImageDownloadThread(image_download_queue)
             thread.setDaemon(True)
@@ -56,7 +57,7 @@ class Command(BaseCommand):
                 continue
 
             base_image_uri = None
-            logger.info('Queueing images for %s (%s)', printing, image_download_queue.qsize())
+
             for printed_language in printing.printed_languages.all():
                 if printed_language.language.code is None:
                     continue
@@ -69,24 +70,27 @@ class Command(BaseCommand):
 
                 if base_image_uri is None:
                     url = 'https://api.scryfall.com/cards/' + printing.scryfall_id
+                    logger.info('Queueing images for %s (%s): %s', printing,
+                                image_download_queue.qsize(), url)
                     resp = requests.get(url=url)
                     resp.raise_for_status()
                     data = resp.json()
                     if 'image_uris' in data:
                         base_image_uri = data['image_uris']['normal'] \
                             .replace('/' + data['lang'] + '/', '/[language]/')
-                    if 'card_faces' in data:
+                    elif 'card_faces' in data:
                         base_image_uri = next(card_face['image_uris']['normal'] \
                                               .replace('/' + data['lang'] + '/', '/[language]/')
                                               for card_face in data['card_faces']
-                                              if card_face['name'] == printing.card.name)
+                                              if card_face['name'] == printing.card.name
+                                              and 'image_uris' in card_face)
                     else:
-                        continue
+                        raise Exception('Neither card_images or card_faces could be found')
 
                     # Sleep after every request made to reduce server load
                     time.sleep(random.random() * 0.5)
 
-                image_path = os.path.join('website', 'static', printed_language.get_image_path())
+                image_path = os.path.join(root_dir, printed_language.get_image_path())
                 localised_image_uri = base_image_uri.replace(
                     '/[language]/',
                     f'/{printed_language.language.code}/')
