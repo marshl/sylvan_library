@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'data_import',
     'cards',
     'django_extensions',
+    'reports',
     'website',
     'widget_tweaks',
 ]
