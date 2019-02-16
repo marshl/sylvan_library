@@ -21,6 +21,8 @@ ipython = "*"
 pylint = "*"
 notebook = "*"
 django-debug-toolbar = "*"
+searborn = "*"
+seaborn = "*"
 
 [requires]
 python_version = "3"

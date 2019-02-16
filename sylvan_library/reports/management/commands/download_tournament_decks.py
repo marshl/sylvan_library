@@ -44,7 +44,6 @@ class Command(BaseCommand):
         grand_prix_uri = 'format?f=ST&meta=96'
         for uri in [worlds_uri, pro_tour_uri, grand_prix_uri]:
             self.parse_event_summary(self.base_uri + uri)
-            pass
 
     def parse_event_summary(self, event_summary_uri):
         visited_pages = set()
