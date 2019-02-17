@@ -15,8 +15,12 @@ from cards.models import (
 register = template.Library()
 
 
+def does_image_exist(path):
+    return os.path.exists(os.path.join('website', 'static', path))
+
+
 def get_default_image():
-    return os.path.join('card_back.jpg')
+    return 'card_back.jpg'
 
 
 @register.filter(name='card_printing_language_image_url')
@@ -28,7 +32,7 @@ def card_printing_language_image_url(printed_language: CardPrintingLanguage) -> 
     """
     path = printed_language.get_image_path()
 
-    if not path:
+    if not does_image_exist(path):
         return get_default_image()
 
     return path
@@ -41,14 +45,18 @@ def card_printing_image_url(card_printing: CardPrinting) -> str:
     :param card_printing: The card printing to get the image for
     :return: The relative image path
     """
-    printed_language = next(pl for pl in card_printing.printed_languages.all() if pl.language_id == Language.english().id)
-
+    printed_language = next(pl for pl in card_printing.printed_languages.all() if
+                            pl.language_id == Language.english().id)
     path = printed_language.get_image_path()
+    if does_image_exist(path):
+        return path
 
-    if not path:
-        return get_default_image()
+    for pl in card_printing.printed_languages.all():
+        path = pl.get_image_path()
+        if does_image_exist(path):
+            return path
 
-    return path
+    return get_default_image()
 
 
 @register.filter(name='card_image_url')
