@@ -72,7 +72,6 @@ class Set(models.Model):
             'PWOR': 'pmtg1',
             'WC99': 'pmtg1',
             'PWOS': 'pmtg1',
-            'PELP': 'pmtg1',
             'WC00': 'pmtg1',
             'CST': 'pmtg1',
             'G99': 'pmtg1',
@@ -83,7 +82,6 @@ class Set(models.Model):
             'WC97': 'pmtg1',
             'WC98': 'pmtg1',
             'G11': 'pmtg1',
-            'ITP': 'pmtg1',
             'L12': 'pmtg1',
             'L13': 'pmtg1',
             'L14': 'pmtg1',
@@ -309,6 +307,7 @@ class Set(models.Model):
             # Asia Pacific Lands
             'PALP': 'papac',
             'PJAS': 'papac',
+            'PELP': 'peuro',
 
             'PBOK': 'pbook',
             'PHPR': 'pbook',
@@ -347,6 +346,8 @@ class Set(models.Model):
 
             'REN': 'xren',
             'RIN': 'xren',
+
+            'ITP': 'x2ps',
 
         }
         code = mappings.get(self.code)
