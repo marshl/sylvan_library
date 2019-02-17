@@ -24,7 +24,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         output_path = os.path.join('reports', 'output', 'deck_rarity_progression.png')
-        os.remove(output_path)
+        if os.path.exists(output_path):
+            os.remove(output_path)
 
         owner = User.objects.get(username='Test')
         decks = Deck.objects.filter(owner=owner).prefetch_related('cards__card__printings__set')
@@ -58,6 +59,7 @@ class Command(BaseCommand):
         data = data.interpolate(method='cubic')
         palette = {'L': '#875438', 'C': '#0E0C0C', 'U': '#8A8D91', 'R': '#C1A15B', 'M': '#EC7802'}
         plt = sns.lineplot(data=data, palette=palette, linewidth=1.5, hue='A')
+        plt.set(ylabel='Average Proportion of Deck')
         fig = plt.figure
 
         fig.savefig(output_path)
