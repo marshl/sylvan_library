@@ -92,7 +92,7 @@ class Command(BaseCommand):
         resp = requests.get(deck_uri)
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text)
-        deck_table = soup.select_one('div.page div table tbody tr td table.Stable tbody tr td table')
+        deck_table = soup.select('table.Stable')[1]
         tables = deck_table.find_all('table')
         with transaction.atomic():
             deck = Deck()
@@ -100,7 +100,7 @@ class Command(BaseCommand):
             deck.name = soup.select_one('div.w_title').text
             deck.name = re.sub('\s+', ' ', deck.name).strip()
 
-            summary = soup.select_one('html body div.page div table tbody tr td div table.Stable tbody tr td.S14')
+            summary = soup.select_one('td.S14')
             date_match = re.search(r'(?P<date>\d+/\d+/\d+)', summary.text)
             if not date_match:
                 raise Exception('Could not find the date')
