@@ -337,6 +337,9 @@ class StagedSet:
     def get_name(self):
         return self.value_dict['name']
 
+    def get_type(self):
+        return self.value_dict.get('type')
+
     def get_block(self):
         return self.value_dict.get('block')
 

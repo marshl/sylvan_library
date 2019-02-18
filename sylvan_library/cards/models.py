@@ -62,6 +62,7 @@ class Set(models.Model):
     code = models.CharField(max_length=10, unique=True)
     release_date = models.DateField(blank=True, null=True)
     name = models.CharField(max_length=200, unique=True)
+    type = models.CharField(max_length=50, blank=True, null=True)
 
     block = models.ForeignKey(Block, null=True, blank=True, related_name='sets',
                               on_delete=models.CASCADE)
@@ -574,7 +575,6 @@ class UserOwnedCard(models.Model):
     Model for a user owned a number of physical cards
     """
     count = models.IntegerField()
-
     physical_card = models.ForeignKey(PhysicalCard, related_name='ownerships',
                                       on_delete=models.CASCADE)
     owner = models.ForeignKey(User, related_name='owned_cards', on_delete=models.CASCADE)

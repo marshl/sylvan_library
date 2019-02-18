@@ -248,6 +248,7 @@ class Command(BaseCommand):
                 set_obj = Set(
                     code=staged_set.get_code(),
                     name=staged_set.get_name(),
+                    type=staged_set.get_type(),
                     release_date=staged_set.get_release_date(),
                     block=block)
                 set_obj.full_clean()
@@ -258,6 +259,7 @@ class Command(BaseCommand):
             else:
                 logger.info('Set %s already exists, updating', staged_set.get_name())
                 set_obj.name = staged_set.get_name()
+                set_obj.type = staged_set.get_type()
                 set_obj.full_clean()
                 set_obj.save()
                 self.update_counts['sets_updated'] += 1
