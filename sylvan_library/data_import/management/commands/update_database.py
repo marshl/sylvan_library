@@ -83,6 +83,14 @@ class Command(BaseCommand):
             help='Forces an update of the given sets'
         )
 
+        parser.add_argument(
+            '--oracle-only',
+            action='store_true',
+            dest='oracle_only',
+            default=False,
+            help='Update the database without a transaction (unsafe)',
+        )
+
     def handle(self, *args, **options):
 
         self.start_time = time.time()
@@ -96,19 +104,24 @@ class Command(BaseCommand):
         self.force_update = options['force_update']
 
         if options['no_transaction']:
-            self.update_database(importer)
+            self.update_database(importer, oracle_only=options['oracle_only'])
         else:
             with transaction.atomic():
-                self.update_database(importer)
+                self.update_database(importer, oracle_only=options['oracle_only'])
 
         self.log_stats()
 
-    def update_database(self, data_importer):
+    def update_database(self, data_importer, oracle_only=False):
+        staged_sets = data_importer.get_staged_sets()
+
+        if oracle_only:
+            self.force_update = True
+            self.update_card_list(staged_sets, oracle_only=True)
+            return
+
         self.update_rarity_list(data_importer)
         self.update_colour_list(data_importer)
         self.update_language_list(data_importer)
-
-        staged_sets = data_importer.get_staged_sets()
 
         self.update_block_list(staged_sets)
         self.update_set_list(staged_sets)
@@ -234,16 +247,14 @@ class Command(BaseCommand):
                 set_obj.save()
                 self.update_counts['sets_updated'] += 1
 
-                if self.force_update:  # use the set anyway during a force update
-                    self.sets_to_update.append(staged_set.get_code())
         logger.info('Set list updated')
 
-    def update_card_list(self, staged_sets):
+    def update_card_list(self, staged_sets, oracle_only=False):
         logger.info('Updating card list')
 
         for staged_set in staged_sets:
 
-            if staged_set.get_code() not in self.sets_to_update:
+            if staged_set.get_code() not in self.sets_to_update and not self.force_update:
                 logger.info('Ignoring set %s', staged_set.get_name())
                 continue
 
@@ -259,22 +270,23 @@ class Command(BaseCommand):
 
                 card_obj = self.update_card(staged_card)
 
-                printing_obj = self.update_card_printing(
-                    card_obj,
-                    set_obj,
-                    staged_card)
+                if not oracle_only:
+                    printing_obj = self.update_card_printing(
+                        card_obj,
+                        set_obj,
+                        staged_card)
 
-                english = {
-                    'language': 'English',
-                    'name': staged_card.get_name(),
-                    'multiverseId': staged_card.get_multiverse_id()
-                }
+                    english = {
+                        'language': 'English',
+                        'name': staged_card.get_name(),
+                        'multiverseId': staged_card.get_multiverse_id()
+                    }
 
-                self.update_card_printing_language(printing_obj, english)
+                    self.update_card_printing_language(printing_obj, english)
 
-                if staged_card.has_foreign_data():
-                    for foreign_info in staged_card.get_foreign_data():
-                        self.update_card_printing_language(printing_obj, foreign_info)
+                    if staged_card.has_foreign_data():
+                        for foreign_info in staged_card.get_foreign_data():
+                            self.update_card_printing_language(printing_obj, foreign_info)
 
         logger.info('Card list updated')
 
@@ -399,7 +411,7 @@ class Command(BaseCommand):
         english_language = Language.objects.get(name='English')
         for staged_set in staged_sets:
 
-            if staged_set.get_code() not in self.sets_to_update:
+            if staged_set.get_code() not in self.sets_to_update and not self.force_update:
                 logger.info('Skipping set %s', staged_set.get_name())
                 continue
 
@@ -494,7 +506,7 @@ class Command(BaseCommand):
     def update_card_links(self, staged_sets):
         for staged_set in staged_sets:
 
-            if staged_set.get_code() not in self.sets_to_update:
+            if staged_set.get_code() not in self.sets_to_update and not self.force_update:
                 logger.info('Skipping set %s', staged_set.get_name())
                 continue
 
@@ -518,7 +530,7 @@ class Command(BaseCommand):
         cards_updated = []
 
         for staged_set in staged_sets:
-            if staged_set.get_code() not in self.sets_to_update:
+            if staged_set.get_code() not in self.sets_to_update and not self.force_update:
                 logger.info('Skipping set %s', staged_set.get_name())
                 continue
 
