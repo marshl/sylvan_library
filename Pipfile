@@ -13,6 +13,7 @@ requests = "*"
 ijson = "*"
 django-environ = "*"
 beautifulsoup4 = "*"
+seaborn = "*"
 
 [dev-packages]
 jupyter_core = "==4.4.0"
@@ -21,7 +22,6 @@ ipython = "*"
 pylint = "*"
 notebook = "*"
 django-debug-toolbar = "*"
-searborn = "*"
 seaborn = "*"
 
 [requires]
