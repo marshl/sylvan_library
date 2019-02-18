@@ -71,11 +71,16 @@ class Command(BaseCommand):
             if 'Basic' in deck_card.card.type:
                 counts['L'] += deck_card.count
             else:
-                closest_printing = deck_card.card.printings.first()
+                closest_printing = None
                 for printing in deck_card.card.printings.all():
-                    if abs(deck.date_created - printing.set.release_date) \
+                    if printing.set.type not in ['expansion', 'core', 'starter']:
+                        continue
+                    if closest_printing is None or \
+                            abs(deck.date_created - printing.set.release_date) \
                             < abs(deck.date_created - closest_printing.set.release_date):
                         closest_printing = printing
+                if not closest_printing:
+                    raise Exception(f'Could not find a valid printing for {deck_card}')
 
                 counts[closest_printing.rarity.symbol] += deck_card.count
             total_count += deck_card.count
