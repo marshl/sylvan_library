@@ -88,7 +88,15 @@ class Command(BaseCommand):
             action='store_true',
             dest='oracle_only',
             default=False,
-            help='Update the database without a transaction (unsafe)',
+            help='Update only the Card objects',
+        )
+
+        parser.add_argument(
+            '--sets-only',
+            action='store_true',
+            dest='sets_only',
+            default=False,
+            help='Updates only the Set objects',
         )
 
     def handle(self, *args, **options):
@@ -104,19 +112,26 @@ class Command(BaseCommand):
         self.force_update = options['force_update']
 
         if options['no_transaction']:
-            self.update_database(importer, oracle_only=options['oracle_only'])
+            self.update_database(importer, oracle_only=options['oracle_only'],
+                                 sets_only=options['sets_only'])
         else:
             with transaction.atomic():
-                self.update_database(importer, oracle_only=options['oracle_only'])
+                self.update_database(importer, oracle_only=options['oracle_only'],
+                                     sets_only=options['sets_only'])
 
         self.log_stats()
 
-    def update_database(self, data_importer, oracle_only=False):
+    def update_database(self, data_importer, oracle_only=False, sets_only=False):
         staged_sets = data_importer.get_staged_sets()
 
         if oracle_only:
             self.force_update = True
             self.update_card_list(staged_sets, oracle_only=True)
+            return
+
+        if sets_only:
+            self.force_update = True
+            self.update_set_list(staged_sets)
             return
 
         self.update_rarity_list(data_importer)
