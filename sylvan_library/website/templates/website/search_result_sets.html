@@ -6,7 +6,11 @@
         <i class="js-card-result-set-symbol
                     setIcon ss ss-2x
                     ss-{{ printing.set.get_keyrune_setcode }}
-                    ss-{{ printing.rarity.name | lower }}
+                    {% if printing.set.code == 'TSB'  %}
+                        ss-timeshifted
+                    {% else  %}
+                        ss-{{ printing.rarity.name | lower }}
+                    {% endif %}
                     {% if printing.rarity.symbol != 'C' %}
                         ss-grad
                     {% endif %}
