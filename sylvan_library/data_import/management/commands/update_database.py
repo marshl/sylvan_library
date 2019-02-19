@@ -250,6 +250,7 @@ class Command(BaseCommand):
                     name=staged_set.get_name(),
                     type=staged_set.get_type(),
                     release_date=staged_set.get_release_date(),
+                    keyrune_code=staged_set.get_keyrune_code(),
                     block=block)
                 set_obj.full_clean()
                 set_obj.save()
@@ -260,6 +261,7 @@ class Command(BaseCommand):
                 logger.info('Set %s already exists, updating', staged_set.get_name())
                 set_obj.name = staged_set.get_name()
                 set_obj.type = staged_set.get_type()
+                set_obj.keyrune_code = staged_set.get_keyrune_code()
                 set_obj.full_clean()
                 set_obj.save()
                 self.update_counts['sets_updated'] += 1
