@@ -117,13 +117,6 @@ class StagedCard:
         return self.value_dict['foreignData']
 
     def get_name(self):
-        if self.value_dict['name'] == 'B.F.M. (Big Furry Monster)':
-            if self.value_dict['number'] == '28':
-                return 'B.F.M. (Big Furry Monster) (left)'
-
-            if self.value_dict['number'] == '29':
-                return 'B.F.M. (Big Furry Monster) (right)'
-
         return self.value_dict['name']
 
     def get_mana_cost(self):
