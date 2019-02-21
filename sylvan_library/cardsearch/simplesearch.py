@@ -23,6 +23,7 @@ class SimpleSearch(BaseSearch):
     """
 
     def __init__(self):
+        super().__init__()
         self.text = None
         self.colours = list()
         self.include_name = False

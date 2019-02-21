@@ -6,8 +6,9 @@ import re
 
 from django import template
 
-# pylint: disable=invalid-name
 register = template.Library()
+
+MINUS_SYMBOLS = ('−', '-')
 
 
 @register.filter(name='replace_loyalty_symbols')
@@ -18,6 +19,7 @@ def replace_loyalty_symbols(text: str, scale: str = None) -> str:
     :param scale: The size of the icons (either lg, 2x, 3x, 4x or 5x)
     :return: The text with all loyalty costs converted to icons
     """
+
     def replace_symbol(loyalty_match):
         """
         Replaces the given symbol with its loyalty tag
@@ -34,7 +36,7 @@ def replace_loyalty_symbols(text: str, scale: str = None) -> str:
         if scale is not None:
             classes.append(f'ms-{scale}')
 
-        if sign == '−' or sign == '-':
+        if sign in MINUS_SYMBOLS:
             classes.append('ms-loyalty-down')
         elif sign == '+':
             classes.append('ms-loyalty-up')
@@ -43,7 +45,7 @@ def replace_loyalty_symbols(text: str, scale: str = None) -> str:
 
         return '<i class="' + ' '.join(classes) + '"></i>'
 
-    return re.sub(r'([−+\-]?[\dx]+?)(?=:)', replace_symbol, text)
+    return re.sub(r'([+' + '\\'.join(MINUS_SYMBOLS) + r']?[\dx]+?)(?=:)', replace_symbol, text)
 
 
 @register.filter(name='replace_mana_symbols')

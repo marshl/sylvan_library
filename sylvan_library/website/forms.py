@@ -3,7 +3,6 @@ Forms for the website module
 """
 
 from django import forms
-from cardsearch import parameters
 from cards.models import CardPrinting, Language
 
 
@@ -19,7 +18,8 @@ class ChangeCardOwnershipForm(forms.Form):
         super().__init__()
         if any(pl for pl in printing.printed_languages.all()
                if pl.language_id == Language.english().id):
-            english_print = next(pl for pl in printing.printed_languages.all() if pl.language_id == Language.english().id)
+            english_print = next(pl for pl in printing.printed_languages.all()
+                                 if pl.language_id == Language.english().id)
             choices = [get_physical_card_key_pair(physical_card, printing)
                        for physical_card in english_print.physical_cards.all()]
             choices.extend([

@@ -16,10 +16,19 @@ register = template.Library()
 
 
 def does_image_exist(path):
+    """
+    Returns whether the given image path exists or not
+    :param path:  The path of the image
+    :return:  True if the image file exists, otherwise False
+    """
     return os.path.exists(os.path.join('website', 'static', path))
 
 
 def get_default_image():
+    """
+    Gets the oath of the default iimage to use if one can't be found
+    :return: A path to an image in the static folder
+    """
     return 'card_back.jpg'
 
 

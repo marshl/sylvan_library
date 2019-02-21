@@ -1,5 +1,5 @@
 """
-Module for the verify_database command
+Module for the verify_keyrune_mapping command
 """
 
 import os
@@ -14,7 +14,8 @@ from cards.models import (
 
 class Command(BaseCommand):
     """
-
+    Finds any keyrune set symbols that are unused
+    and any sets that have codes that can't be found in keyrune
     """
     help = 'Verifies that database update was successful'
 
@@ -30,14 +31,18 @@ class Command(BaseCommand):
                 if '$mtg_setlist:' not in line:
                     continue
 
-                for line in sass_file:
-                    if '//' in line:
+                for set_line in sass_file:
+                    if '//' in set_line:
                         continue
 
-                    if line.startswith(')'):
+                    if set_line.startswith(')'):
                         break
 
-                    groups = re.search('.+?"(?P<set_name>.+?)", *[\'"](?P<set_code>.+?)[\'"]', line)
+                    groups = re.search(
+                        '.+?"(?P<set_name>.+?)", *[\'"](?P<set_code>.+?)[\'"]',
+                        set_line
+                    )
+
                     if groups:
                         sets[groups['set_code']] = groups['set_name']
 

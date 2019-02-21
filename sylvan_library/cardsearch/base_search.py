@@ -6,11 +6,16 @@ import abc
 from django.core.paginator import Paginator, EmptyPage
 from django.db.models import prefetch_related_objects
 
-from cardsearch.search_result import SearchResult
 from cardsearch.parameters import (
     AndParam,
     CardSortParam,
     CardNameSortParam
+)
+
+from cards.models import (
+    Card,
+    CardPrinting,
+    Set,
 )
 
 
@@ -27,6 +32,26 @@ class PageButton:
         self.is_previous = is_previous
         self.is_next = is_next
         self.is_spacer = is_spacer
+
+
+class SearchResult:
+    """
+    A single search result including the card and it's selected printing
+    """
+
+    def __init__(self, card: Card, selected_printing: CardPrinting = None,
+                 selected_set: Set = None):
+        self.card = card
+        self.selected_printing = selected_printing
+
+        if self.card and selected_set and not self.selected_printing:
+            self.selected_printing = self.card.printings.filter(set=selected_set).first()
+
+        if self.card and not self.selected_printing:
+            self.selected_printing = self.card.printings.order_by('set__release_date').last()
+
+        assert self.selected_printing is None or self.card is None \
+               or self.selected_printing in self.card.printings.all()
 
 
 class BaseSearch:

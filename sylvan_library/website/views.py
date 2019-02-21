@@ -148,7 +148,7 @@ def simple_search(request) -> HttpResponse:
 
         try:
             page_number = int(form.data.get('page'))
-        except TypeError or ValueError:
+        except (TypeError, ValueError):
             page_number = 1
 
         search.build_parameters()
