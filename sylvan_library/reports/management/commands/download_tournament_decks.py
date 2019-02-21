@@ -29,11 +29,12 @@ class Command(BaseCommand):
 
     def __init__(self):
         self.base_uri = 'https://www.mtgtop8.com/'
-        if not os.path.exists('parsed_decks.json'):
-            with open('parsed_decks.json', 'w') as json_file:
+        self.output_path = os.path.join('reports', 'output', 'parsed_decks.json')
+        if not os.path.exists(self.output_path):
+            with open(self.output_path, 'w') as json_file:
                 json.dump({'uris': []}, json_file)
 
-        with open('parsed_decks.json') as json_file:
+        with open(self.output_path) as json_file:
             self.parsed_deck_uris = json.load(json_file)['uris']
 
         super().__init__()
@@ -132,5 +133,5 @@ class Command(BaseCommand):
                     deck_card.save()
 
         self.parsed_deck_uris.append(deck_uri)
-        with open('parsed_decks.json', 'w') as json_file:
+        with open(self.output_path, 'w') as json_file:
             json.dump({'uris': self.parsed_deck_uris}, json_file)
