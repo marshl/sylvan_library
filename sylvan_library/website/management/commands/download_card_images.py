@@ -45,7 +45,8 @@ class Command(BaseCommand):
         root_dir = os.path.join('website', 'static')
 
         image_download_queue = queue.Queue()
-        for i in range(1, self.download_thread_count):
+        for i in range(0, self.download_thread_count):
+            logger.info('Starting thread %s', i)
             thread = ImageDownloadThread(image_download_queue)
             thread.setDaemon(True)
             thread.start()
@@ -64,7 +65,7 @@ class Command(BaseCommand):
 
                 if CardImage.objects.filter(printed_language=printed_language).exists() \
                         or (not options['download_all_languages']
-                            and printed_language.language != Language.english()):
+                                and printed_language.language != Language.english()):
                     logger.info('\tSkipping %s', printed_language)
                     continue
 
