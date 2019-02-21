@@ -193,6 +193,8 @@ class CardPrinting(models.Model):
     # legal despite not being available in boosters.
     is_starter = models.BooleanField()
 
+    is_timeshifted = models.BooleanField()
+
     class Meta:
         """
         Metaclass for CardPrinting

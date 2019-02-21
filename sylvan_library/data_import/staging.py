@@ -147,8 +147,8 @@ class StagedCard:
     def get_colour_identity(self):
         if 'colorIdentity' in self.value_dict:
             return ColourUtils.colour_codes_to_flags(self.value_dict['colorIdentity'])
-        else:
-            return 0
+
+        return 0
 
     def get_colour_count(self):
         return bin(self.get_colour()).count('1')
@@ -162,14 +162,14 @@ class StagedCard:
     def get_num_power(self):
         if 'power' in self.value_dict:
             return self.pow_tuff_to_num(self.value_dict['power'])
-        else:
-            return 0
+
+        return 0
 
     def get_num_toughness(self):
         if 'toughness' in self.value_dict:
             return self.pow_tuff_to_num(self.value_dict['toughness'])
-        else:
-            return 0
+
+        return 0
 
     def get_loyalty(self):
         return self.value_dict.get('loyalty')
@@ -177,36 +177,53 @@ class StagedCard:
     def get_num_loyalty(self):
         if 'loyalty' in self.value_dict:
             return self.pow_tuff_to_num(self.value_dict['loyalty'])
-        else:
-            return 0
+
+        return 0
 
     def get_types(self):
+        """
+        Gets the types of the card
+        :return: The card's types
+        """
         if 'types' in self.value_dict:
             types = (self.value_dict.get('supertypes') or []) + \
                     (self.value_dict['types'])
             return ' '.join(types)
-        else:
-            return None
+
+        return None
 
     def get_subtypes(self):
+        """
+        Gets the subtypes of the card
+        :return: The card's subtypes
+        """
         if 'subtypes' in self.value_dict:
             return ' '.join(self.value_dict.get('subtypes'))
-        else:
-            return None
+
+        return None
 
     def get_rules_text(self):
+        """
+        Gets the rules text of the card
+        :return: The card's rules text
+        """
         return self.value_dict.get('text')
 
     def get_original_text(self):
+        """
+        Gets the original (non-oracle) rules text of the card printing
+        :return: The card printing's original text
+        """
         return self.value_dict.get('originalText')
 
     def get_artist(self):
+        """
+        Gets the artist of this card printing
+        :return:
+        """
         return self.value_dict['artist']
 
     def get_rarity_name(self):
-        if 'timeshifted' in self.value_dict and self.value_dict['timeshifted']:
-            return 'Timeshifted'
-
         return self.value_dict['rarity']
 
     def get_flavour_text(self):
@@ -264,6 +281,9 @@ class StagedCard:
     def is_starter_printing(self):
         return 'starter' in self.value_dict and self.value_dict['starter']
 
+    def is_timeshifted(self):
+        return 'isTimeshifted' in self.value_dict and self.value_dict['isTimeshifted']
+
     def has_other_names(self):
         return 'names' in self.value_dict
 
@@ -272,7 +292,8 @@ class StagedCard:
         # B.F.M. has the same name for both cards, so the link_name has to be manually set
         if self.get_name() == 'B.F.M. (Big Furry Monster) (left)':
             return ['B.F.M. (Big Furry Monster) (right)']
-        elif self.get_name() == 'B.F.M. (Big Furry Monster) (right)':
+
+        if self.get_name() == 'B.F.M. (Big Furry Monster) (right)':
             return ['B.F.M. (Big Furry Monster) (left)']
 
         return [n for n in self.value_dict['names'] if n != self.get_name()]
@@ -287,7 +308,8 @@ class StagedCard:
         if name == 'B.F.M. (Big Furry Monster)':
             if self.value_dict['number'] == '28':
                 return 'B.F.M. (Big Furry Monster) (left)'
-            elif self.value_dict['number'] == '29':
+
+            if self.value_dict['number'] == '29':
                 return 'B.F.M. (Big Furry Monster) (right)'
 
         return self.value_dict['name']
