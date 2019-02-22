@@ -103,7 +103,7 @@ ENV/
 
 # custom
 *.idea
-AllSets*.json*
+AllSetFiles.*
 backup/
 *.bat
 *.ipynb
