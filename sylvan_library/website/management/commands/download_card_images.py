@@ -24,6 +24,11 @@ class Command(BaseCommand):
 
     download_thread_count = 8
 
+    def __init__(self, stdout=None, stderr=None, no_color=False):
+        self.image_download_queue = queue.Queue()
+        self.root_dir = os.path.join('website', 'static')
+        super().__init__(stdout=stdout, stderr=stderr, no_color=no_color)
+
     def add_arguments(self, parser):
         parser.add_argument(
             '--all-languages',
@@ -42,12 +47,9 @@ class Command(BaseCommand):
                 'object does not exist. Please run `update_database` first')
             return
 
-        root_dir = os.path.join('website', 'static')
-
-        image_download_queue = queue.Queue()
         for i in range(0, self.download_thread_count):
             logger.info('Starting thread %s', i)
-            thread = ImageDownloadThread(image_download_queue)
+            thread = ImageDownloadThread(self.image_download_queue)
             thread.setDaemon(True)
             thread.start()
 
@@ -57,50 +59,62 @@ class Command(BaseCommand):
             if not printing.scryfall_id:
                 continue
 
-            base_image_uri = None
+            self.download_images_for_printing(printing, download_all_languages=options[
+                'download_all_languages'])
 
-            for printed_language in printing.printed_languages.all():
-                if printed_language.language.code is None:
-                    continue
+        self.image_download_queue.join()
 
-                if CardImage.objects.filter(printed_language=printed_language).exists() \
-                        or (not options['download_all_languages']
-                                and printed_language.language != Language.english()):
-                    logger.info('\tSkipping %s', printed_language)
-                    continue
+    def download_images_for_printing(self, printing: CardPrinting,
+                                     download_all_languages: bool = False):
+        """
+        Starts download threads fto get the images for the given printing
+        :param printing: THe printing to download the images for
+        :param download_all_languages: Whether all languages should be downloaded, or just English
+        """
+        base_image_uri = None
 
-                if base_image_uri is None:
-                    url = 'https://api.scryfall.com/cards/' + printing.scryfall_id
-                    logger.info('Queueing images for %s (%s): %s', printing,
-                                image_download_queue.qsize(), url)
-                    resp = requests.get(url=url)
-                    resp.raise_for_status()
-                    data = resp.json()
-                    if 'image_uris' in data:
-                        base_image_uri = data['image_uris']['normal'] \
-                            .replace('/' + data['lang'] + '/', '/[language]/')
-                    elif 'card_faces' in data:
-                        base_image_uri = next(card_face['image_uris']['normal'] \
-                                              .replace('/' + data['lang'] + '/', '/[language]/')
-                                              for card_face in data['card_faces']
-                                              if card_face['name'] == printing.card.name
-                                              and 'image_uris' in card_face)
-                    else:
-                        raise Exception('Neither card_images or card_faces could be found')
+        for printed_language in printing.printed_languages.all():
+            if printed_language.language.code is None:
+                continue
 
-                    # Sleep after every request made to reduce server load
-                    time.sleep(random.random() * 0.5)
+            if CardImage.objects.filter(printed_language=printed_language).exists():
+                logger.info('\tSkipping %s, already downloaded', printed_language)
+                continue
 
-                image_path = os.path.join(root_dir, printed_language.get_image_path())
-                localised_image_uri = base_image_uri.replace(
-                    '/[language]/',
-                    f'/{printed_language.language.code}/')
-                image_download_queue.put((printed_language.id, localised_image_uri, image_path))
+            if not download_all_languages and printed_language.language != Language.english():
+                logger.info('\tSkipping %s, not English', printed_language)
+                continue
 
-                while image_download_queue.qsize() > self.download_thread_count * 2:
-                    time.sleep(1)
+            if base_image_uri is None:
+                url = 'https://api.scryfall.com/cards/' + printing.scryfall_id
+                logger.info('Queueing images for %s (%s): %s', printing,
+                            self.image_download_queue.qsize(), url)
+                resp = requests.get(url=url)
+                resp.raise_for_status()
+                data = resp.json()
+                if 'image_uris' in data:
+                    base_image_uri = data['image_uris']['normal'] \
+                        .replace('/' + data['lang'] + '/', '/[language]/')
+                elif 'card_faces' in data:
+                    base_image_uri = next(card_face['image_uris']['normal'] \
+                                          .replace('/' + data['lang'] + '/', '/[language]/')
+                                          for card_face in data['card_faces']
+                                          if card_face['name'] == printing.card.name
+                                          and 'image_uris' in card_face)
+                else:
+                    raise Exception('Neither card_images or card_faces could be found')
 
-        image_download_queue.join()
+                # Sleep after every request made to reduce server load
+                time.sleep(random.random() * 0.5)
+
+            image_path = os.path.join(self.root_dir, printed_language.get_image_path())
+            localised_image_uri = base_image_uri.replace(
+                '/[language]/',
+                f'/{printed_language.language.code}/')
+            self.image_download_queue.put((printed_language.id, localised_image_uri, image_path))
+
+            while self.image_download_queue.qsize() > self.download_thread_count * 2:
+                time.sleep(1)
 
 
 class ImageDownloadThread(threading.Thread):
