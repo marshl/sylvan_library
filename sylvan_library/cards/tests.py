@@ -48,6 +48,7 @@ def create_test_card_printing(card: Card, set_obj: Set, fields: dict) -> CardPri
     printing.set = set_obj
     printing.rarity = create_test_rarity('Common', 'C')
     printing.is_starter = False
+    printing.is_timeshifted = fields.get('is_timeshifted', False)
 
     for key, value in fields.items():
         printing.__dict__[key] = value
