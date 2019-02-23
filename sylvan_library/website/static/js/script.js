@@ -5,14 +5,15 @@ $(function () {
     //     $(this).addClass('is-active');
     //     $($(this).data('input-field')).val($(this).data('input-value'));
     // });
-    //
-    // $('.js-colour-filter input').on('change', function () {
-    //     if (this.checked) {
-    //         $(this).closest('.js-colour-filter').addClass('is-active');
-    //     } else {
-    //         $(this).closest('.js-colour-filter').removeClass('is-active');
-    //     }
-    // });
+
+    $(this).on('click', '.js-colour-filter', function () {
+        let $input = $(this).find('input');
+        let active = $input.val() !== '1' ? 1 : 0;
+        console.log($input.val());
+        $input.val(active);
+        $(this).toggleClass('is-active', active);
+        $(this).find('i').toggleClass('inactive', !active);
+    });
 
     $(this).on('click', '.js-card-result-tab-container .js-card-result-tab', function () {
         let $container = $(this).closest('.js-card-result-tab-container');
@@ -220,7 +221,7 @@ $(function () {
         });
     });
 
-    $(this).on('click', '.js-search-btn', function() {
+    $(this).on('click', '.js-search-btn', function () {
         $(this).closest('form').submit();
     });
 });

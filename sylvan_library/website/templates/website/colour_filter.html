@@ -1,0 +1,12 @@
+{% extends "website/base_filter.html" %}
+{% load widget_tweaks %}
+{% block filter %}
+    <div class="sk-item-list" style="display: flex;">
+        {% include 'website/_colour_selector.html' with symbol='w' name='colour_white' id='id_colour_white' value=form.data.colour_white %}
+        {% include 'website/_colour_selector.html' with symbol='u' name='colour_blue' id='id_colour_blue' value=form.data.colour_blue %}
+        {% include 'website/_colour_selector.html' with symbol='b' name='colour_black' id='id_colour_black' value=form.data.colour_black %}
+        {% include 'website/_colour_selector.html' with symbol='r' name='colour_red' id='id_colour_red' value=form.data.colour_red %}
+        {% include 'website/_colour_selector.html' with symbol='g' name='colour_green' id='id_colour_green' value=form.data.colour_green %}
+        {% include 'website/_colour_selector.html' with symbol='c' name='colour_colourless' id='id_colour_colourless' value=form.data.colour_colourless %}
+    </div>
+{% endblock %}

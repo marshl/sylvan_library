@@ -1,3 +1,7 @@
+.ms-cost.inactive {
+    color:#BEB9B2;
+    background-color: #151515;
+}
 
 .rc-slider {
     position: relative;

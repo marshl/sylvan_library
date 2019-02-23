@@ -1,6 +1,6 @@
 {% block content %}
 
-    <div class="sk-panel filter--rulesText js-collapsible-filter-field">
+    <div class="sk-panel js-collapsible-filter-field">
         <div class="sk-panel__header is-collapsable js-filter-heading"
              data-collapsed="{% if enabled %}false{% else %}true{% endif %}">
             <span class="js-collapse-arrow"></span>
@@ -8,12 +8,8 @@
             <span>{{ title }}</span>
         </div>
         <div class="sk-panel__content js-filter-container {% if not enabled %}is-collapsed{% endif %}">
-            <div class="sk-input-filter js-filter">
-                <div class="sk-input-filter-form">
-                    {% block filter %}
-                    {% endblock %}
-                </div>
-            </div>
+            {% block filter %}
+            {% endblock %}
         </div>
     </div>
 {% endblock %}

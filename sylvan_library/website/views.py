@@ -116,15 +116,15 @@ def simple_search(request) -> HttpResponse:
         search.min_cmc = form.cleaned_data.get('min_cmc')
         search.max_cmc = form.cleaned_data.get('max_cmc')
 
-        if form.data.get('colour_white'):
+        if form.data.get('colour_white', '0') != '0':
             search.colours.append(Card.colour_flags.white)
-        if form.data.get('colour_blue'):
+        if form.data.get('colour_blue', '0') != '0':
             search.colours.append(Card.colour_flags.blue)
-        if form.data.get('colour_black'):
+        if form.data.get('colour_black', '0') != '0':
             search.colours.append(Card.colour_flags.black)
-        if form.data.get('colour_red'):
+        if form.data.get('colour_red', '0') != '0':
             search.colours.append(Card.colour_flags.red)
-        if form.data.get('colour_green'):
+        if form.data.get('colour_green', '0') != '0':
             search.colours.append(Card.colour_flags.green)
 
         search.exclude_unselected_colours = bool(form.data.get('exclude_colours'))

@@ -15,6 +15,7 @@
             {% include 'website/text_filter.html' with title="Type" enabled=form.type_text.value field=form.type_text placeholder="Search card type" %}
             {% include 'website/text_filter.html' with title="Subtype" enabled=form.subtype_text.value field=form.subtype_text placeholder="Search card subtype" %}
             {% include 'website/slider_filter.html' with title="Converted Mana Cost" enabled=form.max_cmc.value min_field=form.min_cmc max_field=form.max_cmc min_val=0 max_val=16 %}
+            {% include 'website/colour_filter.html' with title="Colour" enabled=True form=form %}
 
             <div class="sk-panel filter--colours">
                 <div class="sk-panel__header is-collapsable">
