@@ -7,10 +7,12 @@ from django.db import transaction
 
 from cards.models import (
     Colour,
+    Format,
     Language,
     Rarity,
 )
-from data_import._paths import LANGUAGE_JSON_PATH, RARITY_JSON_PATH, COLOUR_JSON_PATH
+from data_import._paths import LANGUAGE_JSON_PATH, RARITY_JSON_PATH, COLOUR_JSON_PATH, \
+    FORMAT_JSON_PATH
 
 from data_import.management.data_import_command import DataImportCommand
 
@@ -30,6 +32,7 @@ class Command(DataImportCommand):
             self.update_rarities()
             self.update_colours()
             self.update_languages()
+            self.update_formats()
 
         self.log_stats()
 
@@ -96,3 +99,19 @@ class Command(DataImportCommand):
             language_obj.save()
 
         logger.info('Language update complete')
+
+    def update_formats(self):
+
+        logger.info('Updating format list')
+
+        for fmt in self.import_json(FORMAT_JSON_PATH):
+            try:
+                format_obj = Format.objects.get(code=fmt['code'])
+                self.increment_updated('Format')
+            except Format.DoesNotExist:
+                format_obj = Format(code=fmt['code'])
+                self.increment_created('Format')
+
+            format_obj.name = fmt['name']
+            format_obj.full_clean()
+            format_obj.save()

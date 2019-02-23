@@ -486,8 +486,8 @@ class Command(DataImportCommand):
                 # so all legalities should be cleared out and redone
                 card_obj.legalities.all().delete()
 
-                for format_name, legality in staged_card.get_legalities().items():
-                    format_obj, created = Format.objects.get_or_create(name=format_name)
+                for format_code, legality in staged_card.get_legalities().items():
+                    format_obj = Format.objects.get(code=format_code)
                     legality = CardLegality(
                         card=card_obj, format=format_obj, restriction=legality
                     )

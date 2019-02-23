@@ -1,0 +1,54 @@
+[
+  {
+    "code": "1v1",
+    "name": "1v1"
+  },
+  {
+    "code": "commander",
+    "name": "Commander"
+  },
+  {
+    "code": "duel",
+    "name": "Duel"
+  },
+  {
+    "code": "legacy",
+    "name": "Legacy"
+  },
+  {
+    "code": "penny",
+    "name": "Penny"
+  },
+  {
+    "code": "vintage",
+    "name": "Vintage"
+  },
+  {
+    "code": "modern",
+    "name": "Modern"
+  },
+  {
+    "code": "pauper",
+    "name": "Pauper"
+  },
+  {
+    "code": "frontier",
+    "name": "Frontier"
+  },
+  {
+    "code": "brawl",
+    "name": "Brawl"
+  },
+  {
+    "code": "future",
+    "name": "Future"
+  },
+  {
+    "code": "standard",
+    "name": "Standard"
+  },
+  {
+    "code": "oldschool",
+    "name": "Old School"
+  }
+]

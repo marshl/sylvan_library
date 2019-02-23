@@ -50,6 +50,7 @@ class Format(models.Model):
     Model for a format of cards
     """
     name = models.CharField(max_length=100, unique=True)
+    code = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         return self.name
