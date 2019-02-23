@@ -11,11 +11,12 @@ from cards.models import (
     CardRuling,
 )
 from data_import.importers import JsonImporter
+from data_import.management.data_import_command import DataImportCommand
 
 logger = logging.getLogger('django')
 
 
-class Command(BaseCommand):
+class Command(DataImportCommand):
     """
     Command for updating all card rulings
     """
@@ -29,6 +30,8 @@ class Command(BaseCommand):
 
         with transaction.atomic():
             self.update_ruling_list(staged_sets)
+
+        self.log_stats()
 
     def update_ruling_list(self, staged_sets):
         logger.info('Updating card rulings')
