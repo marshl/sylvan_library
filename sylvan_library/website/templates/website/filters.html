@@ -9,34 +9,13 @@
                 </a>
             </div>
             <br/>
-            {% include 'website/slider_filter.html' with title="Converted Mana Cost" enabled=form.min_cmc.value min_field=form.min_cmc max_field=form.max_cmc min_val=0 max_val=16 %}
             {% include 'website/text_filter.html' with title="Card name" enabled=form.card_name.value field=form.card_name placeholder="Search card name" %}
             {% include 'website/text_filter.html' with title="Rules text" enabled=form.rules_text.value field=form.rules_text placeholder="Use ~ for card name" %}
             {% include 'website/text_filter.html' with title="Flavour text" enabled=form.flavour_text.value field=form.flavour_text placeholder="Search flavour text" %}
             {% include 'website/text_filter.html' with title="Type" enabled=form.type_text.value field=form.type_text placeholder="Search card type" %}
             {% include 'website/text_filter.html' with title="Subtype" enabled=form.subtype_text.value field=form.subtype_text placeholder="Search card subtype" %}
+            {% include 'website/slider_filter.html' with title="Converted Mana Cost" enabled=form.max_cmc.value min_field=form.min_cmc max_field=form.max_cmc min_val=0 max_val=16 %}
 
-            <div class="sk-panel filter--typeLine">
-                <div class="sk-panel__header is-collapsable"><span
-                        class="sk-arrow-right"></span><span
-                >&nbsp;</span><span>Type text</span>
-                </div>
-                <div class="sk-panel__content is-collapsed">
-                    <div class="sk-input-filter">
-                        <form>
-                            <div class="sk-input-filter__icon"></div>
-                            <input type="text" data-qa="input-filter" class="sk-input-filter__text"
-                                   placeholder="E.g. Elf AND (spirit OR ally)" value=""
-                            ><input type="submit" value="search"
-                                    class="sk-input-filter__action"
-                                    data-qa="submit"
-                        >
-                            <div data-qa="remove" class="sk-input-filter__remove is-hidden"
-                            ></div>
-                        </form>
-                    </div>
-                </div>
-            </div>
             <div class="sk-panel filter--colours">
                 <div class="sk-panel__header is-collapsable">
                     <div style="float:right;">
