@@ -275,6 +275,8 @@ class CardPrintingLanguage(models.Model):
         return f'{self.language} {self.card_printing}'
 
     def get_image_path(self):
+        if self.language.code is None:
+            return None
         image_name = re.sub(r'\W', 's', self.card_printing.number)
         if self.card_printing.card.layout == 'transform':
             image_name += '_' + self.card_printing.card.side
