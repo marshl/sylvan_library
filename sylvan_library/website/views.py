@@ -126,6 +126,8 @@ def simple_search(request) -> HttpResponse:
             search.colours.append(Card.colour_flags.red)
         if form.data.get('colour_green', '0') != '0':
             search.colours.append(Card.colour_flags.green)
+        if form.data.get('colour_colourless', '0') != '0':
+            search.colours.append(0)
 
         search.exclude_unselected_colours = bool(form.data.get('exclude_colours'))
         search.match_colours_exactly = bool(form.data.get('match_colours'))
