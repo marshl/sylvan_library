@@ -3552,7 +3552,7 @@ body {
     bottom: 0;
     overflow-x: hidden;
     /*overflow-y: hidden;*/
-    max-width: 262px
+    /*max-width: 262px*/
 }
 
 /*.sk-layout__filters:hover {

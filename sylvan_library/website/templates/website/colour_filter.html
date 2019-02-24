@@ -3,19 +3,9 @@
 {% block title_extra %}
     <div style="float:right;">
         <div style="display:flex;max-height:23px;">
-            <input type="checkbox" id="onlyIdentityBox" class="onlyCheckbox" name="exclude_colours"
-                   {% if form.data.exclude_colours %}checked="checked"{% endif %}>
+            {% render_field form.exclude_colours class="onlyCheckbox" %}
             <label for="onlyIdentityBox" class="unselectable js-only-checkbox">Only</label>
-            <div data-qa="options" class="sk-toggle darkToggle js-match-colours-group">
-                <input type="checkbox" name="match_colours" class="js-match-colours"
-                       {% if form.data.match_colours %}checked="checked"{% endif %} style="display:none;"/>
-                <div class="sk-toggle-option sk-toggle__item {% if form.data.match_colours %}is-active{% endif %} js-and-checkbox unselectable">
-                    <div class="sk-toggle-option__text">And</div>
-                </div>
-                <div class="sk-toggle-option sk-toggle__item {% if not form.data.match_colours %}is-active{% endif %} js-or-checkbox unselectable">
-                    <div class="sk-toggle-option__text">Or</div>
-                </div>
-            </div>
+            {% include 'website/filter_match_options.html' with field=form.match_colours %}
         </div>
     </div>
 {% endblock %}
