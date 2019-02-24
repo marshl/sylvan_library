@@ -1781,7 +1781,7 @@ body {
 
 .sk-results-list {
     background-color: #222;
-    padding-left: 270px !important;
+    padding-left: 300px !important;
     width: 100%
 }
 
@@ -3553,6 +3553,7 @@ body {
     overflow-x: hidden;
     /*overflow-y: hidden;*/
     /*max-width: 262px*/
+    width: 300px;
 }
 
 /*.sk-layout__filters:hover {

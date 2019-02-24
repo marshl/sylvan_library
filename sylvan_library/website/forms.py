@@ -53,8 +53,8 @@ class SearchForm(forms.Form):
     exclude_colours = forms.BooleanField(required=False)
     match_colours = forms.BooleanField(required=False)
 
-    exclude_colours_identity = forms.BooleanField(required=False)
-    match_colours_identity = forms.BooleanField(required=False)
+    exclude_colourids= forms.BooleanField(required=False)
+    match_colourids = forms.BooleanField(required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -82,13 +82,17 @@ class SearchForm(forms.Form):
         Gets all the colour fields
         :return:
         """
-        for colour, symbol in self.colour_list().items():
-            yield {'field': self['colour_' + colour], 'symbol': symbol}
+        return {symbol: self['colour_' + colour] for colour, symbol in self.colour_list().items()}
 
-    def colour_identity_fields(self) -> dict:
+    def colourid_fields(self) -> dict:
         """
         Gets all the colour identity fields
         :return: A dictionary of fields
         """
-        for colour, symbol in self.colour_list().items():
-            yield {'field': self['colourid_' + colour], 'symbol': symbol}
+        return {symbol: self['colourid_' + colour] for colour, symbol in self.colour_list().items()}
+
+    def is_colour_enabled(self):
+        return any(field.data for symbol, field in self.colour_fields().items())
+
+    def is_colourid_enabled(self):
+        return any(field.data for symbol, field in self.colourid_fields().items())

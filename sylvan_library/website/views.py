@@ -145,8 +145,8 @@ def simple_search(request) -> HttpResponse:
         if form.data.get('colourid_colourless'):
             search.colour_identities.append(Card.colour_flags.colourless)
 
-        search.exclude_unselected_colour_identities = bool(form.data.get('exclude_colours'))
-        search.match_colour_identities_exactly = bool(form.data.get('match_colours'))
+        search.exclude_unselected_colour_identities = bool(form.data.get('exclude_colourids'))
+        search.match_colour_identities_exactly = bool(form.data.get('match_colourids'))
 
         try:
             page_number = int(form.data.get('page'))

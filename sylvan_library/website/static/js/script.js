@@ -8,9 +8,8 @@ $(function () {
 
     $(this).on('click', '.js-colour-filter', function () {
         let $input = $(this).find('input');
-        let active = $input.val() !== '1' ? 1 : 0;
-        console.log($input.val());
-        $input.val(active);
+        let active = !$input.prop('checked');
+        $input.prop('checked', active);
         $(this).toggleClass('is-active', active);
         $(this).find('i').toggleClass('inactive', !active);
     });
