@@ -6,6 +6,8 @@
             <span class="js-collapse-arrow"></span>
             <span>&nbsp;</span>
             <span>{{ title }}</span>
+            {% block title_extra %}
+            {% endblock %}
         </div>
         <div class="sk-panel__content js-filter-container {% if not enabled %}is-collapsed{% endif %}">
             {% block filter %}
