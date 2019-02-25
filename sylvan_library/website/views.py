@@ -115,6 +115,10 @@ def simple_search(request) -> HttpResponse:
 
         search.min_cmc = form.cleaned_data.get('min_cmc')
         search.max_cmc = form.cleaned_data.get('max_cmc')
+        search.min_power = form.cleaned_data.get('min_power')
+        search.max_power = form.cleaned_data.get('max_power')
+        search.min_toughness = form.cleaned_data.get('min_toughness')
+        search.max_toughness = form.cleaned_data.get('max_toughness')
 
         if form.data.get('colour_white', '0') != '0':
             search.colours.append(Card.colour_flags.white)

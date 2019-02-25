@@ -47,13 +47,20 @@ class SearchForm(forms.Form):
     flavour_text = forms.CharField(required=False)
     type_text = forms.CharField(required=False)
     subtype_text = forms.CharField(required=False)
+
     min_cmc = forms.IntegerField(required=False)
     max_cmc = forms.IntegerField(required=False)
+
+    min_power = forms.IntegerField(required=False)
+    max_power = forms.IntegerField(required=False)
+
+    min_toughness = forms.IntegerField(required=False)
+    max_toughness = forms.IntegerField(required=False)
 
     exclude_colours = forms.BooleanField(required=False)
     match_colours = forms.BooleanField(required=False)
 
-    exclude_colourids= forms.BooleanField(required=False)
+    exclude_colourids = forms.BooleanField(required=False)
     match_colourids = forms.BooleanField(required=False)
 
     def __init__(self, *args, **kwargs):

@@ -14,7 +14,9 @@ from cardsearch.parameters import (
     NotParam,
     CardColourIdentityParam,
     CardTypeParam,
-    CardSubtypeParam
+    CardSubtypeParam,
+    CardNumPowerParam,
+    CardNumToughnessParam,
 )
 from cardsearch.base_search import BaseSearch
 
@@ -36,6 +38,10 @@ class FieldSearch(BaseSearch):
         self.subtype_text = None
         self.min_cmc = None
         self.max_cmc = None
+        self.min_toughness = None
+        self.max_toughness = None
+        self.min_power = None
+        self.max_power = None
 
         self.colours = []
         self.colour_identities = []
@@ -69,6 +75,18 @@ class FieldSearch(BaseSearch):
 
         if self.max_cmc is not None:
             root_param.add_parameter(CardCmcParam(self.max_cmc, 'LTE'))
+
+        if self.min_power is not None:
+            root_param.add_parameter(CardNumPowerParam(self.min_power, 'GTE'))
+
+        if self.max_power is not None:
+            root_param.add_parameter(CardNumPowerParam(self.max_power, 'LTE'))
+
+        if self.min_toughness is not None:
+            root_param.add_parameter(CardNumToughnessParam(self.min_toughness, 'GTE'))
+
+        if self.max_toughness is not None:
+            root_param.add_parameter(CardNumToughnessParam(self.max_toughness, 'LTE'))
 
         if self.colours:
             if self.match_colours_exactly:
