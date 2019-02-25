@@ -3,15 +3,12 @@ The module for the field search class
 """
 import logging
 
-from cards.models import Card
 from cardsearch.parameters import (
     CardFlavourTextParam,
     CardNameParam,
     CardRulesTextParam,
     CardCmcParam,
-    OrParam,
     CardColourParam,
-    NotParam,
     CardColourIdentityParam,
     CardTypeParam,
     CardSubtypeParam,
@@ -89,36 +86,17 @@ class FieldSearch(BaseSearch):
             root_param.add_parameter(CardNumToughnessParam(self.max_toughness, 'LTE'))
 
         if self.colours:
-            if self.match_colours_exactly:
-                colour_root = root_param
-            else:
-                colour_root = OrParam()
-                root_param.add_parameter(colour_root)
-
-            for colour in self.colours:
-                colour_root.add_parameter(CardColourParam(colour))
-
-            if self.exclude_unselected_colours:
-                exclude_param = NotParam()
-                root_param.add_parameter(exclude_param)
-                for colour in [c for c in Card.colour_flags.values() if c not in self.colours]:
-                    param = CardColourParam(colour)
-                    exclude_param.add_parameter(param)
+            self.root_parameter.add_parameter(
+                self.create_colour_param(self.colours,
+                                         CardColourParam,
+                                         match_colours=self.match_colours_exactly,
+                                         exclude_colours=self.exclude_unselected_colours)
+            )
 
         if self.colour_identities:
-            if self.match_colour_identities_exactly:
-                colour_id_root = root_param
-            else:
-                colour_id_root = OrParam()
-                root_param.add_parameter(colour_id_root)
-
-            for colour in self.colour_identities:
-                colour_id_root.add_parameter(CardColourIdentityParam(colour))
-
-            if self.exclude_unselected_colour_identities:
-                exclude_param = NotParam()
-                root_param.add_parameter(exclude_param)
-                for colour in [c for c in Card.colour_flags.values()
-                               if c not in self.colour_identities]:
-                    param = CardColourIdentityParam(colour)
-                    exclude_param.add_parameter(param)
+            self.root_parameter.add_parameter(
+                self.create_colour_param(self.colour_identities,
+                                         CardColourIdentityParam,
+                                         match_colours=self.match_colour_identities_exactly,
+                                         exclude_colours=self.exclude_unselected_colour_identities)
+            )

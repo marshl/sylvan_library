@@ -2,14 +2,18 @@
 The module for the base search classes
 """
 import abc
+from typing import List
+from bitfield.types import Bit
 
 from django.core.paginator import Paginator, EmptyPage
 from django.db.models import prefetch_related_objects
 
 from cardsearch.parameters import (
-    AndParam,
     CardSortParam,
-    CardNameSortParam
+    CardNameSortParam,
+    AndParam,
+    OrParam,
+    NotParam,
 )
 
 from cards.models import (
@@ -85,14 +89,14 @@ class BaseSearch:
             return
         cards = list(self.page)
         prefetch_related_objects(cards, 'printings__printed_languages__physical_cards__ownerships')
+        prefetch_related_objects(cards, 'printings__printed_languages__language')
         prefetch_related_objects(cards, 'printings__set')
         prefetch_related_objects(cards, 'printings__rarity')
 
         self.results = [SearchResult(card) for card in cards]
 
     def get_page_info(self, current_page, page_span):
-        page_info = [PageButton(page_number, True,
-                                is_active=page_number == current_page)
+        page_info = [PageButton(page_number, True, is_active=page_number == current_page)
                      for page_number in self.paginator.page_range
                      if abs(page_number - current_page) <= page_span]
 
@@ -120,3 +124,24 @@ class BaseSearch:
         :return:
         """
         self.sort_params.append(sort_param)
+
+    def create_colour_param(self, colour_params: List[Bit], param_class: type, match_colours: bool,
+                            exclude_colours: bool):
+        root_param = AndParam()
+        if match_colours:
+            colour_root = AndParam()
+        else:
+            colour_root = OrParam()
+        root_param.add_parameter(colour_root)
+
+        for colour in colour_params:
+            colour_root.add_parameter(param_class(colour))
+
+        if exclude_colours:
+            exclude_param = NotParam()
+            root_param.add_parameter(exclude_param)
+            for colour in [c for c in Card.colour_flags.values() if c not in colour_params]:
+                param = param_class(colour)
+                exclude_param.add_parameter(param)
+
+        return root_param
