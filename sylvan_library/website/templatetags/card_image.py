@@ -21,7 +21,7 @@ def does_image_exist(path):
     :param path:  The path of the image
     :return:  True if the image file exists, otherwise False
     """
-    return os.path.exists(os.path.join('website', 'static', path))
+    return path is not None and os.path.exists(os.path.join('website', 'static', path))
 
 
 def get_default_image():
