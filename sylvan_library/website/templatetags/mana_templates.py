@@ -11,6 +11,16 @@ register = template.Library()
 MINUS_SYMBOLS = ('−', '-')
 
 
+@register.filter(name='replace_reminder_text')
+def replace_reminder_text(text: str) -> str:
+    """
+    Wraps any reminder text blocks in italics
+    :param text: The rules tet to replace
+    :return: The rules text with the reminder tet wrapped
+    """
+    return re.sub(r'(\(.+?\))', r'<i>\1</i>', text)
+
+
 @register.filter(name='replace_loyalty_symbols')
 def replace_loyalty_symbols(text: str, scale: str = None) -> str:
     """

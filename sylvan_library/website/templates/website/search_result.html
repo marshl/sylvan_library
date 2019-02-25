@@ -47,9 +47,9 @@
                                 {% if result.card.rules_text != None %}
                                     <div>
                                         {% if result.card.loyalty != None %}
-                                            {{ result.card.rules_text | linebreaks | replace_mana_symbols | replace_loyalty_symbols:'3x' | safe }}
+                                            {{ result.card.rules_text | linebreaks | replace_mana_symbols | replace_reminder_text | replace_loyalty_symbols:'3x' | safe }}
                                         {% else %}
-                                            {{ result.card.rules_text | linebreaks | replace_mana_symbols | safe }}
+                                            {{ result.card.rules_text | linebreaks | replace_mana_symbols | replace_reminder_text | safe }}
                                         {% endif %}
                                     </div>
                                 {% endif %}
