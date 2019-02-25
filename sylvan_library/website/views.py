@@ -143,7 +143,7 @@ def simple_search(request) -> HttpResponse:
         if form.data.get('colourid_green'):
             search.colour_identities.append(Card.colour_flags.green)
         if form.data.get('colourid_colourless'):
-            search.colour_identities.append(Card.colour_flags.colourless)
+            search.colour_identities.append(0)
 
         search.exclude_unselected_colour_identities = bool(form.data.get('exclude_colourids'))
         search.match_colour_identities_exactly = bool(form.data.get('match_colourids'))
