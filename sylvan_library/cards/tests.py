@@ -10,7 +10,6 @@ from cards.models import (
 )
 
 
-# Create your tests here.
 def create_test_card(fields: dict) -> Card:
     """
     Creates a test card with fields from the given dict
