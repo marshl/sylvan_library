@@ -2,8 +2,9 @@
 The module for all search parameters
 """
 import logging
-from django.db.models.query import Q
-from django.db.models import Sum, Case, When, IntegerField
+from django.db.models.query import Q, F
+from django.db.models.functions import Concat
+from django.db.models import Sum, Case, When, IntegerField, Value
 from django.contrib.auth.models import User
 from bitfield.types import Bit
 
@@ -35,7 +36,7 @@ class CardSearchParam:
     def __init__(self):
         self.child_parameters = list()
 
-    def query(self):
+    def query(self) -> Q:
         raise NotImplementedError('Please implement this method')
 
 
@@ -59,16 +60,22 @@ class AndParam(BranchParam):
     The class for combining two or more sub-parameters with an "AND" clause
     """
 
-    def query(self):
+    def __init__(self, inverse: bool = False):
+        self.inverse = inverse
+        super().__init__()
+
+    def query(self) -> Q:
         if not self.child_parameters:
             logger.info('No child parameters found, returning empty set')
             return Card.objects.none()
 
-        result = self.child_parameters[0].query()
-        for child in self.child_parameters[1:]:
-            result = result.intersection(child.query())
+        q = Q()
+        for child in self.child_parameters:
+            q.add(child.query(), Q.AND)
 
-        return result
+        if self.inverse:
+            return ~q
+        return q
 
 
 class OrParam(BranchParam):
@@ -76,26 +83,20 @@ class OrParam(BranchParam):
     The class for combining two or more sub-parameters with an "OR" clause
     """
 
-    def query(self):
+    def __init__(self, inverse: bool = False):
+        self.inverse = inverse
+        super().__init__()
+
+    def query(self) -> Q:
         if not self.child_parameters:
             logger.info('No child parameters found,returning empty set')
             return Card.objects.none()
 
-        result = self.child_parameters[0].query()
+        q = Q()
+        for child in self.child_parameters:
+            q.add(child.query(), Q.OR)
 
-        for child in self.child_parameters[1:]:
-            result = result.union(child.query())
-
-        return result
-
-
-class NotParam(OrParam):
-    """
-    The parameter for negating the result a single child parameter
-    """
-
-    def query(self):
-        return Card.objects.difference(super().query())
+        return ~q if self.inverse else q
 
 
 class CardNameParam(CardSearchParam):
@@ -107,8 +108,8 @@ class CardNameParam(CardSearchParam):
         super().__init__()
         self.card_name = card_name
 
-    def query(self):
-        return Card.objects.filter(name__icontains=self.card_name)
+    def query(self) -> Q:
+        return Q(name__icontains=self.card_name)
 
 
 class CardRulesTextParam(CardSearchParam):
@@ -120,13 +121,13 @@ class CardRulesTextParam(CardSearchParam):
         super().__init__()
         self.card_rules = card_rules
 
-    def query(self):
-
-        if '~' in self.card_rules:
-            return Card.objects.extra(
-                where=["rules_text ILIKE '%%' || REPLACE(%s, '~', name) || '%%'"],
-                params=[self.card_rules])
-        return Card.objects.filter(rules_text__icontains=self.card_rules)
+    def query(self) -> Q:
+        if '~' not in self.card_rules:
+            return Q(rules_text__icontains=self.card_rules)
+        chunks = [Value(c) for c in self.card_rules.split('~')]
+        params = [F('name')] * (len(chunks) * 2 - 1)
+        params[0::2] = chunks
+        return Q(rules_text__icontains=Concat(*params))
 
 
 class CardFlavourTextParam(CardSearchParam):
@@ -138,8 +139,8 @@ class CardFlavourTextParam(CardSearchParam):
         super().__init__()
         self.flavour_text = flavour_text
 
-    def query(self):
-        return Card.objects.filter(printings__flavour_text__icontains=self.flavour_text).distinct()
+    def query(self) -> Q:
+        return Q(printings__flavour_text__icontains=self.flavour_text)
 
 
 class CardTypeParam(CardSearchParam):
@@ -151,8 +152,8 @@ class CardTypeParam(CardSearchParam):
         super().__init__()
         self.card_type = card_type
 
-    def query(self):
-        return Card.objects.filter(type__icontains=self.card_type)
+    def query(self) -> Q:
+        return Q(type__icontains=self.card_type)
 
 
 class CardSubtypeParam(CardSearchParam):
@@ -164,8 +165,8 @@ class CardSubtypeParam(CardSearchParam):
         super().__init__()
         self.card_subtype = card_subtype
 
-    def query(self):
-        return Card.objects.filter(subtype__icontains=self.card_subtype)
+    def query(self) -> Q:
+        return Q(subtype__icontains=self.card_subtype)
 
 
 class CardColourParam(CardSearchParam):
@@ -177,8 +178,8 @@ class CardColourParam(CardSearchParam):
         super().__init__()
         self.card_colour = card_colour
 
-    def query(self):
-        return Card.objects.filter(colour_flags=self.card_colour)
+    def query(self) -> Q:
+        return Q(colour_flags=self.card_colour)
 
 
 class CardColourIdentityParam(CardSearchParam):
@@ -190,8 +191,8 @@ class CardColourIdentityParam(CardSearchParam):
         super().__init__()
         self.colour_identity = colour_identity
 
-    def query(self):
-        return Card.objects.filter(colour_identity_flags=self.colour_identity)
+    def query(self) -> Q:
+        return Q(colour_identity_flags=self.colour_identity)
 
 
 class CardMulticolouredOnlyParam(CardSearchParam):
@@ -199,8 +200,8 @@ class CardMulticolouredOnlyParam(CardSearchParam):
     The parameter for searching by whether a card is multicoloured or not
     """
 
-    def query(self):
-        return Card.objects.filter(colour_count__gt=1)
+    def query(self) -> Q:
+        return Q(colour_count__gt=1)
 
 
 class CardSetParam(CardSearchParam):
@@ -212,8 +213,8 @@ class CardSetParam(CardSearchParam):
         super().__init__()
         self.set_obj = set_obj
 
-    def query(self):
-        return Card.objects.filter(printings__set=self.set_obj)
+    def query(self) -> Q:
+        return Q(printings__set=self.set_obj)
 
 
 class CardBlockParam(CardSearchParam):
@@ -225,8 +226,8 @@ class CardBlockParam(CardSearchParam):
         super().__init__()
         self.block_obj = block_obj
 
-    def query(self):
-        return Card.objects.filter(printings__set__block=self.block_obj)
+    def query(self) -> Q:
+        return Q(printings__set__block=self.block_obj)
 
 
 class CardOwnerParam(CardSearchParam):
@@ -238,9 +239,8 @@ class CardOwnerParam(CardSearchParam):
         super().__init__()
         self.user = user
 
-    def query(self):
-        return Card.objects.filter(
-            printings__printed_languages__physical_cards__ownerships__owner=self.user)
+    def query(self) -> Q:
+        return Q(printings__printed_languages__physical_cards__ownerships__owner=self.user)
 
 
 class CardManaCostParam(CardSearchParam):
@@ -253,10 +253,8 @@ class CardManaCostParam(CardSearchParam):
         self.cost = cost
         self.exact_match = exact_match
 
-    def query(self):
-        query = Q(cost=self.cost) if self.exact_match else Q(cost__icontains=self.cost)
-
-        return Card.objects.filter(query)
+    def query(self) -> Q:
+        return Q(cost=self.cost) if self.exact_match else Q(cost__icontains=self.cost)
 
 
 class CardRarityParam(CardSearchParam):
@@ -268,9 +266,8 @@ class CardRarityParam(CardSearchParam):
         super().__init__()
         self.rarity = rarity
 
-    def query(self):
-        query = Q(printings__rarity=self.rarity)
-        return Card.objects.filter(query)
+    def query(self) -> Q:
+        return Q(printings__rarity=self.rarity)
 
 
 # pylint: disable=abstract-method
@@ -284,7 +281,7 @@ class CardNumericalParam(CardSearchParam):
         self.number = number
         self.operator = operator
 
-    def get_args(self, field: str):
+    def get_args(self, field: str) -> dict:
         return {f'{field}{OPERATOR_MAPPING[self.operator]}': self.number}
 
 
@@ -298,9 +295,9 @@ class CardNumPowerParam(CardNumericalParam):
         self.num_power = num_power
         self.comparison = comparison
 
-    def query(self):
+    def query(self) -> Q:
         args = self.get_args('num_power')
-        return Card.objects.filter(**args)
+        return Q(**args)
 
 
 class CardNumToughnessParam(CardNumericalParam):
@@ -308,9 +305,9 @@ class CardNumToughnessParam(CardNumericalParam):
     The parameter for searching by a card's numerical toughness
     """
 
-    def query(self):
+    def query(self) -> Q:
         args = self.get_args('num_toughness')
-        return Card.objects.filter(**args)
+        return Q(**args)
 
 
 class CardNumLoyaltyParam(CardNumericalParam):
@@ -318,9 +315,9 @@ class CardNumLoyaltyParam(CardNumericalParam):
     The parameter for searching by a card's numerical loyalty
     """
 
-    def query(self):
+    def query(self) -> Q:
         args = self.get_args('num_loyalty')
-        return Card.objects.filter(**args)
+        return Q(**args)
 
 
 class CardCmcParam(CardNumericalParam):
@@ -328,9 +325,9 @@ class CardCmcParam(CardNumericalParam):
     The parameter for searching by a card's numerical converted mana cost
     """
 
-    def query(self):
+    def query(self) -> Q:
         args = self.get_args('cmc')
-        return Card.objects.filter(**args)
+        return Q(**args)
 
 
 class CardOwnershipCountParam(CardNumericalParam):
@@ -342,7 +339,7 @@ class CardOwnershipCountParam(CardNumericalParam):
         super().__init__(number, operator)
         self.user = user
 
-    def query(self):
+    def query(self) -> Q:
         annotated_result = Card.objects.annotate(
             ownership_count=Sum(
                 Case(When(printings__printed_languages__physical_cards__ownerships__owner=self.user,
@@ -353,7 +350,7 @@ class CardOwnershipCountParam(CardNumericalParam):
 
         kwargs = {f'ownership_count{OPERATOR_MAPPING[self.operator]}': self.number}
         query = Q(**kwargs)
-        return Card.objects.filter(id__in=annotated_result.filter(query))
+        return Q(id__in=annotated_result.filter(query))
 
 
 class CardSortParam:
@@ -365,10 +362,10 @@ class CardSortParam:
         super().__init__()
         self.sort_descending = descending
 
-    def get_sort_list(self):
+    def get_sort_list(self) -> list:
         return ['-' + arg if self.sort_descending else arg for arg in self.get_sort_keys()]
 
-    def get_sort_keys(self):
+    def get_sort_keys(self) -> list:
         raise NotImplementedError()
 
 
@@ -377,7 +374,7 @@ class CardNameSortParam(CardSortParam):
     THe sort parameter for a card's name
     """
 
-    def get_sort_keys(self):
+    def get_sort_keys(self) -> list:
         return ['name']
 
 
@@ -386,7 +383,7 @@ class CardCollectorNumSortParam(CardSortParam):
     The sort parameter for a card's collector number
     """
 
-    def get_sort_keys(self):
+    def get_sort_keys(self) -> list:
         return ['printings__number']
 
 
@@ -395,7 +392,7 @@ class CardColourSortParam(CardSortParam):
     The sort parameter for a card's colour key
     """
 
-    def get_sort_keys(self):
+    def get_sort_keys(self) -> list:
         return ['colour_sort_key']
 
 
@@ -404,5 +401,5 @@ class CardColourWeightSortParam(CardSortParam):
     The sort parameter for a card's colour weight
     """
 
-    def get_sort_keys(self):
+    def get_sort_keys(self) -> list:
         return ['cmc', 'colour_sort_key', 'colour_weight']

@@ -3,13 +3,13 @@ Module for custom template filters to get the image paths of different card mode
 """
 
 from django import template
+from django.contrib.auth.models import User
+
 from cards.models import (
     Card,
     CardPrinting,
     CardPrintingLanguage,
 )
-
-from django.contrib.auth.models import User
 
 register = template.Library()
 

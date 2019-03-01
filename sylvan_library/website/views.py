@@ -120,17 +120,17 @@ def simple_search(request) -> HttpResponse:
         search.min_toughness = form.cleaned_data.get('min_toughness')
         search.max_toughness = form.cleaned_data.get('max_toughness')
 
-        if form.data.get('colour_white', '0') != '0':
+        if form.data.get('colour_white'):
             search.colours.append(Card.colour_flags.white)
-        if form.data.get('colour_blue', '0') != '0':
+        if form.data.get('colour_blue'):
             search.colours.append(Card.colour_flags.blue)
-        if form.data.get('colour_black', '0') != '0':
+        if form.data.get('colour_black'):
             search.colours.append(Card.colour_flags.black)
-        if form.data.get('colour_red', '0') != '0':
+        if form.data.get('colour_red'):
             search.colours.append(Card.colour_flags.red)
-        if form.data.get('colour_green', '0') != '0':
+        if form.data.get('colour_green'):
             search.colours.append(Card.colour_flags.green)
-        if form.data.get('colour_colourless', '0') != '0':
+        if form.data.get('colour_colourless'):
             search.colours.append(0)
 
         search.exclude_unselected_colours = bool(form.data.get('exclude_colours'))

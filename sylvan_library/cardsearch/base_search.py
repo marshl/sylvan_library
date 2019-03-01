@@ -13,7 +13,6 @@ from cardsearch.parameters import (
     CardNameSortParam,
     AndParam,
     OrParam,
-    NotParam,
 )
 
 from cards.models import (
@@ -77,7 +76,7 @@ class BaseSearch:
         return
 
     def search(self, page_number: int = 1, page_size: int = 25) -> None:
-        queryset = self.root_parameter.query()
+        queryset = Card.objects.filter(self.root_parameter.query())
         self.add_sort_param(CardNameSortParam())
         queryset = queryset.order_by(
             *[order for sort_param in self.sort_params for order in sort_param.get_sort_list()])
@@ -138,7 +137,7 @@ class BaseSearch:
             colour_root.add_parameter(param_class(colour))
 
         if exclude_colours:
-            exclude_param = NotParam()
+            exclude_param = OrParam(inverse=True)
             root_param.add_parameter(exclude_param)
             for colour in [c for c in Card.colour_flags.values() if c not in colour_params]:
                 param = param_class(colour)
