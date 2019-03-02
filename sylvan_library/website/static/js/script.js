@@ -1,11 +1,5 @@
 $(function () {
 
-    // $('.js-toggle-option').on('click', function () {
-    //     $(this).siblings('.js-toggle-option').removeClass('is-active');
-    //     $(this).addClass('is-active');
-    //     $($(this).data('input-field')).val($(this).data('input-value'));
-    // });
-
     $(this).on('click', '.js-colour-filter', function () {
         let $input = $(this).find('input');
         let active = !$input.prop('checked');
@@ -174,6 +168,11 @@ $(function () {
         $filterField.find('.js-filter-container').toggleClass('is-collapsed', collapsed);
         $filterField.find('input').prop('disabled', collapsed);
         $(this).data('collapsed', collapsed);
+
+        // Focus on any text field in the filter
+        if (!collapsed) {
+            $filterField.find('input[type="text"]').focus();
+        }
     });
 
     $(this).on('submit', '.js-change-card-ownership-form', function (event) {
