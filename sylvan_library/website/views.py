@@ -14,6 +14,7 @@ from cards.models import (
     CardPrinting,
     CardPrintingLanguage,
     PhysicalCard,
+Rarity,
     Set,
     UserCardChange,
     UserOwnedCard,
@@ -151,6 +152,11 @@ def simple_search(request) -> HttpResponse:
 
         search.exclude_unselected_colour_identities = bool(form.data.get('exclude_colourids'))
         search.match_colour_identities_exactly = bool(form.data.get('match_colourids'))
+
+        for rarity in Rarity.objects.all():
+            if form.data.get('rarity_' + rarity.symbol.upper()):
+                search.rarities.append(rarity)
+
 
         try:
             page_number = int(form.data.get('page'))

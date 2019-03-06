@@ -4,6 +4,7 @@ The module for the field search class
 import logging
 
 from cardsearch.parameters import (
+    OrParam,
     CardFlavourTextParam,
     CardNameParam,
     CardRulesTextParam,
@@ -14,6 +15,7 @@ from cardsearch.parameters import (
     CardSubtypeParam,
     CardNumPowerParam,
     CardNumToughnessParam,
+    CardRarityParam,
 )
 from cardsearch.base_search import BaseSearch
 
@@ -47,6 +49,8 @@ class FieldSearch(BaseSearch):
         self.match_colours_exactly = False
         self.exclude_unselected_colour_identities = False
         self.match_colour_identities_exactly = False
+
+        self.rarities = []
 
     def build_parameters(self):
 
@@ -100,3 +104,11 @@ class FieldSearch(BaseSearch):
                                          match_colours=self.match_colour_identities_exactly,
                                          exclude_colours=self.exclude_unselected_colour_identities)
             )
+
+        if self.rarities:
+            rarity_node = OrParam()
+            self.root_parameter.add_parameter(rarity_node)
+            for rarity in self.rarities:
+                rarity_node.add_parameter(
+                    CardRarityParam(rarity)
+                )

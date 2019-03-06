@@ -8,6 +8,14 @@ $(function () {
         $(this).find('i').toggleClass('inactive', !active);
     });
 
+
+    $(this).on('click', '.js-rarity-filter', function() {
+       let $input = $(this).siblings('input');
+       let active = !$input.prop('checked');
+       $input.prop('checked', active);
+       $(this).toggleClass('clicked', active);
+    });
+
     $(this).on('click', '.js-only-checkbox', function(){
        let $input = $(this).siblings('input');
        $input.prop('checked', !$input.prop('checked'));
@@ -237,4 +245,5 @@ $(function () {
     $(this).on('click', '.js-search-btn', function () {
         $(this).closest('form').submit();
     });
+
 });

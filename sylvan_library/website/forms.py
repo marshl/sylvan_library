@@ -3,7 +3,7 @@ Forms for the website module
 """
 
 from django import forms
-from cards.models import CardPrinting, Language
+from cards.models import CardPrinting, Language, Rarity
 
 
 def get_physical_card_key_pair(physical_card, printing):
@@ -70,6 +70,9 @@ class SearchForm(forms.Form):
             self.fields['colour_' + colour] = forms.BooleanField(required=False)
             self.fields['colourid_' + colour] = forms.BooleanField(required=False)
 
+        for rarity in Rarity.objects.all().order_by('display_order'):
+            self.fields['rarity_' + rarity.symbol] = forms.BooleanField(required=False)
+
     def colour_list(self) -> dict:
         """
         Gets the list of colours to be used in the form
@@ -103,3 +106,7 @@ class SearchForm(forms.Form):
 
     def is_colourid_enabled(self):
         return any(field.data for symbol, field in self.colourid_fields().items())
+
+    def rarity_fields(self) -> dict:
+        return {r.symbol.lower(): self['rarity_' + r.symbol]
+                for r in Rarity.objects.all().order_by('display_order')}
