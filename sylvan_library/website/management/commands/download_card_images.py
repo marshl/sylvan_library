@@ -55,7 +55,8 @@ class Command(BaseCommand):
 
         for printing in CardPrinting.objects.all() \
                 .prefetch_related('set') \
-                .prefetch_related('printed_languages__language'):
+                .prefetch_related('printed_languages__language')\
+                .prefetch_related('printed_languages__image'):
             if not printing.scryfall_id:
                 continue
 
@@ -77,7 +78,7 @@ class Command(BaseCommand):
             if printed_language.language.code is None:
                 continue
 
-            if CardImage.objects.filter(printed_language=printed_language).exists():
+            if hasattr(printed_language, 'image'):
                 logger.info('\tSkipping %s, already downloaded', printed_language)
                 continue
 
