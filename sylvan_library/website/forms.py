@@ -3,7 +3,9 @@ Forms for the website module
 """
 
 from django import forms
-from cards.models import CardPrinting, Language, Rarity
+from django_select2.forms import Select2MultipleWidget
+
+from cards.models import CardPrinting, Language, Rarity, Set
 
 
 def get_physical_card_key_pair(physical_card, printing):
@@ -64,6 +66,9 @@ class SearchForm(forms.Form):
     match_colourids = forms.BooleanField(required=False)
 
     match_rarity = forms.BooleanField(required=False)
+
+    sets = forms.ModelMultipleChoiceField(queryset=Set.objects.all().order_by('-release_date'),
+                                          widget=Select2MultipleWidget)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

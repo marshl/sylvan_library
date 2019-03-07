@@ -13,6 +13,7 @@ requests = "*"
 django-environ = "*"
 beautifulsoup4 = "*"
 seaborn = "*"
+django-select2 = "*"
 
 [dev-packages]
 jupyter_core = "==4.4.0"

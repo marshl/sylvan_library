@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'reports',
     'website',
     'widget_tweaks',
+    'django_select2',
 ]
 
 if DEBUG_TOOLBAR:

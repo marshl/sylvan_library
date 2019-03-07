@@ -2,6 +2,9 @@
 The module for the field search class
 """
 import logging
+from typing import Optional
+
+from cards.models import Card, Set
 
 from cardsearch.parameters import (
     AndParam,
@@ -17,6 +20,7 @@ from cardsearch.parameters import (
     CardNumPowerParam,
     CardNumToughnessParam,
     CardRarityParam,
+    CardSetParam,
 )
 from cardsearch.base_search import BaseSearch
 
@@ -53,6 +57,8 @@ class FieldSearch(BaseSearch):
 
         self.rarities = []
         self.match_rarities_exactly = False
+
+        self.sets = []
 
     def build_parameters(self):
 
@@ -114,3 +120,13 @@ class FieldSearch(BaseSearch):
                 rarity_node.add_parameter(
                     CardRarityParam(rarity)
                 )
+
+        if self.sets:
+            for set_obj in self.sets:
+                self.root_parameter.add_parameter(CardSetParam(set_obj))
+
+    def get_preferred_set(self) -> Optional[Set]:
+        if self.sets:
+            return Set.objects.filter(id__in=self.sets).order_by('-release_date').first()
+
+        return None

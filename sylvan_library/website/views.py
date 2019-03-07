@@ -107,6 +107,7 @@ def simple_search(request) -> HttpResponse:
     result_count = 0
     page = None
     search = FieldSearch()
+    page_number = 0
     if form.is_valid():
         search.card_name = form.data.get('card_name')
         search.rules_text = form.data.get('rules_text')
@@ -158,6 +159,10 @@ def simple_search(request) -> HttpResponse:
                 search.rarities.append(rarity)
 
         search.match_rarities_exactly = bool(form.data.get('match_rarity'))
+
+        search.sets = form.data.get('sets')
+        if not isinstance(search.sets, list):
+            search.sets = [search.sets]
 
         try:
             page_number = int(form.data.get('page'))

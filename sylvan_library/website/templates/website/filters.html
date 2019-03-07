@@ -3,6 +3,8 @@
 
 {% block head %}
     <script src="{% static "js/filters.js" %}" type="text/javascript"></script>
+    {{ form.media.css }}
+    {{ form.media.js }}
 {% endblock %}
 {% block content %}
     <form action="{% url 'website:simple_search' %}" method="get">
@@ -24,6 +26,9 @@
             {% include 'website/slider_filter.html' with title="Power" enabled=form.max_power.value min_field=form.min_power max_field=form.max_power min_val=-1 max_val=16 %}
             {% include 'website/slider_filter.html' with title="Toughness" enabled=form.max_toughness.value min_field=form.min_toughness max_field=form.max_toughness min_val=-1 max_val=16 %}
             {% include 'website/rarity_filter.html' with title='Rarity' enabled=form.is_rarity_enabled rarity_fields=form.rarity_fields match_field=form.match_rarity %}
+
+            {% include 'website/select_filter.html' with title="Sets" enabled=forms.sets field=form.sets %}
+
             <div class="sk-panel filter--setcodes">
                 <div class="sk-panel__header is-collapsable">
                     <div style="float:right;">

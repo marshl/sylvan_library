@@ -2,7 +2,7 @@
 The module for the base search classes
 """
 import abc
-from typing import List
+from typing import List, Optional
 from bitfield.types import Bit
 
 from django.core.paginator import Paginator, EmptyPage
@@ -48,7 +48,8 @@ class SearchResult:
         self.selected_printing = selected_printing
 
         if self.card and selected_set and not self.selected_printing:
-            self.selected_printing = self.card.printings.filter(set=selected_set).first()
+            self.selected_printing = next((p for p in self.card.printings.all()
+                                           if p.set == selected_set), None)
 
         if self.card and not self.selected_printing:
             self.selected_printing = sorted(self.card.printings.all(),
@@ -93,7 +94,11 @@ class BaseSearch:
         prefetch_related_objects(cards, 'printings__set')
         prefetch_related_objects(cards, 'printings__rarity')
 
-        self.results = [SearchResult(card) for card in cards]
+        preferred_set = self.get_preferred_set()
+        self.results = [SearchResult(card, selected_set=preferred_set) for card in cards]
+
+    def get_preferred_set(self) -> Optional[Set]:
+        return None
 
     def get_page_info(self, current_page, page_span):
         page_info = [PageButton(page_number, True, is_active=page_number == current_page)
