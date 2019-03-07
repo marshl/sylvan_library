@@ -267,7 +267,7 @@ class CardRarityParam(CardSearchParam):
         self.rarity = rarity
 
     def query(self) -> Q:
-        return Q(printings__rarity=self.rarity)
+        return Q(id__in=Card.objects.filter(printings__rarity=self.rarity))
 
 
 # pylint: disable=abstract-method
