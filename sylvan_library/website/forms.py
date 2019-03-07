@@ -110,3 +110,6 @@ class SearchForm(forms.Form):
     def rarity_fields(self) -> dict:
         return {r.symbol.lower(): self['rarity_' + r.symbol]
                 for r in Rarity.objects.all().order_by('display_order')}
+
+    def is_rarity_enabled(self):
+        return any(field.data for key, field in self.rarity_fields().items())
