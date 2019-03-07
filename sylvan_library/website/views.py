@@ -157,6 +157,7 @@ def simple_search(request) -> HttpResponse:
             if form.data.get('rarity_' + rarity.symbol.upper()):
                 search.rarities.append(rarity)
 
+        search.match_rarities_exactly = bool(form.data.get('match_rarity'))
 
         try:
             page_number = int(form.data.get('page'))

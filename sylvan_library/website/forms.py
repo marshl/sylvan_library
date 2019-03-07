@@ -63,6 +63,8 @@ class SearchForm(forms.Form):
     exclude_colourids = forms.BooleanField(required=False)
     match_colourids = forms.BooleanField(required=False)
 
+    match_rarity = forms.BooleanField(required=False)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

@@ -1,5 +1,12 @@
 {% extends "website/base_filter.html" %}
 {% load widget_tweaks %}
+{% block title_extra %}
+    <div style="float:right;">
+        <div style="display:flex;max-height:23px;">
+            {% include 'website/filter_match_options.html' with field=match_field %}
+        </div>
+    </div>
+{% endblock %}
 {% block filter %}
     <div class="sk-item-list" style="display: flex;">
         {% include 'website/_rarity_selector.html' with symbol='C' field=rarity_fields.c name='Common'%}
