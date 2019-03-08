@@ -122,33 +122,33 @@ def simple_search(request) -> HttpResponse:
         search.min_toughness = form.cleaned_data.get('min_toughness')
         search.max_toughness = form.cleaned_data.get('max_toughness')
 
-        if form.data.get('colour_white'):
+        if form.data.get('colour_w'):
             search.colours.append(Card.colour_flags.white)
-        if form.data.get('colour_blue'):
+        if form.data.get('colour_u'):
             search.colours.append(Card.colour_flags.blue)
-        if form.data.get('colour_black'):
+        if form.data.get('colour_b'):
             search.colours.append(Card.colour_flags.black)
-        if form.data.get('colour_red'):
+        if form.data.get('colour_r'):
             search.colours.append(Card.colour_flags.red)
-        if form.data.get('colour_green'):
+        if form.data.get('colour_g'):
             search.colours.append(Card.colour_flags.green)
-        if form.data.get('colour_colourless'):
+        if form.data.get('colour_c'):
             search.colours.append(0)
 
         search.exclude_unselected_colours = bool(form.data.get('exclude_colours'))
         search.match_colours_exactly = bool(form.data.get('match_colours'))
 
-        if form.data.get('colourid_white'):
+        if form.data.get('colourid_w'):
             search.colour_identities.append(Card.colour_flags.white)
-        if form.data.get('colourid_blue'):
+        if form.data.get('colourid_u'):
             search.colour_identities.append(Card.colour_flags.blue)
-        if form.data.get('colourid_black'):
+        if form.data.get('colourid_b'):
             search.colour_identities.append(Card.colour_flags.black)
-        if form.data.get('colourid_red'):
+        if form.data.get('colourid_r'):
             search.colour_identities.append(Card.colour_flags.red)
-        if form.data.get('colourid_green'):
+        if form.data.get('colourid_g'):
             search.colour_identities.append(Card.colour_flags.green)
-        if form.data.get('colourid_colourless'):
+        if form.data.get('colourid_c'):
             search.colour_identities.append(0)
 
         search.exclude_unselected_colour_identities = bool(form.data.get('exclude_colourids'))
