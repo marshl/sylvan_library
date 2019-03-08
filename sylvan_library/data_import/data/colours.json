@@ -28,5 +28,11 @@
     "name": "Green",
     "display_order": 50,
     "bit_value": 16
+  },
+  {
+    "symbol": "C",
+    "name": "Colourless",
+    "display_order": 60,
+    "bit_value": 0
   }
 ]
