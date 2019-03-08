@@ -14,7 +14,7 @@ from cards.models import (
     CardPrinting,
     CardPrintingLanguage,
     PhysicalCard,
-Rarity,
+    Rarity,
     Set,
     UserCardChange,
     UserOwnedCard,
@@ -161,7 +161,7 @@ def simple_search(request) -> HttpResponse:
         search.match_rarities_exactly = bool(form.data.get('match_rarity'))
 
         search.sets = form.data.get('sets')
-        if not isinstance(search.sets, list):
+        if search.sets and not isinstance(search.sets, list):
             search.sets = [search.sets]
 
         try:
