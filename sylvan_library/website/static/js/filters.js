@@ -23,9 +23,9 @@ $(function () {
     });
 
     $(this).on('click', '.js-and-checkbox, .js-or-checkbox', function () {
-        let $group = $(this).closest('.js-match-colours-group');
+        let $group = $(this).closest('.js-match-group');
         let checked = $(this).hasClass('js-and-checkbox');
-        $group.find('.js-match-colours').prop('checked', checked);
+        $group.find('.js-match-input').prop('checked', checked);
         $group.find(checked ? '.js-or-checkbox' : '.js-and-checkbox').removeClass('is-active');
         $group.find(checked ? '.js-and-checkbox' : '.js-or-checkbox').addClass('is-active');
         return false;
