@@ -1,18 +1,18 @@
 {% extends "website/base_filter.html" %}
 {% load widget_tweaks %}
 {% block filter %}
-    <div class="sk-input-filter js-filter">
-        <div class="sk-input-filter-form">
-            <div class="sk-input-filter__icon"></div>
+    <div class="text-filter-container js-filter">
+        <div class="filter-form">
+            <div class="text-input-icon"></div>
             <input type="text" name="{{ field.name }}" placeholder="{{ placeholder }}"
                    class="input-filter-text js-filter-field" id="{{ field.auto_id }}"
                    {% if field.value is not None %}value="{{ field.value }}"{% endif %}
                    {% if not enabled %}disabled="disabled"{% endif %}>
             <input type="submit" value="search" class="filter-hidden-input" data-qa="submit">
             <div data-qa="remove"
-                 class="sk-input-filter__remove
-           js-remove-filter
-           {% if not enabled %}is-hidden{% endif %}"></div>
+                 class="remove-filter
+                        js-remove-filter
+                    {% if not enabled %}is-hidden{% endif %}"></div>
         </div>
     </div>
 {% endblock %}
