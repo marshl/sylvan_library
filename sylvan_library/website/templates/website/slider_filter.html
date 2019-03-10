@@ -1,18 +1,19 @@
 {% extends "website/base_filter.html" %}
 {% load widget_tweaks %}
 {% block filter %}
-    <div class="sk-input-filter js-filter">
-        <div class="sk-input-filter-form">
-            <input type="submit" value="search" class="sk-input-filter__action" data-qa="submit">
-            <div id="slider-test" class="sk-input-filter__text js-filter-field js-slider-filter"
+    <div class="js-filter">
+        <div class="sk-input-filter-form" style="display: block;">
+            <input type="submit" value="search" class="filter-hidden-input" data-qa="submit">
+
+            <div class="input-filter-text js-filter-field js-slider-filter"
                  data-min-value="{{ min_val }}"
                  data-max-value="{{ max_val }}"
             ></div>
             {% render_field min_field class="js-min-field" type="hidden" %}
             {% render_field max_field class="js-max-field" type="hidden" %}
-            <div class="rc-slider-mark">
-                <span class="rc-slider-mark-text js-lower-mark" style="width:90%;margin-left:-45%;left:0%;">0</span>
-                <span class="rc-slider-mark-text js-upper-mark" style="width:90%;margin-left:-45%;left:100%;">16</span>
+            <div class="slider-label">
+                <span class="slider-label-text slider-label-left js-lower-mark">{{ min_field.data }}</span>
+                <span class="slider-label-text slider-label-right js-upper-mark">{{ max_field.data }}</span>
             </div>
         </div>
     </div>

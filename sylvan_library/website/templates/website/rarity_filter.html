@@ -8,7 +8,7 @@
     </div>
 {% endblock %}
 {% block filter %}
-    <div class="sk-item-list" style="display: flex;">
+    <div class="filter-item-list" style="display: flex;">
         {% include 'website/_rarity_selector.html' with symbol='C' field=rarity_fields.c name='Common'%}
         {% include 'website/_rarity_selector.html' with symbol='U' field=rarity_fields.u name='Uncommon'%}
         {% include 'website/_rarity_selector.html' with symbol='R' field=rarity_fields.r name='Rare'%}

@@ -1,9 +1,10 @@
+{% load widget_tweaks %}
 {% block content %}
     <div class="extraDetails">
         <form action="{% url 'website:ajax_change_card_ownership' %}" class="js-change-card-ownership-form">
             {% csrf_token %}
             {{ form.count }}
-            {{ form.printed_language }}
+            {% render_field form.printed_language class="Select Select-control" %}
             <input type="submit" value="Submit"/>
         </form>
     </div>
