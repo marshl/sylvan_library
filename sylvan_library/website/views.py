@@ -155,7 +155,7 @@ def simple_search(request) -> HttpResponse:
         search.match_colour_identities_exactly = bool(form.data.get('match_colourids'))
 
         for rarity in Rarity.objects.all():
-            if form.data.get('rarity_' + rarity.symbol.upper()):
+            if form.data.get('rarity_' + rarity.symbol.lower()):
                 search.rarities.append(rarity)
 
         search.match_rarities_exactly = bool(form.data.get('match_rarity'))
