@@ -6,7 +6,7 @@
 {% with render_usercards=request.user.is_authenticated %}
     {% block content %}
 
-        <div class="sk-hits-list-hit sk-hits-list__item js-card-result"
+        <div class="search-result sk-hits-list__item js-card-result"
              id="card-result-{{ result.card.id }}"
              data-card-id="{{ result.card.id }}"
              data-card-printing-id="{{ result.selected_printing.id }}"

@@ -1,6 +1,6 @@
 {% load widget_tweaks %}
 {% block content %}
-    <div data-qa="options" class="sk-toggle darkToggle js-match-group">
+    <div class="sk-toggle darkToggle js-match-group">
     {% render_field field class="js-match-input" style="display: none;" %}
         <div class="sk-toggle-option sk-toggle__item {% if field.data %}is-active{% endif %} js-and-checkbox unselectable">
             <div class="sk-toggle-option__text">And</div>

@@ -2,23 +2,22 @@
     <div class="sk-layout__top-bar sk-top-bar">
         <div class="sk-top-bar__content">
             <div class="my-logo">
-                <a style="color:white;text-decoration:none;" href="http://mtg-hunter.com">
+                <a style="color:white;text-decoration:none;" href="/">
                     <span>SylvanLibrary</span>
                 </a>
             </div>
             <div class="my-logo">
-                <button style="background-color:transparent;border:0px;font:inherit;color:#eee;cursor:pointer;">About
+                <button style="background-color:transparent;border:0;font:inherit;color:#eee;cursor:pointer;">About
                 </button>
                 <br/>
             </div>
-            <div class="sk-search-box">
+            <div class="header-search-container">
                 <form>
                     <div class="sk-search-box__icon"></div>
-                    <input type="text" data-qa="query" class="sk-search-box__text"
+                    <input type="text" class="sk-search-box__text"
                            placeholder="Search card names. Use AND, OR and NOT e.g. (fire OR ice) AND a* NOT &quot;sword of&quot;"
                            value="">
-                    <input type="submit" value="search" class="sk-search-box__action" data-qa="submit">
-                    <div data-qa="loader" class="sk-search-box__loader sk-spinning-loader is-hidden"></div>
+                    <input type="submit" style="display: none;">
                 </form>
             </div>
         </div>

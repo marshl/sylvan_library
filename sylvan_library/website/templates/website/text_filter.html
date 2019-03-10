@@ -8,8 +8,8 @@
                    class="input-filter-text js-filter-field" id="{{ field.auto_id }}"
                    {% if field.value is not None %}value="{{ field.value }}"{% endif %}
                    {% if not enabled %}disabled="disabled"{% endif %}>
-            <input type="submit" value="search" class="filter-hidden-input" data-qa="submit">
-            <div data-qa="remove"
+            <input type="submit" value="search" class="filter-hidden-input" >
+            <div
                  class="remove-filter
                         js-remove-filter
                     {% if not enabled %}is-hidden{% endif %}"></div>

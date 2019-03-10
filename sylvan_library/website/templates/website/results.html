@@ -4,144 +4,114 @@
 {% block head %}
     <script src="{% static "js/search_result.js" %}" type="text/javascript"></script>
 {% endblock %}
-
 {% block content %}
     <div class="sk-layout__result sk-results-list">
         <div class="sk-results-list__action-bar sk-action-bar">
             <div class="sk-action-bar-row">
-                <div class="sk-hits-stats" data-qa="hits-stats">
-                    <div class="sk-hits-stats__info" data-qa="info">
+                <div class="result-count-container">
+                    <div class="results-count">
                         {{ result_count }} results found
                     </div>
                 </div>
-                <div data-qa="options" class="sk-toggle">
-                    <div class="sk-toggle-option sk-toggle__item" data-qa="option" data-key="grid"
-                    >
-                        <div data-qa="label" class="sk-toggle-option__text"
-                        >Grid
-                        </div>
+                <div class="sk-toggle">
+                    <div class="sk-toggle-option sk-toggle__item">
+                        <div class="sk-toggle-option__text">Grid</div>
                     </div>
-                    <div class="sk-toggle-option sk-toggle__item is-active" data-qa="option"
-                         data-key="list">
-                        <div data-qa="label" class="sk-toggle-option__text"
-                        >List
-                        </div>
+                    <div class="sk-toggle-option sk-toggle__item is-active">
+                        <div class="sk-toggle-option__text">List</div>
                     </div>
-                    <div class="sk-toggle-option sk-toggle__item" data-qa="option" data-key="table"
-                    >
-                        <div data-qa="label" class="sk-toggle-option__text"
-                        >Table
-                        </div>
+                    <div class="sk-toggle-option sk-toggle__item">
+                        <div class="sk-toggle-option__text">Table</div>
                     </div>
                 </div>
-                <div class="sk-select"><select
-                >
-                    <option value="name.raw_asc">Name
-                        (ascending)
-                    </option>
-                    <option value="name.raw_desc">Name
-                        (descending)
-                    </option>
-                    <option value="_score_asc">Relevance
-                        (ascending)
-                    </option>
-                    <option value="_score_desc">Relevance
-                        (descending)
-                    </option>
-                    <option value="colors_asc">Colour
-                        (ascending)
-                    </option>
-                    <option value="colors_desc">Colour
-                        (descending)
-                    </option>
-                    <option value="cmc_asc">CMC (ascending)
-                    </option>
-                    <option value="cmc_desc">CMC
-                        (descending)
-                    </option>
-                    <option value="multiverseids.number_asc"
-                    >Card number
-                        (ascending)
-                    </option>
-                    <option value="multiverseids.number_desc"
-                    >Card number
-                        (descending)
-                    </option>
-                    <option value="multiverseids.medPrice_asc"
-                    >Paper Price
-                        (ascending)
-                    </option>
-                    <option value="multiverseids.medPrice_desc"
-                    >Paper Price
-                        (descending)
-                    </option>
-                    <option value="multiverseids.mtgoPrice_asc"
-                    >MTGO Price
-                        (ascending)
-                    </option>
-                    <option selected="" value="multiverseids.mtgoPrice_desc"
-                    >MTGO Price
-                        (descending)
-                    </option>
-                </select></div>
-                <div data-qa="options" class="sk-toggle">
-                    <div class="sk-toggle-option sk-toggle__item is-active" data-qa="option"
-                         data-key="12">
-                        <div data-qa="label" class="sk-toggle-option__text"
-                        >12
-                        </div>
+                <div class="sk-select">
+                    <select>
+                        <option value="name.raw_asc">Name
+                            (ascending)
+                        </option>
+                        <option value="name.raw_desc">Name
+                            (descending)
+                        </option>
+                        <option value="_score_asc">Relevance
+                            (ascending)
+                        </option>
+                        <option value="_score_desc">Relevance
+                            (descending)
+                        </option>
+                        <option value="colors_asc">Colour
+                            (ascending)
+                        </option>
+                        <option value="colors_desc">Colour
+                            (descending)
+                        </option>
+                        <option value="cmc_asc">CMC (ascending)
+                        </option>
+                        <option value="cmc_desc">CMC
+                            (descending)
+                        </option>
+                        <option value="multiverseids.number_asc"
+                        >Card number
+                            (ascending)
+                        </option>
+                        <option value="multiverseids.number_desc"
+                        >Card number
+                            (descending)
+                        </option>
+                        <option value="multiverseids.medPrice_asc"
+                        >Paper Price
+                            (ascending)
+                        </option>
+                        <option value="multiverseids.medPrice_desc"
+                        >Paper Price
+                            (descending)
+                        </option>
+                        <option value="multiverseids.mtgoPrice_asc"
+                        >MTGO Price
+                            (ascending)
+                        </option>
+                        <option selected="" value="multiverseids.mtgoPrice_desc"
+                        >MTGO Price
+                            (descending)
+                        </option>
+                    </select></div>
+                <div class="sk-toggle">
+                    <div class="sk-toggle-option sk-toggle__item is-active">
+                        <div class="sk-toggle-option__text">12</div>
                     </div>
-                    <div class="sk-toggle-option sk-toggle__item" data-qa="option" data-key="24"
-                    >
-                        <div data-qa="label" class="sk-toggle-option__text"
-                        >24
-                        </div>
+                    <div class="sk-toggle-option sk-toggle__item">
+                        <div class="sk-toggle-option__text">24</div>
                     </div>
-                    <div class="sk-toggle-option sk-toggle__item" data-qa="option" data-key="48"
-                    >
-                        <div data-qa="label" class="sk-toggle-option__text"
-                        >48
-                        </div>
+                    <div class="sk-toggle-option sk-toggle__item">
+                        <div class="sk-toggle-option__text">48</div>
                     </div>
-                    <div class="sk-toggle-option sk-toggle__item" data-qa="option" data-key="96"
-                    >
-                        <div data-qa="label" class="sk-toggle-option__text"
-                        >96
-                        </div>
+                    <div class="sk-toggle-option sk-toggle__item">
+                        <div class="sk-toggle-option__text">96</div>
                     </div>
                 </div>
             </div>
-            <div class="sk-action-bar__filters">
-                <noscript></noscript>
-                <div>
-                    <div class="sk-reset-filters">
-                        <div class="sk-reset-filters__reset">Clear
-                            all filters
-                        </div>
-                    </div>
-                </div>
+            <div>
+                <div class="reset-filters-container">Clear all filters</div>
             </div>
         </div>
-        <div data-qa="hits" class="sk-hits-list">
+        <div class="sk-hits-list">
             {% for result in results %}
                 {% include "website/search_result.html" with card=result %}
             {% endfor %}
         </div>
         {% if page_info|length > 3 %}
             <div class="sk-pagination-navigation is-numbered">
-                <div data-qa="options" class="sk-toggle">
+                <div class="sk-toggle">
                     {% for page in page_info %}
                         <div class="sk-toggle-option sk-toggle__item js-page-button
                                     {% if not page.enabled %}is-disabled{% endif %}
                                     {% if page.is_active %}is-active{% endif %}"
-                             data-qa="option"
                              data-page-url="{% param_replace page=page.number %}">
-                            <div data-qa="label" class="sk-toggle-option__text">
+                            <div class="sk-toggle-option__text">
                                 {% if page.is_previous %}
                                     Previous
                                 {% elif page.is_next %}
                                     Next
-                                {% elif page.is_spacer%}
+                                {% elif page.is_spacer %}
                                     ...
                                 {% else %}
                                     {{ page.number }}
