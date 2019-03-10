@@ -9,17 +9,17 @@ $(function () {
     });
 
 
-    $(this).on('click', '.js-rarity-filter', function() {
-       let $input = $(this).siblings('input');
-       let active = !$input.prop('checked');
-       $input.prop('checked', active);
-       $(this).toggleClass('clicked', active);
+    $(this).on('click', '.js-rarity-filter', function () {
+        let $input = $(this).siblings('input');
+        let active = !$input.prop('checked');
+        $input.prop('checked', active);
+        $(this).toggleClass('clicked', active);
     });
 
-    $(this).on('click', '.js-only-checkbox', function(){
-       let $input = $(this).siblings('input');
-       $input.prop('checked', !$input.prop('checked'));
-       return false;
+    $(this).on('click', '.js-only-checkbox', function () {
+        let $input = $(this).siblings('input');
+        $input.prop('checked', !$input.prop('checked'));
+        return false;
     });
 
     $(this).on('click', '.js-and-checkbox, .js-or-checkbox', function () {
@@ -46,6 +46,12 @@ $(function () {
      */
     $(this).on('click', '.js-remove-filter', function () {
         $(this).closest('.js-filter').find('.js-filter-field').val('').change();
+    });
+
+    $('.js-filter-heading').each(function () {
+        if ($(this).data('collapsed')) {
+            $(this).closest('.js-collapsible-filter-field').find('input').prop('disabled', true);
+        }
     });
 
     $(this).on('click', '.js-filter-heading', function () {
