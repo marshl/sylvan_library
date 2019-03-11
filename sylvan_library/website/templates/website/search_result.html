@@ -74,78 +74,59 @@
                     <div style="width:80px; position:relative; right:10px; text-align:center; padding-left:5px;">
                         <div></div>
                     </div>
-                    <div style="width:150px;position:relative;right:10px;display:inline-block;"
-                         class="js-card-result-set-summary">
+                    <div class="search-result-set-list js-card-result-set-summary">
                         {% include 'website/search_result_sets.html' with card=result.card selected_printing=result.selected_printing %}
                     </div>
                 </div>
                 <div class="search-result-tab-container">
-                    <span style="padding-bottom:5px;color:#ccc;font-variant:small-caps;cursor:pointer;"
-                          class="js-card-result-expander"
-                    >Details ▼
-                    </span>
+                    <span class="tab-expander js-card-result-expander">Details ▼</span>
 
-                    <div class="ReactTabs react-tabs js-card-result-tab-container" style="display:none;">
-                        <ul class="ReactTabs__TabList" role="tablist">
-                            <li class="ReactTabs__Tab--selected js-card-result-tab"
-                                role="tab"
-                                data-target-tab="#card-result-tab-content-{{ result.card.id }}-details"
-                                aria-selected="true" aria-expanded="true">
+                    <div class="tab-container js-card-result-tab-container" style="display:none;">
+                        <ul class="tab-list">
+                            <li class="tab selected js-card-result-tab selected"
+                                data-target-tab="#card-result-tab-content-{{ result.card.id }}-details" aria-expanded="true">
                                 Details
                             </li>
-                            <li class="ReactTabs__Tab js-card-result-tab"
-                                role="tab"
-                                aria-selected="false"
+                            <li class="tab js-card-result-tab"
                                 data-target-tab="#card-result-tab-content-{{ result.card.id }}-rulings"
                                 aria-expanded="false">
                                 Rulings
                             </li>
-                            <li class="ReactTabs__Tab js-card-result-tab"
-                                role="tab"
-                                aria-selected="false"
+                            <li class="tab js-card-result-tab"
                                 aria-expanded="false"
                                 data-target-tab="#card-result-tab-content-{{ result.card.id }}-languages">
                                 Languages
                             </li>
                             {% if render_usercards %}
-                                <li class="ReactTabs__Tab js-card-result-tab"
-                                    role="tab"
-                                    aria-selected="false"
+                                <li class="tab js-card-result-tab"
                                     aria-expanded="false"
                                     data-target-tab="#card-result-tab-content-{{ result.card.id }}-ownership">
                                     Ownership
                                 </li>
-                                <li class="ReactTabs__Tab js-card-result-tab"
-                                    role="tab"
-                                    aria-selected="false"
+                                <li class="tab js-card-result-tab"
                                     aria-expanded="false"
                                     data-target-tab="#card-result-tab-content-{{ result.card.id }}-add">
                                     Add cards
                                 </li>
                             {% endif %}
                         </ul>
-                        <div class="ReactTabs__TabPanel ReactTabs__TabPanel--selected js-card-result-tab-content"
-                             role="tabpanel"
+                        <div class="js-card-result-tab-content"
                              id="card-result-tab-content-{{ result.card.id }}-details">
                         </div>
-                        <div class="ReactTabs__TabPanel js-card-result-tab-content"
-                             role="tabpanel"
+                        <div class="js-card-result-tab-content"
                              id="card-result-tab-content-{{ result.card.id }}-rulings"
                              style="display:none;">
                         </div>
-                        <div class="ReactTabs__TabPanel js-card-result-tab-content"
-                             role="tabpanel"
+                        <div class="js-card-result-tab-content"
                              id="card-result-tab-content-{{ result.card.id }}-languages"
                              style="display:none;">
                         </div>
                         {% if render_usercards %}
-                            <div class="ReactTabs__TabPanel js-card-result-tab-content"
-                                 role="tabpanel"
+                            <div class="js-card-result-tab-content"
                                  id="card-result-tab-content-{{ result.card.id }}-ownership"
                                  style="display:none;">
                             </div>
-                            <div class="ReactTabs__TabPanel js-card-result-tab-content"
-                                 role="tabpanel"
+                            <div class="js-card-result-tab-content"
                                  id="card-result-tab-content-{{ result.card.id }}-add"
                                  style="display:none;">
                             </div>

@@ -4,13 +4,9 @@ $(function () {
         let $container = $(this).closest('.js-card-result-tab-container');
         $container
             .find('.js-card-result-tab')
-            .removeClass('ReactTabs__Tab--selected')
-            .addClass('ReactTabs__Tab')
-            .attr('aria-selected', false)
+            .removeClass('selected')
             .attr('aria-expanded', false);
-        $(this).addClass('ReactTabs__Tab--selected');
-        $(this).removeClass('ReactTabs__Tab');
-        $(this).attr('aria-selected', true);
+        $(this).addClass('selected');
         $(this).attr('aria-expanded', true);
 
         let $tabContentToShow = $($(this).data('target-tab'));
