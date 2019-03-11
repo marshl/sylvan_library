@@ -99,14 +99,14 @@
             {% endfor %}
         </div>
         {% if page_info|length > 3 %}
-            <div class="sk-pagination-navigation is-numbered">
-                <div class="sk-toggle">
+            <div class="pagination-container">
+                <div class="page-button-list">
                     {% for page in page_info %}
-                        <div class="sk-toggle-option sk-toggle__item js-page-button
+                        <div class="page-button js-page-button
                                     {% if not page.enabled %}is-disabled{% endif %}
                                     {% if page.is_active %}is-active{% endif %}"
                              data-page-url="{% param_replace page=page.number %}">
-                            <div class="sk-toggle-option__text">
+                            <div class="page-button-text">
                                 {% if page.is_previous %}
                                     Previous
                                 {% elif page.is_next %}
