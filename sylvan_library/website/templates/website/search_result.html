@@ -32,7 +32,7 @@
                         </h2>
                         <div style="display:inline-flex;" class="subtitle typeLine">
                             <div style="display:inline-flex;">
-                                <span class="sk-tag-filter">{{ result.card.type }}</span>
+                                <span >{{ result.card.type }}</span>
                                 {% if result.card.subtype %}
                                     <span>&nbsp;&mdash;&nbsp;</span>
                                     <span>{{ result.card.subtype }}</span>
@@ -52,22 +52,16 @@
                             {% endif %}
                             {% if result.card.power != None %}
                                 <div class="subtitle" style="display:inline-flex;">
-                                    <span style="color:#ddd;">
-                                        <b>P/T:</b>
-                                    </span>
-                                    <span>&nbsp;</span>
-                                    <span class="sk-tag-filter">{{ result.card.power }}</span>
+                                        <strong>P/T:</strong>
+                                    <span>{{ result.card.power }}</span>
                                     <span>/</span>
-                                    <span class="sk-tag-filter">{{ result.card.toughness }}</span>
-                                    <br>
+                                    <span>{{ result.card.toughness }}</span>
+                                    <br/>
                                 </div>
                             {% elif result.card.loyalty != None %}
-                                <span style="color:#ddd;">
-                                        <b>Loyalty:</b>
-                                    </span>
-                                <span>&nbsp;</span>
-                                <span class="sk-tag-filter">{{ result.card.loyalty }}</span>
-                                <br>
+                                <span class="subtitle">Loyalty:</span>
+                                <span>{{ result.card.loyalty }}</span>
+                                <br/>
                             {% endif %}
                         </h3>
                     </div>
@@ -84,7 +78,8 @@
                     <div class="tab-container js-card-result-tab-container" style="display:none;">
                         <ul class="tab-list">
                             <li class="tab selected js-card-result-tab selected"
-                                data-target-tab="#card-result-tab-content-{{ result.card.id }}-details" aria-expanded="true">
+                                data-target-tab="#card-result-tab-content-{{ result.card.id }}-details"
+                                aria-expanded="true">
                                 Details
                             </li>
                             <li class="tab js-card-result-tab"

@@ -3,8 +3,10 @@
 {% block title_extra %}
     <div style="float:right;">
         <div style="display:flex;max-height:23px;">
-            {% render_field exclude_field class="onlyCheckbox" %}
-            <label for="onlyIdentityBox" class="unselectable js-only-checkbox">Only</label>
+            {% if exclude_field %}
+                {% render_field exclude_field class="onlyCheckbox" %}
+                <label for="onlyIdentityBox" class="unselectable js-only-checkbox">Only</label>
+            {% endif %}
             {% include 'website/filter_match_options.html' with field=match_field %}
         </div>
     </div>
