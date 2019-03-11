@@ -1,12 +1,12 @@
 {% load widget_tweaks %}
 {% block content %}
-    <div class="sk-toggle darkToggle js-match-group">
-    {% render_field field class="js-match-input" style="display: none;" %}
-        <div class="sk-toggle-option sk-toggle__item {% if field.data %}is-active{% endif %} js-and-checkbox unselectable">
-            <div class="sk-toggle-option__text">And</div>
+    <div class="toggle-group js-match-group">
+        {% render_field field class="js-match-input" style="display: none;" %}
+        <div class="toggle-item {% if field.data %}is-active{% endif %} js-and-checkbox unselectable">
+            <div class="toggle-item-content">And</div>
         </div>
-        <div class="sk-toggle-option sk-toggle__item {% if not field.data %}is-active{% endif %} js-or-checkbox unselectable">
-            <div class="sk-toggle-option__text">Or</div>
+        <div class="toggle-item {% if not field.data %}is-active{% endif %} js-or-checkbox unselectable">
+            <div class="toggle-item-content">Or</div>
         </div>
     </div>
 {% endblock %}

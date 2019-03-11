@@ -926,7 +926,7 @@ body {
     max-width: 800px
 }
 
-.sk-action-bar .sk-select, .sk-action-bar .sk-toggle, .page-button-list {
+.sk-action-bar .sk-select, .page-button-list {
     margin-left: 15px
 }
 
@@ -1045,11 +1045,11 @@ body {
     color: #fff
 }
 
-.darkToggle {
+.toggle-group {
     padding-left: 3px
 }
 
-.darkToggle .sk-toggle__item {
+.toggle-group .toggle-item {
     background-color: #222;
     padding: 0 4px
 }
@@ -1559,7 +1559,7 @@ body {
     color: #777
 }
 
-.sk-toggle, .page-button-list {
+.toggle-group, .page-button-list {
     display: flex;
     align-content: center;
     text-align: center;
@@ -1567,11 +1567,11 @@ body {
     max-height: 30px
 }
 
-.sk-toggle.is-disabled {
-    display: none
+.toggle-group.is-disabled {
+    display: none;
 }
 
-.sk-toggle-option, .page-button {
+.toggle-item, .page-button {
     flex: 1;
     background-color: #333;
     border: 1px solid #444;
@@ -1585,28 +1585,28 @@ body {
     white-space: nowrap
 }
 
-.sk-toggle-option:first-child, .page-button:first-child {
+.toggle-item:first-child, .page-button:first-child {
     border-radius: 3px 0 0 3px
 }
 
-.sk-toggle-option:last-child, .page-button:last-child {
+.toggle-item:first-child, .page-button:last-child {
     border-radius: 0 3px 3px 0;
     border-right: 1px solid #444
 }
 
-.sk-toggle-option.is-active, .page-button.is-active, .page-button:hover {
+.toggle-item.is-active, .page-button.is-active, .page-button:hover {
     background-color: #08c;
     color: #fff;
     border-color: #08c
 }
 
-.sk-toggle-option.is-disabled, .page-button.is-disabled {
+.toggle-item.is-disabled, .page-button.is-disabled {
     cursor: auto;
     color: #777;
     pointer-events: none;
 }
 
-.sk-toggle-option__text, .page-button-text {
+.toggle-item-content, .page-button-text {
     display: inline
 }
 
@@ -2352,7 +2352,7 @@ body {
     max-width: 800px
 }
 
-.sk-action-bar .sk-select, .sk-action-bar .sk-toggle {
+.sk-action-bar .sk-select {
     margin-left: 15px
 }
 
