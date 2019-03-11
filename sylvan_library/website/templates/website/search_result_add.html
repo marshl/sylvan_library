@@ -3,9 +3,13 @@
     <div class="extraDetails">
         <form action="{% url 'website:ajax_change_card_ownership' %}" class="js-change-card-ownership-form">
             {% csrf_token %}
-            {{ form.count }}
-            {% render_field form.printed_language class="Select Select-control" %}
-            <input type="submit" value="Submit"/>
+            <span class="text-input add-card-count-input">
+                {{ form.count }}
+            </span>
+            <span class="select-group">
+                {% render_field form.printed_language %}
+            </span>
+            <input type="submit" class="submit-action" value="Submit"/>
         </form>
     </div>
 {% endblock %}

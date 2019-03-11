@@ -5,11 +5,11 @@ Forms for the website module
 from django import forms
 from django_select2.forms import Select2MultipleWidget
 
-from cards.models import CardPrinting, Colour, Language, Rarity, Set
+from cards.models import CardPrinting, Colour, Language, PhysicalCard, Rarity, Set
 
 
-def get_physical_card_key_pair(physical_card, printing):
-    return physical_card.id, f'{physical_card} ({printing.number})'
+def get_physical_card_key_pair(physical_card: PhysicalCard, printing):
+    return physical_card.id, f'{physical_card.get_display_for_adding()} ({printing.number})'
 
 
 class ChangeCardOwnershipForm(forms.Form):

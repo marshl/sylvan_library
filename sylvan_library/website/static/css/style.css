@@ -148,48 +148,6 @@
     overflow: hidden
 }
 
-.sk-select {
-    position: relative;
-    cursor: pointer;
-    max-height: 30px;
-    display: inline-block
-}
-
-.sk-select.is-disabled {
-    display: none
-}
-
-.sk-select select {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    background: #fff;
-    padding: 6px 10px;
-    padding-right: 30px;
-    border: 1px solid #ccc;
-    outline: 0;
-    font-weight: 700;
-    font-size: 14px;
-    border-radius: 3px;
-    color: #000;
-    height: auto;
-    line-height: normal
-}
-
-.sk-select:after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    margin-top: -3px;
-    right: 10px;
-    width: 0;
-    height: 0;
-    border-top: 6px solid #666;
-    border-right: 6px solid transparent;
-    border-left: 6px solid transparent;
-    pointer-events: none
-}
-
 .sk-tabs {
     width: 100%;
     border-bottom: 1px solid #ccc;
@@ -733,10 +691,6 @@ body {
     margin-bottom: 20px
 }
 
-.sk-layout__filters .sk-select {
-    width: 100%
-}
-
 .sk-layout__results {
     background: #fff;
     margin: 15px;
@@ -835,11 +789,11 @@ body {
     font-weight: 300
 }
 
-.action-bar .sk-select, .page-button-list {
+.action-bar .select-group, .page-button-list {
     margin-left: 15px
 }
 
-.sk-layout__filters .sk-select select {
+.sk-layout__filters .select-group select {
     width: 100%
 }
 
@@ -862,7 +816,23 @@ body {
     border-radius: 3px
 }
 
-.my-logo:hover {
+.submit-action {
+    color: #fff;
+    flex: 0 0 60px;
+    padding: 8px;
+    line-height: 12px;
+    background-color: #34547f;
+    transition: .3s;
+    border-radius: 3px;
+    border: none;
+}
+
+.add-card-count-input {
+    width: 25px;
+}
+
+
+.my-logo:hover, .submit-action:hover {
     background-color: #3d6496
 }
 
@@ -1317,21 +1287,36 @@ body {
     overflow: hidden
 }
 
-.sk-select {
+.select-group {
     position: relative;
     cursor: pointer;
     max-height: 30px;
     display: inline-block
 }
 
-.sk-select.is-disabled {
+.select-group.is-disabled {
     display: none
 }
 
-.sk-select select {
+.text-input input {
+    -moz-appearance: textfield;
+    appearance: textfield;
+    margin: 0;
+    background: #333;
+    padding: 6px 10px;
+    border: 1px solid #444;
+    outline: 0;
+    font-weight: 700;
+    font-size: 14px;
+    border-radius: 3px;
+    color: #ddd;
+    height: auto;
+    line-height: normal;
+}
+
+.select-group select {
     -webkit-appearance: none;
     -moz-appearance: none;
-    appearance: none;
     background: #333;
     padding: 6px 10px;
     padding-right: 30px;
@@ -1342,10 +1327,10 @@ body {
     border-radius: 3px;
     color: #ddd;
     height: auto;
-    line-height: normal
+    line-height: normal;
 }
 
-.sk-select:after {
+.select-group:after, .text-input:after {
     content: "";
     position: absolute;
     top: 50%;
@@ -1356,7 +1341,7 @@ body {
     border-top: 6px solid #666;
     border-right: 6px solid transparent;
     border-left: 6px solid transparent;
-    pointer-events: none
+    pointer-events: none;
 }
 
 .sk-tabs {
@@ -2040,7 +2025,7 @@ body {
     margin-bottom: 20px
 }
 
-.sk-layout__filters .sk-select {
+.sk-layout__filters .select-group {
     width: 100%
 }
 
@@ -2219,11 +2204,11 @@ body {
     font-weight: 300
 }
 
-.action-bar .sk-select {
+.action-bar .select-group {
     margin-left: 15px
 }
 
-.sk-layout__filters .sk-select select {
+.sk-layout__filters .select-group select {
     width: 100%
 }
 

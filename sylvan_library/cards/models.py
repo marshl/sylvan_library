@@ -224,6 +224,13 @@ class PhysicalCard(models.Model):
                + '//'.join(p.card_printing.card.name for p in self.printed_languages.all()) \
                + ' in ' + base.card_printing.set.name
 
+    def get_display_for_adding(self):
+        if self.printed_languages.count() == 1:
+            pl = self.printed_languages.first()
+            return f"{pl.language} {pl.card_printing.set}"
+
+        return self.get_simple_string()
+
     def apply_user_change(self, change_count: int, user: User):
         if user is None:
             return False
