@@ -2,35 +2,35 @@
     <div class="extraDetails">
         {% if printing.flavour_text %}
             <div>
-            <span class="sk-hits-list-hit__subtitle">
+            <span class="subtitle">
                 <b>Flavour: </b>
             </span>
-                <span class="sk-hits-list-hit__subtitle">
+                <span class="subtitle">
                 <span><i>{{ printing.flavour_text }}</i></span>
             </span>
                 <br/>
             </div>
         {% endif %}
         <div>
-            <span class="sk-hits-list-hit__subtitle">
+            <span class="subtitle">
                 <b>Set: </b>
             </span>
-            <div class="sk-hits-list-hit__subtitle" style="display:inline-flex;">
+            <div class="subtitle" style="display:inline-flex;">
                 <span class="sk-tag-filter">{{ printing.set.name }}</span>
             </div>
             <br/>
-            <span class="sk-hits-list-hit__subtitle">
+            <span class="subtitle">
                 <b>Release date: </b>
             </span>
-            <div class="sk-hits-list-hit__subtitle" style="display:inline-flex;">
+            <div class="subtitle" style="display:inline-flex;">
                 <span class="sk-tag-filter">{{ printing.set.release_date }}</span>
             </div>
             <br/>
             {% if printing.artist %}
-                <span class="sk-hits-list-hit__subtitle">
+                <span class="subtitle">
                     <b>Artist: </b>
                 </span>
-                <div class="sk-hits-list-hit__subtitle" style="display:inline-flex;">
+                <div class="subtitle" style="display:inline-flex;">
                     <span class="sk-tag-filter">{{ printing.artist }}</span>
                 </div>
                 <br/>
@@ -38,15 +38,15 @@
         </div>
         {% if printing.card.legalities.count > 0 %}
             <div>
-            <span class="sk-hits-list-hit__subtitle">
+            <span class="subtitle">
                 <b>Legalities: </b>
             </span>
                 {% for legality in printing.card.legalities.all %}
                     <div>
-                        <div class="sk-hits-list-hit__subtitle" style="display:inline-flex;">
+                        <div class="subtitle" style="display:inline-flex;">
                             <span class="sk-tag-filter">{{ legality.format.name }}</span>
                         </div>
-                        <span class="sk-hits-list-hit__subtitle legal">: {{ legality.restriction }}</span>
+                        <span class="subtitle legal">: {{ legality.restriction }}</span>
                         <br/>
                     </div>
                 {% endfor %}

@@ -6,154 +6,150 @@
 {% with render_usercards=request.user.is_authenticated %}
     {% block content %}
 
-        <div class="search-result sk-hits-list__item js-card-result"
+        <div class="search-result js-card-result"
              id="card-result-{{ result.card.id }}"
              data-card-id="{{ result.card.id }}"
              data-card-printing-id="{{ result.selected_printing.id }}"
-             data-is-expanded="false"
-             style="display:block;">
-            <div style="display:flex;">
-                <div class="listImgDiv js-card-result-image-container">
-                    {% include 'website/card_image.html' with printing=result.selected_printing %}
-                </div>
-
-                <div style="width:100%;">
-                    <div style="display:flex;">
-                        <div class="sk-hits-list-hit__details" style="display:inline-block;">
-                            <h2 class="sk-hits-list-hit__title">
-                                <a href="{% url 'website:card_detail' card_id=result.card.id %}"
-                                   target="_blank">{{ result.card.name }}</a>
-                                {% if result.card.cost %}
-                                    {{ result.card.cost | replace_mana_symbols | shadowed | safe }}
+             data-is-expanded="false">
+            <div class="listImgDiv js-card-result-image-container">
+                {% include 'website/card_image.html' with printing=result.selected_printing %}
+            </div>
+            <div style="width:100%;">
+                <div style="display:flex;">
+                    <div class="search-result-base-details" style="display:inline-block;">
+                        <h2 class="search-result-title">
+                            <a href="{% url 'website:card_detail' card_id=result.card.id %}"
+                               target="_blank">{{ result.card.name }}</a>
+                            {% if result.card.cost %}
+                                {{ result.card.cost | replace_mana_symbols | shadowed | safe }}
+                            {% endif %}
+                            ({{ result.card.cmc | floatformat }})
+                            {% if render_usercards %}
+                                <span class="js-ownership-summary">
+                                    {% include 'website/ownership_summary.html' with card=result.card %}
+                                </span>
+                            {% endif %}
+                        </h2>
+                        <div style="display:inline-flex;" class="subtitle typeLine">
+                            <div style="display:inline-flex;">
+                                <span class="sk-tag-filter">{{ result.card.type }}</span>
+                                {% if result.card.subtype %}
+                                    <span>&nbsp;&mdash;&nbsp;</span>
+                                    <span>{{ result.card.subtype }}</span>
                                 {% endif %}
-                                <span> (</span><span>{{ result.card.cmc | floatformat }}</span><span>)</span>
-                                {% if render_usercards %}
-                                    <span class="js-ownership-summary">
-                                        {% include 'website/ownership_summary.html' with card=result.card %}
-                                    </span>
-                                {% endif %}
-                            </h2>
-                            <div style="display:inline-flex;" class="sk-hits-list-hit__subtitle typeLine">
-                                <div style="display:inline-flex;">
-                                    <span class="sk-tag-filter">{{ result.card.type }}</span>
-                                    {% if result.card.subtype %}
-                                        <span>&nbsp;&mdash;&nbsp;</span>
-                                        <span>{{ result.card.subtype }}</span>
+                            </div>
+                            <span></span>
+                        </div>
+                        <h3 class="subtitle">
+                            {% if result.card.rules_text != None %}
+                                <div>
+                                    {% if result.card.loyalty != None %}
+                                        {{ result.card.rules_text | linebreaks | replace_mana_symbols | replace_reminder_text | replace_loyalty_symbols:'3x' | safe }}
+                                    {% else %}
+                                        {{ result.card.rules_text | linebreaks | replace_mana_symbols | replace_reminder_text | safe }}
                                     {% endif %}
                                 </div>
-                                <span></span>
-                            </div>
-                            <h3 class="sk-hits-list-hit__subtitle">
-                                {% if result.card.rules_text != None %}
-                                    <div>
-                                        {% if result.card.loyalty != None %}
-                                            {{ result.card.rules_text | linebreaks | replace_mana_symbols | replace_reminder_text | replace_loyalty_symbols:'3x' | safe }}
-                                        {% else %}
-                                            {{ result.card.rules_text | linebreaks | replace_mana_symbols | replace_reminder_text | safe }}
-                                        {% endif %}
-                                    </div>
-                                {% endif %}
-                                {% if result.card.power != None %}
-                                    <div class="sk-hits-list-hit__subtitle tagFiltered" style="display:inline-flex;">
+                            {% endif %}
+                            {% if result.card.power != None %}
+                                <div class="subtitle" style="display:inline-flex;">
                                     <span style="color:#ddd;">
                                         <b>P/T:</b>
                                     </span>
-                                        <span>&nbsp;</span>
-                                        <span class="sk-tag-filter">{{ result.card.power }}</span>
-                                        <span>/</span>
-                                        <span class="sk-tag-filter">{{ result.card.toughness }}</span>
-                                        <br>
-                                    </div>
-                                {% elif result.card.loyalty != None %}
-                                    <span style="color:#ddd;">
+                                    <span>&nbsp;</span>
+                                    <span class="sk-tag-filter">{{ result.card.power }}</span>
+                                    <span>/</span>
+                                    <span class="sk-tag-filter">{{ result.card.toughness }}</span>
+                                    <br>
+                                </div>
+                            {% elif result.card.loyalty != None %}
+                                <span style="color:#ddd;">
                                         <b>Loyalty:</b>
                                     </span>
-                                    <span>&nbsp;</span>
-                                    <span class="sk-tag-filter">{{ result.card.loyalty }}</span>
-                                    <br>
-                                {% endif %}
-                            </h3>
-                        </div>
-                        <div style="width:80px; position:relative; right:10px; text-align:center; padding-left:5px;">
-                            <div></div>
-                        </div>
-                        <div style="width:150px;position:relative;right:10px;display:inline-block;"
-                             class="js-card-result-set-summary">
-                            {% include 'website/search_result_sets.html' with card=result.card selected_printing=result.selected_printing %}
-                        </div>
+                                <span>&nbsp;</span>
+                                <span class="sk-tag-filter">{{ result.card.loyalty }}</span>
+                                <br>
+                            {% endif %}
+                        </h3>
                     </div>
-                    <div class="sk-hits-list-hit__details">
+                    <div style="width:80px; position:relative; right:10px; text-align:center; padding-left:5px;">
+                        <div></div>
+                    </div>
+                    <div style="width:150px;position:relative;right:10px;display:inline-block;"
+                         class="js-card-result-set-summary">
+                        {% include 'website/search_result_sets.html' with card=result.card selected_printing=result.selected_printing %}
+                    </div>
+                </div>
+                <div class="search-result-tab-container">
                     <span style="padding-bottom:5px;color:#ccc;font-variant:small-caps;cursor:pointer;"
                           class="js-card-result-expander"
                     >Details ▼
                     </span>
 
-                        <div class="ReactTabs react-tabs js-card-result-tab-container" style="display:none;">
-                            <ul class="ReactTabs__TabList" role="tablist">
-                                <li class="ReactTabs__Tab--selected js-card-result-tab"
-                                    role="tab"
-                                    data-target-tab="#card-result-tab-content-{{ result.card.id }}-details"
-                                    aria-selected="true" aria-expanded="true">
-                                    Details
-                                </li>
+                    <div class="ReactTabs react-tabs js-card-result-tab-container" style="display:none;">
+                        <ul class="ReactTabs__TabList" role="tablist">
+                            <li class="ReactTabs__Tab--selected js-card-result-tab"
+                                role="tab"
+                                data-target-tab="#card-result-tab-content-{{ result.card.id }}-details"
+                                aria-selected="true" aria-expanded="true">
+                                Details
+                            </li>
+                            <li class="ReactTabs__Tab js-card-result-tab"
+                                role="tab"
+                                aria-selected="false"
+                                data-target-tab="#card-result-tab-content-{{ result.card.id }}-rulings"
+                                aria-expanded="false">
+                                Rulings
+                            </li>
+                            <li class="ReactTabs__Tab js-card-result-tab"
+                                role="tab"
+                                aria-selected="false"
+                                aria-expanded="false"
+                                data-target-tab="#card-result-tab-content-{{ result.card.id }}-languages">
+                                Languages
+                            </li>
+                            {% if render_usercards %}
                                 <li class="ReactTabs__Tab js-card-result-tab"
                                     role="tab"
                                     aria-selected="false"
-                                    data-target-tab="#card-result-tab-content-{{ result.card.id }}-rulings"
-                                    aria-expanded="false">
-                                    Rulings
+                                    aria-expanded="false"
+                                    data-target-tab="#card-result-tab-content-{{ result.card.id }}-ownership">
+                                    Ownership
                                 </li>
                                 <li class="ReactTabs__Tab js-card-result-tab"
                                     role="tab"
                                     aria-selected="false"
                                     aria-expanded="false"
-                                    data-target-tab="#card-result-tab-content-{{ result.card.id }}-languages">
-                                    Languages
+                                    data-target-tab="#card-result-tab-content-{{ result.card.id }}-add">
+                                    Add cards
                                 </li>
-                                {% if render_usercards %}
-                                    <li class="ReactTabs__Tab js-card-result-tab"
-                                        role="tab"
-                                        aria-selected="false"
-                                        aria-expanded="false"
-                                        data-target-tab="#card-result-tab-content-{{ result.card.id }}-ownership">
-                                        Ownership
-                                    </li>
-                                    <li class="ReactTabs__Tab js-card-result-tab"
-                                        role="tab"
-                                        aria-selected="false"
-                                        aria-expanded="false"
-                                        data-target-tab="#card-result-tab-content-{{ result.card.id }}-add">
-                                        Add cards
-                                    </li>
-                                {% endif %}
-                            </ul>
-                            <div class="ReactTabs__TabPanel ReactTabs__TabPanel--selected js-card-result-tab-content"
-                                 role="tabpanel"
-                                 id="card-result-tab-content-{{ result.card.id }}-details">
-                            </div>
-                            <div class="ReactTabs__TabPanel js-card-result-tab-content"
-                                 role="tabpanel"
-                                 id="card-result-tab-content-{{ result.card.id }}-rulings"
-                                 style="display:none;">
-                            </div>
-                            <div class="ReactTabs__TabPanel js-card-result-tab-content"
-                                 role="tabpanel"
-                                 id="card-result-tab-content-{{ result.card.id }}-languages"
-                                 style="display:none;">
-                            </div>
-                            {% if render_usercards %}
-                                <div class="ReactTabs__TabPanel js-card-result-tab-content"
-                                     role="tabpanel"
-                                     id="card-result-tab-content-{{ result.card.id }}-ownership"
-                                     style="display:none;">
-                                </div>
-                                <div class="ReactTabs__TabPanel js-card-result-tab-content"
-                                     role="tabpanel"
-                                     id="card-result-tab-content-{{ result.card.id }}-add"
-                                     style="display:none;">
-                                </div>
                             {% endif %}
+                        </ul>
+                        <div class="ReactTabs__TabPanel ReactTabs__TabPanel--selected js-card-result-tab-content"
+                             role="tabpanel"
+                             id="card-result-tab-content-{{ result.card.id }}-details">
                         </div>
+                        <div class="ReactTabs__TabPanel js-card-result-tab-content"
+                             role="tabpanel"
+                             id="card-result-tab-content-{{ result.card.id }}-rulings"
+                             style="display:none;">
+                        </div>
+                        <div class="ReactTabs__TabPanel js-card-result-tab-content"
+                             role="tabpanel"
+                             id="card-result-tab-content-{{ result.card.id }}-languages"
+                             style="display:none;">
+                        </div>
+                        {% if render_usercards %}
+                            <div class="ReactTabs__TabPanel js-card-result-tab-content"
+                                 role="tabpanel"
+                                 id="card-result-tab-content-{{ result.card.id }}-ownership"
+                                 style="display:none;">
+                            </div>
+                            <div class="ReactTabs__TabPanel js-card-result-tab-content"
+                                 role="tabpanel"
+                                 id="card-result-tab-content-{{ result.card.id }}-add"
+                                 style="display:none;">
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>

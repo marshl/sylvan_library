@@ -2,12 +2,12 @@
     <div class="extraDetails">
         {% if ownerships.exists %}
             <div>
-            <span class="sk-hits-list-hit__subtitle">
+            <span class="subtitle">
                 <b>You own: </b>
             </span>
                 {% for ownership in ownerships.all %}
                     <div>
-                        <span class="sk-hits-list-hit__subtitle">
+                        <span class="subtitle">
                             {{ ownership.count }} {{ ownership.physical_card.get_simple_string }}
                         </span>
                         <br/>
@@ -16,12 +16,12 @@
             </div>
         {% endif %}
         {% if changes %}
-            <span class="sk-hits-list-hit__subtitle">
+            <span class="subtitle">
                 <b>Changes: </b>
             </span>
             {% for change in changes %}
                 <div>
-                    <span class="sk-hits-list-hit__subtitle">
+                    <span class="subtitle">
                         {% if change.difference > 0 %}+{% endif %}{{ change.difference }}
                         {{ change.date }} {{ change.physical_card }}
                     </span>

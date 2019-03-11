@@ -3,16 +3,16 @@
         <div>
             {% for printed_language in printing.printed_languages.all %}
                 <div>
-                    <span class="sk-hits-list-hit__subtitle">
+                    <span class="subtitle">
                         <b>{{ printed_language.language.name }}: </b>
                     </span>
-                    <span class="sk-hits-list-hit__subtitle">
+                    <span class="subtitle">
                         {{ printed_language.card_name }}
                     </span>
                 </div>
             {% endfor %}
         </div>
     {% else %}
-        <span class="sk-hits-list-hit__subtitle">No other languages!</span>
+        <span class="subtitle">No other languages!</span>
     {% endif %}
 </div>

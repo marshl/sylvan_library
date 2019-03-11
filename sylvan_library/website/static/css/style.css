@@ -1142,11 +1142,6 @@ body {
     color: #08c
 }
 
-.sk-hits-grid-hit__title {
-    margin-top: 10px;
-    font-size: 14px
-}
-
 .sk-hits-list {
     display: flex;
     flex-flow: column wrap;
@@ -1167,11 +1162,6 @@ body {
     margin-top: 60px
 }
 
-.sk-hits-list__item {
-    display: flex;
-    margin-bottom: 20px
-}
-
 .sk-hits-list-hit__poster {
     width: 200px;
     flex: 0 0 200px;
@@ -1183,22 +1173,11 @@ body {
     margin: 0 auto
 }
 
-.sk-hits-list-hit__details {
-    flex: 1 0 0;
-    padding: 10px
-}
-
-.sk-hits-list-hit__title {
-    line-height: 20px;
-    margin: 0 0 5px;
-    font-size: 18px
-}
-
-.sk-hits-list-hit__subtitle {
+.subtitle {
     margin: 0 0 5px
 }
 
-.sk-hits-list-hit__subtitle, .sk-hits-list-hit__tags {
+.subtitle, .sk-hits-list-hit__tags {
     line-height: 20px;
     font-size: 14px;
     color: #666;
@@ -1294,7 +1273,7 @@ body {
     width: 100%;
     margin-bottom: 10px;
     position: relative;
-    transition: .3s
+    transition: .3s;
 }
 
 .sk-results-list {
@@ -1305,12 +1284,6 @@ body {
 
 .search-result:hover {
     background-color: #444
-}
-
-.sk-hits-list-hit__details {
-    min-width: 150px;
-    position: relative;
-    padding: 10px 10px 0 !important
 }
 
 .sk-hits-grid__item {
@@ -1407,28 +1380,27 @@ body {
     color: #ddd
 }
 
-.sk-hits-grid-hit__title, .sk-hits-list-hit__title {
+.search-result-title {
     transition: .8s;
     color: #ddd;
     font-size: 18px
 }
-
-.sk-hits-grid-hit__subtitle, .sk-hits-list-hit__subtitle {
+.subtitle {
     font-size: 14px;
     margin: 0 !important;
     color: #ddd !important
 }
 
-.sk-hits-grid-hit__subtitle.banned, .sk-hits-list-hit__subtitle.banned {
+.sk-hits-grid-hit__subtitle.banned, .subtitle.banned {
     font-weight: 700;
     color: red
 }
 
-.sk-hits-grid-hit__subtitle.legal, .sk-hits-list-hit__subtitle.legal {
+.sk-hits-grid-hit__subtitle.legal, .subtitle.legal {
     color: green
 }
 
-.sk-hits-grid-hit__subtitle.typeLine, .sk-hits-list-hit__subtitle.typeLine {
+.subtitle.typeLine {
     font-weight: 700
 }
 
@@ -2816,11 +2788,6 @@ body {
     color: #ccc
 }
 
-.sk-hits-grid-hit__title {
-    margin-top: 10px;
-    font-size: 14px
-}
-
 .sk-hits-list {
     display: flex;
     flex-flow: column wrap;
@@ -2841,11 +2808,6 @@ body {
     margin-top: 60px
 }
 
-.sk-hits-list__item {
-    display: flex;
-    margin-bottom: 20px
-}
-
 .sk-hits-list-hit__poster {
     width: 200px;
     flex: 0 0 200px;
@@ -2856,23 +2818,28 @@ body {
     max-width: 100%;
     margin: 0 auto
 }
-
-.sk-hits-list-hit__details {
-    flex: 1 0 0;
-    padding: 10px
+.search-result-tab-container {
+    padding: 10px 10px 0;
 }
 
-.sk-hits-list-hit__title {
+.search-result-base-details {
+    flex: 1 0 0;
+    min-width: 150px;
+    position: relative;
+    padding: 10px 10px 0;
+}
+
+.search-result-title {
     line-height: 20px;
     margin: 0 0 5px;
     font-size: 18px
 }
 
-.sk-hits-list-hit__subtitle {
+.subtitle {
     margin: 0 0 5px
 }
 
-.sk-hits-list-hit__subtitle, .sk-hits-list-hit__tags {
+.subtitle, .sk-hits-list-hit__tags {
     line-height: 20px;
     font-size: 14px;
     color: #666;
@@ -2880,7 +2847,6 @@ body {
 }
 
 .sk-hits-list-hit__tags {
-    margin: 0;
     list-style: none;
     padding: 0;
     margin-bottom: 10px
