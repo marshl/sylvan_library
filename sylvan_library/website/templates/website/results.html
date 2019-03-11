@@ -5,9 +5,9 @@
     <script src="{% static "js/search_result.js" %}" type="text/javascript"></script>
 {% endblock %}
 {% block content %}
-    <div class="sk-layout__result sk-results-list">
-        <div class="sk-results-list__action-bar sk-action-bar">
-            <div class="sk-action-bar-row">
+    <div class="results-page">
+        <div class="action-bar">
+            <div class="action-bar-row">
                 <div class="result-count-container">
                     <div class="results-count">
                         {{ result_count }} results found
@@ -69,11 +69,20 @@
                 <div class="reset-filters-container">Clear all filters</div>
             </div>
         </div>
-        <div class="sk-hits-list">
-            {% for result in results %}
-                {% include "website/search_result.html" with card=result %}
-            {% endfor %}
-        </div>
+        {% if results %}
+            <div class="search-result-list">
+                {% for result in results %}
+                    {% include "website/search_result.html" with card=result %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-search-results">
+                <div class="no-search-results-content">
+                    No results found
+                </div>
+            <br/>
+            </div>
+        {% endif %}
         {% if page_info|length > 3 %}
             <div class="pagination-container">
                 <div class="page-button-list">
