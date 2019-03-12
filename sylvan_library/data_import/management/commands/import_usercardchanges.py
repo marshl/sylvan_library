@@ -23,6 +23,10 @@ class Command(BaseCommand):
     """
     help = 'Imports user card changes from a tab separated file'
 
+    def __init__(self, stdout=None, stderr=None, no_color=False):
+        self.user = None
+        super().__init__(stdout=stdout, stderr=stderr, no_color=no_color)
+
     def add_arguments(self, parser):
 
         # Positional arguments
@@ -30,58 +34,62 @@ class Command(BaseCommand):
         parser.add_argument('filename', nargs=1, type=str)
 
     def handle(self, *args, **options):
-
         filename = options.get('filename')[0]
 
-        english = Language.objects.get(name='English')
-
         try:
-            user = User.objects.get(username=options.get('username')[0])
+            self.user = User.objects.get(username=options.get('username')[0])
         except User.DoesNotExist:
-            logger.error('Cannot find user with name "{0}"'.format(
-                options.get('username')[0]))
+            logger.error('Cannot find user with name "{}"', options.get('username')[0])
             return
 
-        user.card_changes.all().delete()
+        self.user.card_changes.all().delete()
 
         with open(filename, 'r') as file:
-
             for line in file:
-
                 logger.info(line)
                 (name, setcode, datestr, number) = line.rstrip().split('\t')
                 date = datetime.strptime(datestr, '%Y-%m-%d %H:%M:%S')
                 date = utc.localize(date)
+                self.import_usercardchange(name=name, setcode=setcode, date=date, number=number)
 
-                card = Card.objects.get(name=name)
-                logger.info('Card: %s', card)
+    def import_usercardchange(self, name: str, setcode: str, date: datetime, number: int):
+        """
+        Imports a single user card change into the database
+        :param name: The name of the card
+        :param setcode: The set of the card that the change was in
+        :param date:  The date that the change was made
+        :param number: The number of cards the change was
+        :return:
+        """
+        card = Card.objects.get(name=name)
+        logger.info('Card: %s', card)
 
-                cardset = Set.objects.get(code=setcode)
-                logger.info('Set: %s', cardset)
+        cardset = Set.objects.get(code=setcode)
+        logger.info('Set: %s', cardset)
 
-                printing = CardPrinting.objects.filter(
-                    card=card,
-                    set=cardset).first()
-                logger.info('CardPrinting: %s', printing)
+        printing = CardPrinting.objects.filter(
+            card=card,
+            set=cardset).first()
+        logger.info('CardPrinting: %s', printing)
 
-                printlang = CardPrintingLanguage.objects.get(
-                    card_printing=printing,
-                    language=english)
-                logger.info('CardPrintingLanguage: %s', printlang)
+        printlang = CardPrintingLanguage.objects.get(
+            card_printing=printing,
+            language=Language.english())
+        logger.info('CardPrintingLanguage: %s', printlang)
 
-                physcards = PhysicalCard.objects.filter(
-                    printed_languages=printlang)
+        physcards = PhysicalCard.objects.filter(
+            printed_languages=printlang)
 
-                if UserCardChange.objects.filter(
-                        physical_card__in=physcards,
-                        owner=user, date=date, difference=number).exists():
-                    logger.info('Other half of this card already has been added')
-                    continue
+        if UserCardChange.objects.filter(
+                physical_card__in=physcards,
+                owner=self.user, date=date, difference=number).exists():
+            logger.info('Other half of this card already has been added')
+            return
 
-                for phys in physcards:
-                    usercard = UserCardChange(
-                        physical_card=phys,
-                        difference=number,
-                        owner=user,
-                        date=date)
-                    usercard.save()
+        for phys in physcards:
+            user_card = UserCardChange(
+                physical_card=phys,
+                difference=number,
+                owner=self.user,
+                date=date)
+            user_card.save()

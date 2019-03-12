@@ -4,6 +4,7 @@ Module for staging classes
 import datetime
 import math
 import re
+from typing import Dict, List, Optional
 from functools import total_ordering
 
 from cards.models import Card
@@ -80,16 +81,16 @@ class StagedCard:
     Class for staging a card record from json
     """
 
-    def __init__(self, value_dict):
+    def __init__(self, value_dict: dict):
         self.value_dict = value_dict
         self.number = value_dict.get('number')
 
-    def __eq__(self, other: 'StagedCard'):
+    def __eq__(self, other: 'StagedCard') -> bool:
         return self.number == other.number and \
                self.get_multiverse_id() == other.get_multiverse_id() and \
                self.get_name() == other.get_name()
 
-    def __lt__(self, other: 'StagedCard'):
+    def __lt__(self, other: 'StagedCard') -> bool:
 
         # Push cards without a collector number to the end of the set
         if self.get_number() is not None and other.get_number() is None:
@@ -104,83 +105,83 @@ class StagedCard:
 
         return self.get_name() < other.get_name()
 
-    def get_number(self):
+    def get_number(self) -> str:
         return self.number
 
-    def get_multiverse_id(self):
+    def get_multiverse_id(self) -> str:
         return self.value_dict.get('multiverseId')
 
-    def has_foreign_data(self):
+    def has_foreign_data(self) -> bool:
         return bool(self.value_dict.get('foreignData'))
 
-    def get_foreign_data(self):
+    def get_foreign_data(self) -> dict:
         return self.value_dict['foreignData']
 
-    def get_name(self):
+    def get_name(self) -> str:
         return self.value_dict['name']
 
-    def get_mana_cost(self):
+    def get_mana_cost(self) -> str:
         return self.value_dict.get('manaCost')
 
-    def get_cmc(self):
+    def get_cmc(self) -> float:
         return self.value_dict.get('convertedManaCost') or 0
 
-    def get_colour(self):
+    def get_colour(self) -> int:
         if 'colors' in self.value_dict:
             return ColourUtils.colour_codes_to_flags(self.value_dict['colors'])
 
         return 0
 
-    def get_colour_sort_key(self):
+    def get_colour_sort_key(self) -> int:
         return COLOUR_TO_SORT_KEY[int(self.get_colour())]
 
-    def get_colour_weight(self):
+    def get_colour_weight(self) -> int:
         if not self.get_mana_cost():
             return 0
 
         generic_mana = re.search(r'(\d+)', self.get_mana_cost())
         if not generic_mana:
-            return self.get_cmc()
+            return int(self.get_cmc())
 
-        return self.get_cmc() - int(generic_mana.group(0))
+        return int(self.get_cmc()) - int(generic_mana.group(0))
 
-    def get_colour_identity(self):
+    def get_colour_identity(self) -> int:
         if 'colorIdentity' in self.value_dict:
             return ColourUtils.colour_codes_to_flags(self.value_dict['colorIdentity'])
 
         return 0
 
-    def get_colour_count(self):
+    def get_colour_count(self) -> int:
         return bin(self.get_colour()).count('1')
 
-    def get_power(self):
+    def get_power(self) -> str:
         return self.value_dict.get('power')
 
-    def get_toughness(self):
+    def get_toughness(self) -> str:
         return self.value_dict.get('toughness')
 
-    def get_num_power(self):
+    def get_num_power(self) -> float:
         if 'power' in self.value_dict:
             return self.pow_tuff_to_num(self.value_dict['power'])
 
         return 0
 
-    def get_num_toughness(self):
+    def get_num_toughness(self) -> float:
         if 'toughness' in self.value_dict:
             return self.pow_tuff_to_num(self.value_dict['toughness'])
 
         return 0
 
-    def get_loyalty(self):
+    def get_loyalty(self) -> str:
         return self.value_dict.get('loyalty')
 
-    def get_num_loyalty(self):
+    def get_num_loyalty(self) -> float:
         if 'loyalty' in self.value_dict:
             return self.pow_tuff_to_num(self.value_dict['loyalty'])
 
         return 0
 
-    def get_types(self):
+    def get_types(self) -> Optional[str]:
         """
         Gets the types of the card
         :return: The card's types
@@ -192,7 +193,7 @@ class StagedCard:
 
         return None
 
-    def get_subtypes(self):
+    def get_subtypes(self) -> Optional[str]:
         """
         Gets the subtypes of the card
         :return: The card's subtypes
@@ -202,92 +203,89 @@ class StagedCard:
 
         return None
 
-    def get_rules_text(self):
+    def get_rules_text(self) -> str:
         """
         Gets the rules text of the card
         :return: The card's rules text
         """
         return self.value_dict.get('text')
 
-    def get_original_text(self):
+    def get_original_text(self) -> str:
         """
         Gets the original (non-oracle) rules text of the card printing
         :return: The card printing's original text
         """
         return self.value_dict.get('originalText')
 
-    def get_artist(self):
+    def get_artist(self) -> str:
         """
         Gets the artist of this card printing
         :return:
         """
         return self.value_dict['artist']
 
-    def get_rarity_name(self):
+    def get_rarity_name(self) -> str:
         return self.value_dict['rarity']
 
-    def get_flavour_text(self):
+    def get_flavour_text(self) -> str:
         return self.value_dict.get('flavorText')
 
-    def get_original_type(self):
+    def get_original_type(self) -> str:
         return self.value_dict.get('originalType')
 
-    def has_rulings(self):
+    def has_rulings(self) -> bool:
         return 'rulings' in self.value_dict
 
-    def get_rulings(self):
+    def get_rulings(self) -> List[dict]:
         return self.value_dict['rulings']
 
-    def get_json_id(self):
+    def get_json_id(self) -> str:
         return self.value_dict['uuid']
 
-    def get_layout(self):
+    def get_layout(self) -> str:
         return self.value_dict['layout']
 
-    def get_side(self):
+    def get_side(self) -> str:
         return self.value_dict.get('side')
 
-    def get_legalities(self):
-        return self.value_dict['legalities'] if 'legalities' in self.value_dict else []
+    def get_legalities(self) -> Dict[str, str]:
+        return self.value_dict['legalities'] if 'legalities' in self.value_dict else {}
 
-    def get_name_count(self):
+    def get_name_count(self) -> int:
         return len(self.value_dict['names'])
 
-    def get_watermark(self):
+    def get_watermark(self) -> str:
         return self.value_dict.get('watermark')
 
-    def get_border_colour(self):
+    def get_border_colour(self) -> str:
         return self.value_dict.get('borderColor')
 
-    def get_scryfall_id(self):
+    def get_scryfall_id(self) -> str:
         return self.value_dict.get('scryfallId')
 
-    def get_release_date(self):
+    def get_release_date(self) -> Optional[datetime.date]:
         if 'releaseDate' in self.value_dict:
             date_string = self.value_dict['releaseDate']
             try:
                 return datetime.datetime.strptime(date_string, '%Y-%m-%d')
             except ValueError:
-                try:
-                    return datetime.datetime.strptime(date_string, '%Y-%m')
-                except ValueError:
-                    return datetime.datetime.strptime()
+                return datetime.datetime.strptime(date_string, '%Y-%m')
 
         return None
 
-    def is_reserved(self):
+    def is_reserved(self) -> bool:
         return 'reserved' in self.value_dict and self.value_dict['reserved']
 
-    def is_starter_printing(self):
+    def is_starter_printing(self) -> bool:
         return 'starter' in self.value_dict and self.value_dict['starter']
 
-    def is_timeshifted(self):
+    def is_timeshifted(self) -> bool:
         return 'isTimeshifted' in self.value_dict and self.value_dict['isTimeshifted']
 
-    def has_other_names(self):
+    def has_other_names(self) -> bool:
         return 'names' in self.value_dict
 
-    def get_other_names(self):
+    def get_other_names(self) -> List[str]:
 
         # B.F.M. has the same name for both cards, so the link_name has to be manually set
         if self.get_name() == 'B.F.M. (Big Furry Monster) (left)':
@@ -298,13 +296,13 @@ class StagedCard:
 
         return [n for n in self.value_dict['names'] if n != self.get_name()]
 
-    def set_number(self, cnum):
+    def set_number(self, cnum: str) -> None:
         if self.number is not None:
             raise Exception('Cannot set the collector number if it has already been set')
 
         self.number = cnum
 
-    def sanitise_name(self, name):
+    def sanitise_name(self, name) -> str:
         if name == 'B.F.M. (Big Furry Monster)':
             if self.value_dict['number'] == '28':
                 return 'B.F.M. (Big Furry Monster) (left)'
@@ -314,13 +312,13 @@ class StagedCard:
 
         return self.value_dict['name']
 
-    def pow_tuff_to_num(self, val):
+    def pow_tuff_to_num(self, val) -> float:
         if val == '\u221e':
             return math.inf
 
         match = re.search(r'(-?[\d.]+)', str(val))
         if match:
-            return match.group()
+            return float(match.group())
 
         return 0
 
@@ -330,7 +328,7 @@ class StagedSet:
     Class for staging a set record from json
     """
 
-    def __init__(self, code, value_dict):
+    def __init__(self, code: str, value_dict: dict):
         self.code = code.upper()
         self.value_dict = value_dict
         self.staged_cards = list()
@@ -338,32 +336,32 @@ class StagedSet:
         for card in self.value_dict['cards']:
             self.add_card(card)
 
-    def add_card(self, card):
+    def add_card(self, card: dict) -> None:
         staged_card = StagedCard(card)
         self.staged_cards.append(staged_card)
 
-    def get_cards(self):
+    def get_cards(self) -> List[StagedCard]:
         return sorted(self.staged_cards)
 
-    def get_code(self):
+    def get_code(self) -> str:
         return self.code
 
-    def get_release_date(self):
+    def get_release_date(self) -> Optional[datetime.date]:
         return self.value_dict['releaseDate']
 
-    def get_name(self):
+    def get_name(self) -> str:
         return self.value_dict['name']
 
-    def get_type(self):
+    def get_type(self) -> str:
         return self.value_dict.get('type')
 
-    def get_block(self):
+    def get_block(self) -> str:
         return self.value_dict.get('block')
 
-    def has_block(self):
+    def has_block(self) -> bool:
         return 'block' in self.value_dict
 
-    def get_keyrune_code(self):
+    def get_keyrune_code(self) -> str:
         mappings = {
             # Generic M Symbol
             'PWOR': 'pmtg1',

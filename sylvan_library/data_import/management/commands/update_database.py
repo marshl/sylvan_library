@@ -3,7 +3,7 @@ Module for the update_database command
 """
 import logging
 import time
-
+from typing import List, Optional
 from django.db import transaction
 
 from cards.models import (
@@ -23,7 +23,7 @@ from data_import.importers import (
 )
 from data_import.management.data_import_command import DataImportCommand
 
-from data_import.staging import StagedCard
+from data_import.staging import StagedCard, StagedSet
 
 logger = logging.getLogger('django')
 
@@ -108,7 +108,15 @@ class Command(DataImportCommand):
 
         self.log_stats()
 
-    def update_database(self, data_importer, oracle_only=False, sets_only=False):
+    def update_database(self, data_importer: JsonImporter, oracle_only: bool = False,
+                        sets_only: bool = False)->None:
+        """
+        Updates the objects with data from the data importer
+        :param data_importer: The data importer to load data from
+        :param oracle_only: Whether only Oracle (Card) information should be updated,
+                            or the whole database
+        :param sets_only: Whether only Set information should be updated, or the whole database
+        """
         staged_sets = data_importer.get_staged_sets()
 
         if oracle_only:
@@ -128,7 +136,11 @@ class Command(DataImportCommand):
         self.update_card_links(staged_sets)
         self.update_legalities(staged_sets)
 
-    def update_block_list(self, staged_sets):
+    def update_block_list(self, staged_sets: List[StagedSet]) -> None:
+        """
+        Updates the list of blocks using the given list of staged sets
+        :param staged_sets: The list of staged sets to create the blocks for
+        """
         logger.info('Updating block list')
 
         for staged_set in staged_sets:
@@ -154,7 +166,13 @@ class Command(DataImportCommand):
 
         logger.info('Block list updated')
 
-    def update_set_list(self, staged_sets):
+    def update_set_list(self, staged_sets: List[StagedSet]):
+        """
+        Updates all set objects and finds which ones should have their content updated
+        when performing a quick update
+        :param staged_sets: The list of staged sets
+        :return:
+        """
         logger.info('Updating set list')
 
         for staged_set in staged_sets:
@@ -187,25 +205,24 @@ class Command(DataImportCommand):
 
         logger.info('Set list updated')
 
-    def update_card_list(self, staged_sets, oracle_only=False):
+    def update_card_list(self, staged_sets: List[StagedSet], oracle_only: bool = False) -> None:
+        """
+        Updates or creates all Card, CardPrinting and CardPrintingLanguage records
+        :param staged_sets:  The list of staged sets to use
+        :param oracle_only: Whether only the Oracle (Card) data is all that should be updated,
+                            or if everything should be updated
+        """
         logger.info('Updating card list')
 
         for staged_set in staged_sets:
-
             if staged_set.get_code() not in self.sets_to_update and not self.force_update:
                 logger.info('Ignoring set %s', staged_set.get_name())
                 continue
 
             logger.info('Updating cards in set %s', staged_set.get_name())
-
             set_obj = Set.objects.get(code=staged_set.get_code())
 
-            default_number = 1
-
             for staged_card in staged_set.get_cards():
-                if staged_card.get_number() is None:
-                    staged_card.set_number(default_number)
-
                 card_obj = self.update_card(staged_card)
 
                 if not oracle_only:
@@ -214,12 +231,12 @@ class Command(DataImportCommand):
                         set_obj,
                         staged_card)
 
+                    # The foreign data of a card doesn't include English, so we have to dummy it up
                     english = {
                         'language': 'English',
                         'name': staged_card.get_name(),
                         'multiverseId': staged_card.get_multiverse_id()
                     }
-
                     self.update_card_printing_language(printing_obj, english)
 
                     if staged_card.has_foreign_data():
@@ -228,7 +245,12 @@ class Command(DataImportCommand):
 
         logger.info('Card list updated')
 
-    def update_card(self, staged_card: StagedCard):
+    def update_card(self, staged_card: StagedCard) -> Card:
+        """
+        Updates or creates the Card object for the given StagedCard
+        :param staged_card: The staging information for this card
+        :return: The updated or created Card
+        """
         card = Card.objects.filter(name=staged_card.get_name()).first()
 
         if card is not None:
@@ -275,8 +297,17 @@ class Command(DataImportCommand):
         card.save()
         return card
 
-    def update_card_printing(self, card_obj: Card, set_obj: Set, staged_card: StagedCard):
+    def update_card_printing(self, card_obj: Card, set_obj: Set,
+                             staged_card: StagedCard) -> CardPrinting:
 
+        """
+        Updates or creates the CardPrinting object for a given Card/Set
+        using the information in the StagedCard
+        :param card_obj: The Card tto add the printing to
+        :param set_obj: The set the printing is in
+        :param staged_card: The staging information for this printing
+        :return: The updated or created CardPrinting
+        """
         printing = CardPrinting.objects.filter(json_id=staged_card.get_json_id()).first()
 
         if printing is not None:
@@ -311,8 +342,16 @@ class Command(DataImportCommand):
 
         return printing
 
-    def update_card_printing_language(self, printing_obj, foreign_data):
+    def update_card_printing_language(self, printing_obj: CardPrinting,
+                                      foreign_data: dict) -> Optional[CardPrintingLanguage]:
+        """
+        Updates or creates a CardPrintedLanguage for a card printing with the given foreign data
+        :param printing_obj: The CardPrinting the CardPrintedLanguage should be for
+        :param foreign_data: The dictionayr of foreign data including the name of the language
+        :return: The created or update CardPrintingLanguage object
+        """
 
+        # The name of the card is mandatory,so we might as well abort if it doesn't exist
         if 'name' not in foreign_data:
             return None
 
@@ -344,12 +383,15 @@ class Command(DataImportCommand):
         self.increment_created('CardPrintingLanguage')
         return cardlang
 
-    def update_physical_card_list(self, staged_sets):
+    def update_physical_card_list(self, staged_sets: List[StagedSet]) -> None:
+        """
+        Finds all the physical cards for all cards and links them to their printed languages
+        :param staged_sets: THe list of staged set
+        """
         logger.info('Updating physical card list')
 
         english_language = Language.objects.get(name='English')
         for staged_set in staged_sets:
-
             if staged_set.get_code() not in self.sets_to_update and not self.force_update:
                 logger.info('Skipping set %s', staged_set.get_name())
                 continue
@@ -383,18 +425,17 @@ class Command(DataImportCommand):
 
                         self.update_physical_card(printlang_obj, staged_card)
 
-    def update_physical_card(self, printlang: CardPrintingLanguage, staged_card: StagedCard):
-
+    def update_physical_card(self, printlang: CardPrintingLanguage,
+                             staged_card: StagedCard) -> None:
+        """
+        Find the physical cards for the given printed language and adds them
+        :param printlang:
+        :param staged_card:
+        :return:
+        """
         if printlang.physical_cards.exists():
             logger.info('Physical link already exists for %s', printlang)
             self.increment_ignores('PhysicalCard')
-            return
-
-        if (staged_card.get_layout() == 'meld' and
-                staged_card.get_name_count() == 3 and
-                printlang.card_printing.number and
-                printlang.card_printing.number[-1] == 'b'):
-            logger.info('Will not create card link for meld card%s', printlang)
             return
 
         logger.info('Updating physical cards for %s', printlang)
@@ -442,7 +483,12 @@ class Command(DataImportCommand):
         for link_lang in linked_language_objs:
             link_lang.physical_cards.add(physical_card)
 
-    def update_card_links(self, staged_sets):
+    def update_card_links(self, staged_sets: List[StagedSet]) -> None:
+        """
+        Finds the linkages between Card objects and adds them
+        :param staged_sets:
+        :return:
+        """
         for staged_set in staged_sets:
 
             if staged_set.get_code() not in self.sets_to_update and not self.force_update:
@@ -464,7 +510,12 @@ class Command(DataImportCommand):
                     card_obj.save()
                     self.increment_updated('CardLink')
 
-    def update_legalities(self, staged_sets):
+    def update_legalities(self, staged_sets: List[StagedSet]) -> None:
+        """
+        Updates the list of Legalities for every card
+        :param staged_sets:
+        :return:
+        """
 
         cards_updated = []
 

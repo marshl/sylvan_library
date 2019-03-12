@@ -8,11 +8,20 @@ from django_select2.forms import Select2MultipleWidget
 from cards.models import CardPrinting, Colour, Language, PhysicalCard, Rarity, Set
 
 
-def get_physical_card_key_pair(physical_card: PhysicalCard, printing):
+def get_physical_card_key_pair(physical_card: PhysicalCard, printing: CardPrinting):
+    """
+    Gets the ID and display name of th given PhysicalCard for the given CardPrinting
+    :param physical_card: The physical card the user can select from
+    :param printing: The printing of the physical card
+    :return: A tuple of the physical card's ID and a display string
+    """
     return physical_card.id, f'{physical_card.get_display_for_adding()} ({printing.number})'
 
 
 class ChangeCardOwnershipForm(forms.Form):
+    """
+    A for mfor changing the number of cards that a user owns
+    """
     count = forms.IntegerField()
     printed_language = forms.ChoiceField(widget=forms.Select)
 
@@ -20,6 +29,7 @@ class ChangeCardOwnershipForm(forms.Form):
         super().__init__()
         if any(pl for pl in printing.printed_languages.all()
                if pl.language_id == Language.english().id):
+            # Put the english print first as that is the most likely one that the user will add
             english_print = next(pl for pl in printing.printed_languages.all()
                                  if pl.language_id == Language.english().id)
             choices = [get_physical_card_key_pair(physical_card, printing)
@@ -97,9 +107,17 @@ class SearchForm(forms.Form):
                 for colour in Colour.objects.all().order_by('display_order')}
 
     def is_colour_enabled(self) -> bool:
+        """
+        Gets whether any colour fields are  currently enabled
+        :return: True if any colour fields are enabled ,otherwise False
+        """
         return any(field.data for symbol, field in self.colour_fields().items())
 
     def is_colourid_enabled(self) -> bool:
+        """
+        Gets whether any colour identity fields are currently enabled
+        :return: TTrue if any colour identity fields are enabled, otherwise Talse
+        """
         return any(field.data for symbol, field in self.colourid_fields().items())
 
     def rarity_fields(self) -> dict:

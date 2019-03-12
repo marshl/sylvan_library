@@ -13,6 +13,7 @@ from cards.models import (
     Card,
     CardPrinting,
     CardPrintingLanguage,
+    Colour,
     PhysicalCard,
     Rarity,
     Set,
@@ -122,35 +123,15 @@ def simple_search(request) -> HttpResponse:
         search.min_toughness = form.cleaned_data.get('min_toughness')
         search.max_toughness = form.cleaned_data.get('max_toughness')
 
-        if form.data.get('colour_w'):
-            search.colours.append(Card.colour_flags.white)
-        if form.data.get('colour_u'):
-            search.colours.append(Card.colour_flags.blue)
-        if form.data.get('colour_b'):
-            search.colours.append(Card.colour_flags.black)
-        if form.data.get('colour_r'):
-            search.colours.append(Card.colour_flags.red)
-        if form.data.get('colour_g'):
-            search.colours.append(Card.colour_flags.green)
-        if form.data.get('colour_c'):
-            search.colours.append(0)
+        for colour in Colour.objects.all():
+            if form.data.get('colour_' + colour.symbol.lower()):
+                search.colours.append(colour.bit_value)
+
+            if form.data.get('colourid_' + colour.symbol.lower()):
+                search.colour_identities.append(colour.bit_value)
 
         search.exclude_unselected_colours = bool(form.data.get('exclude_colours'))
         search.match_colours_exactly = bool(form.data.get('match_colours'))
-
-        if form.data.get('colourid_w'):
-            search.colour_identities.append(Card.colour_flags.white)
-        if form.data.get('colourid_u'):
-            search.colour_identities.append(Card.colour_flags.blue)
-        if form.data.get('colourid_b'):
-            search.colour_identities.append(Card.colour_flags.black)
-        if form.data.get('colourid_r'):
-            search.colour_identities.append(Card.colour_flags.red)
-        if form.data.get('colourid_g'):
-            search.colour_identities.append(Card.colour_flags.green)
-        if form.data.get('colourid_c'):
-            search.colour_identities.append(0)
-
         search.exclude_unselected_colour_identities = bool(form.data.get('exclude_colourids'))
         search.match_colour_identities_exactly = bool(form.data.get('match_colourids'))
 
@@ -244,7 +225,7 @@ def ajax_change_card_ownership(request):
             physical_card.apply_user_change(change_count, request.user)
             return JsonResponse({'result': True})
     except PhysicalCard.DoesNotExist as ex:
-        return JsonResponse({'result': False})
+        return JsonResponse({'result': False, 'error': str(ex)})
 
 
 def ajax_ownership_summary(request, card_id: int):

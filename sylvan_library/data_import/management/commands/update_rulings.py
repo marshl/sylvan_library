@@ -3,7 +3,6 @@ The module for the update_rulings comand
 """
 import logging
 
-from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from cards.models import (
@@ -50,7 +49,12 @@ class Command(DataImportCommand):
                     raise Exception(f'Could not find card {staged_card.get_name()}: {ex}')
 
                 for ruling in staged_card.get_rulings():
-                    CardRuling.objects.get_or_create(
+                    ruling, created = CardRuling.objects.get_or_create(
                         card=card_obj, text=ruling['text'], date=ruling['date'])
+
+                    if created:
+                        self.increment_created('CardRuling')
+                    else:
+                        self.increment_updated('CardRuling')
 
         logger.info('Card rulings updated')
