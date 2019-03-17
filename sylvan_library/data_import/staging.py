@@ -286,14 +286,6 @@ class StagedCard:
         return 'names' in self.value_dict
 
     def get_other_names(self) -> List[str]:
-
-        # B.F.M. has the same name for both cards, so the link_name has to be manually set
-        if self.get_name() == 'B.F.M. (Big Furry Monster) (left)':
-            return ['B.F.M. (Big Furry Monster) (right)']
-
-        if self.get_name() == 'B.F.M. (Big Furry Monster) (right)':
-            return ['B.F.M. (Big Furry Monster) (left)']
-
         return [n for n in self.value_dict['names'] if n != self.get_name()]
 
     def set_number(self, cnum: str) -> None:
@@ -302,14 +294,7 @@ class StagedCard:
 
         self.number = cnum
 
-    def sanitise_name(self, name) -> str:
-        if name == 'B.F.M. (Big Furry Monster)':
-            if self.value_dict['number'] == '28':
-                return 'B.F.M. (Big Furry Monster) (left)'
-
-            if self.value_dict['number'] == '29':
-                return 'B.F.M. (Big Furry Monster) (right)'
-
+    def sanitise_name(self) -> str:
         return self.value_dict['name']
 
     def pow_tuff_to_num(self, val) -> float:
