@@ -16,14 +16,14 @@
                 <b>Set: </b>
             </span>
             <div class="subtitle" style="display:inline-flex;">
-                <span class="sk-tag-filter">{{ printing.set.name }}</span>
+                {{ printing.set.name }}
             </div>
             <br/>
             <span class="subtitle">
                 <b>Release date: </b>
             </span>
             <div class="subtitle" style="display:inline-flex;">
-                <span class="sk-tag-filter">{{ printing.set.release_date }}</span>
+                {{ printing.set.release_date }}
             </div>
             <br/>
             {% if printing.artist %}
@@ -31,7 +31,7 @@
                     <b>Artist: </b>
                 </span>
                 <div class="subtitle" style="display:inline-flex;">
-                    <span class="sk-tag-filter">{{ printing.artist }}</span>
+                    {{ printing.artist }}
                 </div>
                 <br/>
             {% endif %}
@@ -44,7 +44,7 @@
                 {% for legality in printing.card.legalities.all %}
                     <div>
                         <div class="subtitle" style="display:inline-flex;">
-                            <span class="sk-tag-filter">{{ legality.format.name }}</span>
+                            {{ legality.format.name }}
                         </div>
                         <span class="subtitle legal">: {{ legality.restriction }}</span>
                         <br/>

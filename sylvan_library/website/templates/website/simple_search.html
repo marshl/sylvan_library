@@ -1,71 +1,8 @@
 {% extends 'website/base.html' %}
 {% load widget_tweaks %}
 {% block content %}
-    <section class="simple-search-container">
-        <section class="simple-search-sidebar">
-            sidebar
-
-            <form action="{% url 'website:simple_search' %}" method="get">
-                <div>
-                    <label for="{{ form.card_name.id_for_label }}">Name</label>
-                    {{ form.card_name }}
-                </div>
-                <div>
-                    <label for="{{ form.rules_text.id_for_label }}">Rules</label>
-                    {{ form.rules_text }}
-                </div>
-                <div>
-                    <label for="{{ form.cmc.id_for_label }}">Converted Mana Cost</label>
-                    {{ form.cmc }}
-                    {{ form.cmc_operator }}
-                </div>
-                <div>
-                    <label>Colour</label>
-                    <div class="sk-panel filter--colours">
-                        <div class="sk-panel__header is-collapsable">
-                            <div style="float:right;">
-                                <div style="display:flex;max-height:23px;">
-                                    {% render_field form.exclude_colours class="toggle-checkbox no-select" %}
-                                    <label for="{{ form.exclude_colours.id_for_label }}"
-                                           class="toggle-checkbox">Only</label>
-
-                                    {% render_field form.match_colours.as_hidden %}
-                                    <div class="toggle">
-                                        <div class="toggle-option toggle-item js-toggle-option {% if form.match_colours.value %}is-active{% endif %}"
-                                             data-input-field="#{{ form.match_colours.id_for_label }}"
-                                             data-input-value="on">
-                                            <label>And</label>
-                                        </div>
-                                        <div class="toggle-option toggle-item js-toggle-option {% if not form.match_colours.value %}is-active{% endif %}"
-                                             data-input-field="#{{ form.match_colours.id_for_label }}"
-                                             data-input-value="">
-                                            <label>Or</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <span class="sk-arrow-down"></span>
-                        </div>
-
-                        <div class="sk-panel__content">
-                            <span>Colours</span>
-                            {% include "website/colour_group_selector.html" with colour_fields=form.colour_fields %}
-                        </div>
-                        <div class="sk-panel__content">
-                            <span>Colour Identity</span>
-                            {% include "website/colour_group_selector.html" with colour_fields=form.colourid_fields %}
-                        </div>
-                    </div>
-                </div>
-
-                <button type="submit">Search</button>
-            </form>
-        </section>
-        <section class="simple-search-content">
-            content
-            {% for result in results %}
-                {% include "website/search_result.html" with card=result %}
-            {% endfor %}
-        </section>
-    </section>
+    <div class="sk-layout__body">
+        {% include "website/filters.html" %}
+        {% include "website/results.html" %}
+    </div>
 {% endblock %}
