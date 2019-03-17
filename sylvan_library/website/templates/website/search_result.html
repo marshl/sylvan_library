@@ -5,7 +5,6 @@
 
 {% with render_usercards=request.user.is_authenticated %}
     {% block content %}
-
         <div class="search-result js-card-result"
              id="card-result-{{ result.card.id }}"
              data-card-id="{{ result.card.id }}"
@@ -32,7 +31,7 @@
                         </h2>
                         <div style="display:inline-flex;" class="subtitle typeLine">
                             <div style="display:inline-flex;">
-                                <span >{{ result.card.type }}</span>
+                                <span>{{ result.card.type }}</span>
                                 {% if result.card.subtype %}
                                     <span>&nbsp;&mdash;&nbsp;</span>
                                     <span>{{ result.card.subtype }}</span>
@@ -52,7 +51,7 @@
                             {% endif %}
                             {% if result.card.power != None %}
                                 <div class="subtitle" style="display:inline-flex;">
-                                        <strong>P/T:</strong>
+                                    <strong>P/T:</strong>
                                     <span>{{ result.card.power }}</span>
                                     <span>/</span>
                                     <span>{{ result.card.toughness }}</span>

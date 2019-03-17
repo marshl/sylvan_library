@@ -1,6 +1,6 @@
 {% load widget_tweaks %}
 {% block content %}
-    <div class="sk-item-list__item sk-item-list-option js-colour-filter {% if field.value %}is-active{% endif %}"
+    <div class="sk-item-list__item js-colour-filter {% if field.value %}is-active{% endif %}"
          style="display: block;">
         <i class="ms ms-cost ms-2x ms-{{ symbol }} {% if not field.value %}inactive{% endif %}"></i>
         {% render_field field style="display: none;" %}
