@@ -144,4 +144,17 @@ $(function () {
         return false;
     });
 
+    $(this).on('click', '.js-image-split-btn', function() {
+        $(this)
+            .closest('.js-card-result')
+            .find('.js-card-result-image')
+            .toggleClass('split');
+    });
+
+    $(this).on('click', '.js-image-flip-btn', function() {
+        $(this)
+            .closest('.js-card-result')
+            .find('.js-card-result-image')
+            .toggleClass('flip');
+    });
 });

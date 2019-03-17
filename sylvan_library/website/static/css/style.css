@@ -1,3 +1,27 @@
+.image-actions {
+    display: flex;
+    justify-content: center;
+}
+
+.image-actions button {
+    display: inline;
+    position: relative;
+    padding: 4px 8px;
+    border: 1px solid #444;
+    border-radius: 3px;
+    color: #ddd;
+    font-weight: 500;
+    font-size: 14px;
+    background-color: #222;
+    cursor: pointer;
+}
+
+.image-actions button:hover {
+    background-color: #08c;
+    border-color: #08c;
+    color: #fff;
+}
+
 .search-btn {
     cursor: pointer;
 }
@@ -740,7 +764,6 @@ body {
 .filter--colourIdentity .sk-item-list-option.is-active, .filter--colours .sk-item-list-option.is-active, .filter--symbols .sk-item-list-option.is-active {
     background-color: #151515;
 }
-
 
 .results-count {
     font-size: 14px;

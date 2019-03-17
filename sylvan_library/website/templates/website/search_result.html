@@ -10,9 +10,20 @@
              data-card-id="{{ result.card.id }}"
              data-card-printing-id="{{ result.selected_printing.id }}"
              data-is-expanded="false">
-            <div class="listImgDiv js-card-result-image-container">
-                {% include 'website/card_image.html' with printing=result.selected_printing %}
+            <div class="listImgDiv">
+                <span class="js-card-result-image-container">
+                    {% include 'website/card_image.html' with printing=result.selected_printing %}
+                </span>
+                <span class="image-actions">
+                    {% if result.card.layout == 'split' %}
+                        <button class="js-image-split-btn">Rotate</button>
+                    {% endif %}
+                    {% if result.card.layout == 'flip' %}
+                        <button class="js-image-flip-btn">Flip</button>
+                    {% endif %}
+                </span>
             </div>
+
             <div style="width:100%;">
                 <div style="display:flex;">
                     <div class="search-result-base-details" style="display:inline-block;">
