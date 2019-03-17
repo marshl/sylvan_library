@@ -433,13 +433,13 @@ body {
     box-sizing: inherit;
 }
 
-.sk-layout {
+.main-layout {
     box-sizing: border-box;
     background: #f4f4f4;
     font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
 
-.sk-layout__top-bar {
+.top-bar {
     background: #2a4466;
     height: 60px;
     position: fixed;
@@ -453,39 +453,14 @@ body {
     box-shadow: 0 0 4px rgba(0, 0, 0, .14), 0 4px 8px rgba(0, 0, 0, .28);
 }
 
-.sk-layout__body {
-    display: flex;
-    margin: 60px auto 0;
-    min-width: 600px;
-}
-
 .filter-container .sk-hierarchical-menu-list,
 .filter-container .sk-hierarchical-refinement-list,
 .filter-container .sk-numeric-refinement-list {
     margin-bottom: 20px;
 }
 
-.sk-top-bar__content {
-    display: flex;
-    margin: 0 auto;
-    padding: 0 15px;
-    width: 100%;
-}
-
-.sk-layout__size-l .sk-top-bar__content {
-    width: 1280px;
-}
-
-.sk-layout__size-l .sk-layout__body {
+.main-layout .body-content {
     max-width: 1280px;
-}
-
-.sk-layout__size-m .sk-top-bar__content {
-    width: 960px;
-}
-
-.sk-layout__size-m .sk-layout__body {
-    max-width: 960px;
 }
 
 .action-bar-row:last-child {
@@ -571,7 +546,7 @@ body {
     background-color: #333;
 }
 
-.my-logo {
+.top-bar-action {
     color: #fff;
     flex: 0 0 60px;
     padding: 13px;
@@ -580,6 +555,14 @@ body {
     background-color: #34547f;
     transition: .3s;
     border-radius: 3px;
+}
+
+.top-bar-action button {
+    background-color: transparent;
+    border: 0;
+    font: inherit;
+    color: #eee;
+    cursor: pointer;
 }
 
 .submit-action {
@@ -597,30 +580,8 @@ body {
     width: 25px;
 }
 
-.my-logo:hover, .submit-action:hover {
+.top-bar-action:hover, .submit-action:hover {
     background-color: #3d6496;
-}
-
-.my-logo-small {
-    color: #8189a0;
-    font-size: 9px;
-}
-
-.view-src-link {
-    position: fixed;
-    line-height: 40px;
-    background: #eee;
-    right: 10px;
-    bottom: 10px;
-    text-decoration: none;
-    padding: 0 20px;
-    border-radius: 3px;
-    color: #08c;
-    display: none;
-}
-
-.layout__body {
-    max-width: none;
 }
 
 .container {
@@ -644,16 +605,6 @@ body {
 
 .search-result:hover {
     background-color: #444;
-}
-
-.sk-hits-grid__item {
-    transition: .3s;
-    padding: 0;
-    max-width: 500px;
-}
-
-.sk-hits-grid-hit {
-    flex: 230px 0 0 !important;
 }
 
 .currentSetName {
@@ -721,12 +672,12 @@ body {
     color: #ddd !important;
 }
 
-.sk-hits-grid-hit__subtitle.banned, .subtitle.banned {
+.subtitle.banned {
     font-weight: 700;
     color: red;
 }
 
-.sk-hits-grid-hit__subtitle.legal, .subtitle.legal {
+.subtitle.legal {
     color: green;
 }
 
@@ -1490,13 +1441,13 @@ body {
     box-sizing: inherit;
 }
 
-.sk-layout {
+.main-layout {
     box-sizing: border-box;
     background: #333;
     font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
 
-.sk-layout__top-bar {
+.top-bar {
     background: #2a4466;
     height: 60px;
     position: fixed;
@@ -1510,7 +1461,8 @@ body {
     box-shadow: 0 0 4px rgba(0, 0, 0, .14), 0 4px 8px rgba(0, 0, 0, .28);
 }
 
-.sk-layout__body {
+.body-content {
+    max-width: none;
     display: flex;
     margin: 60px auto 0;
     min-width: 600px;
@@ -1524,27 +1476,19 @@ body {
     margin-top: 10px;
 }
 
-.sk-top-bar__content {
+.top-bar-content {
     display: flex;
     margin: 0 auto;
     padding: 0 15px;
     width: 100%;
 }
 
-.sk-layout__size-l .sk-top-bar__content {
+.main-layout .top-bar-content {
     width: 1280px;
 }
 
-.sk-layout__size-l .sk-layout__body {
+.main-layout .body-content {
     max-width: 1280px;
-}
-
-.sk-layout__size-m .sk-top-bar__content {
-    width: 960px;
-}
-
-.sk-layout__size-m .sk-layout__body {
-    max-width: 960px;
 }
 
 .action-bar {
@@ -1613,30 +1557,6 @@ body {
     margin-top: 60px;
 }
 
-.sk-hits-grid__item {
-    flex: 1 1 250px;
-    display: flex;
-    margin-bottom: 20px;
-}
-
-.sk-hits-grid-hit {
-    padding: 10px;
-    max-width: 250px;
-    flex-flow: column;
-    align-content: center;
-    align-items: center;
-    flex: 190px 0 0;
-}
-
-.sk-hits-grid-hit em {
-    background: #ff0;
-}
-
-.sk-hits-grid-hit a {
-    text-decoration: none;
-    color: #ccc;
-}
-
 .search-result-list {
     display: flex;
     flex-flow: column wrap;
@@ -1678,9 +1598,6 @@ body {
 
 .subtitle {
     margin: 0 0 5px;
-}
-
-.subtitle {
     line-height: 20px;
     font-size: 14px;
     color: #666;

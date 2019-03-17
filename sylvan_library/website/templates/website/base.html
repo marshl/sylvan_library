@@ -19,12 +19,10 @@
     {% endblock %}
 </head>
 <body>
-<div>
-    <div class="sk-layout sk-layout__size-l">
-        {% include "website/top_bar.html" %}
-        {% block content %}
-        {% endblock %}
-    </div>
+<div class="main-layout">
+    {% include "website/top_bar.html" %}
+    {% block content %}
+    {% endblock %}
 </div>
 <p style="color:#999;padding:10px;text-align:center;position:absolute;max-width:630px;right:60px;">
     Wizards of the Coast, Magic: The Gathering, and their logos are trademarks of Wizards of
