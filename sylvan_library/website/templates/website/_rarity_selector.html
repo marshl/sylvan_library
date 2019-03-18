@@ -1,6 +1,6 @@
 {% load widget_tweaks %}
 {% block content %}
-    <div class="sk-item-list__item sk-item-list-option {% if field.value %}is-active{% endif %}"
+    <div class="rarity-list {% if field.value %}is-active{% endif %}"
          style="display: block;">
         {% render_field field style="display: none;" %}
         <i class="setIcon ss ss-2x ss-{{ name | lower }} ss-grad {{ symbol }}

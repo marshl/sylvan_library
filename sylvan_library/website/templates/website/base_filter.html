@@ -1,7 +1,6 @@
 {% block content %}
-
-    <div class="sk-panel js-collapsible-filter-field">
-        <div class="sk-panel__header is-collapsable js-filter-heading"
+    <div class="filter-panel js-collapsible-filter-field">
+        <div class="panel-heading is-collapsable js-filter-heading"
              data-collapsed="{% if enabled %}false{% else %}true{% endif %}">
             <span class="js-collapse-arrow"></span>
             <span>&nbsp;</span>
@@ -9,7 +8,7 @@
             {% block title_extra %}
             {% endblock %}
         </div>
-        <div class="sk-panel__content js-filter-container {% if not enabled %}is-collapsed{% endif %}">
+        <div class="filter-content js-filter-container {% if not enabled %}is-collapsed{% endif %}">
             {% block filter %}
             {% endblock %}
         </div>
