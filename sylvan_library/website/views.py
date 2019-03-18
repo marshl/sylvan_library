@@ -96,7 +96,6 @@ def random_card(request) -> HttpResponse:
 
     return HttpResponseRedirect('../card/{0}'.format(card.id))
 
-
 def simple_search(request) -> HttpResponse:
     """
     The simple search form
@@ -104,64 +103,13 @@ def simple_search(request) -> HttpResponse:
     :return: The HTTP Response
     """
     form = SearchForm(request.GET)
-    results = []
-    result_count = 0
-    page = None
-    search = FieldSearch()
-    page_number = 0
-    if form.is_valid():
-        search.card_name = form.data.get('card_name')
-        search.rules_text = form.data.get('rules_text')
-        search.flavour_text = form.data.get('flavour_text')
-        search.type_text = form.data.get('type_text')
-        search.subtype_text = form.data.get('subtype_text')
-
-        search.min_cmc = form.cleaned_data.get('min_cmc')
-        search.max_cmc = form.cleaned_data.get('max_cmc')
-        search.min_power = form.cleaned_data.get('min_power')
-        search.max_power = form.cleaned_data.get('max_power')
-        search.min_toughness = form.cleaned_data.get('min_toughness')
-        search.max_toughness = form.cleaned_data.get('max_toughness')
-
-        for colour in Colour.objects.all():
-            if form.data.get('colour_' + colour.symbol.lower()):
-                search.colours.append(colour.bit_value)
-
-            if form.data.get('colourid_' + colour.symbol.lower()):
-                search.colour_identities.append(colour.bit_value)
-
-        search.exclude_unselected_colours = bool(form.data.get('exclude_colours'))
-        search.match_colours_exactly = bool(form.data.get('match_colours'))
-        search.exclude_unselected_colour_identities = bool(form.data.get('exclude_colourids'))
-        search.match_colour_identities_exactly = bool(form.data.get('match_colourids'))
-
-        for rarity in Rarity.objects.all():
-            if form.data.get('rarity_' + rarity.symbol.lower()):
-                search.rarities.append(rarity)
-
-        search.match_rarities_exactly = bool(form.data.get('match_rarity'))
-
-        search.sets = form.data.get('sets')
-        if search.sets and not isinstance(search.sets, list):
-            search.sets = [search.sets]
-
-        try:
-            page_number = int(form.data.get('page'))
-        except (TypeError, ValueError):
-            page_number = 1
-
-        search.build_parameters()
-        search.search(page_number)
-        results = search.results
-        result_count = search.paginator.count
-
-        page = search.page
+    search = form.get_field_search()
 
     return render(request, 'website/simple_search.html', {
-        'form': form, 'results': results,
-        'result_count': result_count,
-        'page': page,
-        'page_info': search.get_page_info(page_number, 3)})
+        'form': form, 'results': search.results,
+        'result_count': search.paginator.count,
+        'page': search.page,
+        'page_info': search.get_page_info(form.get_page_number(), 3)})
 
 
 # pylint: disable=unused-argument, missing-docstring

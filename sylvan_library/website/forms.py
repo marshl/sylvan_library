@@ -6,6 +6,7 @@ from django import forms
 from django_select2.forms import Select2MultipleWidget
 
 from cards.models import CardPrinting, Colour, Language, PhysicalCard, Rarity, Set
+from cardsearch.fieldsearch import FieldSearch
 
 
 def get_physical_card_key_pair(physical_card: PhysicalCard, printing: CardPrinting):
@@ -134,3 +135,52 @@ class SearchForm(forms.Form):
         :return: True if any rarity fields are set, otherwise False
         """
         return any(field.data for key, field in self.rarity_fields().items())
+
+    def get_page_number(self) -> int:
+        try:
+            return int(self.data.get('page'))
+        except (TypeError, ValueError):
+            return 1
+
+    def get_field_search(self) -> FieldSearch:
+        self.full_clean()
+
+        search = FieldSearch()
+        search.card_name = self.data.get('card_name')
+        search.rules_text = self.data.get('rules_text')
+        search.flavour_text = self.data.get('flavour_text')
+        search.type_text = self.data.get('type_text')
+        search.subtype_text = self.data.get('subtype_text')
+
+        search.min_cmc = self.cleaned_data.get('min_cmc')
+        search.max_cmc = self.cleaned_data.get('max_cmc')
+        search.min_power = self.cleaned_data.get('min_power')
+        search.max_power = self.cleaned_data.get('max_power')
+        search.min_toughness = self.cleaned_data.get('min_toughness')
+        search.max_toughness = self.cleaned_data.get('max_toughness')
+
+        for colour in Colour.objects.all():
+            if self.data.get('colour_' + colour.symbol.lower()):
+                search.colours.append(colour.bit_value)
+
+            if self.data.get('colourid_' + colour.symbol.lower()):
+                search.colour_identities.append(colour.bit_value)
+
+        search.exclude_unselected_colours = bool(self.data.get('exclude_colours'))
+        search.match_colours_exactly = bool(self.data.get('match_colours'))
+        search.exclude_unselected_colour_identities = bool(self.data.get('exclude_colourids'))
+        search.match_colour_identities_exactly = bool(self.data.get('match_colourids'))
+
+        for rarity in Rarity.objects.all():
+            if self.data.get('rarity_' + rarity.symbol.lower()):
+                search.rarities.append(rarity)
+
+        search.match_rarities_exactly = bool(self.data.get('match_rarity'))
+
+        search.sets = self.data.get('sets')
+        if search.sets and not isinstance(search.sets, list):
+            search.sets = [search.sets]
+
+        search.build_parameters()
+        search.search(self.get_page_number())
+        return search
