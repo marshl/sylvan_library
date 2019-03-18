@@ -122,16 +122,22 @@ class BaseSearch:
         queryset = queryset.order_by(
             *[order for sort_param in self.sort_params for order in sort_param.get_sort_list()])
 
+        queryset = queryset \
+            .prefetch_related('printings__printed_languages__physical_cards__ownerships') \
+            .prefetch_related('printings__printed_languages__language') \
+            .prefetch_related('printings__set') \
+            .prefetch_related('printings__rarity')
+
         self.paginator = Paginator(queryset, page_size)
         try:
             self.page = self.paginator.page(page_number)
         except EmptyPage:
             return
         cards = list(self.page)
-        prefetch_related_objects(cards, 'printings__printed_languages__physical_cards__ownerships')
-        prefetch_related_objects(cards, 'printings__printed_languages__language')
-        prefetch_related_objects(cards, 'printings__set')
-        prefetch_related_objects(cards, 'printings__rarity')
+        # prefetch_related_objects(cards, 'printings__printed_languages__physical_cards__ownerships')
+        # prefetch_related_objects(cards, 'printings__printed_languages__language')
+        # prefetch_related_objects(cards, 'printings__set')
+        # prefetch_related_objects(cards, 'printings__rarity')
 
         preferred_set = self.get_preferred_set()
         self.results = [SearchResult(card, selected_set=preferred_set) for card in cards]
