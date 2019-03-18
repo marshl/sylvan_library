@@ -13,15 +13,12 @@ from cards.models import (
     Card,
     CardPrinting,
     CardPrintingLanguage,
-    Colour,
     PhysicalCard,
-    Rarity,
     Set,
     UserCardChange,
     UserOwnedCard,
 )
-from website.forms import SearchForm, ChangeCardOwnershipForm
-from cardsearch.fieldsearch import FieldSearch
+from website.forms import SearchForm, NameSearchForm, ChangeCardOwnershipForm
 
 logger = logging.getLogger('django')
 
@@ -95,6 +92,18 @@ def random_card(request) -> HttpResponse:
     card = random.choice(Card.objects.all())
 
     return HttpResponseRedirect('../card/{0}'.format(card.id))
+
+
+def name_search(request) -> HttpResponse:
+    name_form = NameSearchForm(request.GET)
+    search_form = SearchForm()
+    search = name_form.get_search()
+    return render(request, 'website/simple_search.html', {
+        'name_form': name_form, 'form': search_form, 'results': search.results,
+        'result_count': search.paginator.count,
+        'page': search.page,
+        'page_info': search.get_page_info(name_form.get_page_number(), 3)})
+
 
 def simple_search(request) -> HttpResponse:
     """

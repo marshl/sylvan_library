@@ -7,6 +7,7 @@ from django_select2.forms import Select2MultipleWidget
 
 from cards.models import CardPrinting, Colour, Language, PhysicalCard, Rarity, Set
 from cardsearch.fieldsearch import FieldSearch
+from cardsearch.namesearch import NameSearch
 
 
 def get_physical_card_key_pair(physical_card: PhysicalCard, printing: CardPrinting):
@@ -49,6 +50,24 @@ class ChangeCardOwnershipForm(forms.Form):
             ]
 
         self.fields['printed_language'].choices = choices
+
+
+class NameSearchForm(forms.Form):
+    card_name = forms.CharField(required=False)
+
+    def get_search(self) -> NameSearch:
+        self.full_clean()
+        search = NameSearch()
+        search.card_name = self.data.get('card_name')
+        search.build_parameters()
+        search.search(self.get_page_number())
+        return search
+
+    def get_page_number(self) -> int:
+        try:
+            return int(self.data.get('page'))
+        except (TypeError, ValueError):
+            return 1
 
 
 class SearchForm(forms.Form):
