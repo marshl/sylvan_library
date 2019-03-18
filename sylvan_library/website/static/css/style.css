@@ -608,19 +608,6 @@ body {
     font-weight: 700;
 }
 
-.priceContainer {
-    font-size: x-small;
-    padding: 2px;
-    background-color: #222;
-    border: 1px solid #333;
-    margin-bottom: -1;
-    transition: .3s;
-}
-
-.priceContainer:hover {
-    background-color: #1d5a7d;
-}
-
 .titleAndTextColumn {
     margin-bottom: 3px;
     margin-left: 5px;
@@ -671,30 +658,7 @@ body {
     color: #ccc;
     font-size: small;
     position: relative;
-    top: -15;
-}
-
-@keyframes border-pulsate {
-    0% {
-        box-shadow: 0 3px 3px 0 transparent;
-    }
-    50% {
-        border-color: 0 3px 3px 0;
-    }
-    to {
-        border-color: 0 3px 3px 0;
-    }
-}
-
-.gridImg {
-    border-radius: 12px;
-    transition: .2s;
-    width: 223px;
-    height: 169px;
-}
-
-.gridImg:hover {
-    box-shadow: 0 0 15px 0 hsla(0, 0%, 100%, .5);
+    top: -15px;
 }
 
 .closestImg {
@@ -731,10 +695,6 @@ body {
 
 .setIcon.C:hover, .setIcon.clicked.C {
     box-shadow: inset 0 0 0 20px #bfbfbf;
-}
-
-.setIcon.clicked.S, .setIcon.S:hover {
-    box-shadow: inset 0 0 0 20px #e3cb8c;
 }
 
 .setIcon:hover {
@@ -874,7 +834,6 @@ body {
 .sk-tabs-option.is-active {
     background-color: #fff;
     color: #ccc;
-    border-color: #eee;
     cursor: default;
     border: 1px solid #444;
     border-bottom-color: transparent;
@@ -1110,7 +1069,7 @@ body {
 }
 
 .text-input-icon {
-    flex: 0 20px 20px;
+    flex: 0 20px;
     margin-top: 6px;
     margin-left: 10px;
     opacity: .3;
@@ -1195,7 +1154,7 @@ body {
 .reset-filters-container {
     border-radius: 3px;
     padding: 10px 20px;
-    width: 110;
+    width: 110px;
     border: none;
     display: flex;
     font-size: 14px;
@@ -1206,8 +1165,6 @@ body {
 }
 
 .reset-filters.is-disabled {
-    cursor: default;
-    color: #777
     cursor: default;
     color: #ddd;
 }
@@ -1352,7 +1309,7 @@ body {
 }
 
 .search-icon {
-    flex: 0 20px 20px;
+    flex: 0 20px;
     opacity: .3;
     margin: 10px 0 0 15px;
 }
