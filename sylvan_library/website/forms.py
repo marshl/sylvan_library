@@ -29,18 +29,35 @@ class ChangeCardOwnershipForm(forms.Form):
 
     def __init__(self, printing: CardPrinting):
         super().__init__()
-        if any(pl for pl in printing.printed_languages.all()
-               if pl.language_id == Language.english().id):
-            # Put the english print first as that is the most likely one that the user will add
-            english_print = next(pl for pl in printing.printed_languages.all()
-                                 if pl.language_id == Language.english().id)
+        # if any(pl for pl in printing.printed_languages.all()
+        #        if pl.language_id == Language.english().id):
+        #     # Put the english print first as that is the most likely one that the user will add
+        #     english_print = next(pl for pl in printing.printed_languages.all()
+        #                          if pl.language_id == Language.english().id)
+        #     choices = [get_physical_card_key_pair(physical_card, printing)
+        #                for physical_card in english_print.physical_cards.all()]
+        #     choices.extend([
+        #         get_physical_card_key_pair(physical_card, printing)
+        #         for lang in printing.printed_languages.all()
+        #         for physical_card in lang.physical_cards.all()
+        #         if lang.language_id != Language.english().id
+        #     ])
+        # else:
+        #     choices = [
+        #         get_physical_card_key_pair(physical_card, printing)
+        #         for lang in printing.printed_languages.all()
+        #         for physical_card in lang.physical_cards.all()
+        #     ]
+        english = Language.objects.get(name='English')
+        if printing.printed_languages.filter(language=english).exists():
+            english_print = printing.printed_languages.get(language=english)
             choices = [get_physical_card_key_pair(physical_card, printing)
                        for physical_card in english_print.physical_cards.all()]
             choices.extend([
                 get_physical_card_key_pair(physical_card, printing)
                 for lang in printing.printed_languages.all()
                 for physical_card in lang.physical_cards.all()
-                if lang.language_id != Language.english().id
+                if lang.language != english
             ])
         else:
             choices = [

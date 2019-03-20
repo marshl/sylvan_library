@@ -48,13 +48,19 @@ class SearchResult:
         self.card = card
         self.selected_printing = selected_printing
 
+        # if self.card and selected_set and not self.selected_printing:
+        #     self.selected_printing = next((p for p in self.card.printings.all()
+        #                                    if p.set == selected_set), None)
+        #
+        # if self.card and not self.selected_printing:
+        #     self.selected_printing = sorted(self.card.printings.all(),
+        #                                     key=lambda x: x.set.release_date)[-1]
+
         if self.card and selected_set and not self.selected_printing:
-            self.selected_printing = next((p for p in self.card.printings.all()
-                                           if p.set == selected_set), None)
+            self.selected_printing = self.card.printings.filter(set=selected_set).first()
 
         if self.card and not self.selected_printing:
-            self.selected_printing = sorted(self.card.printings.all(),
-                                            key=lambda x: x.set.release_date)[-1]
+            self.selected_printing = self.card.printings.order_by('set__release_date').last()
 
         assert self.selected_printing is None or self.card is None \
                or self.selected_printing in self.card.printings.all()
@@ -122,11 +128,11 @@ class BaseSearch:
         queryset = queryset.order_by(
             *[order for sort_param in self.sort_params for order in sort_param.get_sort_list()])
 
-        queryset = queryset \
-            .prefetch_related('printings__printed_languages__physical_cards__ownerships') \
-            .prefetch_related('printings__printed_languages__language') \
-            .prefetch_related('printings__set') \
-            .prefetch_related('printings__rarity')
+        # queryset = queryset \
+        #     .prefetch_related('printings__printed_languages__physical_cards__ownerships') \
+        #     .prefetch_related('printings__printed_languages__language') \
+        #     .prefetch_related('printings__set') \
+        #     .prefetch_related('printings__rarity')
 
         self.paginator = Paginator(queryset, page_size)
         try:

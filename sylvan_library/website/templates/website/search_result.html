@@ -114,23 +114,28 @@
                         </ul>
                         <div class="js-card-result-tab-content"
                              id="card-result-tab-content-{{ result.card.id }}-details">
+                            {% include 'website/search_result_details.html' with printing_id=result.selected_printing.id %}
                         </div>
                         <div class="js-card-result-tab-content"
                              id="card-result-tab-content-{{ result.card.id }}-rulings"
                              style="display:none;">
+                            {% include 'website/search_result_rulings.html' with card_id=result.card.id %}
                         </div>
                         <div class="js-card-result-tab-content"
                              id="card-result-tab-content-{{ result.card.id }}-languages"
                              style="display:none;">
+                            {% include 'website/search_result_languages.html' with printing_id=result.selected_printing.id %}
                         </div>
                         {% if render_usercards %}
                             <div class="js-card-result-tab-content"
                                  id="card-result-tab-content-{{ result.card.id }}-ownership"
                                  style="display:none;">
+                            {% include 'website/search_result_ownership.html' with card_id=result.card.id %}
                             </div>
                             <div class="js-card-result-tab-content"
                                  id="card-result-tab-content-{{ result.card.id }}-add"
                                  style="display:none;">
+                            {% include 'website/search_result_add.html' with printing_id=result.selected_printing.id %}
                             </div>
                         {% endif %}
                     </div>
