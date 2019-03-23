@@ -1,8 +1,11 @@
 """
 Module for the reset_database command
 """
+from typing import Type
+
 from django.core.management.base import BaseCommand
 from django.db import connection
+from django.db import models
 
 from cards.models import (
     Block,
@@ -26,23 +29,33 @@ from cards.models import (
 from data_import import _query
 
 
+def reset_sequence(table_name: str):
+    """
+    Resets the sequence of a table
+    :param table_name: The name of the table to have its sequence reset
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(
+            f"SELECT setval(pg_get_serial_sequence('\"{table_name}\"','id'), 1, false);")
+
+
+def truncate_model(model_obj: Type[models.Model]):
+    """
+    Truncates the table of the given model
+    :param model_obj: The model to truncate
+    """
+    print('Truncating {0}... '.format(model_obj.__name__), end='')
+    model_obj.objects.all().delete()
+    # pylint: disable=protected-access
+    reset_sequence(model_obj.objects.model._meta.db_table)
+    print('Done')
+
+
 class Command(BaseCommand):
     """
     Command for soft resetting the database
     """
     help = 'Delete all records from all tables without dropping the tables'
-
-    def truncate_model(self, model_obj):
-        print('Truncating {0}... '.format(model_obj.__name__), end='')
-        model_obj.objects.all().delete()
-        # pylint: disable=protected-access
-        self.reset_sequence(model_obj.objects.model._meta.db_table)
-        print('Done')
-
-    def reset_sequence(self, table_name):
-        with connection.cursor() as cursor:
-            cursor.execute(
-                f"SELECT setval(pg_get_serial_sequence('\"{table_name}\"','id'), 1, false);")
 
     def handle(self, *args, **options):
         confirm = _query.query_yes_no(
@@ -51,23 +64,23 @@ class Command(BaseCommand):
         if not confirm:
             return
 
-        self.truncate_model(DeckCard)
-        self.truncate_model(Deck)
-        self.truncate_model(CardTag)
-        self.truncate_model(CardRuling)
-        self.truncate_model(CardLegality)
-        self.truncate_model(UserCardChange)
-        self.truncate_model(UserOwnedCard)
-        self.truncate_model(PhysicalCard)
-        self.truncate_model(CardPrintingLanguage)
-        self.truncate_model(CardPrinting)
-        self.truncate_model(Card)
-        self.truncate_model(Rarity)
-        self.truncate_model(Set)
-        self.truncate_model(Block)
-        self.truncate_model(Format)
-        self.truncate_model(Language)
-        self.truncate_model(Colour)
+        truncate_model(DeckCard)
+        truncate_model(Deck)
+        truncate_model(CardTag)
+        truncate_model(CardRuling)
+        truncate_model(CardLegality)
+        truncate_model(UserCardChange)
+        truncate_model(UserOwnedCard)
+        truncate_model(PhysicalCard)
+        truncate_model(CardPrintingLanguage)
+        truncate_model(CardPrinting)
+        truncate_model(Card)
+        truncate_model(Rarity)
+        truncate_model(Set)
+        truncate_model(Block)
+        truncate_model(Format)
+        truncate_model(Language)
+        truncate_model(Colour)
 
-        self.reset_sequence('cards_card_links')
-        self.reset_sequence('cards_cardprintinglanguage_physical_cards')
+        reset_sequence('cards_card_links')
+        reset_sequence('cards_cardprintinglanguage_physical_cards')

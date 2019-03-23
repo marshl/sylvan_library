@@ -5,7 +5,6 @@ import datetime
 import math
 import re
 from typing import Dict, List, Optional
-from functools import total_ordering
 
 from cards.models import Colour
 
@@ -57,8 +56,24 @@ COLOUR_TO_SORT_KEY = {
 }
 
 
+def convert_number_field_to_numerical(val: str) -> float:
+    """
+    Converts the stringy value of a number field (Power, Toughness, Loyalty)
+    to the numerical representation (e.g. 1+* becomes 1, * becomes 0)
+    :param val: The stringy field value
+    :return: The numerical representation of that field
+    """
+    if val == '\u221e':
+        return math.inf
+
+    match = re.search(r'(-?[\d.]+)', str(val))
+    if match:
+        return float(match.group())
+
+    return 0
+
+
 # pylint: disable=too-many-public-methods
-@total_ordering
 class StagedCard:
     """
     Class for staging a card record from json
@@ -68,57 +83,78 @@ class StagedCard:
         self.value_dict = value_dict
         self.number = value_dict.get('number')
 
-    def __eq__(self, other: 'StagedCard') -> bool:
-        return self.number == other.number and \
-               self.get_multiverse_id() == other.get_multiverse_id() and \
-               self.get_name() == other.get_name()
-
-    def __lt__(self, other: 'StagedCard') -> bool:
-
-        # Push cards without a collector number to the end of the set
-        if self.get_number() is not None and other.get_number() is None:
-            return True
-
-        if self.get_number() is None and other.get_number() is not None:
-            return False
-
-        if self.get_number() is not None and other.get_number() is not None:
-            if self.get_number() != other.get_number():
-                return self.get_number() < other.get_number()
-
-        return self.get_name() < other.get_name()
-
     def get_number(self) -> str:
+        """
+        Gets the collector number of this printing
+        """
         return self.number
 
     def get_multiverse_id(self) -> str:
+        """
+        Gets the multiverse ID of this printing (only applicable for cards on Gatherer)
+        :return:
+        """
         return self.value_dict.get('multiverseId')
 
     def has_foreign_data(self) -> bool:
+        """
+        Gets whether this card has foreign data or not
+        :return:
+        """
         return bool(self.value_dict.get('foreignData'))
 
     def get_foreign_data(self) -> dict:
+        """
+        Gets the foreign data of this card
+        :return:
+        """
         return self.value_dict['foreignData']
 
     def get_name(self) -> str:
+        """
+        Gets the card name
+        :return:
+        """
         return self.value_dict['name']
 
     def get_mana_cost(self) -> str:
+        """
+        Gets the mana cost of the card
+        :return:
+        """
         return self.value_dict.get('manaCost')
 
     def get_cmc(self) -> float:
+        """
+        Gets the converted mana cost of the card
+        :return:
+        """
         return self.value_dict.get('convertedManaCost') or 0
 
     def get_colour(self) -> int:
+        """
+        Gets the colour bits of the card
+        :return:
+        """
         if 'colors' in self.value_dict:
             return Colour.colour_codes_to_flags(self.value_dict['colors'])
 
         return 0
 
     def get_colour_sort_key(self) -> int:
+        """
+        Gets the colour sort key of this card
+        The sort key ensures that white cards appear before blue cards, single colour cards
+        before multicolour cards, shard cards before wedge cards etc
+        :return:
+        """
         return COLOUR_TO_SORT_KEY[int(self.get_colour())]
 
     def get_colour_weight(self) -> int:
+        """
+        Gets the "colour weight" of the card, the number of coloured mana symbols te card has
+        :return:
+        """
         if not self.get_mana_cost():
             return 0
 
@@ -129,6 +165,10 @@ class StagedCard:
         return int(self.get_cmc()) - int(generic_mana.group(0))
 
     def get_colour_identity(self) -> int:
+        """
+        Gets the bits of the colour identity for this card
+        :return:
+        """
         if 'colorIdentity' in self.value_dict:
             return Colour.colour_codes_to_flags(self.value_dict['colorIdentity'])
 
@@ -161,7 +201,7 @@ class StagedCard:
         :return:
         """
         if 'power' in self.value_dict:
-            return self.pow_tuff_to_num(self.value_dict['power'])
+            return convert_number_field_to_numerical(self.value_dict['power'])
 
         return 0
 
@@ -171,7 +211,7 @@ class StagedCard:
         :return:
         """
         if 'toughness' in self.value_dict:
-            return self.pow_tuff_to_num(self.value_dict['toughness'])
+            return convert_number_field_to_numerical(self.value_dict['toughness'])
 
         return 0
 
@@ -183,8 +223,12 @@ class StagedCard:
         return self.value_dict.get('loyalty')
 
     def get_num_loyalty(self) -> float:
+        """
+        Gets the numerical representation of the loyalty of the card
+        :return:
+        """
         if 'loyalty' in self.value_dict:
-            return self.pow_tuff_to_num(self.value_dict['loyalty'])
+            return convert_number_field_to_numerical(self.value_dict['loyalty'])
 
         return 0
 
@@ -232,77 +276,130 @@ class StagedCard:
         return self.value_dict['artist']
 
     def get_rarity_name(self) -> str:
+        """
+        Gets the rarity name of this card
+        :return:
+        """
         return self.value_dict['rarity']
 
     def get_flavour_text(self) -> str:
+        """
+        Gets the flavour text of this printing
+        :return:
+        """
         return self.value_dict.get('flavorText')
 
     def get_original_type(self) -> str:
+        """
+        Gets the original type text for this printing (includes both type and subtype)
+        :return:
+        """
         return self.value_dict.get('originalType')
 
     def has_rulings(self) -> bool:
+        """
+        Gets whether this card has rulings or not
+        :return:
+        """
         return 'rulings' in self.value_dict
 
     def get_rulings(self) -> List[dict]:
+        """
+        Gets the rulings for this card
+        :return:
+        """
         return self.value_dict['rulings']
 
     def get_json_id(self) -> str:
+        """
+        Gets the JSON ID of this printing
+        :return:
+        """
         return self.value_dict['uuid']
 
     def get_layout(self) -> str:
+        """
+        Gets the layout of this card
+        :return:
+        """
         return self.value_dict['layout']
 
     def get_side(self) -> str:
+        """
+        Gets the side symbol of this card
+        :return:
+        """
         return self.value_dict.get('side')
 
     def get_legalities(self) -> Dict[str, str]:
-        return self.value_dict['legalities'] if 'legalities' in self.value_dict else {}
+        """
+        Gets the list of legalities for this card
+        :return:
+        """
+        return self.value_dict.get('legalities', {})
 
     def get_name_count(self) -> int:
+        """
+        Gets the number of names this card has
+        :return:
+        """
         return len(self.value_dict['names'])
 
     def get_watermark(self) -> str:
+        """
+        Gets the watermark for this printing
+        :return:
+        """
         return self.value_dict.get('watermark')
 
     def get_border_colour(self) -> str:
+        """
+        Gets the card border colour for this printing
+        :return:
+        """
         return self.value_dict.get('borderColor')
 
     def get_scryfall_id(self) -> str:
+        """
+        Gets the scryfall API id for this printing
+        :return:
+        """
         return self.value_dict.get('scryfallId')
 
     def is_reserved(self) -> bool:
+        """
+        Gets whether this card is on the reserved list
+        :return:
+        """
         return 'reserved' in self.value_dict and self.value_dict['reserved']
 
     def is_starter_printing(self) -> bool:
+        """
+        Gets whether this printing is in a starter set or not
+        :return:
+        """
         return 'starter' in self.value_dict and self.value_dict['starter']
 
     def is_timeshifted(self) -> bool:
+        """
+        Gets whether this
+        :return:
+        """
         return 'isTimeshifted' in self.value_dict and self.value_dict['isTimeshifted']
 
     def has_other_names(self) -> bool:
+        """
+        Gets whether this card has other nams (for split/flip/transform cards)
+        :return:
+        """
         return 'names' in self.value_dict
 
     def get_other_names(self) -> List[str]:
+        """
+        Gets the other names of this card
+        :return:
+        """
         return [n for n in self.value_dict['names'] if n != self.get_name()]
-
-    def set_number(self, cnum: str) -> None:
-        if self.number is not None:
-            raise Exception('Cannot set the collector number if it has already been set')
-
-        self.number = cnum
-
-    def sanitise_name(self) -> str:
-        return self.value_dict['name']
-
-    def pow_tuff_to_num(self, val) -> float:
-        if val == '\u221e':
-            return math.inf
-
-        match = re.search(r'(-?[\d.]+)', str(val))
-        if match:
-            return float(match.group())
-
-        return 0
 
 
 class StagedSet:
@@ -318,14 +415,27 @@ class StagedSet:
         for card in self.value_dict['cards']:
             self.add_card(card)
 
-    def add_card(self, card: dict) -> None:
+
+    def add_card(self, card: dict):
+        """
+        Adds a card to this set
+        :param card: The card data dictionary to add
+        """
         staged_card = StagedCard(card)
         self.staged_cards.append(staged_card)
 
     def get_cards(self) -> List[StagedCard]:
+        """
+        Gets the cards in this set
+        :return:
+        """
         return sorted(self.staged_cards)
 
     def get_code(self) -> str:
+        """
+        Gets the code of this set
+        :return:
+        """
         return self.code
 
     def get_release_date(self) -> Optional[datetime.date]:
@@ -350,12 +460,24 @@ class StagedSet:
         return self.value_dict.get('type')
 
     def get_block(self) -> str:
+        """
+        Gets the name of the block for this set
+        :return:
+        """
         return self.value_dict.get('block')
 
     def has_block(self) -> bool:
+        """
+        Gets whether this set has a block or not
+        :return:
+        """
         return 'block' in self.value_dict
 
     def get_keyrune_code(self) -> str:
+        """
+        Gets the code to be used for keyrune set symbols
+        :return:
+        """
         mappings = {
             # Generic M Symbol
             'PWOR': 'pmtg1',

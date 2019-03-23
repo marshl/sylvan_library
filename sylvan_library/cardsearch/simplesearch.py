@@ -1,7 +1,7 @@
 """
 The module for the simple search form
 """
-from cardsearch.base_search import BaseSearch
+from cardsearch.base_search import BaseSearch, create_colour_param
 
 from cardsearch.parameters import (
     OrParam,
@@ -15,6 +15,7 @@ from cardsearch.parameters import (
 )
 
 
+# pylint: disable=too-many-instance-attributes
 class SimpleSearch(BaseSearch):
     """
     A simple flat search
@@ -35,6 +36,9 @@ class SimpleSearch(BaseSearch):
         self.card_type = False
         self.sort_order = None
 
+    def get_preferred_set(self):
+        return None
+
     def build_parameters(self):
 
         root_param = self.root_parameter
@@ -53,10 +57,10 @@ class SimpleSearch(BaseSearch):
 
         if self.colours:
             self.root_parameter.add_parameter(
-                self.create_colour_param(self.colours,
-                                         CardColourParam,
-                                         match_colours=self.match_colours,
-                                         exclude_colours=self.exclude_colours)
+                create_colour_param(self.colours,
+                                    CardColourParam,
+                                    match_colours=self.match_colours,
+                                    exclude_colours=self.exclude_colours)
             )
 
         if self.set:
@@ -67,4 +71,3 @@ class SimpleSearch(BaseSearch):
 
         if self.card_type:
             root_param.add_parameter(CardTypeParam(self.card_type))
-

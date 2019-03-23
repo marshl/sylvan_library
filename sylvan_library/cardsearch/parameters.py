@@ -1,6 +1,8 @@
 """
 The module for all search parameters
 """
+# pylint: disable=too-few-public-methods
+
 import logging
 from django.db.models.query import Q, F
 from django.db.models.functions import Concat
@@ -37,6 +39,10 @@ class CardSearchParam:
         self.child_parameters = list()
 
     def query(self) -> Q:
+        """
+        Returns the query of this parameter and all child parameters
+        :return:
+        """
         raise NotImplementedError('Please implement this method')
 
 
@@ -51,6 +57,11 @@ class BranchParam(CardSearchParam):
         self.child_parameters = list()
 
     def add_parameter(self, param: CardSearchParam):
+        """
+        Adds a child parameter to this node
+        :param param: The child to add
+        :return:
+        """
         self.child_parameters.append(param)
         return param
 
@@ -69,13 +80,13 @@ class AndParam(BranchParam):
             logger.info('No child parameters found, returning empty set')
             return Q()
 
-        q = Q()
+        query = Q()
         for child in self.child_parameters:
-            q.add(child.query(), Q.AND)
+            query.add(child.query(), Q.AND)
 
         if self.inverse:
-            return ~q
-        return q
+            return ~query
+        return query
 
 
 class OrParam(BranchParam):
@@ -92,11 +103,11 @@ class OrParam(BranchParam):
             logger.info('No child parameters found,returning empty set')
             return Card.objects.none()
 
-        q = Q()
+        query = Q()
         for child in self.child_parameters:
-            q.add(child.query(), Q.OR)
+            query.add(child.query(), Q.OR)
 
-        return ~q if self.inverse else q
+        return ~query if self.inverse else query
 
 
 class CardNameParam(CardSearchParam):
@@ -282,6 +293,11 @@ class CardNumericalParam(CardSearchParam):
         self.operator = operator
 
     def get_args(self, field: str) -> dict:
+        """
+        Shortcut to generate the Q object parameters for the given field
+        :param field: The card field to compare with
+        :return:
+        """
         return {f'{field}{OPERATOR_MAPPING[self.operator]}': self.number}
 
 
@@ -363,9 +379,17 @@ class CardSortParam:
         self.sort_descending = descending
 
     def get_sort_list(self) -> list:
+        """
+        Gets the sort list taking order into account
+        :return:
+        """
         return ['-' + arg if self.sort_descending else arg for arg in self.get_sort_keys()]
 
     def get_sort_keys(self) -> list:
+        """
+        Gets the list of attributes to be sorted by
+        :return:
+        """
         raise NotImplementedError()
 
 
@@ -375,6 +399,9 @@ class CardNameSortParam(CardSortParam):
     """
 
     def get_sort_keys(self) -> list:
+        """
+        Gets the list of attributes to be sorted by
+        """
         return ['name']
 
 

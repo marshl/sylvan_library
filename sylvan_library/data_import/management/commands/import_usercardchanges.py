@@ -39,7 +39,7 @@ class Command(BaseCommand):
         try:
             self.user = User.objects.get(username=options.get('username')[0])
         except User.DoesNotExist:
-            logger.error('Cannot find user with name "{}"', options.get('username')[0])
+            logger.error('Cannot find user with name "%s"', options.get('username')[0])
             return
 
         self.user.card_changes.all().delete()

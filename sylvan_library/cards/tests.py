@@ -13,7 +13,6 @@ from cards.models import (
     PhysicalCard,
     Rarity,
     Set,
-    UserOwnedCard,
 )
 
 
@@ -64,6 +63,12 @@ def create_test_card_printing(card: Card, set_obj: Set, fields: dict) -> CardPri
 
 
 def create_test_language(name: str, code: str) -> Language:
+    """
+    Creates a test Language object
+    :param name: The name of the language
+    :param code: The language code
+    :return:
+    """
     lang = Language(name=name, code=code)
     lang.full_clean()
     lang.save()
@@ -72,6 +77,12 @@ def create_test_language(name: str, code: str) -> Language:
 
 def create_test_card_printing_language(printing: CardPrinting,
                                        language: Language) -> CardPrintingLanguage:
+    """
+    Creates a dummy CardPrintingLanguage object
+    :param printing: The printing to use
+    :param language: The language to use
+    :return:
+    """
     print_lang = CardPrintingLanguage()
     print_lang.card_printing = printing
     print_lang.language = language
@@ -82,6 +93,11 @@ def create_test_card_printing_language(printing: CardPrinting,
 
 
 def create_test_physical_card(printlang: CardPrintingLanguage) -> PhysicalCard:
+    """
+    Creates a dummy PhysicalCard object for the given printed language
+    :param printlang:
+    :return:
+    """
     physcard = PhysicalCard()
     physcard.layout = 'normal'
     physcard.full_clean()
@@ -125,6 +141,9 @@ def create_test_rarity(name: str, symbol: str) -> Rarity:
 
 
 def create_test_user():
+    """
+    Creates a test user
+    """
     user = User(username='testuser', password='password')
     user.full_clean()
     user.save()
@@ -132,7 +151,14 @@ def create_test_user():
 
 
 class CardOwnershipTestCase(TestCase):
+    """
+    Test cases for card ownership
+    """
+
     def setUp(self):
+        """
+        Sets up the for the unit tests
+        """
         self.user = create_test_user()
         card = create_test_card({'name': 'Bionic Beaver'})
         set_obj = create_test_set('Setty', 'SET', {})
@@ -142,11 +168,17 @@ class CardOwnershipTestCase(TestCase):
         self.physical_card = create_test_physical_card(printlang)
 
     def test_add_card(self):
+        """
+        Tests that adding a card works
+        """
         self.physical_card.apply_user_change(5, self.user)
         ownership = self.physical_card.ownerships.get(owner=self.user)
-        self.assertEquals(ownership.count, 5)
+        self.assertEqual(ownership.count, 5)
 
     def test_subtract_card(self):
+        """
+        Tests that adding a card and then subtracting from it works
+        """
         self.physical_card.apply_user_change(3, self.user)
         ownership = self.physical_card.ownerships.get(owner=self.user)
         self.assertEqual(ownership.count, 3)
@@ -155,6 +187,9 @@ class CardOwnershipTestCase(TestCase):
         self.assertEqual(ownership.count, 1)
 
     def test_remove_card(self):
+        """
+        Tests that a card is removed if it is added and then subtracted from entirely
+        """
         self.physical_card.apply_user_change(3, self.user)
         ownership = self.physical_card.ownerships.get(owner=self.user)
         self.assertEqual(ownership.count, 3)
@@ -162,6 +197,10 @@ class CardOwnershipTestCase(TestCase):
         self.assertFalse(self.physical_card.ownerships.filter(owner=self.user).exists())
 
     def test_overremove_card(self):
+        """
+        Tests that a card is removed correctly if is added and then has a subtraction greater
+        than the number that was added
+        """
         self.physical_card.apply_user_change(3, self.user)
         ownership = self.physical_card.ownerships.get(owner=self.user)
         self.assertEqual(ownership.count, 3)

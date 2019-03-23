@@ -4,7 +4,7 @@ The module for the field search class
 import logging
 from typing import Optional
 
-from cards.models import Card, Set
+from cards.models import Set
 
 from cardsearch.parameters import (
     AndParam,
@@ -22,11 +22,12 @@ from cardsearch.parameters import (
     CardRarityParam,
     CardSetParam,
 )
-from cardsearch.base_search import BaseSearch
+from cardsearch.base_search import BaseSearch, create_colour_param
 
 logger = logging.getLogger('django')
 
 
+# pylint: disable=too-many-instance-attributes
 class FieldSearch(BaseSearch):
     """
     The search form for a series of different fields
@@ -60,8 +61,11 @@ class FieldSearch(BaseSearch):
 
         self.sets = []
 
+    # pylint: disable=too-many-branches
     def build_parameters(self):
-
+        """
+        Constructs the parameter list for this searching object
+        """
         root_param = self.root_parameter
 
         if self.card_name:
@@ -99,18 +103,18 @@ class FieldSearch(BaseSearch):
 
         if self.colours:
             self.root_parameter.add_parameter(
-                self.create_colour_param(self.colours,
-                                         CardColourParam,
-                                         match_colours=self.match_colours_exactly,
-                                         exclude_colours=self.exclude_unselected_colours)
+                create_colour_param(self.colours,
+                                    CardColourParam,
+                                    match_colours=self.match_colours_exactly,
+                                    exclude_colours=self.exclude_unselected_colours)
             )
 
         if self.colour_identities:
             self.root_parameter.add_parameter(
-                self.create_colour_param(self.colour_identities,
-                                         CardColourIdentityParam,
-                                         match_colours=self.match_colour_identities_exactly,
-                                         exclude_colours=self.exclude_unselected_colour_identities)
+                create_colour_param(self.colour_identities,
+                                    CardColourIdentityParam,
+                                    match_colours=self.match_colour_identities_exactly,
+                                    exclude_colours=self.exclude_unselected_colour_identities)
             )
 
         if self.rarities:

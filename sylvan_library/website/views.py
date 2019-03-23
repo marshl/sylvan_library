@@ -18,7 +18,7 @@ from cards.models import (
     UserCardChange,
     UserOwnedCard,
 )
-from website.forms import SearchForm, NameSearchForm, ChangeCardOwnershipForm
+from website.forms import FieldSearchForm, NameSearchForm, ChangeCardOwnershipForm
 
 logger = logging.getLogger('django')
 
@@ -91,18 +91,23 @@ def random_card(request) -> HttpResponse:
     """
     card = random.choice(Card.objects.all())
 
-    return HttpResponseRedirect('../card/{0}'.format(card.id))
+    return HttpResponseRedirect(f'../card/{card.id}')
 
 
 def name_search(request) -> HttpResponse:
+    """
+    The view for when a user searches by card name
+    :param request: The user's request
+    :return: The HTTP Response
+    """
     name_form = NameSearchForm(request.GET)
-    search_form = SearchForm()
+    search_form = FieldSearchForm()
     search = name_form.get_search()
     return render(request, 'website/simple_search.html', {
         'name_form': name_form, 'form': search_form, 'results': search.results,
         'result_count': search.paginator.count,
         'page': search.page,
-        'page_info': search.get_page_info(name_form.get_page_number(), 3)})
+        'page_buttons': search.get_page_buttons(name_form.get_page_number(), 3)})
 
 
 def simple_search(request) -> HttpResponse:
@@ -111,14 +116,14 @@ def simple_search(request) -> HttpResponse:
     :param request: The user's request
     :return: The HTTP Response
     """
-    form = SearchForm(request.GET)
+    form = FieldSearchForm(request.GET)
     search = form.get_field_search()
 
     return render(request, 'website/simple_search.html', {
         'form': form, 'results': search.results,
         'result_count': search.paginator.count,
         'page': search.page,
-        'page_info': search.get_page_info(form.get_page_number(), 3)})
+        'page_buttons': search.get_page_buttons(form.get_page_number(), 3)})
 
 
 # pylint: disable=unused-argument, missing-docstring

@@ -52,10 +52,33 @@ class ChangeCardOwnershipForm(forms.Form):
         self.fields['printed_language'].choices = choices
 
 
-class NameSearchForm(forms.Form):
+class SearchForm(forms.Form):
+    """
+    The base search form
+    """
+
+    def get_page_number(self) -> int:
+        """
+        Gets the current page number of the results
+        :return: The current page number if it exists, otherwise the first page
+        """
+        try:
+            return int(self.data.get('page'))
+        except (TypeError, ValueError):
+            return 1
+
+
+class NameSearchForm(SearchForm):
+    """
+    The search form for searching only bu the card's name
+    """
     card_name = forms.CharField(required=False)
 
     def get_search(self) -> NameSearch:
+        """
+        Gets the search object using the data from this form
+        :return:
+        """
         self.full_clean()
         search = NameSearch()
         search.card_name = self.data.get('card_name')
@@ -63,14 +86,8 @@ class NameSearchForm(forms.Form):
         search.search(self.get_page_number())
         return search
 
-    def get_page_number(self) -> int:
-        try:
-            return int(self.data.get('page'))
-        except (TypeError, ValueError):
-            return 1
 
-
-class SearchForm(forms.Form):
+class FieldSearchForm(SearchForm):
     """
     The primary search form
     """
@@ -155,13 +172,11 @@ class SearchForm(forms.Form):
         """
         return any(field.data for key, field in self.rarity_fields().items())
 
-    def get_page_number(self) -> int:
-        try:
-            return int(self.data.get('page'))
-        except (TypeError, ValueError):
-            return 1
-
     def get_field_search(self) -> FieldSearch:
+        """
+        Generates a search object using the contents of this form
+        :return: A populated FieldSearch
+        """
         self.full_clean()
 
         search = FieldSearch()

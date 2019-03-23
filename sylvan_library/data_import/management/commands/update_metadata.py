@@ -1,6 +1,7 @@
 """
 Module for the update_metadata command
 """
+import json
 import logging
 
 from django.db import transaction
@@ -19,13 +20,23 @@ from data_import.management.data_import_command import DataImportCommand
 logger = logging.getLogger('django')
 
 
+def import_json(file_path: str) -> dict:
+    """
+    Imports data from a json file and returns the dict
+    :param file_path: The file to read
+    :return: The dict representation of the file
+    """
+    with open(file_path, 'r', encoding="utf8") as json_file:
+        return json.load(json_file, encoding='UTF-8')
+
+
 class Command(DataImportCommand):
     """
     The command for updating all metadata in the database
     (data that is stored in external files, and not in mtgjson)
     """
-    help = """The command for updating all metadata in the database 
-              (data that is stored in external files, and not in mtgjson)"""
+    help = "The command for updating all metadata in the database " \
+           "(data that is stored in external files, and not in mtgjson)"
 
     def handle(self, *args, **options):
         with transaction.atomic():
@@ -37,9 +48,12 @@ class Command(DataImportCommand):
         self.log_stats()
 
     def update_colours(self):
+        """
+        Updates all colours from file
+        """
         logger.info('Updating colour list')
 
-        for colour in self.import_json(COLOUR_JSON_PATH):
+        for colour in import_json(COLOUR_JSON_PATH):
             colour_obj = Colour.objects.filter(symbol=colour['symbol']).first()
             if colour_obj is not None:
                 logger.info('Updating existing colour %s', colour_obj)
@@ -55,10 +69,12 @@ class Command(DataImportCommand):
                 self.increment_updated('Colour')
 
     def update_rarities(self):
-
+        """
+        Updates all rarities from file
+        """
         logger.info('Updating rarity list')
 
-        for rarity in self.import_json(RARITY_JSON_PATH):
+        for rarity in import_json(RARITY_JSON_PATH):
             rarity_obj = Rarity.objects.filter(symbol=rarity['symbol']).first()
             if rarity_obj is not None:
                 logger.info('Updating existing rarity %s', rarity_obj.name)
@@ -81,10 +97,12 @@ class Command(DataImportCommand):
         logger.info('Rarity update complete')
 
     def update_languages(self):
-
+        """
+        Updates all languages from file
+        """
         logger.info('Updating language list')
 
-        for lang in self.import_json(LANGUAGE_JSON_PATH):
+        for lang in import_json(LANGUAGE_JSON_PATH):
             language_obj = Language.objects.filter(name=lang['name']).first()
             if language_obj is not None:
                 logger.info("Updating language: %s", lang['name'])
@@ -101,10 +119,12 @@ class Command(DataImportCommand):
         logger.info('Language update complete')
 
     def update_formats(self):
-
+        """
+        Updates all formats from file
+        """
         logger.info('Updating format list')
 
-        for fmt in self.import_json(FORMAT_JSON_PATH):
+        for fmt in import_json(FORMAT_JSON_PATH):
             try:
                 format_obj = Format.objects.get(code=fmt['code'])
                 self.increment_updated('Format')

@@ -4,15 +4,18 @@ Module for the verify_database command
 import math
 import sys
 import traceback
+from typing import Optional
 
 from django.core.management.base import BaseCommand
 from django.db.models import Count
+from django.db import models
 
 from cards.models import (
     Block,
     Card,
     CardPrinting,
     Language,
+    PhysicalCard,
     Rarity,
     Set,
 )
@@ -28,15 +31,6 @@ class Command(BaseCommand):
     Note that some of these tests may fail occasionally, probably due to changes in the API.
     """
     help = 'Verifies that database update was successful'
-
-    class VerificationFailure:
-        """
-        The class for a failed verification, including the stack trace (if an exception was raised)
-        """
-
-        def __init__(self, message, stack_trace):
-            self.message = message
-            self.stack_trace = stack_trace
 
     def __init__(self):
         super().__init__()
@@ -57,9 +51,12 @@ class Command(BaseCommand):
         print(f'{self.successful_tests} Successful')
         print(f'{self.failed_tests} Failed)')
         for error in self.error_messages:
-            print(error.message)
+            print(error['message'])
 
     def test_blocks(self):
+        """
+        Tests the properties of various blocks
+        """
         self.assert_true(Block.objects.filter(name='Ice Age').exists(),
                          'Ice Age block should exist')
         self.assert_true(Block.objects.filter(name='Ravnica').exists(),
@@ -79,6 +76,9 @@ class Command(BaseCommand):
                          "Amonkhet blockshould have 5 sets")
 
     def test_sets(self):
+        """
+        Tests the properties of various sets
+        """
         self.assert_true(Set.objects.get(code='ONS').block.name == 'Onslaught',
                          'Onslaught should be in the Onslaught block')
         self.assert_true(Set.objects.get(code='WTH').block.name == 'Mirage',
@@ -87,6 +87,9 @@ class Command(BaseCommand):
                          'Coldsnap should be in the Ice Age block')
 
     def test_rarities(self):
+        """
+        Tests the properties of various rarities
+        """
         self.assert_true(Rarity.objects.filter(symbol='R').exists(), 'The rare rarity should exist')
 
         self.assert_true(
@@ -95,11 +98,35 @@ class Command(BaseCommand):
             'Common rarity should be displayed before uncommon rarity')
 
     def test_card_printings(self):
+        """
+        Tests that every card should have a printing
+        """
         self.assert_true(Card.objects.annotate(printing_count=Count('printings')).filter(
             printing_count=0).count() == 0,
                          'There should be at least one printing for every card')
 
+    def test_minimum_printed_languages(self):
+        """
+        Tests that every card has a printed language
+        """
+        self.assert_true(
+            CardPrinting.objects.annotate(printlang_count=Count('printed_languages')).filter(
+                printlang_count=0).count() == 0,
+            'There should be at least one printed language for each printing')
+
+    def test_minimum_physical_cards(self):
+        """
+        Tests that every physical card has at least one printed language
+        """
+        self.assert_true(
+            PhysicalCard.objects.annotate(printlang_count=Count('printed_languages')).filter(
+                printlang_count=0).count() == 0,
+            'There should be at least one printed language for each physical card')
+
     def test_card_name(self):
+        """
+        Test that cards of various names exist
+        """
         # Normal card
         self.assert_card_exists('Animate Artifact')
 
@@ -117,11 +144,16 @@ class Command(BaseCommand):
 
         # Fip card
         self.assert_card_exists('Homura, Human Ascendant')
+        self.assert_card_exists('Homura\'s Essence')
 
         # Negative tests
         self.assert_card_not_exists('Æther Charge')
 
     def test_card_cost(self):
+        """
+        Tests tje cost of various Card objects
+        :return:
+        """
         # Expensive card
         self.assert_card_cost_eq('Progenitus', '{W}{W}{U}{U}{B}{B}{R}{R}{G}{G}')
 
@@ -156,6 +188,10 @@ class Command(BaseCommand):
         self.assert_card_cost_eq('Birthing Pod', '{3}{G/P}')
 
     def test_card_cmc(self):
+        """
+        Tests the converted mana costs of various cards
+        :return:
+        """
         # Normal cards
         self.assert_card_cmc_eq('Tarmogoyf', 2)
         self.assert_card_cmc_eq('Black Lotus', 0)
@@ -204,7 +240,10 @@ class Command(BaseCommand):
         # Flip card
         self.assert_card_cmc_eq('Homura\'s Essence', 6)
 
-    def test_card_color(self):
+    def test_card_colour(self):
+        """
+        Tests the colour of various Card objects
+        """
         wubrg = Card.colour_flags.white | Card.colour_flags.blue | \
                 Card.colour_flags.black | Card.colour_flags.red | Card.colour_flags.green
 
@@ -249,6 +288,10 @@ class Command(BaseCommand):
         # Normal cards
 
     def test_card_colour_identity(self):
+        """
+        Tests the colour identity of various Cards
+        :return:
+        """
         wubrg = Card.colour_flags.white | Card.colour_flags.blue | \
                 Card.colour_flags.black | Card.colour_flags.red | Card.colour_flags.green
 
@@ -289,6 +332,9 @@ class Command(BaseCommand):
         self.assert_card_colour_identity_eq('Brisela, Voice of Nightmares', Card.colour_flags.white)
 
     def test_card_colour_count(self):
+        """
+        Tests the colour count of various cards
+        """
         # Normal cards
         self.assert_card_colour_count_eq('Birds of Paradise', 1)
         self.assert_card_colour_count_eq('Edgewalker', 2)
@@ -306,6 +352,9 @@ class Command(BaseCommand):
         self.assert_card_colour_count_eq('Dance, Pathetic Marionette', 0)
 
     def test_card_type(self):
+        """
+        Test the type of various cards
+        """
         self.assert_card_type_eq('Kird Ape', 'Creature')
         self.assert_card_type_eq('Forest', 'Basic Land')
         self.assert_card_type_eq('Masticore', 'Artifact Creature')
@@ -320,6 +369,9 @@ class Command(BaseCommand):
         self.assert_card_type_eq('Nameless Race', 'Creature')
 
     def test_card_subype(self):
+        """
+        Tests the subtype of various cards
+        """
         # Single subtype
         self.assert_card_subtype_eq('Screaming Seahawk', 'Bird')
         self.assert_card_subtype_eq('Mistform Ultimus', 'Illusion')
@@ -335,6 +387,9 @@ class Command(BaseCommand):
         self.assert_card_subtype_eq('Spellbook', '')
 
     def test_card_power(self):
+        """
+        Test the stringy power of various cards
+        """
         # Normal Cards
         self.assert_card_power_eq('Birds of Paradise', '0')
         self.assert_card_power_eq('Dryad Arbor', '1')
@@ -362,6 +417,9 @@ class Command(BaseCommand):
         self.assert_card_power_eq('Gratuitous Violence', None)
 
     def test_card_num_power(self):
+        """
+        Tests the numerical power of various cards
+        """
         # Normal creatures
         self.assert_card_num_power_eq('Stone Golem', 4)
         self.assert_card_num_power_eq('Progenitus', 10)
@@ -387,6 +445,9 @@ class Command(BaseCommand):
         self.assert_card_num_power_eq('Haunting Apparition', 1)
 
     def test_card_toughness(self):
+        """
+        Test the stringy toughness of various cards
+        """
         # Normal Cards
         self.assert_card_toughness_eq('Obsianus Golem', '6')
         self.assert_card_toughness_eq('Dryad Arbor', '1')
@@ -413,6 +474,9 @@ class Command(BaseCommand):
         self.assert_card_toughness_eq('Krosa', None)
 
     def test_card_num_toughness(self):
+        """
+        Test the numerical toughness of various cards
+        """
         # Normal Cards
         self.assert_card_num_toughness_eq('Wall of Fire', 5)
         self.assert_card_num_toughness_eq('Daru Lancer', 4)
@@ -433,6 +497,9 @@ class Command(BaseCommand):
         self.assert_card_num_toughness_eq('S.N.O.T.', 0)
 
     def test_loyalty(self):
+        """
+        Test the loyalty of various cards
+        """
         # Planeswalkers
         self.assert_card_loyalty_eq('Ajani Goldmane', '4')
 
@@ -446,6 +513,9 @@ class Command(BaseCommand):
         self.assert_card_loyalty_eq('Urza', None)
 
     def test_card_num_loyalty(self):
+        """
+        Tests the numerical loyalty of various cards
+        """
         # Planeswalkers
         self.assert_card_num_loyalty_eq('Ajani Goldmane', 4)
 
@@ -459,6 +529,10 @@ class Command(BaseCommand):
         self.assert_card_num_loyalty_eq('Urza', 0)
 
     def test_card_rules_text(self):
+        """
+        Tests the rules texts
+        :return:
+        """
         self.assert_card_rules_eq('Grizzly Bears', None)
         self.assert_card_rules_eq('Elite Vanguard', None)
         self.assert_card_rules_eq('Forest', '({T}: Add {G}.)')
@@ -480,6 +554,9 @@ class Command(BaseCommand):
             "Spend this mana only to cast the last card exiled with Ice Cauldron.")
 
     def test_card_layouts(self):
+        """
+        Tests the layouts of various Card objects
+        """
         self.assert_card_layout_eq('Glory Seeker', 'normal')
         self.assert_card_layout_eq('Hit', 'split')
         self.assert_card_layout_eq('Run', 'split')
@@ -504,6 +581,10 @@ class Command(BaseCommand):
         self.assert_card_layout_eq('Brisela, Voice of Nightmares', 'meld')
 
     def test_cardprinting_flavour(self):
+        """
+        Tests the flavour texts of various CardPrintings
+        :return:
+        """
         self.assert_cardprinting_flavour_eq(
             'Goblin Chieftain', 'M10',
             '"We are goblinkind, heirs to the mountain empires of chieftains past. ' +
@@ -525,6 +606,10 @@ class Command(BaseCommand):
         self.assert_cardprinting_flavour_eq('Magma Mine', 'VIS', 'BOOM!')
 
     def test_cardprinting_artist(self):
+        """
+        Tests the properties of CardPrinting artists
+        :return:
+        """
         # Misprint
         self.assert_cardprinting_artist_eq('Animate Artifact', 'LEA', 'Douglas Shuler')
         self.assert_cardprinting_artist_eq('Benalish Hero', 'LEB', 'Douglas Shuler')
@@ -541,7 +626,9 @@ class Command(BaseCommand):
         self.assert_cardprinting_artist_eq('Atinlay Igpay', 'UNH', 'Evkay Alkerway')
 
     def test_cardprinting_collectornum(self):
-
+        """
+        Tests the properties of CardPrinting collector numbers
+        """
         brothers_yamazaki = Card.objects.get(name='Brothers Yamazaki')
         kamigawa = Set.objects.get(name='Champions of Kamigawa')
         brother_a = CardPrinting.objects.get(card=brothers_yamazaki, set=kamigawa,
@@ -560,6 +647,9 @@ class Command(BaseCommand):
                          'The collector numbers for Initiates of the Ebon Hand are incorrect')
 
     def test_physical_cards(self):
+        """
+        Tests the properties of PhysicalCard objects
+        """
         gisela = Card.objects.get(name='Gisela, the Broken Blade')
         bruna = Card.objects.get(name='Bruna, the Fading Light')
         brisela = Card.objects.get(name='Brisela, Voice of Nightmares')
@@ -578,63 +668,152 @@ class Command(BaseCommand):
                          'Brisela should have two physical cards')
 
     def assert_card_exists(self, card_name: str):
+        """
+        Asserts that a card with the given name does exist
+        :param card_name: The name of the card to test
+        """
         self.assert_true(Card.objects.filter(name=card_name).exists(), f'{card_name} should exist')
 
     def assert_card_not_exists(self, card_name: str):
+        """
+        Assert that a card with the given name does not exist
+        :param card_name: The name of the card to test
+        """
         self.assert_false(Card.objects.filter(name=card_name).exists(),
                           f'{card_name} should not exist')
 
-    def assert_card_cost_eq(self, card_name: str, cost: str):
-        self.assert_card_name_attr_eq(card_name, 'cost', cost)
+    def assert_card_cost_eq(self, card_name: str, cost: Optional[str]):
+        """
+        Asserts that the given card has the given cost
+        :param card_name: The name of the card to test
+        :param cost: The expected cost of the card
+        """
+        self.assert_card_attr_eq(card_name, 'cost', cost)
 
-    def assert_card_cmc_eq(self, card_name: str, cmc: int):
-        self.assert_card_name_attr_eq(card_name, 'cmc', cmc)
+    def assert_card_cmc_eq(self, card_name: str, cmc: float):
+        """
+        Asserts that the given card has the given converted man cost
+        :param card_name: The name of the card to test
+        :param cmc: The expected converted mana cost of the card
+        """
+        self.assert_card_attr_eq(card_name, 'cmc', cmc)
 
     def assert_card_colour_eq(self, card_name: str, colours: int):
+        """
+        Asserts that the card with the given name has the given colours
+        :param card_name: The name of the card to test
+        :param colours: the expected colours
+        """
         actual = int(Card.objects.get(name=card_name).colour_flags)
         self.assert_true(colours == actual,
                          f'{card_name}.colours was expected to be "{colours}", actually "{actual}"')
 
     def assert_card_colour_identity_eq(self, card_name: str, colour_identity: int):
+        """
+        Asserts that the card with the given name has the given colour identity
+        :param card_name: The name of the card to test
+        :param colour_identity: the expected colour_identity
+        """
         actual = int(Card.objects.get(name=card_name).colour_identity_flags)
         self.assert_true(colour_identity == actual,
                          f'{card_name}.colour_identity_flags was expected ' +
                          f'to be "{colour_identity}", actually "{actual}"')
 
-    def assert_card_colour_count_eq(self, card_name: str, colour_count):
-        self.assert_card_name_attr_eq(card_name, 'colour_count', colour_count)
+    def assert_card_colour_count_eq(self, card_name: str, colour_count: int):
+        """
+        Asserts that the given card has the given number of colours
+        :param card_name: The name of the card to test
+        :param colour_count: The number of colours the card is expected to have
+        """
+        self.assert_card_attr_eq(card_name, 'colour_count', colour_count)
 
-    def assert_card_type_eq(self, card_name: str, card_type):
-        self.assert_card_name_attr_eq(card_name, 'type', card_type)
+    def assert_card_type_eq(self, card_name: str, card_type: str):
+        """
+        Asserts that the given card has the given type
+        :param card_name: The name of the card to test
+        :param card_type: The type that the card is expected to have
+        """
+        self.assert_card_attr_eq(card_name, 'type', card_type)
 
-    def assert_card_subtype_eq(self, card_name: str, subtype):
-        self.assert_card_name_attr_eq(card_name, 'subtype', subtype)
+    def assert_card_subtype_eq(self, card_name: str, subtype: str):
+        """
+        Asserts the given card has the given subtype
+        :param card_name: The name of the card to test
+        :param subtype: The subtype the card is expected to have
+        """
+        self.assert_card_attr_eq(card_name, 'subtype', subtype)
 
-    def assert_card_power_eq(self, card_name: str, power):
-        self.assert_card_name_attr_eq(card_name, 'power', power)
+    def assert_card_power_eq(self, card_name: str, power: Optional[str]):
+        """
+        Asserts that the given card has the given power
+        :param card_name: The name of the card to test
+        :param power: The power that the card should have
+        """
+        self.assert_card_attr_eq(card_name, 'power', power)
 
-    def assert_card_num_power_eq(self, card_name: str, num_power):
-        self.assert_card_name_attr_eq(card_name, 'num_power', num_power)
+    def assert_card_num_power_eq(self, card_name: str, num_power: int):
+        """
+        Asserts that the given card has the given numerical power
+        :param card_name: The card's name to test
+        :param num_power: The numerical power that the card should have
+        """
+        self.assert_card_attr_eq(card_name, 'num_power', num_power)
 
-    def assert_card_toughness_eq(self, card_name: str, toughness):
-        self.assert_card_name_attr_eq(card_name, 'toughness', toughness)
+    def assert_card_toughness_eq(self, card_name: str, toughness: Optional[str]):
+        """
+        Asserts that the card with the given name has the given toughness
+        :param card_name: The name of the card to test
+        :param toughness: the expected toughness
+        """
+        self.assert_card_attr_eq(card_name, 'toughness', toughness)
 
-    def assert_card_num_toughness_eq(self, card_name: str, num_toughness):
-        self.assert_card_name_attr_eq(card_name, 'num_toughness', num_toughness)
+    def assert_card_num_toughness_eq(self, card_name: str, num_toughness: float):
+        """
+        Asserts that the card with the given name has the given numerical toughness
+        :param card_name: The name of the card to test
+        :param num_toughness: the expected numerical toughness
+        """
+        self.assert_card_attr_eq(card_name, 'num_toughness', num_toughness)
 
-    def assert_card_loyalty_eq(self, card_name: str, loyalty: str):
-        self.assert_card_name_attr_eq(card_name, 'loyalty', loyalty)
+    def assert_card_loyalty_eq(self, card_name: str, loyalty: Optional[str]):
+        """
+        Asserts that the card with the given name has the given loyalty
+        :param card_name: The name of the card to test
+        :param loyalty: the expected loyalty
+        """
+        self.assert_card_attr_eq(card_name, 'loyalty', loyalty)
 
     def assert_card_num_loyalty_eq(self, card_name: str, num_loyalty: int):
-        self.assert_card_name_attr_eq(card_name, 'num_loyalty', num_loyalty)
+        """
+        Asserts that the card with the given name has the given numerical loyalty
+        :param card_name: The name of the card to test
+        :param num_loyalty: the expected numerical loyalty
+        """
+        self.assert_card_attr_eq(card_name, 'num_loyalty', num_loyalty)
 
-    def assert_card_rules_eq(self, card_name: str, rules_text: str):
-        self.assert_card_name_attr_eq(card_name, 'rules_text', rules_text)
+    def assert_card_rules_eq(self, card_name: str, rules_text: Optional[str]):
+        """
+        Asserts that the card with the given name has the given rules
+        :param card_name: The name of the card to test
+        :param rules_text: the expected rules text
+        """
+        self.assert_card_attr_eq(card_name, 'rules_text', rules_text)
 
     def assert_card_layout_eq(self, card_name: str, layout: str):
-        self.assert_card_name_attr_eq(card_name, 'layout', layout)
+        """
+        Asserts that the card with the given name has the given layout
+        :param card_name: The name of the card to test
+        :param layout: the expected layout
+        """
+        self.assert_card_attr_eq(card_name, 'layout', layout)
 
-    def assert_card_name_attr_eq(self, card_name: str, attr_name: str, attr_value):
+    def assert_card_attr_eq(self, card_name: str, attr_name: str, attr_value):
+        """
+        Asserts that the card with the given name and the given attribute has the expected value
+        :param card_name: The name of the card to test
+        :param attr_name: The attribute to test
+        :param attr_value: The expected value of the attribute
+        """
         if not Card.objects.filter(name=card_name).exists():
             self.assert_true(False, f'Card "{card_name}" could not be found')
             return
@@ -642,18 +821,37 @@ class Command(BaseCommand):
         card = Card.objects.get(name=card_name)
         self.assert_obj_attr_eq(card, attr_name, attr_value)
 
-    def assert_cardprinting_flavour_eq(self, card_name: str, setcode: str, flavour: str):
-        self.assert_cardprinting_name_attr_eq(card_name, setcode, 'flavour_text', flavour)
+    def assert_cardprinting_flavour_eq(self, card_name: str, setcode: str, flavour: Optional[str]):
+        """
+        Asserts that the card printing of the given name and set has the given flavour text
+        :param card_name: The name of the card
+        :param setcode: The set the printing it in
+        :param flavour: The expected flavour text of the printing
+        """
+        self.assert_cardprinting_attr_eq(card_name, setcode, 'flavour_text', flavour)
 
     def assert_cardprinting_artist_eq(self, card_name: str, setcode: str, artist: str):
-        self.assert_cardprinting_name_attr_eq(card_name, setcode, 'artist', artist)
+        """
+        Asserts that the card printing of the given name and set has the given artist
+        :param card_name: The name of the card to test
+        :param setcode: The set the card is in te to test
+        :param artist: The expected artist
+        """
+        self.assert_cardprinting_attr_eq(card_name, setcode, 'artist', artist)
 
-    def assert_cardprinting_name_attr_eq(self, card_name: str, setcode: str, attr_name: str,
-                                         attr_value):
+    def assert_cardprinting_attr_eq(self, card_name: str, setcode: str, attr_name: str,
+                                    attr_value):
+        """
+        Asserts that the card printing of the given name and set has the expected attribute value
+        :param card_name: The name of the card
+        :param setcode: The set of the card
+        :param attr_name: The attribute name
+        :param attr_value: The expected attribute value
+        """
         if not Card.objects.filter(name=card_name).exists() or \
                 not Set.objects.filter(code=setcode).exists() or \
-                not CardPrinting.objects.filter(
-                    card=Card.objects.get(name=card_name), set=Set.objects.get(code=setcode)):
+                not CardPrinting.objects.filter(card=Card.objects.get(name=card_name),
+                                                set=Set.objects.get(code=setcode)):
             self.assert_true(False,
                              f'Card Printing "{card_name}" in "{setcode}" could not be found')
             return
@@ -663,23 +861,39 @@ class Command(BaseCommand):
         cardprinting = CardPrinting.objects.filter(card=card, set=card_set).first()
         self.assert_obj_attr_eq(cardprinting, attr_name, attr_value)
 
-    def assert_obj_attr_eq(self, obj, attr_name: str, expected):
+    def assert_obj_attr_eq(self, obj: models.Model, attr_name: str, expected):
+        """
+        Asserts that the attribute of the given object is equal to the given value
+        :param obj: The object to test
+        :param attr_name: The attribute name of the object
+        :param expected: The expected value of the attribute
+        """
         actual = getattr(obj, attr_name)
         self.assert_true(expected == actual,
                          f'{obj}.{attr_name} was expected to be "{expected}", actually "{actual}"')
 
     def assert_false(self, result: bool, message: str):
+        """
+        Asserts that the given condition is false
+        :param result: The value to test
+        :param message: The message of the test
+        :return:
+        """
         self.assert_true(not result, message)
 
     def assert_true(self, result: bool, message: str):
-
+        """
+        Given a test result, logs the message for that test if it failed
+        :param result: The result of the test
+        :param message: The message of the test
+        """
         if result:
             self.successful_tests += 1
             print('.', end='')
         else:
             self.failed_tests += 1
             print('F', end='')
-            error = self.VerificationFailure(message, ''.join(traceback.format_stack()))
+            error = {'message': message, 'trace': ''.join(traceback.format_stack())}
             self.error_messages.append(error)
 
         sys.stdout.flush()

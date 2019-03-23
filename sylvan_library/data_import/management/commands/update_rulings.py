@@ -2,6 +2,7 @@
 The module for the update_rulings comand
 """
 import logging
+from typing import List
 
 from django.db import transaction
 
@@ -9,6 +10,7 @@ from cards.models import (
     Card,
     CardRuling,
 )
+from data_import.staging import StagedSet
 from data_import.importers import JsonImporter
 from data_import.management.data_import_command import DataImportCommand
 
@@ -32,7 +34,11 @@ class Command(DataImportCommand):
 
         self.log_stats()
 
-    def update_ruling_list(self, staged_sets):
+    def update_ruling_list(self, staged_sets: List[StagedSet]):
+        """
+        Updates all card rulings
+        :param staged_sets: The list of staged sets
+        """
         logger.info('Updating card rulings')
         CardRuling.objects.all().delete()
 
