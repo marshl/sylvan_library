@@ -7,70 +7,53 @@ import re
 from typing import Dict, List, Optional
 from functools import total_ordering
 
-from cards.models import Card
-from cards.colour import ColourUtils
-
-COLOUR_NAME_TO_FLAG = {
-    'white': Card.colour_flags.white,
-    'blue': Card.colour_flags.blue,
-    'black': Card.colour_flags.black,
-    'red': Card.colour_flags.red,
-    'green': Card.colour_flags.green,
-}
-
-COLOUR_CODE_TO_FLAG = {
-    'w': Card.colour_flags.white,
-    'u': Card.colour_flags.blue,
-    'b': Card.colour_flags.black,
-    'r': Card.colour_flags.red,
-    'g': Card.colour_flags.green,
-}
+from cards.models import Colour
 
 COLOUR_TO_SORT_KEY = {
     0: 0,
-    int(Card.colour_flags.white): 1,
-    int(Card.colour_flags.blue): 2,
-    int(Card.colour_flags.black): 3,
-    int(Card.colour_flags.red): 4,
-    int(Card.colour_flags.green): 5,
+    int(Colour.white().bit_value): 1,
+    int(Colour.blue().bit_value): 2,
+    int(Colour.black().bit_value): 3,
+    int(Colour.red().bit_value): 4,
+    int(Colour.green().bit_value): 5,
 
-    int(Card.colour_flags.white | Card.colour_flags.blue): 6,
-    int(Card.colour_flags.blue | Card.colour_flags.black): 7,
-    int(Card.colour_flags.black | Card.colour_flags.red): 8,
-    int(Card.colour_flags.red | Card.colour_flags.green): 9,
-    int(Card.colour_flags.green | Card.colour_flags.white): 10,
+    int(Colour.white().bit_value | Colour.blue().bit_value): 6,
+    int(Colour.blue().bit_value | Colour.black().bit_value): 7,
+    int(Colour.black().bit_value | Colour.red().bit_value): 8,
+    int(Colour.red().bit_value | Colour.green().bit_value): 9,
+    int(Colour.green().bit_value | Colour.white().bit_value): 10,
 
-    int(Card.colour_flags.white | Card.colour_flags.black): 11,
-    int(Card.colour_flags.blue | Card.colour_flags.red): 12,
-    int(Card.colour_flags.black | Card.colour_flags.green): 13,
-    int(Card.colour_flags.red | Card.colour_flags.white): 14,
-    int(Card.colour_flags.green | Card.colour_flags.blue): 15,
+    int(Colour.white().bit_value | Colour.black().bit_value): 11,
+    int(Colour.blue().bit_value | Colour.red().bit_value): 12,
+    int(Colour.black().bit_value | Colour.green().bit_value): 13,
+    int(Colour.red().bit_value | Colour.white().bit_value): 14,
+    int(Colour.green().bit_value | Colour.blue().bit_value): 15,
 
-    int(Card.colour_flags.white | Card.colour_flags.blue | Card.colour_flags.black): 16,
-    int(Card.colour_flags.blue | Card.colour_flags.black | Card.colour_flags.red): 17,
-    int(Card.colour_flags.black | Card.colour_flags.red | Card.colour_flags.green): 18,
-    int(Card.colour_flags.red | Card.colour_flags.green | Card.colour_flags.white): 19,
-    int(Card.colour_flags.green | Card.colour_flags.white | Card.colour_flags.blue): 20,
+    int(Colour.white().bit_value | Colour.blue().bit_value | Colour.black().bit_value): 16,
+    int(Colour.blue().bit_value | Colour.black().bit_value | Colour.red().bit_value): 17,
+    int(Colour.black().bit_value | Colour.red().bit_value | Colour.green().bit_value): 18,
+    int(Colour.red().bit_value | Colour.green().bit_value | Colour.white().bit_value): 19,
+    int(Colour.green().bit_value | Colour.white().bit_value | Colour.blue().bit_value): 20,
 
-    int(Card.colour_flags.white | Card.colour_flags.black | Card.colour_flags.green): 21,
-    int(Card.colour_flags.blue | Card.colour_flags.red | Card.colour_flags.white): 22,
-    int(Card.colour_flags.black | Card.colour_flags.green | Card.colour_flags.blue): 23,
-    int(Card.colour_flags.red | Card.colour_flags.white | Card.colour_flags.black): 24,
-    int(Card.colour_flags.green | Card.colour_flags.blue | Card.colour_flags.red): 25,
+    int(Colour.white().bit_value | Colour.black().bit_value | Colour.green().bit_value): 21,
+    int(Colour.blue().bit_value | Colour.red().bit_value | Colour.white().bit_value): 22,
+    int(Colour.black().bit_value | Colour.green().bit_value | Colour.blue().bit_value): 23,
+    int(Colour.red().bit_value | Colour.white().bit_value | Colour.black().bit_value): 24,
+    int(Colour.green().bit_value | Colour.blue().bit_value | Colour.red().bit_value): 25,
 
-    int(Card.colour_flags.white | Card.colour_flags.blue
-        | Card.colour_flags.black | Card.colour_flags.red): 26,
-    int(Card.colour_flags.blue | Card.colour_flags.black
-        | Card.colour_flags.red | Card.colour_flags.green): 27,
-    int(Card.colour_flags.black | Card.colour_flags.red
-        | Card.colour_flags.green | Card.colour_flags.white): 28,
-    int(Card.colour_flags.red | Card.colour_flags.green
-        | Card.colour_flags.white | Card.colour_flags.blue): 29,
-    int(Card.colour_flags.green | Card.colour_flags.white
-        | Card.colour_flags.blue | Card.colour_flags.black): 30,
+    int(Colour.white().bit_value | Colour.blue().bit_value
+        | Colour.black().bit_value | Colour.red().bit_value): 26,
+    int(Colour.blue().bit_value | Colour.black().bit_value
+        | Colour.red().bit_value | Colour.green().bit_value): 27,
+    int(Colour.black().bit_value | Colour.red().bit_value
+        | Colour.green().bit_value | Colour.white().bit_value): 28,
+    int(Colour.red().bit_value | Colour.green().bit_value
+        | Colour.white().bit_value | Colour.blue().bit_value): 29,
+    int(Colour.green().bit_value | Colour.white().bit_value
+        | Colour.blue().bit_value | Colour.black().bit_value): 30,
 
-    int(Card.colour_flags.white | Card.colour_flags.blue | Card.colour_flags.black
-        | Card.colour_flags.red | Card.colour_flags.green): 31,
+    int(Colour.white().bit_value | Colour.blue().bit_value | Colour.black().bit_value
+        | Colour.red().bit_value | Colour.green().bit_value): 31,
 }
 
 
@@ -128,7 +111,7 @@ class StagedCard:
 
     def get_colour(self) -> int:
         if 'colors' in self.value_dict:
-            return ColourUtils.colour_codes_to_flags(self.value_dict['colors'])
+            return Colour.colour_codes_to_flags(self.value_dict['colors'])
 
         return 0
 
@@ -147,7 +130,7 @@ class StagedCard:
 
     def get_colour_identity(self) -> int:
         if 'colorIdentity' in self.value_dict:
-            return ColourUtils.colour_codes_to_flags(self.value_dict['colorIdentity'])
+            return Colour.colour_codes_to_flags(self.value_dict['colorIdentity'])
 
         return 0
 

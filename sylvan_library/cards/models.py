@@ -10,6 +10,7 @@ import re
 from django.db import models
 from django.contrib.auth.models import User
 from bitfield import BitField
+from typing import List
 
 CARD_LAYOUT_CHOICES = (
     ('normal', 'Normal'),
@@ -114,6 +115,32 @@ class Colour(models.Model):
     @staticmethod
     def green():
         return Colour.objects.get(symbol='G')
+
+    @staticmethod
+    def colour_names_to_flags(colour_names: List[str]) -> int:
+        """
+        Converts a list of colour names into the combined flags of those colours
+        :param colour_names:
+        :return:
+        """
+        flags = 0
+        for colour_name in colour_names:
+            flags |= Colour.objects.get(name__iexact=colour_name).bit_value
+
+        return flags
+
+    @staticmethod
+    def colour_codes_to_flags(colour_codes: List[str]) -> int:
+        """
+        Converts a list of colour codes to the combined flags of those colours
+        :param colour_codes: A list of colour codes (single characters representing the colours)
+        :return: The combined colour flags
+        """
+        flags = 0
+        for symbol in colour_codes:
+            flags |= Colour.objects.get(symbol__iexact=symbol).bit_value
+
+        return flags
 
     def __str__(self):
         return self.name
