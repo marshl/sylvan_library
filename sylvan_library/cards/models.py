@@ -6,11 +6,11 @@ import datetime
 import os
 import random
 import re
+from typing import List
 
 from django.db import models
 from django.contrib.auth.models import User
 from bitfield import BitField
-from typing import List
 
 CARD_LAYOUT_CHOICES = (
     ('normal', 'Normal'),
@@ -97,23 +97,43 @@ class Colour(models.Model):
     bit_value = models.IntegerField(unique=True)
 
     @staticmethod
-    def white():
+    def white() -> 'Colour':
+        """
+        Gets the colour object for white
+        :return:
+        """
         return Colour.objects.get(symbol='W')
 
     @staticmethod
-    def blue():
+    def blue() -> 'Colour':
+        """
+        Gets the colour object for blue
+        :return:
+        """
         return Colour.objects.get(symbol='U')
 
     @staticmethod
-    def black():
+    def black() -> 'Colour':
+        """
+        Gets the colour object for black
+        :return:
+        """
         return Colour.objects.get(symbol='B')
 
     @staticmethod
-    def red():
+    def red() -> 'Colour':
+        """
+        Gets the colour object for red
+        :return:
+        """
         return Colour.objects.get(symbol='R')
 
     @staticmethod
-    def green():
+    def green() -> 'Colour':
+        """
+        Gets the colour object for green
+        :return:
+        """
         return Colour.objects.get(symbol='G')
 
     @staticmethod
@@ -212,10 +232,6 @@ class CardPrinting(models.Model):
     # (e.g. basic lands in Unglued)
     border_colour = models.CharField(max_length=10, blank=True, null=True)
 
-    # The date this card was released. This is only set for promo cards.
-    # The date may not be accurate to an exact day and month, thus only a partial date may be set
-    release_date = models.DateField(blank=True, null=True)
-
     set = models.ForeignKey(Set, related_name='card_printings', on_delete=models.CASCADE)
     card = models.ForeignKey(Card, related_name='printings', on_delete=models.CASCADE)
     rarity = models.ForeignKey(Rarity, related_name='card_printings', on_delete=models.CASCADE)
@@ -236,7 +252,6 @@ class CardPrinting(models.Model):
     def __str__(self):
         return f'{self.card} in {self.set}'
 
-
 class PhysicalCard(models.Model):
     """
     Model for joining one or more CardPrintingLanguages into a single card that can be owned
@@ -246,7 +261,7 @@ class PhysicalCard(models.Model):
     def __str__(self):
         return '//'.join([str(x) for x in self.printed_languages.all()])
 
-    def get_simple_string(self):
+    def get_simple_string(self) -> str:
         """
         Gets a simple representation of this Physical Card
         :return:
@@ -259,14 +274,14 @@ class PhysicalCard(models.Model):
                + '//'.join(p.card_printing.card.name for p in self.printed_languages.all()) \
                + ' in ' + base.card_printing.set.name
 
-    def get_display_for_adding(self):
+    def get_display_for_adding(self) -> str:
         """
-        Gets a simple represntation of this Physical card without card names
+        Gets a simple representation of this Physical card without card names
         :return:
         """
         if self.printed_languages.count() == 1:
-            pl = self.printed_languages.first()
-            return f"{pl.language} {pl.card_printing.set}"
+            printlang = self.printed_languages.first()
+            return f"{printlang.language} {printlang.card_printing.set}"
 
         return self.get_simple_string()
 
@@ -330,7 +345,11 @@ class CardPrintingLanguage(models.Model):
     def __str__(self):
         return f'{self.language} {self.card_printing}'
 
-    def get_image_path(self):
+    def get_image_path(self) -> str:
+        """
+        Gets the relative file path of this prined language
+        :return:
+        """
         if self.language.code is None:
             return None
         image_name = re.sub(r'\W', 's', self.card_printing.number)
@@ -471,6 +490,11 @@ class Language(models.Model):
 
     @staticmethod
     def english():
+        """
+        Gets the cached english language object (English is the default language, and it used
+        quite a lot, so this reduces the number of queries made quite a bit)
+        :return:
+        """
         if not Language.ENGLISH:
             Language.ENGLISH = Language.objects.get(name='English')
 

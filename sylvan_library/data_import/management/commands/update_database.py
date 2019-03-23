@@ -332,7 +332,6 @@ class Command(DataImportCommand):
         printing.json_id = staged_card.get_json_id()
         printing.watermark = staged_card.get_watermark()
         printing.border_colour = staged_card.get_border_colour()
-        printing.release_date = staged_card.get_release_date()
         printing.is_starter = staged_card.is_starter_printing()
         printing.is_timeshifted = staged_card.is_timeshifted()
         printing.scryfall_id = staged_card.get_scryfall_id()

@@ -135,27 +135,51 @@ class StagedCard:
         return 0
 
     def get_colour_count(self) -> int:
+        """
+        Gets the number of colours of the card
+        :return:
+        """
         return bin(self.get_colour()).count('1')
 
     def get_power(self) -> str:
+        """
+        Gets the string representation of the power of the card
+        :return:
+        """
         return self.value_dict.get('power')
 
     def get_toughness(self) -> str:
+        """
+        Gets the string represeentation of the toughness of the card
+        :return:
+        """
         return self.value_dict.get('toughness')
 
     def get_num_power(self) -> float:
+        """
+        Gets the numerical representation of the power of the card
+        :return:
+        """
         if 'power' in self.value_dict:
             return self.pow_tuff_to_num(self.value_dict['power'])
 
         return 0
 
     def get_num_toughness(self) -> float:
+        """
+        Gets the numerical representation of the toughness of the card
+        :return:
+        """
         if 'toughness' in self.value_dict:
             return self.pow_tuff_to_num(self.value_dict['toughness'])
 
         return 0
 
     def get_loyalty(self) -> str:
+        """
+        Gets the string representation of the loyalty of the card
+        :return:
+        """
         return self.value_dict.get('loyalty')
 
     def get_num_loyalty(self) -> float:
@@ -246,16 +270,6 @@ class StagedCard:
     def get_scryfall_id(self) -> str:
         return self.value_dict.get('scryfallId')
 
-    def get_release_date(self) -> Optional[datetime.date]:
-        if 'releaseDate' in self.value_dict:
-            date_string = self.value_dict['releaseDate']
-            try:
-                return datetime.datetime.strptime(date_string, '%Y-%m-%d')
-            except ValueError:
-                return datetime.datetime.strptime(date_string, '%Y-%m')
-
-        return None
-
     def is_reserved(self) -> bool:
         return 'reserved' in self.value_dict and self.value_dict['reserved']
 
@@ -315,12 +329,24 @@ class StagedSet:
         return self.code
 
     def get_release_date(self) -> Optional[datetime.date]:
+        """
+        Gets the date that this set was released
+        :return:
+        """
         return self.value_dict['releaseDate']
 
     def get_name(self) -> str:
+        """
+        Gets the name of the set
+        :return:
+        """
         return self.value_dict['name']
 
     def get_type(self) -> str:
+        """
+        Gets the type of the set
+        :return:
+        """
         return self.value_dict.get('type')
 
     def get_block(self) -> str:
