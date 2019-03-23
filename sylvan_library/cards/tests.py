@@ -1,12 +1,19 @@
 """
 Unit tests for the cards module
 """
+from django.test import TestCase
+
+from django.contrib.auth.models import User
 
 from cards.models import (
     Card,
     CardPrinting,
+    CardPrintingLanguage,
+    Language,
+    PhysicalCard,
     Rarity,
     Set,
+    UserOwnedCard,
 )
 
 
@@ -56,6 +63,35 @@ def create_test_card_printing(card: Card, set_obj: Set, fields: dict) -> CardPri
     return printing
 
 
+def create_test_language(name: str, code: str) -> Language:
+    lang = Language(name=name, code=code)
+    lang.full_clean()
+    lang.save()
+    return lang
+
+
+def create_test_card_printing_language(printing: CardPrinting,
+                                       language: Language) -> CardPrintingLanguage:
+    print_lang = CardPrintingLanguage()
+    print_lang.card_printing = printing
+    print_lang.language = language
+    print_lang.card_name = printing.card.name
+    print_lang.full_clean()
+    print_lang.save()
+    return print_lang
+
+
+def create_test_physical_card(printlang: CardPrintingLanguage) -> PhysicalCard:
+    physcard = PhysicalCard()
+    physcard.layout = 'normal'
+    physcard.full_clean()
+    physcard.save()
+    physcard.printed_languages.add(printlang)
+    physcard.full_clean()
+    physcard.save()
+    return physcard
+
+
 def create_test_set(name: str, setcode: str, fields: dict) -> Set:
     """
     Creates a test Set with the input values
@@ -86,3 +122,48 @@ def create_test_rarity(name: str, symbol: str) -> Rarity:
     rarity.display_order = 1
     rarity.save()
     return rarity
+
+
+def create_test_user():
+    user = User(username='testuser', password='password')
+    user.full_clean()
+    user.save()
+    return user
+
+
+class CardOwnershipTestCase(TestCase):
+    def setUp(self):
+        self.user = create_test_user()
+        card = create_test_card({'name': 'Bionic Beaver'})
+        set_obj = create_test_set('Setty', 'SET', {})
+        printing = create_test_card_printing(card, set_obj, {})
+        lang = create_test_language('English', 'en')
+        printlang = create_test_card_printing_language(printing, lang)
+        self.physical_card = create_test_physical_card(printlang)
+
+    def test_add_card(self):
+        self.physical_card.apply_user_change(5, self.user)
+        ownership = self.physical_card.ownerships.get(owner=self.user)
+        self.assertEquals(ownership.count, 5)
+
+    def test_subtract_card(self):
+        self.physical_card.apply_user_change(3, self.user)
+        ownership = self.physical_card.ownerships.get(owner=self.user)
+        self.assertEqual(ownership.count, 3)
+        self.physical_card.apply_user_change(-2, self.user)
+        ownership = self.physical_card.ownerships.get(owner=self.user)
+        self.assertEqual(ownership.count, 1)
+
+    def test_remove_card(self):
+        self.physical_card.apply_user_change(3, self.user)
+        ownership = self.physical_card.ownerships.get(owner=self.user)
+        self.assertEqual(ownership.count, 3)
+        self.physical_card.apply_user_change(-3, self.user)
+        self.assertFalse(self.physical_card.ownerships.filter(owner=self.user).exists())
+
+    def test_overremove_card(self):
+        self.physical_card.apply_user_change(3, self.user)
+        ownership = self.physical_card.ownerships.get(owner=self.user)
+        self.assertEqual(ownership.count, 3)
+        self.physical_card.apply_user_change(-10, self.user)
+        self.assertFalse(self.physical_card.ownerships.filter(owner=self.user).exists())

@@ -11,13 +11,13 @@ from cards.tests import (
     create_test_set,
 )
 
-
 from cardsearch.parameters import (
     AndParam,
     CardNameParam,
     CardRulesTextParam,
     CardSetParam,
 )
+
 
 class CardNameParamTestCase(TestCase):
     """

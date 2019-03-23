@@ -179,6 +179,10 @@ class Card(models.Model):
 
     @staticmethod
     def get_random_card():
+        """
+        Gets a card chosen at random
+        :return:
+        """
         last = Card.objects.count() - 1
         index = random.randint(0, last)
         return Card.objects.all()[index]
@@ -243,6 +247,10 @@ class PhysicalCard(models.Model):
         return '//'.join([str(x) for x in self.printed_languages.all()])
 
     def get_simple_string(self):
+        """
+        Gets a simple representation of this Physical Card
+        :return:
+        """
         if self.printed_languages.count() == 1:
             return str(self.printed_languages.first())
 
@@ -252,26 +260,40 @@ class PhysicalCard(models.Model):
                + ' in ' + base.card_printing.set.name
 
     def get_display_for_adding(self):
+        """
+        Gets a simple represntation of this Physical card without card names
+        :return:
+        """
         if self.printed_languages.count() == 1:
             pl = self.printed_languages.first()
             return f"{pl.language} {pl.card_printing.set}"
 
         return self.get_simple_string()
 
-    def apply_user_change(self, change_count: int, user: User):
-        if user is None:
+    def apply_user_change(self, change_count: int, user: User) -> bool:
+        """
+        Applies a change of the number of cards a user owns (can add or subtract cards)
+        :param change_count: The number of cards that should be added/removed
+        :param user: The user that the cards should be added/removed to
+        :return: True if the change was successful, otherwise False
+        """
+        if user is None or change_count == 0:
             return False
 
         try:
             existing_card = UserOwnedCard.objects.get(physical_card=self, owner=user)
-            existing_card.count += change_count
-            if existing_card.count <= 0:
+            if change_count < 0 and abs(change_count) >= existing_card.count:
+                # If the count is below 1 than there is no point thinking that the user "owns"
+                # the card anymore, so just delete the record
+                change_count = -existing_card.count
                 existing_card.delete()
             else:
+                existing_card.count += change_count
                 existing_card.clean()
                 existing_card.save()
         except UserOwnedCard.DoesNotExist:
             if change_count <= 0:
+                # You can't subtract cards when you don' have any
                 return False
             new_card = UserOwnedCard(count=change_count, owner=user, physical_card=self)
             new_card.clean()
