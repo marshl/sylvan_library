@@ -5,7 +5,6 @@ name = "pypi"
 
 [packages]
 django-bitfield = "==1.9.3"
-"psycopg2-binary" = "==2.7.5"
 Django = "*"
 django-extensions = "*"
 django-widget-tweaks = "*"
@@ -14,6 +13,7 @@ django-environ = "*"
 beautifulsoup4 = "*"
 seaborn = "*"
 django-select2 = "*"
+psycopg2 = "*"
 
 [dev-packages]
 jupyter_core = "==4.4.0"
