@@ -7,13 +7,14 @@ import traceback
 from typing import Optional
 
 from django.core.management.base import BaseCommand
-from django.db.models import Count
 from django.db import models
+from django.db.models import Count
 
 from cards.models import (
     Block,
     Card,
     CardPrinting,
+    CardPrintingLanguage,
     Language,
     PhysicalCard,
     Rarity,
@@ -122,6 +123,36 @@ class Command(BaseCommand):
             PhysicalCard.objects.annotate(printlang_count=Count('printed_languages')).filter(
                 printlang_count=0).count() == 0,
             'There should be at least one printed language for each physical card')
+
+    def test_unique_images(self):
+        """
+        Tests that every printed language has a unique image path
+        """
+
+        image_url_map = {}
+        for printed_language in CardPrintingLanguage.objects \
+                .prefetch_related('card_printing__card') \
+                .prefetch_related('card_printing__set') \
+                .prefetch_related('language').all():
+            image_path = printed_language.get_image_path()
+            if image_path is None:
+                continue
+            if image_path not in image_url_map:
+                image_url_map[image_path] = [printed_language]
+            else:
+                image_url_map[image_path].append(printed_language)
+
+        for image_path, printed_languages in image_url_map.items():
+            if len(printed_languages) == 1:
+                continue
+
+            # Flip and split cards share the same image, so we can ignore them
+            if not any(pl for pl in printed_languages
+                       if pl.card_printing.card.layout not in ['flip', 'split']):
+                continue
+
+            self.assert_true(False, f'Too many printed languages for the same image path: ' +
+                             f'{printed_languages}: {image_path}')
 
     def test_card_name(self):
         """
@@ -247,7 +278,7 @@ class Command(BaseCommand):
         wubrg = Card.colour_flags.white | Card.colour_flags.blue | \
                 Card.colour_flags.black | Card.colour_flags.red | Card.colour_flags.green
 
-        # Monocoloured card
+        # Mono-coloured card
         self.assert_card_colour_eq('Glory Seeker', Card.colour_flags.white)
 
         # Multicoloured card
@@ -411,7 +442,7 @@ class Command(BaseCommand):
         # Misprints
         self.assert_card_power_eq('Elvish Archers', '2')
 
-        # Noncreature cards
+        # Non-creature cards
         self.assert_card_power_eq('Ancestral Recall', None)
         self.assert_card_power_eq('Krosa', None)
         self.assert_card_power_eq('Gratuitous Violence', None)
@@ -751,7 +782,7 @@ class Command(BaseCommand):
         """
         self.assert_card_attr_eq(card_name, 'power', power)
 
-    def assert_card_num_power_eq(self, card_name: str, num_power: int):
+    def assert_card_num_power_eq(self, card_name: str, num_power: float):
         """
         Asserts that the given card has the given numerical power
         :param card_name: The card's name to test
