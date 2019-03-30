@@ -12,6 +12,7 @@ from cards.models import (
     CardLegality,
     CardPrinting,
     CardPrintingLanguage,
+    Colour,
     Format,
     Language,
     PhysicalCard,
@@ -88,10 +89,19 @@ class Command(DataImportCommand):
 
     def handle(self, *args, **options):
 
+        if not Colour.objects.exists() or not Rarity.objects.exists():
+            logger.error('No colours or rarities were found. '
+                         'Please run the update_metadata command first')
+            return
+
         self.start_time = time.time()
 
         importer = JsonImporter()
         importer.import_data()
+
+        if not importer.sets:
+            logger.error('No sets were imported, please run the fetch_data command first')
+            return
 
         if options['force_update_sets']:
             self.sets_to_update += options['force_update_sets']

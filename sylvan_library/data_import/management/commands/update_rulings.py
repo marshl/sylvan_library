@@ -28,6 +28,9 @@ class Command(DataImportCommand):
         importer.import_data()
 
         staged_sets = importer.get_staged_sets()
+        if not staged_sets:
+            logger.error('No sets could be found. Please run the fetch_data command first')
+            return
 
         with transaction.atomic():
             self.update_ruling_list(staged_sets)

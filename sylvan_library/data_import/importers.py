@@ -2,6 +2,7 @@
 Module for data import shims
 """
 import json
+import logging
 import os
 from datetime import date
 from typing import List
@@ -10,6 +11,8 @@ from data_import.staging import (
     StagedSet,
 )
 from data_import import _paths
+
+logger = logging.getLogger('django')
 
 
 class JsonImporter:
@@ -34,6 +37,9 @@ class JsonImporter:
                 self.add_set(set_data['code'], set_data)
 
         self.sets.sort(key=lambda s: s.get_release_date() or str(date.max))
+
+        if not self.sets:
+            logger.warning('No set files were found, you may need to run fetch_data')
 
     def add_set(self, code: str, json_set: dict):
         """
