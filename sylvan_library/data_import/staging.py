@@ -428,7 +428,7 @@ class StagedSet:
         Gets the cards in this set
         :return:
         """
-        return sorted(self.staged_cards)
+        return self.staged_cards
 
     def get_code(self) -> str:
         """
