@@ -39,6 +39,7 @@ class Command(BaseCommand):
         self.successful_tests = 0
         self.failed_tests = 0
         self.error_messages = list()
+        self.test_count = 0
 
     def handle(self, *args, **options):
         methods = [method_name for method_name in dir(self)
@@ -123,6 +124,23 @@ class Command(BaseCommand):
             PhysicalCard.objects.annotate(printlang_count=Count('printed_languages')).filter(
                 printlang_count=0).count() == 0,
             'There should be at least one printed language for each physical card')
+
+        low_count_two_faced_cards = PhysicalCard.objects \
+            .filter(layout__in=('split', 'flip', 'transform', 'meld')) \
+            .annotate(printlang_count=Count('printed_languages')) \
+            .exclude(printlang_count__gte=2)
+
+        self.assert_true(low_count_two_faced_cards.count() == 0,
+                         'Multi-sided physical cards should have multiple printlangs'
+                         )
+
+        high_count_single_face_cards = PhysicalCard.objects \
+            .exclude(layout__in=('split', 'flip', 'transform', 'meld')) \
+            .annotate(printlang_count=Count('printed_languages')) \
+            .exclude(printlang_count=1)
+
+        self.assert_true(high_count_single_face_cards.count() == 0,
+                         'Only two-face cards should have multiple printlangs')
 
     def test_unique_images(self):
         """
@@ -747,7 +765,7 @@ class Command(BaseCommand):
         """
         actual = int(Card.objects.get(name=card_name).colour_identity_flags)
         self.assert_true(colour_identity == actual,
-                         f'{card_name}.colour_identity_flags was expected ' +
+                         f'{card_name}.colour_identity_flags was expected '
                          f'to be "{colour_identity}", actually "{actual}"')
 
     def assert_card_colour_count_eq(self, card_name: str, colour_count: int):
@@ -926,5 +944,9 @@ class Command(BaseCommand):
             print('F', end='')
             error = {'message': message, 'trace': ''.join(traceback.format_stack())}
             self.error_messages.append(error)
+
+        self.test_count += 1
+        if self.test_count % 25 == 0:
+            print()
 
         sys.stdout.flush()
