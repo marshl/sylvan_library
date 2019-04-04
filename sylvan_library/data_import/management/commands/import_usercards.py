@@ -35,7 +35,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
 
         # Positional arguments
-        parser.add_argument('username', nargs=1, type=str, help='The user to who owns teh cards')
+        parser.add_argument('username', nargs=1, type=str, help='The user to who owns the cards')
         parser.add_argument('filename', nargs=1, type=str, help='The file to import the cards from')
 
     def handle(self, *args, **options):

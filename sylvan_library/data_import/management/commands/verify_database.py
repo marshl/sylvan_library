@@ -282,7 +282,7 @@ class Command(BaseCommand):
         self.assert_card_cmc_eq('Brisela, Voice of Nightmares', 11)
 
         # Split card
-        # Both Wear and Tear should have the same CMC under teh new rules
+        # Both Wear and Tear should have the same CMC under the new rules
         self.assert_card_cmc_eq('Wear', 3)
         self.assert_card_cmc_eq('Tear', 3)
 
