@@ -87,7 +87,7 @@
                         <div class="page-button js-page-button
                                     {% if not page_button.enabled %}is-disabled{% endif %}
                                     {% if page_button.is_active %}is-active{% endif %}"
-                             data-page-url="{% param_replace page_button=page_button.number %}">
+                             data-page-url="{% param_replace page=page_button.number %}">
                             <div class="page-button-text">
                                 {% if page_button.is_previous %}
                                     Previous
