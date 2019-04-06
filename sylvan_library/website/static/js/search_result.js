@@ -2,22 +2,25 @@ $(function () {
 
     $(this).on('click', '.js-card-result-tab-container .js-card-result-tab', function () {
         let $container = $(this).closest('.js-card-result-tab-container');
-        $container
-            .find('.js-card-result-tab')
-            .removeClass('selected')
-            .attr('aria-expanded', false);
-        $(this).addClass('selected');
-        $(this).attr('aria-expanded', true);
-
-        let $tabContentToShow = $($(this).data('target-tab'));
-        $container.find('.js-card-result-tab-content').not($tabContentToShow).hide();
-        $tabContentToShow.show();
-        if ($tabContentToShow.find('input[type!="hidden"]').length) {
-            $tabContentToShow.find('input[type!="hidden"]').first().focus();
-        }
-
+        let tabType = $(this).data('tab-type');
+        showTab($container, tabType);
         return false;
     });
+
+    function showTab($tabContainer, tabType) {
+        $tabContainer
+            .find('.js-card-result-tab')
+            .removeClass('selected');
+        $tabContainer.find('.js-card-result-tab[data-tab-type="' + tabType + '"]').addClass('selected');
+        let $tabContent = $tabContainer.find('.js-card-result-tab-content[data-tab-type="' + tabType + '"]');
+        $tabContainer.find('.js-card-result-tab-content').not($tabContent).hide();
+        $tabContent.show();
+        if (tabType === 'add') {
+            $tabContent.find('input[type!="hidden"]').first().focus();
+        }
+
+        Cookies.set('selected_tab', tabType);
+    }
 
     $(this).on('click', '.js-card-result', function () {
         if ($(this).data('is-expanded')) {
@@ -39,7 +42,11 @@ $(function () {
         let printing_id = $(this).data('card-printing-id');
         let card_id = $(this).data('card-id');
 
-        loadTabDataForPrinting(card_id, printing_id);
+        let selectedTab = Cookies.get('selected_tab') || 'details';
+        let $tabContainer = $(this).find('.js-card-result-tab-container');
+        showTab($tabContainer, selectedTab);
+
+        loadTabDataForPrinting($tabContainer, card_id, printing_id);
     });
 
     $(this).on('click', '.js-card-result-set-symbol', function () {
@@ -55,40 +62,42 @@ $(function () {
         $(this).addClass('clicked');
 
         $result.find('.js-card-result-image').attr('src', $(this).data('image-url'));
+        let $tabContainer = $result.find('js-card-result-tab-container');
 
-        loadTabDataForPrinting($result.data('card-id'), printing_id);
+        loadTabDataForPrinting($tabContainer, $result.data('card-id'), printing_id);
         return false;
     });
 
-    function loadTabDataForPrinting(card_id, printing_id) {
+    function loadTabDataForPrinting($tabContainer, card_id, printing_id) {
+
         $.ajax('/website/ajax/search_result_details/' + printing_id)
             .done(function (result) {
-                $('#card-result-tab-content-' + card_id + '-details').html(result);
+                $tabContainer.find('.js-card-result-tab-content[data-tab-type="details"]').html(result);
             });
 
         $.ajax('/website/ajax/search_result_rulings/' + card_id)
             .done(function (result) {
-                $('#card-result-tab-content-' + card_id + '-rulings').html(result);
+                $tabContainer.find('.js-card-result-tab-content[data-tab-type="rulings"]').html(result);
             });
 
         $.ajax('/website/ajax/search_result_languages/' + printing_id)
             .done(function (result) {
-                $('#card-result-tab-content-' + card_id + '-languages').html(result);
+                $tabContainer.find('.js-card-result-tab-content[data-tab-type="languages"]').html(result);
             });
 
-        loadOwnershipTab(card_id);
+        loadOwnershipTab($tabContainer, card_id);
 
 
         $.ajax('/website/ajax/search_result_add/' + printing_id)
             .done(function (result) {
-                $('#card-result-tab-content-' + card_id + '-add').html(result);
+                $tabContainer.find('.js-card-result-tab-content[data-tab-type="add"]').html(result);
             });
     }
 
-    function loadOwnershipTab(card_id) {
+    function loadOwnershipTab($tabContainer, card_id) {
         $.ajax('/website/ajax/search_result_ownership/' + card_id)
             .done(function (result) {
-                $('#card-result-tab-content-' + card_id + '-ownership').html(result);
+                $tabContainer.find('.js-card-result-tab-content[data-tab-type="ownership"]').html(result);
             });
     }
 
@@ -124,12 +133,14 @@ $(function () {
             return;
         }
 
+        let $tabContainer = $(this).closest('js-card-result').find('js-card-result-tab-container');
+
         $.ajax({
             url: $(this).attr('action'),
             data: $(this).serialize(),
             type: 'POST'
         }).done(function (result) {
-            loadOwnershipTab(card_id);
+            loadOwnershipTab($tabContainer, card_id);
             loadOwnershipSummary(card_id);
             loadSetSummary(card_id, printing_id);
             $form.find('input').prop('disabled', false);
@@ -144,14 +155,14 @@ $(function () {
         return false;
     });
 
-    $(this).on('click', '.js-image-split-btn', function() {
+    $(this).on('click', '.js-image-split-btn', function () {
         $(this)
             .closest('.js-card-result')
             .find('.js-card-result-image')
             .toggleClass('split');
     });
 
-    $(this).on('click', '.js-image-flip-btn', function() {
+    $(this).on('click', '.js-image-flip-btn', function () {
         $(this)
             .closest('.js-card-result')
             .find('.js-card-result-image')

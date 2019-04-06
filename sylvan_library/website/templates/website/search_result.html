@@ -85,51 +85,47 @@
                     <div class="tab-container js-card-result-tab-container" style="display:none;">
                         <ul class="tab-list">
                             <li class="tab selected js-card-result-tab selected"
-                                data-target-tab="#card-result-tab-content-{{ result.card.id }}-details"
-                                aria-expanded="true">
+                                data-tab-type="details">
                                 Details
                             </li>
                             <li class="tab js-card-result-tab"
-                                data-target-tab="#card-result-tab-content-{{ result.card.id }}-rulings"
-                                aria-expanded="false">
+                                data-tab-type="rulings">
                                 Rulings
                             </li>
                             <li class="tab js-card-result-tab"
-                                aria-expanded="false"
-                                data-target-tab="#card-result-tab-content-{{ result.card.id }}-languages">
+                                data-tab-type="languages">
                                 Languages
                             </li>
                             {% if render_usercards %}
                                 <li class="tab js-card-result-tab"
-                                    aria-expanded="false"
-                                    data-target-tab="#card-result-tab-content-{{ result.card.id }}-ownership">
+                                    data-tab-type="ownership">
                                     Ownership
                                 </li>
                                 <li class="tab js-card-result-tab"
-                                    aria-expanded="false"
-                                    data-target-tab="#card-result-tab-content-{{ result.card.id }}-add">
+                                    data-tab-type="add">
                                     Add cards
                                 </li>
                             {% endif %}
                         </ul>
                         <div class="js-card-result-tab-content"
-                             id="card-result-tab-content-{{ result.card.id }}-details">
+                             data-tab-type="details"
+                             style="display: none;">
                         </div>
                         <div class="js-card-result-tab-content"
-                             id="card-result-tab-content-{{ result.card.id }}-rulings"
+                             data-tab-type="rulings"
                              style="display:none;">
                         </div>
                         <div class="js-card-result-tab-content"
-                             id="card-result-tab-content-{{ result.card.id }}-languages"
+                             data-tab-type="languages"
                              style="display:none;">
                         </div>
                         {% if render_usercards %}
                             <div class="js-card-result-tab-content"
-                                 id="card-result-tab-content-{{ result.card.id }}-ownership"
+                                 data-tab-type="ownership"
                                  style="display:none;">
                             </div>
                             <div class="js-card-result-tab-content"
-                                 id="card-result-tab-content-{{ result.card.id }}-add"
+                                 data-tab-type="add"
                                  style="display:none;">
                             </div>
                         {% endif %}
