@@ -62,7 +62,7 @@ $(function () {
         $(this).addClass('clicked');
 
         $result.find('.js-card-result-image').attr('src', $(this).data('image-url'));
-        let $tabContainer = $result.find('js-card-result-tab-container');
+        let $tabContainer = $result.find('.js-card-result-tab-container');
 
         loadTabDataForPrinting($tabContainer, $result.data('card-id'), printing_id);
         return false;
@@ -90,7 +90,11 @@ $(function () {
 
         $.ajax('/website/ajax/search_result_add/' + printing_id)
             .done(function (result) {
-                $tabContainer.find('.js-card-result-tab-content[data-tab-type="add"]').html(result);
+                let $tab = $tabContainer.find('.js-card-result-tab-content[data-tab-type="add"]');
+                $tab.html(result);
+                if (!$tab.isHidden) {
+                    $tab.find('input[type!="hidden"]').first().focus();
+                }
             });
     }
 
