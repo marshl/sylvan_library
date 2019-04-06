@@ -6,4 +6,8 @@ $(function () {
         }
         document.location.href = '?' + $(this).data('page-url');
     });
+
+    $(this).on('focus', '.js-search-bar-input', function() {
+        $(this).select();
+    });
 });

@@ -12,7 +12,7 @@
             <div class="header-search-container">
                 <form action="{% url 'website:name_search' %}" method="get">
                     <div class="search-icon"></div>
-                    <input type="text" class="search-input"
+                    <input type="text" class="search-input js-search-bar-input"
                            name="card_name"
                            placeholder="Search card names. Use AND, OR and NOT e.g. (fire OR ice) AND a* NOT &quot;sword of&quot;"
                            value="{% if name_form %}{{ name_form.card_name.value }}{% endif %}">
