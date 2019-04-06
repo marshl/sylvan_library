@@ -137,7 +137,7 @@ $(function () {
             return;
         }
 
-        let $tabContainer = $(this).closest('js-card-result').find('js-card-result-tab-container');
+        let $tabContainer = $(this).closest('.js-card-result').find('.js-card-result-tab-container');
 
         $.ajax({
             url: $(this).attr('action'),
