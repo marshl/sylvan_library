@@ -18,9 +18,9 @@ class Command(BaseCommand):
     """
     help = 'Verifies that database update was successful'
 
-    def __init__(self):
+    def __init__(self, stdout=None, stderr=None, no_color=False):
         self.rarities = ['L', 'C', 'U', 'R', 'M']
-        super().__init__()
+        super().__init__(stdout=stdout, stderr=stderr, no_color=no_color)
 
     def handle(self, *args, **options):
         output_path = os.path.join('reports', 'output', 'deck_rarity_progression.png')

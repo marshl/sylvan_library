@@ -85,11 +85,16 @@ class StagedCard:
         self.number = value_dict.get('number')
 
     def get_scryfall_oracle_id(self):
+        """
+        Gets the scryfall oracle ID
+        :return:
+        """
         return self.value_dict['scryfallOracleId']
 
     def get_number(self) -> str:
         """
         Gets the collector number of this printing
+        :return:
         """
         return self.number
 

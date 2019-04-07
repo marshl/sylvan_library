@@ -358,7 +358,7 @@ class CardPrintingLanguage(models.Model):
         image_name = re.sub(r'\W', 's', self.card_printing.number)
         if self.card_printing.card.layout == 'transform':
             image_name += '_' + self.card_printing.card.side
-            
+
         if self.card_printing.card.is_token:
             image_name = 't' + image_name
 

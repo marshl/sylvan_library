@@ -55,9 +55,15 @@ class StagedCardTestCase(TestCase):
         self.assertEqual(0, staged_card.get_colour_weight())
 
     def test_token_type(self):
+        """
+        Tests that a token card has its types parsed correctly
+        """
         staged_card = StagedCard({'type': 'Token Legendary Creature — Monkey'}, is_token=True)
         self.assertEqual('Token Legendary Creature', staged_card.get_types())
 
     def test_token_subtype(self):
+        """
+        Tests that a token card has its subtypes parsed correctly
+        """
         staged_card = StagedCard({'type': 'Token Legendary Creature — Monkey'}, is_token=True)
         self.assertEqual('Monkey', staged_card.get_subtypes())
