@@ -598,7 +598,7 @@ body {
     display: none;
 }
 
-.pagination-container .page-button-list:first-child, .pagination-container .page-button-list:last-child {
+.pagination-container .page-button:first-child, .pagination-container .page-button:last-child {
     flex: 4;
 }
 
