@@ -79,9 +79,13 @@ class StagedCard:
     Class for staging a card record from json
     """
 
-    def __init__(self, value_dict: dict):
+    def __init__(self, value_dict: dict, is_token: bool = False):
         self.value_dict = value_dict
+        self.is_token = is_token
         self.number = value_dict.get('number')
+
+    def get_scryfall_oracle_id(self):
+        return self.value_dict['scryfallOracleId']
 
     def get_number(self) -> str:
         """
@@ -108,7 +112,7 @@ class StagedCard:
         Gets the foreign data of this card
         :return:
         """
-        return self.value_dict['foreignData']
+        return self.value_dict.get('foreignData', [])
 
     def get_name(self) -> str:
         """
@@ -237,6 +241,11 @@ class StagedCard:
         Gets the types of the card
         :return: The card's types
         """
+        if self.is_token:
+            if 'type' not in self.value_dict:
+                return None
+            return self.value_dict['type'].split('—')[0].strip()
+
         if 'types' in self.value_dict:
             types = (self.value_dict.get('supertypes') or []) + \
                     (self.value_dict['types'])
@@ -249,6 +258,11 @@ class StagedCard:
         Gets the subtypes of the card
         :return: The card's subtypes
         """
+        if self.is_token:
+            if 'type' not in self.value_dict:
+                return None
+            return self.value_dict['type'].split('—')[-1].strip()
+
         if 'subtypes' in self.value_dict:
             return ' '.join(self.value_dict.get('subtypes'))
 
@@ -273,13 +287,16 @@ class StagedCard:
         Gets the artist of this card printing
         :return:
         """
-        return self.value_dict['artist']
+        return self.value_dict.get('artist')
 
     def get_rarity_name(self) -> str:
         """
         Gets the rarity name of this card
         :return:
         """
+        # Tokens don't have a rarity, so default to common
+        if self.is_token and 'rarity' not in self.value_dict:
+            return 'common'
         return self.value_dict['rarity']
 
     def get_flavour_text(self) -> str:
@@ -413,14 +430,18 @@ class StagedSet:
         self.staged_cards = list()
 
         for card in self.value_dict['cards']:
-            self.add_card(card)
+            self.add_card(card, is_token=False)
 
-    def add_card(self, card: dict):
+        for card in self.value_dict.get('tokens', []):
+            self.add_card(card, is_token=True)
+
+    def add_card(self, card: dict, is_token: bool):
         """
         Adds a card to this set
         :param card: The card data dictionary to add
+        :param is_token: Whether the card is a token or not
         """
-        staged_card = StagedCard(card)
+        staged_card = StagedCard(card, is_token=is_token)
         self.staged_cards.append(staged_card)
 
     def get_cards(self) -> List[StagedCard]:

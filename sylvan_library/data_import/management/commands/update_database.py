@@ -119,7 +119,7 @@ class Command(DataImportCommand):
         self.log_stats()
 
     def update_database(self, data_importer: JsonImporter, oracle_only: bool = False,
-                        sets_only: bool = False)->None:
+                        sets_only: bool = False) -> None:
         """
         Updates the objects with data from the data importer
         :param data_importer: The data importer to load data from
@@ -215,6 +215,19 @@ class Command(DataImportCommand):
 
         logger.info('Set list updated')
 
+    # def update_tokens(self, staged_sets: List[StagedSet]):
+    #     uid_token_map = dict()
+    #     for staged_set in staged_sets:
+    #         for staged_card in staged_set.get_tokens():
+    #             uid = staged_card.get_scryfall_oracle_id()
+    #             if uid not in uid_token_map:
+    #                 uid_token_map[uid] = list()
+    #
+    #             uid_token_map[uid].append(staged_card)
+    #
+    #     for uid, staged_cards in uid_token_map.items():
+    #         pass
+
     def update_card_list(self, staged_sets: List[StagedSet], oracle_only: bool = False) -> None:
         """
         Updates or creates all Card, CardPrinting and CardPrintingLanguage records
@@ -261,17 +274,20 @@ class Command(DataImportCommand):
         :param staged_card: The staging information for this card
         :return: The updated or created Card
         """
-        card = Card.objects.filter(name=staged_card.get_name()).first()
-
-        if card is not None:
-            if not self.force_update and staged_card.get_name() in self.updated_cards:
-                logger.info('%s has already been updated', card)
-                self.increment_ignores('Card')
-                return card
+        try:
+            if staged_card.is_token:
+                card = Card.objects.get(scryfall_oracle_id=staged_card.get_scryfall_oracle_id(),
+                                        is_token=True)
+            else:
+                card = Card.objects.get(name=staged_card.get_name(), is_token=False)
+                if not self.force_update and staged_card.get_name() in self.updated_cards:
+                    logger.info('%s has already been updated', card)
+                    self.increment_ignores('Card')
+                    return card
 
             logger.info('Updating existing card %s', card)
             self.increment_updated('Card')
-        else:
+        except Card.DoesNotExist:
             card = Card(name=staged_card.get_name())
             logger.info('Creating new card %s', card)
             self.increment_created('Card')
@@ -301,8 +317,10 @@ class Command(DataImportCommand):
         card.original_text = staged_card.get_original_text()
         card.layout = staged_card.get_layout()
         card.side = staged_card.get_side()
-
+        card.scryfall_oracle_id = staged_card.get_scryfall_oracle_id()
         card.is_reserved = staged_card.is_reserved()
+        card.is_token = staged_card.is_token
+
         card.full_clean()
         card.save()
         return card
@@ -415,24 +433,23 @@ class Command(DataImportCommand):
 
                 self.update_physical_card(printlang_obj, staged_card)
 
-                if staged_card.has_foreign_data():
-                    for card_language in staged_card.get_foreign_data():
-                        if not card_language.get('name'):
-                            continue
+                for card_language in staged_card.get_foreign_data():
+                    if not card_language.get('name'):
+                        continue
 
-                        lang_obj = Language.objects.get(
-                            name=card_language['language'])
+                    lang_obj = Language.objects.get(
+                        name=card_language['language'])
 
-                        try:
-                            printlang_obj = CardPrintingLanguage.objects.get(
-                                card_printing=printing_obj,
-                                language=lang_obj)
-                        except CardPrintingLanguage.DoesNotExist:
-                            raise Exception(
-                                'Could not find CardPrintingLanguage for {} {}'.format(
-                                    printing_obj, lang_obj))
+                    try:
+                        printlang_obj = CardPrintingLanguage.objects.get(
+                            card_printing=printing_obj,
+                            language=lang_obj)
+                    except CardPrintingLanguage.DoesNotExist:
+                        raise Exception(
+                            'Could not find CardPrintingLanguage for {} {}'.format(
+                                printing_obj, lang_obj))
 
-                        self.update_physical_card(printlang_obj, staged_card)
+                    self.update_physical_card(printlang_obj, staged_card)
 
     def update_physical_card(self, printlang: CardPrintingLanguage,
                              staged_card: StagedCard) -> None:
@@ -455,7 +472,7 @@ class Command(DataImportCommand):
 
             for link_name in staged_card.get_other_names():
 
-                link_card = Card.objects.get(name=link_name)
+                link_card = Card.objects.get(name=link_name, is_token=False)
                 link_print = CardPrinting.objects.filter(
                     card=link_card,
                     set=printlang.card_printing.set).first()
@@ -507,12 +524,14 @@ class Command(DataImportCommand):
             cards = staged_set.get_cards()
 
             for staged_card in [x for x in cards if x.has_other_names()]:
-                card_obj = Card.objects.get(name=staged_card.get_name())
+                if staged_card.is_token:
+                    pass
 
-                logger.info('Finding card links for %s', staged_card.get_name())
+                card_obj = Card.objects.get(name=staged_card.get_name(), is_token=False)
+                logger.info('Finding card links for %s', card_obj)
 
                 for link_name in staged_card.get_other_names():
-                    link_card = Card.objects.get(name=link_name)
+                    link_card = Card.objects.get(name=link_name, is_token=False)
 
                     card_obj.links.add(link_card)
                     card_obj.full_clean()
@@ -526,7 +545,7 @@ class Command(DataImportCommand):
         :return:
         """
 
-        cards_updated = []
+        cards_updated = set()
 
         for staged_set in staged_sets:
             if staged_set.get_code() not in self.sets_to_update and not self.force_update:
@@ -537,10 +556,10 @@ class Command(DataImportCommand):
 
             for staged_card in staged_set.get_cards():
 
-                if staged_card.get_name() in cards_updated:
+                if staged_card.get_name() in cards_updated or staged_card.is_token:
                     continue
 
-                card_obj = Card.objects.get(name=staged_card.get_name())
+                card_obj = Card.objects.get(name=staged_card.get_name(), is_token=False)
 
                 # Legalities can disappear form the json data if the card rolls out of standard,
                 # so all legalities should be cleared out and redone
@@ -555,4 +574,4 @@ class Command(DataImportCommand):
                     legality.save()
                     self.increment_created('Legality')
 
-                cards_updated.append(staged_card.get_name())
+                cards_updated.add(staged_card.get_name())

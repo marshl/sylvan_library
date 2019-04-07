@@ -57,7 +57,7 @@ class Command(BaseCommand):
                     logger.info(line)
                     (name, number, setcode) = line.rstrip().split('\t')
 
-                    card = Card.objects.get(name=name)
+                    card = Card.objects.get(name=name, is_token=False)
                     logger.info('Card ID: %s', card.id)
                     try:
                         cardset = Set.objects.get(code=setcode)

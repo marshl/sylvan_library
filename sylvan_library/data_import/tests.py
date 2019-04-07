@@ -11,6 +11,7 @@ class StagedCardTestCase(TestCase):
     """
     The tests cases for StagedCard
     """
+
     def test_get_type(self):
         """
         Tests that a card with multiple types has the correct type string
@@ -52,3 +53,11 @@ class StagedCardTestCase(TestCase):
         """
         staged_card = StagedCard({})
         self.assertEqual(0, staged_card.get_colour_weight())
+
+    def test_token_type(self):
+        staged_card = StagedCard({'type': 'Token Legendary Creature — Monkey'}, is_token=True)
+        self.assertEqual('Token Legendary Creature', staged_card.get_types())
+
+    def test_token_subtype(self):
+        staged_card = StagedCard({'type': 'Token Legendary Creature — Monkey'}, is_token=True)
+        self.assertEqual('Monkey', staged_card.get_subtypes())

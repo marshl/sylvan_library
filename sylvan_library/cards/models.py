@@ -6,7 +6,7 @@ import datetime
 import os
 import random
 import re
-from typing import List
+from typing import List, Optional
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -26,6 +26,7 @@ CARD_LAYOUT_CHOICES = (
     ('host', 'Host'),
     ('augment', 'Augment'),
     ('saga', 'Saga'),
+    ('double_faced_token', 'Double-faced Token'),
 )
 
 CARD_LEGALITY_RESTRICTION_CHOICES = (
@@ -170,7 +171,7 @@ class Card(models.Model):
     """
     Model for a unique card
     """
-    name = models.CharField(max_length=200, unique=True)
+    name = models.CharField(max_length=200)
 
     cost = models.CharField(max_length=50, blank=True, null=True)
     cmc = models.FloatField()
@@ -194,7 +195,8 @@ class Card(models.Model):
     layout = models.CharField(max_length=50, choices=CARD_LAYOUT_CHOICES)
     side = models.CharField(max_length=1, blank=True, null=True)
     is_reserved = models.BooleanField()
-
+    scryfall_oracle_id = models.CharField(max_length=36, blank=True, null=True)
+    is_token = models.BooleanField()
     links = models.ManyToManyField('self')
 
     @staticmethod
@@ -216,7 +218,7 @@ class CardPrinting(models.Model):
     Model for a certain card printed in a certain set
     """
     flavour_text = models.CharField(max_length=500, blank=True, null=True)
-    artist = models.CharField(max_length=100)
+    artist = models.CharField(max_length=100, blank=True, null=True)
     number = models.CharField(max_length=10, blank=True, null=True)
     original_text = models.CharField(max_length=1000, blank=True, null=True)
     original_type = models.CharField(max_length=200, blank=True, null=True)
@@ -251,6 +253,7 @@ class CardPrinting(models.Model):
 
     def __str__(self):
         return f'{self.card} in {self.set}'
+
 
 class PhysicalCard(models.Model):
     """
@@ -345,7 +348,7 @@ class CardPrintingLanguage(models.Model):
     def __str__(self):
         return f'{self.language} {self.card_printing}'
 
-    def get_image_path(self) -> str:
+    def get_image_path(self) -> Optional[str]:
         """
         Gets the relative file path of this prined language
         :return:
@@ -355,6 +358,10 @@ class CardPrintingLanguage(models.Model):
         image_name = re.sub(r'\W', 's', self.card_printing.number)
         if self.card_printing.card.layout == 'transform':
             image_name += '_' + self.card_printing.card.side
+            
+        if self.card_printing.card.is_token:
+            image_name = 't' + image_name
+
         return os.path.join(
             'card_images',
             self.language.code.lower(),

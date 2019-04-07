@@ -49,11 +49,11 @@ class Command(DataImportCommand):
             logger.info('Updating rulings in %s', staged_set.get_name())
             for staged_card in staged_set.get_cards():
 
-                if not staged_card.has_rulings():
+                if not staged_card.has_rulings() or staged_card.is_token:
                     continue
 
                 try:
-                    card_obj = Card.objects.get(name=staged_card.get_name())
+                    card_obj = Card.objects.get(name=staged_card.get_name(), is_token=False)
                 except Card.DoesNotExist as ex:
                     raise Exception(f'Could not find card {staged_card.get_name()}: {ex}')
 
