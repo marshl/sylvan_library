@@ -10,6 +10,8 @@ from django.db.models import prefetch_related_objects
 from cardsearch.parameters import (
     CardSortParam,
     CardNameSortParam,
+    CardColourSortParam,
+    CardPowerSortParam,
     AndParam,
     OrParam,
 )
@@ -119,6 +121,8 @@ class BaseSearch:
         """
         queryset = Card.objects.filter(self.root_parameter.query()).distinct()
         self.add_sort_param(CardNameSortParam())
+        self.add_sort_param(CardColourSortParam())
+        self.add_sort_param(CardPowerSortParam())
         queryset = queryset.order_by(
             *[order for sort_param in self.sort_params for order in sort_param.get_sort_list()])
 

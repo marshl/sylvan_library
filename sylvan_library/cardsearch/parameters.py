@@ -405,6 +405,18 @@ class CardNameSortParam(CardSortParam):
         return ['name']
 
 
+class CardPowerSortParam(CardSortParam):
+    """
+    THe sort parameter for a card's numerical power
+    """
+
+    def get_sort_keys(self) -> list:
+        """
+        Gets the list of attributes to be sorted by
+        """
+        return ['num_power']
+
+
 class CardCollectorNumSortParam(CardSortParam):
     """
     The sort parameter for a card's collector number
