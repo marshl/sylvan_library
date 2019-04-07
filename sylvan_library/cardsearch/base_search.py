@@ -166,8 +166,10 @@ class BaseSearch:
             page_buttons.insert(0, PageButton(None, False, is_spacer=True))
             page_buttons.insert(0, PageButton(1, True))
 
-        if current_page + page_span <= self.paginator.num_pages - 1:
+        if current_page + page_span <= self.paginator.num_pages - 2:
             page_buttons.append(PageButton(None, False, is_spacer=True))
+
+        if current_page + page_span <= self.paginator.num_pages - 1:
             page_buttons.append(PageButton(self.paginator.num_pages, True))
 
         page_buttons.insert(0,
