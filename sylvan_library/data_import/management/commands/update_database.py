@@ -276,7 +276,8 @@ class Command(DataImportCommand):
         """
         try:
             if staged_card.is_token:
-                card = Card.objects.get(scryfall_oracle_id=staged_card.get_scryfall_oracle_id(),
+                card = Card.objects.get(name=staged_card.get_name(),
+                                        scryfall_oracle_id=staged_card.get_scryfall_oracle_id(),
                                         is_token=True)
             else:
                 card = Card.objects.get(name=staged_card.get_name(), is_token=False)
