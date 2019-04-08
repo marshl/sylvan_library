@@ -32,8 +32,9 @@
                                target="_blank">{{ result.card.name }}</a>
                             {% if result.card.cost %}
                                 {{ result.card.cost | replace_mana_symbols | shadowed | safe }}
+                                ({{ result.card.cmc | floatformat }})
                             {% endif %}
-                            ({{ result.card.cmc | floatformat }})
+
                             {% if render_usercards %}
                                 <span class="js-ownership-summary">
                                     {% include 'website/ownership_summary.html' with card=result.card %}
