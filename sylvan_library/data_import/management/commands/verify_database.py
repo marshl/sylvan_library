@@ -103,9 +103,9 @@ class Command(BaseCommand):
         """
         Tests that every card should have a printing
         """
-        self.assert_true(Card.objects.annotate(printing_count=Count('printings')).filter(
-            printing_count=0).count() == 0,
-                         'There should be at least one printing for every card')
+        query = Card.objects.annotate(printing_count=Count('printings')).filter(printing_count=0)
+        self.assert_true(query.count() == 0,
+                         f'There should be at least one printing for every card: {query.all}')
 
     def test_minimum_printed_languages(self):
         """
@@ -120,10 +120,18 @@ class Command(BaseCommand):
         """
         Tests that every physical card has at least one printed language
         """
-        self.assert_true(
-            PhysicalCard.objects.annotate(printlang_count=Count('printed_languages')).filter(
-                printlang_count=0).count() == 0,
-            'There should be at least one printed language for each physical card')
+        zero_count_printlangs = CardPrintingLanguage.objects\
+            .annotate(physcard_count=Count('physical_cards')).filter(physcard_count=0)
+
+        self.assert_true(zero_count_printlangs.count() == 0,
+                         'Every CardPrintingLanguage should have at least one PhysicalCard')
+
+        zero_count_physcard = PhysicalCard.objects \
+            .annotate(printlang_count=Count('printed_languages')).filter(printlang_count=0)
+
+        self.assert_true(zero_count_physcard.count() == 0,
+                         f'There should be at least one printed language for each physical card: '
+                         f'{zero_count_physcard.all()}')
 
         low_count_two_faced_cards = PhysicalCard.objects \
             .filter(layout__in=('split', 'flip', 'transform', 'meld')) \
