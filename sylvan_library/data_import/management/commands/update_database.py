@@ -278,7 +278,8 @@ class Command(DataImportCommand):
             if staged_card.is_token:
                 card = Card.objects.get(name=staged_card.get_name(),
                                         scryfall_oracle_id=staged_card.get_scryfall_oracle_id(),
-                                        is_token=True)
+                                        is_token=True,
+                                        side=staged_card.get_side())
             else:
                 card = Card.objects.get(name=staged_card.get_name(), is_token=False)
                 if not self.force_update and staged_card.get_name() in self.updated_cards:
