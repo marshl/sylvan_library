@@ -55,7 +55,7 @@ class Command(BaseCommand):
 
         for printing in CardPrinting.objects.all() \
                 .prefetch_related('set') \
-                .prefetch_related('printed_languages__language')\
+                .prefetch_related('printed_languages__language') \
                 .prefetch_related('printed_languages__image'):
             if not printing.scryfall_id:
                 continue
@@ -97,7 +97,7 @@ class Command(BaseCommand):
                     base_image_uri = data['image_uris']['normal'] \
                         .replace('/' + data['lang'] + '/', '/[language]/')
                 elif 'card_faces' in data:
-                    base_image_uri = next(card_face['image_uris']['normal'] \
+                    base_image_uri = next(card_face['image_uris']['normal']
                                           .replace('/' + data['lang'] + '/', '/[language]/')
                                           for card_face in data['card_faces']
                                           if card_face['name'] == printing.card.name
@@ -123,7 +123,7 @@ class ImageDownloadThread(threading.Thread):
     The thread object for downloading a card image
     """
 
-    def __init__(self, download_queue):
+    def __init__(self, download_queue: queue.Queue):
         threading.Thread.__init__(self)
         self.download_queue = download_queue
 
