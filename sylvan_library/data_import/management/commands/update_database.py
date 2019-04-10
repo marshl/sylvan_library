@@ -144,7 +144,6 @@ class Command(DataImportCommand):
         self.update_card_list(staged_sets)
         self.update_physical_card_list(staged_sets)
         self.update_card_links(staged_sets)
-        self.update_legalities(staged_sets)
 
     def update_block_list(self, staged_sets: List[StagedSet]) -> None:
         """
@@ -539,41 +538,3 @@ class Command(DataImportCommand):
                     card_obj.full_clean()
                     card_obj.save()
                     self.increment_updated('CardLink')
-
-    def update_legalities(self, staged_sets: List[StagedSet]) -> None:
-        """
-        Updates the list of Legalities for every card
-        :param staged_sets:
-        :return:
-        """
-
-        cards_updated = set()
-
-        for staged_set in staged_sets:
-            if staged_set.get_code() not in self.sets_to_update and not self.force_update:
-                logger.info('Skipping set %s', staged_set.get_name())
-                continue
-
-            logger.info('Finding legalities for %s', staged_set.get_name())
-
-            for staged_card in staged_set.get_cards():
-
-                if staged_card.get_name() in cards_updated or staged_card.is_token:
-                    continue
-
-                card_obj = Card.objects.get(name=staged_card.get_name(), is_token=False)
-
-                # Legalities can disappear form the json data if the card rolls out of standard,
-                # so all legalities should be cleared out and redone
-                card_obj.legalities.all().delete()
-
-                for format_code, legality in staged_card.get_legalities().items():
-                    format_obj = Format.objects.get(code=format_code)
-                    legality = CardLegality(
-                        card=card_obj, format=format_obj, restriction=legality
-                    )
-                    legality.full_clean()
-                    legality.save()
-                    self.increment_created('Legality')
-
-                cards_updated.add(staged_card.get_name())
