@@ -105,7 +105,7 @@ class Command(BaseCommand):
         """
         query = Card.objects.annotate(printing_count=Count('printings')).filter(printing_count=0)
         self.assert_true(query.count() == 0,
-                         f'There should be at least one printing for every card: {query.all}')
+                         f'There should be at least one printing for every card: {query.all()}')
 
     def test_minimum_printed_languages(self):
         """
