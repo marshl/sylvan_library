@@ -96,6 +96,7 @@ class FieldSearchForm(SearchForm):
     flavour_text = forms.CharField(required=False)
     type_text = forms.CharField(required=False)
     subtype_text = forms.CharField(required=False)
+    mana_cost_text = forms.CharField(required=False)
 
     min_cmc = forms.IntegerField(required=False)
     max_cmc = forms.IntegerField(required=False)
@@ -185,6 +186,7 @@ class FieldSearchForm(SearchForm):
         search.flavour_text = self.data.get('flavour_text')
         search.type_text = self.data.get('type_text')
         search.subtype_text = self.data.get('subtype_text')
+        search.mana_cost = self.data.get('mana_cost_text')
 
         search.min_cmc = self.cleaned_data.get('min_cmc')
         search.max_cmc = self.cleaned_data.get('max_cmc')

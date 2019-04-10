@@ -9,6 +9,7 @@ from cards.models import Set
 from cardsearch.parameters import (
     AndParam,
     OrParam,
+CardManaCostParam,
     CardFlavourTextParam,
     CardNameParam,
     CardRulesTextParam,
@@ -47,6 +48,7 @@ class FieldSearch(BaseSearch):
         self.max_toughness = None
         self.min_power = None
         self.max_power = None
+        self.mana_cost = None
 
         self.colours = []
         self.colour_identities = []
@@ -100,6 +102,9 @@ class FieldSearch(BaseSearch):
 
         if self.max_toughness is not None:
             root_param.add_parameter(CardNumToughnessParam(self.max_toughness, 'LTE'))
+
+        if self.mana_cost is not None:
+            root_param.add_parameter(CardManaCostParam(self.mana_cost, False))
 
         if self.colours:
             self.root_parameter.add_parameter(
