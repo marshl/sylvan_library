@@ -106,4 +106,4 @@ ENV/
 AllSetFiles.*
 backup/
 *.bat
-bower_components/
+node_modules/

@@ -1,0 +1,13 @@
+{
+  "name": "sylvan_library",
+  "version": "1.0.0",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "jquery": "^3.4.0",
+    "jquery-ui-dist": "^1.12.1",
+    "js-cookie": "^2.2.0",
+    "keyrune": "^3.4.1",
+    "mana-font": "^1.4.1"
+  }
+}

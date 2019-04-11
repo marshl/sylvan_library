@@ -25,9 +25,9 @@ Activate the virtual environment
 ```
 pipenv shell
 ```
-Install bower via npm and install the bower dependencies
+Install node modules via npm
 ```
-bower install
+npm install --prefix ./sylvan_library/website/static
 ```
 
 ## Database Initialisation

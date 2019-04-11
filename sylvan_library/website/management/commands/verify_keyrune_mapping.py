@@ -23,7 +23,7 @@ class Command(BaseCommand):
         super().__init__()
 
     def handle(self, *args, **options):
-        sass_path = os.path.join('website', 'static', 'keyrune', 'sass',
+        sass_path = os.path.join('website', 'static', 'node_modules', 'keyrune', 'sass',
                                  '_variables.scss')
         sets = {}
         with open(sass_path) as sass_file:
