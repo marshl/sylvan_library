@@ -47,19 +47,21 @@ class Command(BaseCommand):
                 'object does not exist. Please run `update_database` first')
             return
 
+        all_printings = CardPrinting.objects \
+            .filter(printed_languages__image__isnull=True) \
+            .filter(scryfall_id__isnull=False) \
+            .prefetch_related('set') \
+            .prefetch_related('printed_languages__language') \
+            .prefetch_related('printed_languages__image') \
+            .distinct()
+
         for i in range(0, self.download_thread_count):
             logger.info('Starting thread %s', i)
-            thread = ImageDownloadThread(self.image_download_queue)
+            thread = ImageDownloadThread(i, self.image_download_queue)
             thread.setDaemon(True)
             thread.start()
 
-        for printing in CardPrinting.objects.all() \
-                .prefetch_related('set') \
-                .prefetch_related('printed_languages__language') \
-                .prefetch_related('printed_languages__image'):
-            if not printing.scryfall_id:
-                continue
-
+        for printing in all_printings:
             self.download_images_for_printing(printing, download_all_languages=options[
                 'download_all_languages'])
 
@@ -123,8 +125,9 @@ class ImageDownloadThread(threading.Thread):
     The thread object for downloading a card image
     """
 
-    def __init__(self, download_queue: queue.Queue):
+    def __init__(self, thread_number: int, download_queue: queue.Queue):
         threading.Thread.__init__(self)
+        self.thread_number = thread_number
         self.download_queue = download_queue
 
     def run(self):
@@ -135,9 +138,11 @@ class ImageDownloadThread(threading.Thread):
             stream = requests.get(download_url)
             try:
                 stream.raise_for_status()
-            except requests.exceptions.HTTPError:
+            except requests.exceptions.HTTPError as err:
                 logger.warning(
-                    '\tCould not download %s (%s)', printed_language, download_url)
+                    '\t%s: Could not download %s (%s): %s',
+                    self.thread_number, printed_language, download_url, err.response.status_code)
+
                 card_image = CardImage(printed_language=printed_language, downloaded=False)
                 card_image.save()
             else:
@@ -147,6 +152,7 @@ class ImageDownloadThread(threading.Thread):
 
                 card_image = CardImage(printed_language=printed_language, downloaded=True)
                 card_image.save()
-                logger.info('\tDownloaded %s', printed_language)
+                logger.info('\t%s: Downloaded %s (%s)',
+                            self.thread_number, printed_language, download_url)
 
             self.download_queue.task_done()
