@@ -9,11 +9,9 @@ from django.db import transaction
 from cards.models import (
     Block,
     Card,
-    CardLegality,
     CardPrinting,
     CardPrintingLanguage,
     Colour,
-    Format,
     Language,
     PhysicalCard,
     Rarity,
@@ -67,7 +65,7 @@ class Command(DataImportCommand):
         parser.add_argument(
             '--update-set',
             dest='force_update_sets',
-            nargs='*',
+            type=str,
             help='Forces an update of the given sets'
         )
 
@@ -104,7 +102,7 @@ class Command(DataImportCommand):
             return
 
         if options['force_update_sets']:
-            self.sets_to_update += options['force_update_sets']
+            self.sets_to_update += options['force_update_sets'].split(',')
 
         self.force_update = options['force_update']
 
