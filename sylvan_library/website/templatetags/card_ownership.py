@@ -22,14 +22,7 @@ def user_card_ownership_count(card: Card, user: User) -> int:
     :param user: The user who should own the card
     :return: The ownership total
     """
-    return sum(
-        ownership.count
-        for card_printing in card.printings.all()
-        for printed_language in card_printing.printed_languages.all()
-        for physical_card in printed_language.physical_cards.all()
-        for ownership in physical_card.ownerships.all()
-        if ownership.owner_id == user.id
-    )
+    return card.get_user_ownership_count(user, prefetched=True)
 
 
 @register.filter
@@ -40,13 +33,7 @@ def user_cardprinting_ownership_count(card_printing: CardPrinting, user: User) -
     :param user: The user who should own the card
     :return: The ownership total
     """
-    return sum(
-        ownership.count
-        for printed_language in card_printing.printed_languages.all()
-        for physical_card in printed_language.physical_cards.all()
-        for ownership in physical_card.ownerships.all()
-        if ownership.owner_id == user.id
-    )
+    return card_printing.get_user_ownership_count(user, prefetched=True)
 
 
 @register.filter
@@ -58,9 +45,4 @@ def user_printedlanguage_ownership_count(printed_language: CardPrintingLanguage,
     :param user: The user who should own the card
     :return: The ownership total
     """
-    return sum(
-        ownership.count
-        for physical_card in printed_language.physical_cards.all()
-        for ownership in physical_card.ownerships.all()
-        if ownership.owner_id == user.id
-    )
+    return printed_language.get_user_ownership_count(user, prefetched=True)

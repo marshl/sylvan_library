@@ -9,6 +9,7 @@ import re
 from typing import List, Optional
 
 from django.db import models
+from django.db.models import Sum, IntegerField, Case, When
 from django.contrib.auth.models import User
 from bitfield import BitField
 
@@ -213,6 +214,29 @@ class Card(models.Model):
     def __str__(self):
         return self.name
 
+    def get_user_ownership_count(self, user: User, prefetched: bool = False) -> int:
+        if prefetched:
+            return sum(
+                ownership.count
+                for card_printing in self.printings.all()
+                for printed_language in card_printing.printed_languages.all()
+                for physical_card in printed_language.physical_cards.all()
+                for ownership in physical_card.ownerships.all()
+                if ownership.owner_id == user.id
+            )
+
+        return self.printings.aggregate(
+            card_count=Sum(
+                Case(
+                    When(
+                        printed_languages__physical_cards__ownerships__owner=user,
+                        then='printed_languages__physical_cards__ownerships__count'),
+                    output_field=IntegerField(),
+                    default=0
+                )
+            )
+        )['card_count']
+
 
 class CardPrinting(models.Model):
     """
@@ -254,6 +278,28 @@ class CardPrinting(models.Model):
 
     def __str__(self):
         return f'{self.card} in {self.set}'
+
+    def get_user_ownership_count(self, user: User, prefetched: bool = False):
+        if prefetched:
+            return sum(
+                ownership.count
+                for printed_language in self.printed_languages.all()
+                for physical_card in printed_language.physical_cards.all()
+                for ownership in physical_card.ownerships.all()
+                if ownership.owner_id == user.id
+            )
+
+        return self.printed_languages.aggregate(
+            card_count=Sum(
+                Case(
+                    When(
+                        physical_cards__ownerships__owner=user,
+                        then='physical_cards__ownerships__count'),
+                    output_field=IntegerField(),
+                    default=0
+                )
+            )
+        )['card_count']
 
 
 class PhysicalCard(models.Model):
@@ -368,6 +414,27 @@ class CardPrintingLanguage(models.Model):
             self.language.code.lower(),
             '_' + self.card_printing.set.code.lower(),
             image_name + '.jpg')
+
+    def get_user_ownership_count(self, user: User, prefetched: bool = False) -> int:
+        if prefetched:
+            return sum(
+                ownership.count
+                for physical_card in self.physical_cards.all()
+                for ownership in physical_card.ownerships.all()
+                if ownership.owner_id == user.id
+            )
+
+        return self.physical_cards.aggregate(
+            card_count=Sum(
+                Case(
+                    When(
+                        ownerships__owner=user,
+                        then='ownerships__count'),
+                    output_field=IntegerField(),
+                    default=0
+                )
+            )
+        )['card_count']
 
 
 class UserOwnedCard(models.Model):

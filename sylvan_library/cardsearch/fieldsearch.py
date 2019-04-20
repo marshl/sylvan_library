@@ -9,7 +9,7 @@ from cards.models import Set
 from cardsearch.parameters import (
     AndParam,
     OrParam,
-CardManaCostParam,
+    CardManaCostParam,
     CardFlavourTextParam,
     CardNameParam,
     CardRulesTextParam,
