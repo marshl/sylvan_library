@@ -12,7 +12,6 @@ from cards.models import (
     Format
 )
 from data_import.staging import StagedSet
-from data_import.importers import JsonImporter
 from data_import.management.data_import_command import DataImportCommand
 
 logger = logging.getLogger('django')
@@ -25,16 +24,8 @@ class Command(DataImportCommand):
     help = 'Updates all card legalities'
 
     def handle(self, *args, **options):
-        importer = JsonImporter()
-        importer.import_data()
-
-        staged_sets = importer.get_staged_sets()
-        if not staged_sets:
-            logger.error('No sets could be found. Please run the fetch_data command first')
-            return
-
         with transaction.atomic():
-            self.update_legalities(staged_sets)
+            self.update_legalities(self.get_staged_sets())
 
         self.log_stats()
 

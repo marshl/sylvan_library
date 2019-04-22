@@ -3,7 +3,11 @@ Module for the update_database command
 """
 import logging
 import time
+from typing import List
+
 from django.core.management.base import BaseCommand
+from data_import.importers import JsonImporter
+from data_import.staging import StagedSet
 
 logger = logging.getLogger('django')
 
@@ -20,6 +24,22 @@ class DataImportCommand(BaseCommand):
         self.start_time = time.time()
 
         super().__init__(stdout=stdout, stderr=stderr, no_color=no_color)
+
+    @staticmethod
+    def get_staged_sets() -> List[StagedSet]:
+        """
+        Imports and returns a list of staged sets for the imported data
+        :return: The list of staged sets
+        """
+        importer = JsonImporter()
+        importer.import_data()
+
+        staged_sets = importer.get_staged_sets()
+        if not staged_sets:
+            logger.error('No sets could be found, Please run the fetch_data command first')
+            exit(1)
+
+        return staged_sets
 
     def increment_updated(self, object_type: str):
         """
