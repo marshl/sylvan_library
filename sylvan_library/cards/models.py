@@ -215,6 +215,12 @@ class Card(models.Model):
         return self.name
 
     def get_user_ownership_count(self, user: User, prefetched: bool = False) -> int:
+        """
+        Returns the total number of cards that given user owns of this card
+        :param prefetched: Whether to use prefetched data, or to get it from the database again
+        :param user: The user who should own the card
+        :return: The ownership total
+        """
         if prefetched:
             return sum(
                 ownership.count
@@ -280,6 +286,12 @@ class CardPrinting(models.Model):
         return f'{self.card} in {self.set}'
 
     def get_user_ownership_count(self, user: User, prefetched: bool = False):
+        """
+        Returns the total number of cards that given user owns of this printing
+        :param prefetched: Whether to use prefetched data, or to get it from the database again
+        :param user: The user who should own the card
+        :return: The ownership total
+        """
         if prefetched:
             return sum(
                 ownership.count
@@ -416,6 +428,12 @@ class CardPrintingLanguage(models.Model):
             image_name + '.jpg')
 
     def get_user_ownership_count(self, user: User, prefetched: bool = False) -> int:
+        """
+        Returns the total number of cards that given user owns of this printed language
+        :param user: The user who should own the card
+        :param prefetched: Whether to use prefetched data, or to get it from the database again
+        :return: The ownership total
+        """
         if prefetched:
             return sum(
                 ownership.count
