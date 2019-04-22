@@ -8,7 +8,7 @@ import os
 import xml.etree.ElementTree as ET
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from django.db.models import Sum, IntegerField, Case, When, Min
+from django.db.models import Min
 
 from cards.models import (
     Block,
@@ -107,17 +107,7 @@ class Command(BaseCommand):
                 ET.SubElement(set_element, 'cd').text = printing.set.code
                 ET.SubElement(set_element, 'r').text = printing.rarity.symbol
 
-                ownership_count = printing.printed_languages.aggregate(
-                    card_count=Sum(
-                        Case(
-                            When(
-                                physical_cards__ownerships__owner=self.user,
-                                then='physical_cards__ownerships__count'),
-                            output_field=IntegerField(),
-                            default=0
-                        )
-                    )
-                )['card_count']
+                ownership_count = printing.get_user_ownership_count(self.user)
 
                 if ownership_count > 0:
                     ET.SubElement(set_element, 'c').text = str(ownership_count)
