@@ -125,16 +125,17 @@ $(function () {
     }
 
     $(this).on('submit', '.js-change-card-ownership-form', function (event) {
+        event.preventDefault();
         let $form = $(this);
         if ($form.data('disabled')) {
-            return;
+            return false;
         }
         let $result = $(this).closest('.js-card-result');
         let card_id = Number($result.data('card-id'));
         let printing_id = Number($result.data('card-printing-id'));
         let count = $form.find('input[name="count"]').val();
         if (Number(count) === 0) {
-            return;
+            return false;
         }
 
         let $tabContainer = $(this).closest('.js-card-result').find('.js-card-result-tab-container');
@@ -155,7 +156,6 @@ $(function () {
         $form.data('disabled', true);
         $form.find('input').prop('disabled', true);
 
-        event.preventDefault();
         return false;
     });
 

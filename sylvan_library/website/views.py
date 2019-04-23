@@ -179,6 +179,9 @@ def ajax_search_result_ownership(request, card_id: int) -> HttpResponse:
 
 
 def ajax_change_card_ownership(request):
+    if not request.POST.get('count'):
+        return JsonResponse({'result': False, 'error': 'Invalid count'})
+
     try:
         with transaction.atomic():
             change_count = int(request.POST.get('count'))
