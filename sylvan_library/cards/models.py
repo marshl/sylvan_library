@@ -285,6 +285,12 @@ class CardPrinting(models.Model):
     def __str__(self):
         return f'{self.card} in {self.set}'
 
+    def get_set_keyrune_code(self):
+        if self.set.code in ('GK1', 'GK2') and self.watermark:
+            return self.watermark.lower()
+
+        return self.set.keyrune_code
+
     def get_user_ownership_count(self, user: User, prefetched: bool = False):
         """
         Returns the total number of cards that given user owns of this printing

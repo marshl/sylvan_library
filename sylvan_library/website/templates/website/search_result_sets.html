@@ -5,7 +5,7 @@
     {% for printing in card.printings.all %}
         <i class="js-card-result-set-symbol
                     setIcon ss ss-2x
-                    ss-{{ printing.set.keyrune_code }}
+                    ss-{{ printing.get_set_keyrune_code }}
                     {% if printing.set.code == 'TSB'  %}
                         ss-timeshifted
                     {% else  %}
