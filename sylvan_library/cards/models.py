@@ -280,7 +280,7 @@ class CardPrinting(models.Model):
         """
         Metaclass for CardPrinting
         """
-        ordering = ['set__release_date', 'number']
+        ordering = ['set__release_date', 'set__name', 'number']
 
     def __str__(self):
         return f'{self.card} in {self.set}'
