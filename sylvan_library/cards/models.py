@@ -286,6 +286,12 @@ class CardPrinting(models.Model):
         return f'{self.card} in {self.set}'
 
     def get_set_keyrune_code(self):
+        """
+        Gets the keyrune code that should be used for this printing
+        In 99% of all cases, this will return the same value as printing.set.keyrune_code
+        But for Guild Kit printings, the guild symbol should be used instead
+        :return:
+        """
         if self.set.code in ('GK1', 'GK2') and self.watermark:
             return self.watermark.lower()
 
