@@ -109,7 +109,7 @@ class Command(BaseCommand):
         # The event page will default to the winning deck, so the page can be parsed as a deck
         self.parse_deck(event_uri)
 
-        soup = BeautifulSoup(resp.text)
+        soup = BeautifulSoup(resp.text, features='html.parser')
         deck_links = soup.select('div.hover_tr div.S14 a')
         for link in deck_links:
             href = link.attrs['href']
@@ -132,7 +132,7 @@ class Command(BaseCommand):
 
         resp = requests.get(deck_uri)
         resp.raise_for_status()
-        soup = BeautifulSoup(resp.text)
+        soup = BeautifulSoup(resp.text, features='html.parser')
         deck_table = soup.select('table.Stable')[1]
         tables = deck_table.find_all('table')
         with transaction.atomic():
