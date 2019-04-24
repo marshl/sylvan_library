@@ -48,11 +48,10 @@ class Command(BaseCommand):
             return
 
         all_printings = CardPrinting.objects \
-            .filter(printed_languages__image__isnull=True) \
-            .filter(scryfall_id__isnull=False) \
-            .prefetch_related('set') \
-            .prefetch_related('printed_languages__language') \
-            .prefetch_related('printed_languages__image') \
+            .filter(printed_languages__image__isnull=True,
+                    printed_languages__language__code__isnull=False,
+                    scryfall_id__isnull=False) \
+            .prefetch_related('set', 'printed_languages__language', 'printed_languages__image') \
             .distinct()
 
         for i in range(0, self.download_thread_count):
