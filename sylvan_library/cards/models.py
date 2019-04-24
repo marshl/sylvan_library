@@ -202,7 +202,7 @@ class Card(models.Model):
     links = models.ManyToManyField('self')
 
     @staticmethod
-    def get_random_card():
+    def get_random_card() -> 'Card':
         """
         Gets a card chosen at random
         :return:
@@ -285,7 +285,7 @@ class CardPrinting(models.Model):
     def __str__(self):
         return f'{self.card} in {self.set}'
 
-    def get_set_keyrune_code(self):
+    def get_set_keyrune_code(self) -> str:
         """
         Gets the keyrune code that should be used for this printing
         In 99% of all cases, this will return the same value as printing.set.keyrune_code
@@ -297,7 +297,7 @@ class CardPrinting(models.Model):
 
         return self.set.keyrune_code
 
-    def get_user_ownership_count(self, user: User, prefetched: bool = False):
+    def get_user_ownership_count(self, user: User, prefetched: bool = False) -> int:
         """
         Returns the total number of cards that given user owns of this printing
         :param prefetched: Whether to use prefetched data, or to get it from the database again
@@ -594,7 +594,7 @@ class Language(models.Model):
         return self.name
 
     @staticmethod
-    def english():
+    def english() -> 'Language':
         """
         Gets the cached english language object (English is the default language, and it used
         quite a lot, so this reduces the number of queries made quite a bit)

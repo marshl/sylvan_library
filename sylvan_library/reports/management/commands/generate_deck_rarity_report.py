@@ -64,8 +64,8 @@ class Command(BaseCommand):
         """
         return [d['date_created'] for d in decks.values('date_created').distinct()]
 
-    def get_rarity_ratio_rows(self, dates: List[date], decks: QuerySet, exclude_lands: bool=False)\
-            -> List[List[float]]:
+    def get_rarity_ratio_rows(self, dates: List[date], decks: QuerySet,
+                              exclude_lands: bool = False) -> List[List[float]]:
         """
         Gets the rows of rarity ratios for each of the given dates
         :param dates: The dates to create the rarity ratios for
