@@ -26,11 +26,24 @@ class Command(BaseCommand):
            'download_tournament_decks_report'
 
     def __init__(self, stdout=None, stderr=None, no_color=False):
-        self.rarities = ['L', 'C', 'U', 'R', 'M']
+        self.rarities = ['C', 'U', 'R', 'M']
         register_matplotlib_converters()
         super().__init__(stdout=stdout, stderr=stderr, no_color=no_color)
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--exclude-lands',
+            action='store_true',
+            dest='exclude_lands',
+            default=False,
+            help='Eclude all cards with the "land" type from the result',
+        )
+
     def handle(self, *args, **options):
+
+        if not options['exclude_lands']:
+            self.rarities.insert(0, 'L')
+
         output_path = os.path.join('reports', 'output', 'deck_rarity_progression.png')
         if os.path.exists(output_path):
             os.remove(output_path)
@@ -38,7 +51,7 @@ class Command(BaseCommand):
         owner = User.objects.get(username=download_tournament_decks.Command.deck_owner_username)
         decks = Deck.objects.filter(owner=owner).prefetch_related('cards__card__printings__set')
         dates = self.get_dates(decks)
-        rows = self.get_rarity_ratio_rows(dates, decks)
+        rows = self.get_rarity_ratio_rows(dates, decks, options['exclude_lands'])
         dataframe = self.generate_dataframe(dates, rows)
         self.generate_plot(dataframe, output_path)
 
@@ -51,11 +64,13 @@ class Command(BaseCommand):
         """
         return [d['date_created'] for d in decks.values('date_created').distinct()]
 
-    def get_rarity_ratio_rows(self, dates: List[date], decks: QuerySet) -> List[List[float]]:
+    def get_rarity_ratio_rows(self, dates: List[date], decks: QuerySet, exclude_lands: bool=False)\
+            -> List[List[float]]:
         """
         Gets the rows of rarity ratios for each of the given dates
         :param dates: The dates to create the rarity ratios for
         :param decks: The queryset of decks
+        :param exclude_lands: Whether to exclude lands from the results
         :return: The rarity ratio rows
         """
         rows = []
@@ -67,7 +82,7 @@ class Command(BaseCommand):
                 if sum(x.count for x in deck.cards.all()) < 60:
                     continue
 
-                rarity_ratios = self.get_deck_rarity_ratios(deck)
+                rarity_ratios = self.get_deck_rarity_ratios(deck, exclude_lands)
                 for idx, rarity in enumerate(self.rarities):
                     row[idx] += rarity_ratios[rarity]
 
@@ -110,15 +125,20 @@ class Command(BaseCommand):
 
         fig.savefig(output_path)
 
-    def get_deck_rarity_ratios(self, deck: Deck) -> dict:
+    def get_deck_rarity_ratios(self, deck: Deck, exclude_lands: bool = False) -> dict:
         """
         Gets the rarity ratios for a single deck
         :param deck: The deck
+        :param exclude_lands: Whether to exclude lands from the results or not
         :return: The rarity ratios
         """
         counts = {r: 0 for r in self.rarities}
         total_count = 0
+
         for deck_card in deck.cards.all():
+            if exclude_lands and 'Land' in deck_card.card.type:
+                continue
+
             if 'Basic' in deck_card.card.type:
                 counts['L'] += deck_card.count
             else:
