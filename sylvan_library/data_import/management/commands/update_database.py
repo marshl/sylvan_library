@@ -512,7 +512,6 @@ class Command(DataImportCommand):
         """
         Finds the linkages between Card objects and adds them
         :param staged_sets:
-        :return:
         """
         for staged_set in staged_sets:
 
@@ -531,6 +530,12 @@ class Command(DataImportCommand):
 
                 for link_name in staged_card.get_other_names():
                     link_card = Card.objects.get(name=link_name, is_token=False)
+
+                    # Only link front-side meld cards with their other phase
+                    if card_obj.layout == 'meld' \
+                            and link_card.side != 'c' \
+                            and card_obj.side != 'c':
+                        continue
 
                     card_obj.links.add(link_card)
                     card_obj.full_clean()
