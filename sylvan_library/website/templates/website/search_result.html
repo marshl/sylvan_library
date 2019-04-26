@@ -35,13 +35,33 @@
                                 ({{ result.card.cmc | floatformat }})
                             {% endif %}
 
+
                             {% if render_usercards %}
                                 <span class="js-ownership-summary">
                                     {% include 'website/ownership_summary.html' with card=result.card %}
                                 </span>
                             {% endif %}
                         </h2>
-                        <div style="display:inline-flex;" class="subtitle typeLine">
+                        {% if result.card.layout == 'flip' or result.card.layout == 'split' or result.card.layout == 'transform' or result.card.layout == 'meld' %}
+                            <div class="subtitle">
+                                {% if result.card.layout == 'flip' or result.card.layout == 'split' %}
+                                    Other half of
+                                {% elif result.card.layout == 'transform' %}
+                                    Transforms {% if result.card.side == 'a' %}into{% else %}from{% endif %}
+                                {% elif result.card.layout == 'meld' and result.card.side != 'c' %}
+                                    Melds into
+                                {% else %}
+                                    Melded from
+                                {% endif %}
+                                {% for link in result.card.links.all %}
+                                    <span class="filter-link">
+                                        <a href="{% url 'website:name_search' %}?card_name={{ link.name }}"
+                                           target="_blank">{{ link.name }}</a>
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div style="display:inline-flex;" class="subtitle type-line">
                             <div style="display:inline-flex;">
                                 <span>{{ result.card.type }}</span>
                                 {% if result.card.subtype %}

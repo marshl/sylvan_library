@@ -324,7 +324,7 @@ body {
     color: green;
 }
 
-.subtitle.typeLine {
+.subtitle.type-line{
     font-weight: 700;
 }
 
@@ -912,4 +912,16 @@ body {
     right: -4px;
     bottom: -5px;
     background: #fff;
+}
+
+.filter-link {
+    transition: .3s;
+    cursor: hand;
+    border-bottom: 1px solid rgba(0,146,214,.7);
+}
+
+.filter-link:hover {
+    color: #333;
+    background-color: #0092d6;
+    border-radius: 2px;
 }
