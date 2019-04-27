@@ -1,24 +1,32 @@
 {% block content %}
     <div class="top-bar">
         <div class="top-bar-content">
-            <div class="top-bar-action">
-                <a style="color:white;text-decoration:none;" href="/">
-                    <span>SylvanLibrary</span>
-                </a>
-            </div>
-            <div class="top-bar-action">
-                <button style="">About</button>
-            </div>
+            <a href="/" class="top-bar-action">Sylvan Library</a>
+            <a class="top-bar-action" href="#">About</a>
             <div class="header-search-container">
                 <form action="{% url 'website:name_search' %}" method="get">
                     <div class="search-icon"></div>
                     <input type="text" class="search-input js-search-bar-input"
                            name="card_name"
-                           placeholder="Search card names. Use AND, OR and NOT e.g. (fire OR ice) AND a* NOT &quot;sword of&quot;"
+                           placeholder="Search card names"
                            value="{% if name_form %}{{ name_form.card_name.value }}{% endif %}">
                     <input type="submit" style="display: none;">
                 </form>
             </div>
+            {% if not request.user.is_authenticated %}
+                <a class="top-bar-action" href="{% url 'admin:login' %}">Login</a>
+                <a class="top-bar-action" href="{% url 'admin:login' %}">Sign Up</a>
+            {% else %}
+                <a class="top-bar-action profile-button js-profile-button" href="#">
+                    {{ request.user.username }}
+                </a>
+                <div class="profile-container js-profile-container" style="display: none;" data-expanded="0">
+                    <p>{{ request.user.username }} {{ request.user.email }}</p>
+                    <p>Date joined {{ request.user.date_joined }}</p>
+                    <p><a href="{% url 'website:decks' %}">My Decks</a></p>
+                    <p><a href="{% url 'admin:logout' %}">Log out</a></p>
+                </div>
+            {% endif %}
         </div>
     </div>
 {% endblock %}

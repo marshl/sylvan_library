@@ -206,3 +206,10 @@ def ajax_search_result_set_summary(request, printing_id: int):
         'card': printing.card,
         'selected_printing': printing,
     })
+
+
+def decks(request):
+    pass
+
+def deck_detail(request, deck_id: int):
+    pass
