@@ -3,9 +3,18 @@ Forms for the website module
 """
 
 from django import forms
-from django_select2.forms import Select2MultipleWidget
+from django_select2.forms import Select2MultipleWidget, Select2Widget
 
-from cards.models import CardPrinting, Colour, Language, PhysicalCard, Rarity, Set
+from cards.models import (
+    Card,
+    CardPrinting,
+    Colour,
+    Deck,
+    Language,
+    PhysicalCard,
+    Rarity,
+    Set
+)
 from cardsearch.fieldsearch import FieldSearch
 from cardsearch.namesearch import NameSearch
 
@@ -220,3 +229,23 @@ class FieldSearchForm(SearchForm):
         search.build_parameters()
         search.search(self.get_page_number())
         return search
+
+
+class DeckForm(forms.ModelForm):
+    class Meta:
+        model = Deck
+        fields = [
+            'date_created',
+            'name',
+            'description',
+        ]
+
+
+class DeckCardForm(forms.Form):
+    # # cards = AutoCompleteSelectField('cards', required=False, help_text=None)
+    # cards = forms.ModelMultipleChoiceField(
+    #     queryset=Card.objects.filter(is_token=False).order_by('name').all(),
+    #     widget=Select2MultipleWidget, required=False)
+
+    cards = forms.ModelMultipleChoiceField(queryset=Card.objects.all().order_by('name'),
+                                          widget=Select2MultipleWidget, required=False)

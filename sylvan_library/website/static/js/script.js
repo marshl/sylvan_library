@@ -25,7 +25,6 @@ $(function () {
 
     $(this).on('click', 'body', function (event) {
         let $profileContainer = $('.js-profile-container');
-        console.log($profileContainer.data('expanded'));
         if (!$profileContainer.data('expanded')) {
             return;
         }

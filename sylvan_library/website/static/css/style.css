@@ -724,6 +724,18 @@ body {
     min-width: 600px;
 }
 
+.main-content {
+    background-color: #222;
+    width: 100%;
+    max-width: 1000px;
+    position: relative;
+    margin: 0 auto;
+}
+
+.body-content h1 {
+    color: white;
+}
+
 .filter-container .select-group {
     width: 100%;
 }

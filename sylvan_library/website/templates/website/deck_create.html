@@ -1,0 +1,22 @@
+{% extends 'website/base.html' %}
+{% load widget_tweaks %}
+{% block content %}
+    <div class="body-content">
+        <div class="main-content">
+            <h1>Create new deck</h1>
+            <form method="POST">
+                {% csrf_token %}
+                <p>
+                    {{ deck_form.name.label }}
+                    {{ deck_form.name }}
+                </p>
+                <p>
+                    {{ deck_form.description.label }}
+                    {{ deck_form.description }}
+                </p>
+                {{ deck_form.date_created.as_hidden }}
+                <button type="submit">Create</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

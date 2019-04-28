@@ -1,25 +1,22 @@
 {% extends 'website/base.html' %}
 {% block content %}
+    <p>Hello</p>
 
-<p>Hello</p>
+    {% for set in sets %}
+        <i class="ss ss-{{ set.code.lower }}"></i>
+    {% endfor %}
+    <p>
+        <span class="mi-split">
+            <i class="mi mi-R"></i><i class="mi mi-G"></i>
+        </span>: Add
+            <i class="mi mi-C"></i>
+            <span class="mi-split">
+            <i class="mi mi-W"></i> <i class="mi mi-U"></i>
+        </span>
+        <i class="mi mi-R"></i> to you mana pool'
+    </p>
 
-{% for set in sets %}
-    <i class="ss ss-{{ set.code.lower }}"></i>
-{% endfor %}
-
-
-<p>
-    <span class="mi-split">
-        <i class="mi mi-R"></i><i class="mi mi-G"></i>
-    </span>: Add
-    <i class="mi mi-C"></i>
-    <span class="mi-split">
-        <i class="mi mi-W"></i> <i class="mi mi-U"></i>
-    </span>
-    <i class="mi mi-R"></i> to you mana pool'
-</p>
-
-<span class="mi-split"><i class="mi mi-b"></i> <i class="mi mi-g"></i></span>
-<span class="mi-split mi-shadow"><i class="mi mi-b"></i><i class="mi mi-g"></i></span>
-<span class="mi-split"><i class="mi mi-2"></i><i class="mi mi-g"></i></span>
+    <span class="mi-split"><i class="mi mi-b"></i> <i class="mi mi-g"></i></span>
+    <span class="mi-split mi-shadow"><i class="mi mi-b"></i><i class="mi mi-g"></i></span>
+    <span class="mi-split"><i class="mi mi-2"></i><i class="mi mi-g"></i></span>
 {% endblock %}

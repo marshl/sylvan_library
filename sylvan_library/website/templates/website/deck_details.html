@@ -1,0 +1,49 @@
+{% extends 'website/base.html' %}
+{% load widget_tweaks %}
+{% load staticfiles %}
+{% block content %}
+    <div class="body-content">
+        <div class="main-content">
+            <h1>{{ deck.name }}</h1>
+
+            {% for deck_card in deck.cards.all %}
+                {% include 'website/deck_card.html' with deck_card=deck_card %}
+            {% endfor %}
+
+            <div class="ui-widget">
+                <label for="birds">Birds: </label>
+                <label for="qty">Qty</label>
+                <input type="number" id="qty"/>
+                <input id="birds">
+            </div>
+
+        </div>
+        <script>
+            $(function () {
+                function log(message) {
+                    $("<div>").text(message).prependTo("#log");
+                    $("#log").scrollTop(0);
+                }
+
+                $("#birds").autocomplete({
+                    source: function (request, response) {
+                        $.ajax({
+                            url: "{% url 'website:deck_card_search' %}",
+                            data: {
+                                card_name: request.term
+                            },
+                            success: function (data) {
+                                console.log(data);
+                                response(data.cards);
+                            }
+                        });
+                    },
+                    minLength: 2,
+                    select: function (event, ui) {
+                        log("Selected: " + ui.item.value + " aka " + ui.item.id);
+                    }
+                });
+            });
+        </script>
+    </div>
+{% endblock %}

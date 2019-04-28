@@ -559,9 +559,11 @@ class Deck(models.Model):
     Model for a user owned deck of cards
     """
     date_created = models.DateField()
-    last_modified = models.DateField()
+    last_modified = models.DateField(auto_now=True)
 
     name = models.CharField(max_length=200)
+    description = models.CharField(max_length=9999, null=True, blank=True)
+
     owner = models.ForeignKey(User, related_name='decks', on_delete=models.CASCADE)
 
     def __str__(self):

@@ -1,0 +1,14 @@
+{% extends 'website/base.html' %}
+{% load widget_tweaks %}
+{% block content %}
+    <div class="body-content">
+        <div class="main-content">
+            <h1>My Decks</h1>
+            <a href="{% url 'website:create_deck' %}">Create New Deck</a>
+            {% for deck in decks %}
+                <p>
+                    <a href="{% url 'website:deck_detail' deck_id=deck.id %}">{{ deck.name }}</a>
+                </p>
+            {% endfor %}
+        </div>
+{% endblock %}

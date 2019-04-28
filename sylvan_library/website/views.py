@@ -1,6 +1,7 @@
 """
 Module for all website views
 """
+import datetime
 import logging
 import random
 
@@ -13,12 +14,20 @@ from cards.models import (
     Card,
     CardPrinting,
     CardPrintingLanguage,
+    Deck,
+    DeckCard,
     PhysicalCard,
     Set,
     UserCardChange,
     UserOwnedCard,
 )
-from website.forms import FieldSearchForm, NameSearchForm, ChangeCardOwnershipForm
+from website.forms import (
+    FieldSearchForm,
+    NameSearchForm,
+    ChangeCardOwnershipForm,
+    DeckForm,
+    DeckCardForm,
+)
 
 logger = logging.getLogger('django')
 
@@ -209,7 +218,68 @@ def ajax_search_result_set_summary(request, printing_id: int):
 
 
 def decks(request):
-    pass
+    decks = Deck.objects.filter(owner=request.user)
+    return render(request, 'website/decks.html', {
+        'decks': decks.all(),
+    })
+
+
+# from ajax_select import register, LookupChannel
+#
+#
+# @register('cards')
+# class TagsLookup(LookupChannel):
+#     model = Card
+#
+#     def get_query(self, q, request):
+#         return self.model.objects.filter(name__icontains=q)
+#
+#     def format_item_display(self, item):
+#         return u"<span class='tag'>%s</span>" % item.name
+#
+
+from django.forms import Form
+from ajax_select.fields import AutoCompleteSelectField, AutoCompleteSelectMultipleField
+from django_select2.forms import Select2MultipleWidget, Select2Widget
+
+from django import forms
+
 
 def deck_detail(request, deck_id: int):
-    pass
+    deck = Deck.objects.get(pk=deck_id)
+    deck_form = DeckForm(instance=deck)
+    cards_form = DeckCardForm()
+    return render(request, 'website/deck_details.html', {
+        'deck': deck,
+        'deck_form': deck_form,
+        'cards_form': cards_form
+    })
+
+
+def create_deck(request):
+    if request.method == 'POST':
+        deck_form = DeckForm(request.POST)
+
+        if deck_form.is_valid():
+            deck = deck_form.instance
+            deck.owner = request.user
+            deck.full_clean()
+            deck.save()
+            return HttpResponseRedirect(f'../decks/{deck.id}')
+    else:
+        deck = Deck()
+        deck.date_created = datetime.date.today()
+        deck_form = DeckForm(instance=deck)
+
+    return render(request, 'website/deck_create.html', {
+        'deck_form': deck_form,
+    })
+
+
+def deck_card_search(request):
+    card_name = request.GET.get('card_name', '')
+    cards = list(Card.objects.filter(name__icontains=card_name, is_token=False).all())
+    cards.sort(key=lambda card: '0' + card_name
+        if card.name.lower().startswith(card_name.lower()) else '1' + card_name)
+    result = [{'label': card.name, 'value': card.name, 'id': card.id} for card in cards[:10]]
+    return JsonResponse({'cards': result})
