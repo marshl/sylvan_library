@@ -61,6 +61,9 @@ class SearchResult:
         assert self.selected_printing is None or self.card is None \
                or self.selected_printing in self.card.printings.all()
 
+    def is_planeswalker(self):
+        return self.card.type and 'Planeswalker' in self.card.type
+
 
 def create_colour_param(colour_params: List[Bit], param_class: type, match_colours: bool,
                         exclude_colours: bool) -> AndParam:
