@@ -730,6 +730,7 @@ body {
     max-width: 1000px;
     position: relative;
     margin: 0 auto;
+    padding: 2em;
 }
 
 .body-content h1 {
@@ -969,4 +970,30 @@ body {
     color: #333;
     background-color: #0092d6;
     border-radius: 2px;
+}
+
+.group-container {
+    display: flex;
+    flex-direction: column;
+    background: #3d6496;
+    border-radius: 5px;
+    padding: 15px;
+}
+
+.group-container .row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+}
+
+
+.group-container .field-container {
+    display: flex;
+    flex-direction: column;
+
+}
+
+.field-container label {
+
 }

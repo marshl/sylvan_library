@@ -230,13 +230,14 @@ class FieldSearchForm(SearchForm):
         search.search(self.get_page_number())
         return search
 
-
 class DeckForm(forms.ModelForm):
+
     class Meta:
         model = Deck
         fields = [
             'date_created',
             'name',
+            'format',
             'description',
         ]
 

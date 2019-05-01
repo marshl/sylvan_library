@@ -558,13 +558,50 @@ class Deck(models.Model):
     """
     Model for a user owned deck of cards
     """
+
+    FORMAT_CHOICES = (
+        ('standard', 'Standard'),
+        ('legacy', 'Legacy'),
+        ('prerelease', 'Pre-release'),
+        ('mtgo', 'MTGO'),
+        ('unformat', 'Unformat'),
+        ('unknown', 'Unknown'),
+        ('heirloom', 'Heirloom'),
+        ('vintage', 'Vintage'),
+        ('edh', 'Commander / EDH'),
+        ('archenemy', 'Archenemy'),
+        ('planechase', 'Planechase'),
+        ('vanguard', 'Vanguard'),
+        ('modern', 'Modern'),
+        ('pauper', 'Pauper'),
+        ('noble', 'Noble'),
+        ('casual', 'Casual'),
+        ('hero', 'Hero'),
+        ('quest_magic_rpg', 'Quest Magic RPGs'),
+        ('quest_magic', 'Quest Magic'),
+        ('block_constructed', 'Block Constructed'),
+        ('limited', 'Limited'),
+        ('duel_commander', 'Duel Commander'),
+        ('tiny_leaders', 'Tiny Leaders'),
+        ('highlander', 'Highlander'),
+        ('magic_duels', 'Magic Duels'),
+        ('penny_dreadful', 'Penny Dreadful'),
+        ('frontier', 'Frontier'),
+        ('leviathan', 'Leviathan'),
+        ('1v1_commander', '1v1 Commander'),
+        ('pauper_edh', 'Pauper EDH'),
+        ('canadian_highlander', 'Canadian Highlander'),
+        ('brawl', 'Brawl'),
+        ('arena', 'Arena'),
+        ('oathbreaker', 'Oathbreaker'),
+    )
+
     date_created = models.DateField()
     last_modified = models.DateField(auto_now=True)
-
     name = models.CharField(max_length=200)
     description = models.CharField(max_length=9999, null=True, blank=True)
-
     owner = models.ForeignKey(User, related_name='decks', on_delete=models.CASCADE)
+    format = models.CharField(max_length=50, choices=FORMAT_CHOICES)
 
     def __str__(self):
         return self.name
@@ -574,10 +611,18 @@ class DeckCard(models.Model):
     """
     Model for a card in a Deck
     """
-    count = models.IntegerField()
 
+    BOARD_CHOICES = (
+        ('main', 'MAIN'),
+        ('side', 'SIDE'),
+        ('maybe', 'MAYBE'),
+        ('acquire', 'ACQUIRE'),
+    )
+
+    count = models.IntegerField()
     card = models.ForeignKey(Card, related_name='deck_cards', on_delete=models.CASCADE)
     deck = models.ForeignKey(Deck, related_name='cards', on_delete=models.CASCADE)
+    board = models.CharField(max_length=20, choices=BOARD_CHOICES, default='main')
 
     def __str__(self):
         return f'{self.card} in {self.deck}'
