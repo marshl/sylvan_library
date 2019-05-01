@@ -26,7 +26,6 @@ from website.forms import (
     NameSearchForm,
     ChangeCardOwnershipForm,
     DeckForm,
-    DeckCardForm,
 )
 
 logger = logging.getLogger('django')
@@ -248,11 +247,9 @@ from django import forms
 def deck_detail(request, deck_id: int):
     deck = Deck.objects.get(pk=deck_id)
     deck_form = DeckForm(instance=deck)
-    cards_form = DeckCardForm()
     return render(request, 'website/deck_details.html', {
         'deck': deck,
         'deck_form': deck_form,
-        'cards_form': cards_form
     })
 
 
@@ -279,7 +276,7 @@ def create_deck(request):
 def deck_card_search(request):
     card_name = request.GET.get('card_name', '')
     cards = list(Card.objects.filter(name__icontains=card_name, is_token=False).all())
-    cards.sort(key=lambda card: '0' + card_name
-        if card.name.lower().startswith(card_name.lower()) else '1' + card_name)
+    cards.sort(key=lambda card: '0' + card.name.lower()
+        if card.name.lower().startswith(card_name.lower()) else '1' + card.name.lower())
     result = [{'label': card.name, 'value': card.name, 'id': card.id} for card in cards[:10]]
     return JsonResponse({'cards': result})

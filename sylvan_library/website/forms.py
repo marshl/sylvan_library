@@ -4,12 +4,14 @@ Forms for the website module
 
 from django import forms
 from django_select2.forms import Select2MultipleWidget, Select2Widget
+from django.core.validators import MinValueValidator
 
 from cards.models import (
     Card,
     CardPrinting,
     Colour,
     Deck,
+    DeckCard,
     Language,
     PhysicalCard,
     Rarity,
@@ -230,7 +232,20 @@ class FieldSearchForm(SearchForm):
         search.search(self.get_page_number())
         return search
 
+
+
+
 class DeckForm(forms.ModelForm):
+    cards = forms.ModelMultipleChoiceField(queryset=Card.objects.all().order_by('name'),
+                                           widget=Select2MultipleWidget, required=False)
+    quantity = forms.IntegerField(validators=[MinValueValidator(1)])
+
+    main_board = forms.CharField(widget=forms.widgets.Textarea())
+    side_board = forms.CharField(widget=forms.widgets.Textarea())
+    maybe_board = forms.CharField(widget=forms.widgets.Textarea())
+    acquire_board = forms.CharField(widget=forms.widgets.Textarea())
+
+    card_board = forms.ChoiceField(choices=DeckCard.BOARD_CHOICES)
 
     class Meta:
         model = Deck
@@ -241,12 +256,6 @@ class DeckForm(forms.ModelForm):
             'description',
         ]
 
-
-class DeckCardForm(forms.Form):
-    # # cards = AutoCompleteSelectField('cards', required=False, help_text=None)
-    # cards = forms.ModelMultipleChoiceField(
-    #     queryset=Card.objects.filter(is_token=False).order_by('name').all(),
-    #     widget=Select2MultipleWidget, required=False)
-
-    cards = forms.ModelMultipleChoiceField(queryset=Card.objects.all().order_by('name'),
-                                          widget=Select2MultipleWidget, required=False)
+        widgets = {
+            'date_created': forms.DateInput(attrs={'class': 'datepicker'}),
+        }

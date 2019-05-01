@@ -599,7 +599,7 @@ class Deck(models.Model):
     date_created = models.DateField()
     last_modified = models.DateField(auto_now=True)
     name = models.CharField(max_length=200)
-    description = models.CharField(max_length=9999, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
     owner = models.ForeignKey(User, related_name='decks', on_delete=models.CASCADE)
     format = models.CharField(max_length=50, choices=FORMAT_CHOICES)
 
@@ -613,10 +613,10 @@ class DeckCard(models.Model):
     """
 
     BOARD_CHOICES = (
-        ('main', 'MAIN'),
-        ('side', 'SIDE'),
-        ('maybe', 'MAYBE'),
-        ('acquire', 'ACQUIRE'),
+        ('main', 'Main'),
+        ('side', 'Side'),
+        ('maybe', 'Maybe'),
+        ('acquire', 'Acquire'),
     )
 
     count = models.IntegerField()

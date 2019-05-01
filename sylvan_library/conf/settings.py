@@ -76,3 +76,5 @@ TEMPLATES = [
         },
     },
 ]
+
+DATE_FORMAT = "Y-m-d"

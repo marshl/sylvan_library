@@ -34,4 +34,6 @@ $(function () {
             return false;
         }
     });
+
+    $( ".datepicker" ).datepicker({'dateFormat': 'yy-mm-dd'});
 });

@@ -1,49 +1,108 @@
 {% extends 'website/base.html' %}
 {% load widget_tweaks %}
 {% load staticfiles %}
+{% block head %}
+    <script>
+        var DECK_CARD_SEARCH_URL = '{% url 'website:deck_card_search' %}';
+    </script>
+    <script src="{% static "js/decks.js" %}" type="text/javascript"></script>
+{% endblock %}
 {% block content %}
     <div class="body-content">
-        <div class="main-content">
-            <h1>{{ deck.name }}</h1>
-
-            {% for deck_card in deck.cards.all %}
-                {% include 'website/deck_card.html' with deck_card=deck_card %}
-            {% endfor %}
-
-            <div class="ui-widget">
-                <label for="birds">Birds: </label>
-                <label for="qty">Qty</label>
-                <input type="number" id="qty"/>
-                <input id="birds">
+        <div class="main-content" style="color:white;">
+            <div class="group-container">
+                <div class="row">
+                    <div class="field-container">
+                        {{ deck_form.name.label_tag }}
+                        {{ deck_form.name }}
+                    </div>
+                    <div class="field-container">
+                        {{ deck_form.format.label_tag }}
+                        {{ deck_form.format }}
+                    </div>
+                    <div class="field-container">
+                        {{ deck_form.date_created.label_tag }}
+                        {{ deck_form.date_created }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="field-container">
+                        {{ deck_form.description.label_tag }}
+                        {{ deck_form.description }}
+                    </div>
+                </div>
             </div>
 
-        </div>
-        <script>
-            $(function () {
-                function log(message) {
-                    $("<div>").text(message).prependTo("#log");
-                    $("#log").scrollTop(0);
-                }
+            <div class="group-container">
+                <div class="row">
+                    <div class="column">
+                        <div class="row">
+                            <div class="field-container">
+                                <label for="card-input">Card</label>
+                                <input id="card-input"/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="field-container">
+                                {{ deck_form.quantity.label_tag }}
+                                {{ deck_form.quantity }}
+                            </div>
+                            <div class="field-container">
+                                {{ deck_form.card_board.label_tag }}
+                                {{ deck_form.card_board }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <button>ADd card to board >></button>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="field-container">
+                            <div class="search-result-tab-container">
 
-                $("#birds").autocomplete({
-                    source: function (request, response) {
-                        $.ajax({
-                            url: "{% url 'website:deck_card_search' %}",
-                            data: {
-                                card_name: request.term
-                            },
-                            success: function (data) {
-                                console.log(data);
-                                response(data.cards);
-                            }
-                        });
-                    },
-                    minLength: 2,
-                    select: function (event, ui) {
-                        log("Selected: " + ui.item.value + " aka " + ui.item.id);
-                    }
-                });
-            });
-        </script>
-    </div>
+                                <div class="tab-container js-deck-board-tab-container">
+                                    <ul class="tab-list">
+                                        <li class="tab js-board-tab selected"
+                                            data-tab-type="main">
+                                            Main
+                                        </li>
+                                        <li class="tab js-board-tab"
+                                            data-tab-type="side">
+                                            Side
+                                        </li>
+                                        <li class="tab js-board-tab"
+                                            data-tab-type="maybe">
+                                            Maybe
+                                        </li>
+                                        <li class="tab js-board-tab"
+                                            data-tab-type="acquire">
+                                            Acquire
+                                        </li>
+                                    </ul>
+                                    <div class="js-board-tab-content"
+                                         data-tab-type="main">
+                                        {{ deck_form.main_board }}
+                                    </div>
+                                    <div class="js-board-tab-content"
+                                         data-tab-type="side"
+                                         style="display:none;">
+                                        {{ deck_form.side_board }}
+                                    </div>
+                                    <div class="js-board-tab-content"
+                                         data-tab-type="maybe"
+                                         style="display:none;">
+                                        {{ deck_form.maybe_board }}
+                                    </div>
+                                    <div class="js-board-tab-content"
+                                         data-tab-type="acquire"
+                                         style="display:none;">
+                                        {{ deck_form.acquire_board }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 {% endblock %}
