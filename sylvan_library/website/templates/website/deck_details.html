@@ -10,7 +10,12 @@
 {% block content %}
     <div class="body-content">
         <div class="main-content" style="color:white;">
-            <form action="{% url 'website:deck_detail' deck_id=deck_form.instance.id %}" method="post">
+            <form method="post"
+                    {% if deck_form.instance.id %}
+                  action="{% url 'website:deck_detail' deck_id=deck_form.instance.id %}"
+                    {% else %}
+                  action="{% url 'website:create_deck' %}"
+                    {% endif %}>
                 {% csrf_token %}
                 <div class="group-container">
                     <div class="row">

@@ -6,6 +6,7 @@ import logging
 import random
 
 from django.db import transaction
+from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 
@@ -222,7 +223,7 @@ def decks(request):
     })
 
 
-def deck_detail(request, deck_id: int):
+def deck_detail(request, deck_id: int) -> HttpResponse:
     deck = Deck.objects.get(pk=deck_id)
     if deck.owner != request.user:
         return HttpResponseRedirect(f'../decks')
@@ -245,10 +246,9 @@ def deck_detail(request, deck_id: int):
 
     else:
         deck_form = DeckForm(instance=deck)
-        deck_form.populate_boards()
 
+    deck_form.populate_boards()
     return render(request, 'website/deck_details.html', {
-        'deck': deck,
         'deck_form': deck_form,
     })
 
@@ -258,17 +258,31 @@ def create_deck(request):
         deck_form = DeckForm(request.POST)
 
         if deck_form.is_valid():
-            deck = deck_form.instance
-            deck.owner = request.user
-            deck.full_clean()
-            deck.save()
-            return HttpResponseRedirect(f'../decks/{deck.id}')
+            try:
+                deck = deck_form.instance
+                deck.owner = request.user
+                deck_form.full_clean()
+                with transaction.atomic():
+                    deck.full_clean()
+                    deck.save()
+                    deck.cards.all().delete()
+
+                    for deck_card in deck_form.get_cards():
+                        deck_card.full_clean()
+                        deck_card.save()
+
+                if not request.POST.get('save_continue'):
+                    return redirect('website:decks')
+            except ValidationError as error:
+                pass
     else:
         deck = Deck()
+        deck.owner = request.user
         deck.date_created = datetime.date.today()
         deck_form = DeckForm(instance=deck)
 
-    return render(request, 'website/deck_create.html', {
+    deck_form.populate_boards()
+    return render(request, 'website/deck_details.html', {
         'deck_form': deck_form,
     })
 

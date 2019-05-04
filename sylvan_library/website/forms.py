@@ -278,7 +278,8 @@ class DeckForm(forms.ModelForm):
 
     def populate_boards(self) -> None:
         for board_key in ['main', 'side', 'maybe', 'acquire']:
-            board_cards = self.instance.cards.filter(board=board_key)
+            board_cards = self.instance.cards.filter(board=board_key) \
+                .order_by('card__name')
             self.fields[board_key + '_board'].initial = '\n'.join(
                 self.card_as_text(card) for card in board_cards
             )
@@ -308,7 +309,7 @@ class DeckForm(forms.ModelForm):
         return deck_cards
 
     def card_from_text(self, text: str, board: str) -> Optional[DeckCard]:
-        if text is None or text == '':
+        if text is None or text.strip() == '':
             return None
 
         matches = re.match(r'(?P<count>\d+)x? *(?P<name>.+)', text)

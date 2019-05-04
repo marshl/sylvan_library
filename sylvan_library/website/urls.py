@@ -40,6 +40,6 @@ urlpatterns = [
     # Decks
     path('decks/card/', views.deck_card_search, name='deck_card_search'),
     path('decks/', views.decks, name='decks'),
-    path('decks/create', views.create_deck, name='create_deck'),
+    path('decks/create/', views.create_deck, name='create_deck'),
     path('decks/<int:deck_id>/', views.deck_detail, name='deck_detail'),
 ]
