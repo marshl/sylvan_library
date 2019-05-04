@@ -1,10 +1,13 @@
 """
 Forms for the website module
 """
+import re
+from typing import Dict, Optional, List
 
 from django import forms
-from django_select2.forms import Select2MultipleWidget, Select2Widget
 from django.core.validators import MinValueValidator
+from django.core.exceptions import ValidationError
+from django_select2.forms import Select2MultipleWidget
 
 from cards.models import (
     Card,
@@ -233,12 +236,11 @@ class FieldSearchForm(SearchForm):
         return search
 
 
-from typing import Dict, Optional, List
-import re
-from django.core.exceptions import ValidationError
-
-
 class DeckForm(forms.ModelForm):
+    """
+    Form for creating or updating a deck plus all of its cards
+    """
+
     cards = forms.ModelMultipleChoiceField(queryset=Card.objects.all().order_by('name'),
                                            widget=Select2MultipleWidget, required=False)
     quantity = forms.IntegerField(validators=[MinValueValidator(1)], required=False, min_value=1)
@@ -263,12 +265,20 @@ class DeckForm(forms.ModelForm):
             'date_created': forms.DateInput(attrs={'class': 'datepicker'}),
         }
 
-    def clean(self):
+    def clean(self) -> dict:
+        """
+        Validates the content of this form
+        :return: The cleaned data
+        """
         form_data = super().clean()
         self.get_cards()
         return form_data
 
     def get_boards(self) -> Dict[str, str]:
+        """
+        Gets the boards and their cleaned data
+        :return: The board keys to their text values
+        """
         return {
             'main': self.cleaned_data.get('main_board'),
             'side': self.cleaned_data.get('side_board'),
@@ -277,21 +287,22 @@ class DeckForm(forms.ModelForm):
         }
 
     def populate_boards(self) -> None:
+        """
+        Populates the text values of all teh boards
+        """
         for board_key in ['main', 'side', 'maybe', 'acquire']:
             board_cards = self.instance.cards.filter(board=board_key) \
                 .order_by('card__name')
             self.fields[board_key + '_board'].initial = '\n'.join(
-                self.card_as_text(card) for card in board_cards
+                card.as_deck_text() for card in board_cards
             )
 
-    def card_as_text(self, deck_card: DeckCard) -> str:
-        if deck_card.card.layout == 'flip':
-            card_name = ' // '.join(c.name for c in deck_card.card.links.all())
-        else:
-            card_name = deck_card.card.name
-        return f'{deck_card.count}x {card_name}'
-
     def get_cards(self) -> List[DeckCard]:
+        """
+        Gets the cards from all the boards in the deck.
+        :return: The list of DeckCards as long as they are all valid
+        :raises: ValidationError if ANY of the cards are invalid (wrong number, wrong name etc.)
+        """
         deck_cards = []
         validation_errors = []
         for board_key, board in self.get_boards().items():
@@ -309,6 +320,13 @@ class DeckForm(forms.ModelForm):
         return deck_cards
 
     def card_from_text(self, text: str, board: str) -> Optional[DeckCard]:
+        """
+        Parses a single line of text and returns the DeckCard for it
+        :param text: The text to parse
+        :param board: The board that the card belongs to
+        :return: A DeckCard object if it is valid
+        :raises: ValidationError if the card could not be parsed for some reason
+        """
         if text is None or text.strip() == '':
             return None
 

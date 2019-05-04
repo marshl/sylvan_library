@@ -61,7 +61,11 @@ class SearchResult:
         assert self.selected_printing is None or self.card is None \
                or self.selected_printing in self.card.printings.all()
 
-    def is_planeswalker(self):
+    def is_planeswalker(self) -> bool:
+        """
+        Returns true if this card result is a planeswalker card
+        :return: True if this result is a planeswalker, otherwise False
+        """
         return self.card.type and 'Planeswalker' in self.card.type
 
 

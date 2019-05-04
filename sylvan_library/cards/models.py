@@ -627,6 +627,17 @@ class DeckCard(models.Model):
     def __str__(self):
         return f'{self.card} in {self.deck}'
 
+    def as_deck_text(self) -> str:
+        """
+        COnverts this card to how it should appear in board text of the DeckForm
+        :return: The text representation version of the card for use in the DeckForm
+        """
+        if self.card.layout == 'flip':
+            card_name = ' // '.join(c.name for c in self.card.links.all())
+        else:
+            card_name = self.card.name
+        return f'{self.count}x {card_name}'
+
 
 class Language(models.Model):
     """

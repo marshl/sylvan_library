@@ -15,7 +15,6 @@ from cards.models import (
     CardPrinting,
     CardPrintingLanguage,
     Deck,
-    DeckCard,
     PhysicalCard,
     Set,
     UserCardChange,
@@ -217,9 +216,14 @@ def ajax_search_result_set_summary(request, printing_id: int):
 
 
 def decks(request):
-    decks = Deck.objects.filter(owner=request.user)
+    """
+    Shows the list of all decks the user owns
+    :param request: The HttpRequest
+    :return: THe HttpResponse
+    """
+    users_decks = Deck.objects.filter(owner=request.user)
     return render(request, 'website/decks.html', {
-        'decks': decks.all(),
+        'decks': users_decks.all(),
     })
 
 
@@ -273,7 +277,7 @@ def create_deck(request):
 
                 if not request.POST.get('save_continue'):
                     return redirect('website:decks')
-            except ValidationError as error:
+            except ValidationError:
                 pass
     else:
         deck = Deck()
@@ -287,10 +291,22 @@ def create_deck(request):
     })
 
 
-def deck_card_search(request):
+def deck_card_search(request) -> JsonResponse:
+    """
+    Returns a list of cards that can used in a deck
+    :param request: The Http Request
+    :return: A Json response with a list of cards that match the search
+    """
+    if 'card_name' not in request.GET:
+        return JsonResponse({'cards': []})
+
     card_name = request.GET.get('card_name', '')
     cards = list(Card.objects.filter(name__icontains=card_name, is_token=False).all())
-    cards.sort(key=lambda card: '0' + card.name.lower()
-    if card.name.lower().startswith(card_name.lower()) else '1' + card.name.lower())
+    cards.sort(
+        key=lambda card:
+        '0' + card.name.lower()
+        if card.name.lower().startswith(card_name.lower())
+        else '1' + card.name.lower()
+    )
     result = [{'label': card.name, 'value': card.name, 'id': card.id} for card in cards[:10]]
     return JsonResponse({'cards': result})
