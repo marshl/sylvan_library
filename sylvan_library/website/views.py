@@ -7,8 +7,7 @@ import random
 
 from django.db import transaction
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
-from django.shortcuts import render
-from django.shortcuts import get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 
 from cards.models import (
     Card,
@@ -223,30 +222,31 @@ def decks(request):
     })
 
 
-# from ajax_select import register, LookupChannel
-#
-#
-# @register('cards')
-# class TagsLookup(LookupChannel):
-#     model = Card
-#
-#     def get_query(self, q, request):
-#         return self.model.objects.filter(name__icontains=q)
-#
-#     def format_item_display(self, item):
-#         return u"<span class='tag'>%s</span>" % item.name
-#
-
-from django.forms import Form
-from ajax_select.fields import AutoCompleteSelectField, AutoCompleteSelectMultipleField
-from django_select2.forms import Select2MultipleWidget, Select2Widget
-
-from django import forms
-
-
 def deck_detail(request, deck_id: int):
     deck = Deck.objects.get(pk=deck_id)
-    deck_form = DeckForm(instance=deck)
+    if deck.owner != request.user:
+        return HttpResponseRedirect(f'../decks')
+
+    if request.method == 'POST':
+        deck_form = DeckForm(request.POST, instance=deck)
+        deck_form.full_clean()
+        if deck_form.is_valid():
+            with transaction.atomic():
+                deck.full_clean()
+                deck.save()
+                deck.cards.all().delete()
+
+                for deck_card in deck_form.get_cards():
+                    deck_card.full_clean()
+                    deck_card.save()
+
+            if not request.POST.get('save_continue'):
+                return redirect('website:decks')
+
+    else:
+        deck_form = DeckForm(instance=deck)
+        deck_form.populate_boards()
+
     return render(request, 'website/deck_details.html', {
         'deck': deck,
         'deck_form': deck_form,
@@ -277,6 +277,6 @@ def deck_card_search(request):
     card_name = request.GET.get('card_name', '')
     cards = list(Card.objects.filter(name__icontains=card_name, is_token=False).all())
     cards.sort(key=lambda card: '0' + card.name.lower()
-        if card.name.lower().startswith(card_name.lower()) else '1' + card.name.lower())
+    if card.name.lower().startswith(card_name.lower()) else '1' + card.name.lower())
     result = [{'label': card.name, 'value': card.name, 'id': card.id} for card in cards[:10]]
     return JsonResponse({'cards': result})

@@ -10,99 +10,121 @@
 {% block content %}
     <div class="body-content">
         <div class="main-content" style="color:white;">
-            <div class="group-container">
-                <div class="row">
-                    <div class="field-container">
-                        {{ deck_form.name.label_tag }}
-                        {{ deck_form.name }}
-                    </div>
-                    <div class="field-container">
-                        {{ deck_form.format.label_tag }}
-                        {{ deck_form.format }}
-                    </div>
-                    <div class="field-container">
-                        {{ deck_form.date_created.label_tag }}
-                        {{ deck_form.date_created }}
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="field-container">
-                        {{ deck_form.description.label_tag }}
-                        {{ deck_form.description }}
-                    </div>
-                </div>
-            </div>
-
-            <div class="group-container">
-                <div class="row">
-                    <div class="column">
-                        <div class="row">
-                            <div class="field-container">
-                                <label for="card-input">Card</label>
-                                <input id="card-input"/>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="field-container">
-                                {{ deck_form.quantity.label_tag }}
-                                {{ deck_form.quantity }}
-                            </div>
-                            <div class="field-container">
-                                {{ deck_form.card_board.label_tag }}
-                                {{ deck_form.card_board }}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <button>ADd card to board >></button>
-                        </div>
-                    </div>
-                    <div class="column">
+            <form action="{% url 'website:deck_detail' deck_id=deck_form.instance.id %}" method="post">
+                {% csrf_token %}
+                <div class="group-container">
+                    <div class="row">
                         <div class="field-container">
-                            <div class="search-result-tab-container">
+                            {{ deck_form.name.label_tag }}
+                            {{ deck_form.name }}
+                        </div>
+                        <div class="field-container">
+                            {{ deck_form.format.label_tag }}
+                            {{ deck_form.format }}
+                        </div>
+                        <div class="field-container">
+                            {{ deck_form.date_created.label_tag }}
+                            {{ deck_form.date_created }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="field-container">
+                            {{ deck_form.description.label_tag }}
+                            {{ deck_form.description }}
+                        </div>
+                    </div>
+                </div>
 
-                                <div class="tab-container js-deck-board-tab-container">
-                                    <ul class="tab-list">
-                                        <li class="tab js-board-tab selected"
-                                            data-tab-type="main">
-                                            Main
-                                        </li>
-                                        <li class="tab js-board-tab"
-                                            data-tab-type="side">
-                                            Side
-                                        </li>
-                                        <li class="tab js-board-tab"
-                                            data-tab-type="maybe">
-                                            Maybe
-                                        </li>
-                                        <li class="tab js-board-tab"
-                                            data-tab-type="acquire">
-                                            Acquire
-                                        </li>
-                                    </ul>
-                                    <div class="js-board-tab-content"
-                                         data-tab-type="main">
-                                        {{ deck_form.main_board }}
-                                    </div>
-                                    <div class="js-board-tab-content"
-                                         data-tab-type="side"
-                                         style="display:none;">
-                                        {{ deck_form.side_board }}
-                                    </div>
-                                    <div class="js-board-tab-content"
-                                         data-tab-type="maybe"
-                                         style="display:none;">
-                                        {{ deck_form.maybe_board }}
-                                    </div>
-                                    <div class="js-board-tab-content"
-                                         data-tab-type="acquire"
-                                         style="display:none;">
-                                        {{ deck_form.acquire_board }}
+                <div class="group-container">
+                    <div class="row">
+                        <div class="column">
+                            <div class="row">
+                                <div class="field-container">
+                                    <label for="card-input">Card</label>
+                                    <input id="card-input"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="field-container">
+                                    {{ deck_form.quantity.label_tag }}
+                                    {{ deck_form.quantity }}
+                                </div>
+                                <div class="field-container">
+                                    {{ deck_form.card_board.label_tag }}
+                                    {{ deck_form.card_board }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <button class="js-add-card-to-board-btn">Add card to board >></button>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field-container">
+                                <div class="search-result-tab-container">
+
+                                    <div class="tab-container js-deck-board-tab-container" data-selected-tab="main">
+                                        <ul class="tab-list">
+                                            <li class="tab js-board-tab selected"
+                                                data-tab-type="main">
+                                                Main
+                                            </li>
+                                            <li class="tab js-board-tab"
+                                                data-tab-type="side">
+                                                Side
+                                            </li>
+                                            <li class="tab js-board-tab"
+                                                data-tab-type="maybe">
+                                                Maybe
+                                            </li>
+                                            <li class="tab js-board-tab"
+                                                data-tab-type="acquire">
+                                                Acquire
+                                            </li>
+                                        </ul>
+                                        <div class="js-board-tab-content"
+                                             data-tab-type="main">
+                                            {{ deck_form.main_board }}
+                                        </div>
+                                        <div class="js-board-tab-content"
+                                             data-tab-type="side"
+                                             style="display:none;">
+                                            {{ deck_form.side_board }}
+                                        </div>
+                                        <div class="js-board-tab-content"
+                                             data-tab-type="maybe"
+                                             style="display:none;">
+                                            {{ deck_form.maybe_board }}
+                                        </div>
+                                        <div class="js-board-tab-content"
+                                             data-tab-type="acquire"
+                                             style="display:none;">
+                                            {{ deck_form.acquire_board }}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+
+                {% if deck_form.non_field_errors %}
+                    <div class="group-container">
+                        {% for error in deck_form.non_field_errors %}
+                            <div>
+                                <strong>{{ error|escape }}</strong>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="group-container">
+                    <div class="row">
+                        <input type="submit" name="save" value="Save"/>
+                        <input type="submit" name="save_continue" value="Save &amp; Continue"/>
+                        <a href="{% url 'website:decks' %}">Cancel</a>
+                    </div>
+                </div>
+            </form>
         </div>
+    </div>
 {% endblock %}

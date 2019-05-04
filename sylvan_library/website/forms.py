@@ -233,17 +233,20 @@ class FieldSearchForm(SearchForm):
         return search
 
 
+from typing import Dict, Optional, List
+import re
+from django.core.exceptions import ValidationError
 
 
 class DeckForm(forms.ModelForm):
     cards = forms.ModelMultipleChoiceField(queryset=Card.objects.all().order_by('name'),
                                            widget=Select2MultipleWidget, required=False)
-    quantity = forms.IntegerField(validators=[MinValueValidator(1)])
+    quantity = forms.IntegerField(validators=[MinValueValidator(1)], required=False, min_value=1)
 
-    main_board = forms.CharField(widget=forms.widgets.Textarea())
-    side_board = forms.CharField(widget=forms.widgets.Textarea())
-    maybe_board = forms.CharField(widget=forms.widgets.Textarea())
-    acquire_board = forms.CharField(widget=forms.widgets.Textarea())
+    main_board = forms.CharField(widget=forms.widgets.Textarea(), required=False)
+    side_board = forms.CharField(widget=forms.widgets.Textarea(), required=False)
+    maybe_board = forms.CharField(widget=forms.widgets.Textarea(), required=False)
+    acquire_board = forms.CharField(widget=forms.widgets.Textarea(), required=False)
 
     card_board = forms.ChoiceField(choices=DeckCard.BOARD_CHOICES)
 
@@ -259,3 +262,86 @@ class DeckForm(forms.ModelForm):
         widgets = {
             'date_created': forms.DateInput(attrs={'class': 'datepicker'}),
         }
+
+    def clean(self):
+        form_data = super().clean()
+        self.get_cards()
+        return form_data
+
+    def get_boards(self) -> Dict[str, str]:
+        return {
+            'main': self.cleaned_data.get('main_board'),
+            'side': self.cleaned_data.get('side_board'),
+            'maybe': self.cleaned_data.get('maybe_board'),
+            'acquire': self.cleaned_data.get('acquire_board'),
+        }
+
+    def populate_boards(self) -> None:
+        for board_key in ['main', 'side', 'maybe', 'acquire']:
+            board_cards = self.instance.cards.filter(board=board_key)
+            self.fields[board_key + '_board'].initial = '\n'.join(
+                self.card_as_text(card) for card in board_cards
+            )
+
+    def card_as_text(self, deck_card: DeckCard) -> str:
+        if deck_card.card.layout == 'flip':
+            card_name = ' // '.join(c.name for c in deck_card.card.links.all())
+        else:
+            card_name = deck_card.card.name
+        return f'{deck_card.count}x {card_name}'
+
+    def get_cards(self) -> List[DeckCard]:
+        deck_cards = []
+        validation_errors = []
+        for board_key, board in self.get_boards().items():
+            for line in board.split('\n'):
+                try:
+                    deck_card = self.card_from_text(line, board_key)
+                    if deck_card:
+                        deck_cards.append(deck_card)
+                except ValidationError as error:
+                    validation_errors.append(error)
+
+        if validation_errors:
+            raise ValidationError(validation_errors)
+
+        return deck_cards
+
+    def card_from_text(self, text: str, board: str) -> Optional[DeckCard]:
+        if text is None or text == '':
+            return None
+
+        matches = re.match(r'(?P<count>\d+)x? *(?P<name>.+)', text)
+
+        if not matches:
+            raise ValidationError(f"Can't parse {text}")
+        card_name = matches['name'].strip()
+
+        if len(matches.groups()) == 1:
+            count = 1
+        else:
+            try:
+                count = int(matches['count'])
+            except TypeError:
+                raise ValidationError(f"Invalid count '{matches['count']}'' for {card_name}")
+
+        if '//' in card_name:
+            names = card_name.split('/')
+            card_name = names[0].strip()
+
+        try:
+            card = Card.objects.get(name=card_name, is_token=False)
+        except Card.DoesNotExist:
+            raise ValidationError(f'Unknown card "{card_name}"')
+
+        if card.layout == 'meld' and card.side == 'c':
+            raise ValidationError(f'Reverse side meld cards like {card.name} are not allowed')
+
+        if card.layout in ('scheme', 'planer', 'vanguard', 'emblem'):
+            raise ValidationError(f"You can't out {card.name} in a deck")
+
+        if card.layout in ('flip', 'split', 'transform') and card.side == 'b':
+            card = card.links.get(side='a')
+
+        deck_card = DeckCard(card=card, count=count, board=board, deck=self.instance)
+        return deck_card

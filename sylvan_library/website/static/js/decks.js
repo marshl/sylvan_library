@@ -1,5 +1,4 @@
 $(function () {
-    console.log($('#card-input'));
     $("#card-input").autocomplete({
         source: function (request, response) {
             $.ajax({
@@ -8,27 +7,18 @@ $(function () {
                     card_name: request.term
                 },
                 success: function (data) {
-                    console.log(data);
                     response(data.cards);
                 }
             });
         },
         minLength: 2,
-        select: function (event, ui) {
-            console.log(ui);
-            //log("Selected: " + ui.item.value + " aka " + ui.item.id);
-        }
     });
 
 
     $(this).on('click', '.js-deck-board-tab-container .js-board-tab', function () {
-        let $container = $(this).closest('.js-deck-board-tab-container');
+        let $tabContainer = $(this).closest('.js-deck-board-tab-container');
         let tabType = $(this).data('tab-type');
-        showTab($container, tabType);
-        return false;
-    });
-
-    function showTab($tabContainer, tabType) {
+        $tabContainer.data('selected-tab', tabType);
         $tabContainer
             .find('.js-board-tab')
             .removeClass('selected');
@@ -36,5 +26,36 @@ $(function () {
         let $tabContent = $tabContainer.find('.js-board-tab-content[data-tab-type="' + tabType + '"]');
         $tabContainer.find('.js-board-tab-content').not($tabContent).hide();
         $tabContent.show();
-    }
+        return false;
+    });
+
+    $(this).on('click', '.js-add-card-to-board-btn', function() {
+        let $tabContainer = $('.js-deck-board-tab-container');
+        let tabType = $tabContainer.data('selected-tab');
+        let $tab = $tabContainer.find('.js-board-tab-content[data-tab-type="' + tabType + '"]');
+        let $name_input = $('#card-input');
+        if(!$name_input.val()){
+            return false;
+        }
+
+        let $quantity_input = $('#id_quantity');
+        let quantity= $quantity_input.val();
+        if (!quantity) {
+            quantity = 1;
+        }
+
+        let card_as_text = String(quantity) + 'x ' + $name_input.val();
+        console.log(card_as_text);
+
+        let $textArea = $tab.find('textarea');
+        if($textArea.text()) {
+            $textArea.text($textArea.text() + '\n' + card_as_text);
+        } else {
+            $textArea.text(card_as_text);
+        }
+        $name_input.val('');
+        $name_input.focus();
+
+        return false;
+    });
 });
