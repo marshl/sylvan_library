@@ -32,6 +32,7 @@ def create_test_card(fields: dict) -> Card:
     card.colour_sort_key = 0
     card.colour_weight = 0
     card.is_reserved = False
+    card.is_token = False
 
     for key, value in fields.items():
         card.__dict__[key] = value
