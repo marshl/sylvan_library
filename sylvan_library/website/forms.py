@@ -332,14 +332,14 @@ class DeckForm(forms.ModelForm):
 
         # Note that this regex won't work for cards that start with numbers
         # Fortunately the only card like that is "1998 World Champion"
-        matches = re.match(r'(?P<count>\d+)x? *(?P<name>.+)', text)
+        matches = re.match(r'(?P<count>\d+)?x? *(?P<name>.+)', text)
 
         if not matches:
             raise ValidationError(f"Invalid card {text}")
         card_name = matches['name'].strip()
 
         # If the user doesn't enter a count, assume one card
-        if len(matches.groups()) == 1:
+        if matches['count'] is None:
             count = 1
         else:
             try:
