@@ -613,15 +613,25 @@ class Deck(models.Model):
         board_cards = self.cards.filter(board='main').order_by('card__name')
         lands = board_cards.filter(card__type__contains='Land')
         creatures = board_cards.exclude(id__in=lands).filter(card__type__contains='Creature')
-        spells = board_cards.exclude(id__in=lands | creatures).filter(
-            Q(card__type__contains='Instant') | Q(card__type__contains='Sorcery'))
-        other = board_cards.exclude(id__in=lands | creatures | spells)
+        instants = board_cards.filter(card__type__contains='Instant')
+        sorceries = board_cards.filter(card__type__contains='Sorcery')
+        enchantments = board_cards.exclude(id__in=lands | creatures).filter(
+            card__type__contains='Enchantment')
+        artifacts = board_cards.exclude(id__in=lands | creatures | enchantments).filter(
+            card__type__contains='Artifact')
+        planeswalkers = board_cards.filter(card__type__contains='Planeswalker')
+        other = board_cards.exclude(
+            id__in=lands | creatures | instants | sorceries | artifacts | enchantments)
 
         return {
-            'land': lands,
-            'creatures': creatures,
-            'spells': spells,
-            'other': other
+            'Land': lands,
+            'Creature': creatures,
+            'Instant': instants,
+            'Sorcery': sorceries,
+            'Artifact': artifacts,
+            'Enchantment': enchantments,
+            'Planeswalker': planeswalkers,
+            'Other': other
         }
 
 
