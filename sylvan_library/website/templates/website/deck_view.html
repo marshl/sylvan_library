@@ -1,0 +1,39 @@
+{% extends 'website/base.html' %}
+{% load widget_tweaks %}
+{% load staticfiles %}
+{% block content %}
+    <div class="body-content">
+        <div class="main-content" style="color:white;">
+            <div class="group-container">
+                <div class="row">
+                    <div class="field-container">
+                        <h1>{{ deck.name }}</h1>
+                    </div>
+                    <div class="field-container">
+                        {{ deck.description }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="field-container">
+                        {{ deck_form.description.label_tag }}
+                        {{ deck_form.description }}
+                    </div>
+                </div>
+            </div>
+            <div class="group-container">
+                {% for group, cards in deck.get_card_groups.items %}
+                    {{ group }}
+                    {% for deck_card in cards.all %}
+                        <p>{{ deck_card.as_deck_text }}</p>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            <div class="group-container">
+                <div class="row">
+                    <a href="{% url 'website:deck_edit' deck_id=deck.id %}">Edit</a>
+                    <a href="{% url 'website:decks' %}">Back</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

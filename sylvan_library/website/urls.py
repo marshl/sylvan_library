@@ -39,7 +39,8 @@ urlpatterns = [
 
     # Decks
     path('decks/card/', views.deck_card_search, name='deck_card_search'),
-    path('decks/', views.decks, name='decks'),
-    path('decks/create/', views.create_deck, name='create_deck'),
-    path('decks/<int:deck_id>/', views.deck_detail, name='deck_detail'),
+    path('decks/', views.deck_list, name='decks'),
+    path('decks/create/', views.deck_create, name='create_deck'),
+    path('decks/<int:deck_id>/', views.deck_view, name='deck_view'),
+    path('decks/<int:deck_id>/edit', views.deck_edit, name='deck_edit'),
 ]

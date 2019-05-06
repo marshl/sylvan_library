@@ -5,10 +5,24 @@
         <div class="main-content">
             <h1>My Decks</h1>
             <a href="{% url 'website:create_deck' %}">Create New Deck</a>
-            {% for deck in decks %}
-                <p>
-                    <a href="{% url 'website:deck_detail' deck_id=deck.id %}">{{ deck.name }}</a>
-                </p>
-            {% endfor %}
+            <div class="search-result-list">
+                {% for deck in decks %}
+                    <div class="search-result" style="flex-direction: column;">
+                        <h2 class="search-result-title">
+                            <a href="{% url 'website:deck_view' deck_id=deck.id %}">{{ deck.name }}</a>
+                        </h2>
+                        {% if deck.description %}
+                            <h3 class="subtitle">
+                                {% if deck.description|length > 100 %}
+                                    {{ deck.description|slice:"0:100" }}...
+                                {% else %}
+                                    {{ deck.description }}
+                                {% endif %}
+                            </h3>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
         </div>
+    </div>
 {% endblock %}

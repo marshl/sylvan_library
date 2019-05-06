@@ -215,19 +215,29 @@ def ajax_search_result_set_summary(request, printing_id: int):
     })
 
 
-def decks(request):
+def deck_list(request) -> HttpResponse:
     """
     Shows the list of all decks the user owns
     :param request: The HttpRequest
     :return: THe HttpResponse
     """
-    users_decks = Deck.objects.filter(owner=request.user)
+    users_decks = Deck.objects.filter(owner=request.user).order_by('id')
     return render(request, 'website/decks.html', {
         'decks': users_decks.all(),
     })
 
 
-def deck_detail(request, deck_id: int) -> HttpResponse:
+def deck_view(request, deck_id: int) -> HttpResponse:
+    try:
+        deck = Deck.objects.get(id=deck_id, owner=request.user)
+    except Deck.DoesNotExist:
+        return redirect('website:decks')
+    return render(request, 'website/deck_view.html', {
+        'deck': deck,
+    })
+
+
+def deck_edit(request, deck_id: int) -> HttpResponse:
     deck = Deck.objects.get(pk=deck_id)
     if deck.owner != request.user:
         return HttpResponseRedirect(f'../decks')
@@ -252,12 +262,12 @@ def deck_detail(request, deck_id: int) -> HttpResponse:
         deck_form = DeckForm(instance=deck)
 
     deck_form.populate_boards()
-    return render(request, 'website/deck_details.html', {
+    return render(request, 'website/deck_edit.html', {
         'deck_form': deck_form,
     })
 
 
-def create_deck(request):
+def deck_create(request):
     if request.method == 'POST':
         deck_form = DeckForm(request.POST)
 
@@ -286,7 +296,7 @@ def create_deck(request):
         deck_form = DeckForm(instance=deck)
 
     deck_form.populate_boards()
-    return render(request, 'website/deck_details.html', {
+    return render(request, 'website/deck_edit.html', {
         'deck_form': deck_form,
     })
 

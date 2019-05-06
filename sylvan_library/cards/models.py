@@ -6,10 +6,10 @@ import datetime
 import os
 import random
 import re
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from django.db import models
-from django.db.models import Sum, IntegerField, Case, When
+from django.db.models import Sum, IntegerField, Case, When, Q
 from django.contrib.auth.models import User
 from bitfield import BitField
 
@@ -608,6 +608,21 @@ class Deck(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_card_groups(self) -> Dict[str, List['DeckCard']]:
+        board_cards = self.cards.filter(board='main').order_by('card__name')
+        lands = board_cards.filter(card__type__contains='Land')
+        creatures = board_cards.exclude(id__in=lands).filter(card__type__contains='Creature')
+        spells = board_cards.exclude(id__in=lands | creatures).filter(
+            Q(card__type__contains='Instant') | Q(card__type__contains='Sorcery'))
+        other = board_cards.exclude(id__in=lands | creatures | spells)
+
+        return {
+            'land': lands,
+            'creatures': creatures,
+            'spells': spells,
+            'other': other
+        }
 
 
 class DeckCard(models.Model):

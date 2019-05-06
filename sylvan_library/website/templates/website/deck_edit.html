@@ -12,7 +12,7 @@
         <div class="main-content" style="color:white;">
             <form method="post"
                     {% if deck_form.instance.id %}
-                  action="{% url 'website:deck_detail' deck_id=deck_form.instance.id %}"
+                  action="{% url 'website:deck_edit' deck_id=deck_form.instance.id %}"
                     {% else %}
                   action="{% url 'website:create_deck' %}"
                     {% endif %}>
