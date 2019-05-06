@@ -330,37 +330,48 @@ class DeckForm(forms.ModelForm):
         if text is None or text.strip() == '':
             return None
 
+        # Note that this regex won't work for cards that start with numbers
+        # Fortunately the only card like that is "1998 World Champion"
         matches = re.match(r'(?P<count>\d+)x? *(?P<name>.+)', text)
 
         if not matches:
-            raise ValidationError(f"Can't parse {text}")
+            raise ValidationError(f"Invalid card {text}")
         card_name = matches['name'].strip()
 
+        # If the user doesn't enter a count, assume one card
         if len(matches.groups()) == 1:
             count = 1
         else:
             try:
                 count = int(matches['count'])
-            except TypeError:
+            except (TypeError, ValueError):
                 raise ValidationError(f"Invalid count '{matches['count']}'' for {card_name}")
 
+        # If they enter a card name like "Fire // Ice", then use Fire (a DeckCard is tied to a
+        # single Card object, so the first half of split/flip/transform cards should be used
         if '//' in card_name:
             names = card_name.split('/')
             card_name = names[0].strip()
 
         try:
+            # We have to ignore tokens, as otherwise Earthshaker Khenra would return two results
+            # But you shouldn't be putting tokens in a deck anyway
             card = Card.objects.get(name=card_name, is_token=False)
         except Card.DoesNotExist:
             raise ValidationError(f'Unknown card "{card_name}"')
 
-        if card.layout == 'meld' and card.side == 'c':
-            raise ValidationError(f'Reverse side meld cards like {card.name} are not allowed')
-
         if card.layout in ('scheme', 'planer', 'vanguard', 'emblem'):
             raise ValidationError(f"You can't out {card.name} in a deck")
 
+        # Two-sided cards should always be stored as the front-facing card
+        # This even includes cards like Fire // Ice (which will be stored as Fire)
+        # However the DeckCard will be displayed as "Fire // Ice"
         if card.layout in ('flip', 'split', 'transform') and card.side == 'b':
             card = card.links.get(side='a')
+
+        # Related to the above rule, it doesn't make sense to put a back half of a meld card in
+        if card.layout == 'meld' and card.side == 'c':
+            raise ValidationError(f'Reverse side meld cards like {card.name} are not allowed')
 
         deck_card = DeckCard(card=card, count=count, board=board, deck=self.instance)
         return deck_card
