@@ -243,6 +243,9 @@ class Card(models.Model):
             )
         )['card_count']
 
+    def get_all_sides(self) -> List['Card']:
+        return [self] + list(self.links.order_by('side').all())
+
 
 class CardPrinting(models.Model):
     """
@@ -632,8 +635,8 @@ class DeckCard(models.Model):
         COnverts this card to how it should appear in board text of the DeckForm
         :return: The text representation version of the card for use in the DeckForm
         """
-        if self.card.layout == 'flip':
-            card_name = ' // '.join(c.name for c in self.card.links.all())
+        if self.card.layout == 'split':
+            card_name = ' // '.join(c.name for c in self.card.get_all_sides())
         else:
             card_name = self.card.name
         return f'{self.count}x {card_name}'
