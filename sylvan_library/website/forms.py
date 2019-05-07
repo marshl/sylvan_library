@@ -309,7 +309,16 @@ class DeckForm(forms.ModelForm):
             for line in board.split('\n'):
                 try:
                     deck_card = self.card_from_text(line, board_key)
-                    if deck_card:
+                    if not deck_card:
+                        continue
+                    # If the card already exists in this board...
+                    existing_card = next((dc for dc in deck_cards if
+                                          dc.card == deck_card.card and dc.board == board_key),
+                                         None)
+                    # ... then just add to the existing count
+                    if existing_card:
+                        existing_card.count += deck_card.count
+                    else:
                         deck_cards.append(deck_card)
                 except ValidationError as error:
                     validation_errors.append(error)
