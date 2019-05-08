@@ -7,22 +7,99 @@
             <a href="{% url 'website:create_deck' %}">Create New Deck</a>
             <div class="search-result-list">
                 {% for deck in decks %}
-                    <div class="search-result" style="flex-direction: column;">
-                        <h2 class="search-result-title">
-                            <a href="{% url 'website:deck_view' deck_id=deck.id %}">{{ deck.name }}</a>
-                        </h2>
-                        {% if deck.description %}
-                            <h3 class="subtitle">
-                                {% if deck.description|length > 100 %}
-                                    {{ deck.description|slice:"0:100" }}...
-                                {% else %}
-                                    {{ deck.description }}
-                                {% endif %}
-                            </h3>
-                        {% endif %}
+                    <div class="search-result js-deck-result" style="flex-direction: row;" data-deck-id="{{ deck.id }}">
+                        <div>
+                            <canvas class="js-mini-deck-chart" height="75px"></canvas>
+                        </div>
+                        <div>
+                            <h2 class="search-result-title">
+                                <a href="{% url 'website:deck_view' deck_id=deck.id %}">{{ deck.name }}</a>
+                            </h2>
+                            {% if deck.description %}
+                                <h3 class="subtitle">
+                                    {% if deck.description|length > 200 %}
+                                        {{ deck.description|slice:"0:200" }}...
+                                    {% else %}
+                                        {{ deck.description }}
+                                    {% endif %}
+                                </h3>
+                            {% endif %}
+                        </div>
                     </div>
                 {% endfor %}
             </div>
         </div>
     </div>
+    <script type="text/css">
+    </script>
+
+    <script>
+        let deckColours = [
+            '#FFFBD5',
+            '#AAE0FA',
+            '#A8A19F',
+            '#F9AA8F',
+            '#9BD3AE',
+            '#D8D0CD',
+        ];
+
+        let labels = [
+                            'White',
+                            'Blue',
+                            'Black',
+                            'Red',
+                            'Green',
+                            'Colourless',
+                        ];
+
+        $('.js-mini-deck-chart').each(function () {
+            let ctx = $(this).get(0).getContext('2d');
+            let $deckId = $(this).closest('.js-deck-result').data('deck-id');
+            $.ajax({
+                url: '/website/decks/' + $deckId + '/stats',
+            }).done(function (result) {
+                console.log(result);
+                var myDoughnutChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        datasets: [{
+                            data: result['mana_symbols'],
+                            backgroundColor: deckColours,
+                        }, {
+                            data: result['land_symbols'],
+                            backgroundColor: deckColours,
+                        } ],
+
+                        // These labels appear in the legend and in the tooltips when hovering different arcs
+                        labels: [
+                            'White',
+                            'Blue',
+                            'Black',
+                            'Red',
+                            'Green',
+                            'Colourless',
+                        ],
+
+                    },
+                    options: {
+                        legend: {
+                            display: false
+                        },
+                        tooltips: {
+                            callbacks: {
+                                label: function (tooltipItem, chart) {
+                                    console.log(tooltipItem);
+                                    if(tooltipItem.datasetIndex === 1) {
+                                        return result['land_symbols'][tooltipItem.index] + ' ' + labels[tooltipItem.index] + ' lands';
+                                    }
+                                    return result['mana_symbols'][tooltipItem.index] + ' ' + labels[tooltipItem.index] + ' symbols';
+                                },
+                            }
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+
 {% endblock %}

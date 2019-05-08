@@ -606,20 +606,6 @@ class Deck(models.Model):
     owner = models.ForeignKey(User, related_name='decks', on_delete=models.CASCADE)
     format = models.CharField(max_length=50, choices=FORMAT_CHOICES)
 
-    # land_count_w = models.IntegerField(null=True, blank=True)
-    # land_count_u = models.IntegerField(null=True, blank=True)
-    # land_count_b = models.IntegerField(null=True, blank=True)
-    # land_count_r = models.IntegerField(null=True, blank=True)
-    # land_count_g = models.IntegerField(null=True, blank=True)
-    #
-    # symbol_count_u = models.IntegerField(null=True, blank=True)
-    # symbol_count_b = models.IntegerField(null=True, blank=True)
-    # symbol_count_w = models.IntegerField(null=True, blank=True)
-    # symbol_count_r = models.IntegerField(null=True, blank=True)
-    # symbol_count_g = models.IntegerField(null=True, blank=True)
-    #
-    # average_cmc = models.IntegerField(null=True, blank=True)
-
     def __str__(self):
         return self.name
 
@@ -648,31 +634,25 @@ class Deck(models.Model):
             'Other': other
         }
 
-    # def save(self, *args, **kwargs):
-    #     self.calculate_land_symbol_counts()
-    #     self.calculate_cost_symbol_counts()
-    #     self.calculate_avg_cmc()
-    #     super().save(*args, **kwargs)
-
-    def calculate_land_symbol_counts(self) -> Dict[str, int]:
+    def get_land_symbol_counts(self) -> List[int]:
         land_cards = self.cards.filter(board='main', card__type__contains='Land')
-        result = {}
-        for colour in Colour.objects.all():
-            result['land_count_' + colour.symbol.lower()] = land_cards \
-                .filter(card__rules_text__iregex=':.*?add[^\n]*?{' + colour.symbol + '}') \
-                .aggregate(sum=Sum('count'))['sum']
-        return result
-
-    def calculate_cost_symbol_counts(self) -> Dict[str, int]:
-        cards = self.cards.filter(board='main-')
-        result = {}
-        for colour in Colour.objects.all():
-            result['symbol_count_' + colour.symbol.lower()] = \
-                sum(deck_card.card.cost.count(colour.symbol) for deck_card in cards)
+        result = []
+        for colour in Colour.objects.all().order_by('display_order'):
+            result.append(land_cards
+                          .filter(card__rules_text__iregex=':.*?add[^\n]*?{' + colour.symbol + '}')
+                          .aggregate(sum=Sum('count'))['sum'] or 0)
 
         return result
 
-    def calculate_avg_cmc(self) -> float:
+    def get_cost_symbol_counts(self) -> List[int]:
+        cards = self.cards.filter(board='main', card__cost__isnull=False)
+        result = []
+        for colour in Colour.objects.all().order_by('display_order'):
+            result.append(sum(deck_card.card.cost.count(colour.symbol) * deck_card.count
+                              for deck_card in cards))
+        return result
+
+    def deck_avg_cmc(self) -> float:
         return self.cards.filter(board='main') \
             .exclude(card__tpe__contains='Land') \
             .aggregate(Avg('card__cmd'))['card__cmc__avg']

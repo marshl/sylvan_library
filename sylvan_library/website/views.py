@@ -322,3 +322,18 @@ def deck_card_search(request) -> JsonResponse:
     )
     result = [{'label': card.name, 'value': card.name, 'id': card.id} for card in cards[:10]]
     return JsonResponse({'cards': result})
+
+
+def deck_stats(request, deck_id: int) -> JsonResponse:
+    try:
+        deck = Deck.objects.get(pk=deck_id)
+    except Deck.DoesNotExist:
+        return JsonResponse({'error': 'Deck not found'})
+
+    land_symbols = deck.get_land_symbol_counts()
+    mana_symbols = deck.get_cost_symbol_counts()
+
+    return JsonResponse({
+        'land_symbols': land_symbols,
+        'mana_symbols': mana_symbols,
+    })

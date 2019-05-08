@@ -1015,3 +1015,8 @@ body {
     margin-bottom: 5px;
     font-weight: bold;
 }
+
+
+.mini-deck-chart {
+    height: 100px;
+}
