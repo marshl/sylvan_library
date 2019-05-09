@@ -18,6 +18,7 @@
             </div>
             <div class="group-container">
                 <div style="column-count: 3">
+                    <div style="font-weight: bold;">Total {{ deck.get_card_count }}</div>
                     {% for group_name, cards in deck.get_card_groups.items %}
                         {% if cards.exists %}
                             <div style="break-inside: avoid;">

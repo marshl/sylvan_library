@@ -309,7 +309,7 @@ class DeckForm(forms.ModelForm):
         for board_key, board in self.get_boards().items():
             for line in board.split('\n'):
                 try:
-                    deck_card = self.card_from_text(line, board_key)
+                    deck_card = self.card_from_text(line.strip(), board_key)
                     if not deck_card:
                         continue
                     # If the card already exists in this board...
@@ -340,6 +340,8 @@ class DeckForm(forms.ModelForm):
         if text is None or text.strip() == '':
             return None
 
+        text = text.replace('’', '\'')
+
         # Note that this regex won't work for cards that start with numbers
         # Fortunately the only card like that is "1998 World Champion"
         matches = re.match(r'(?P<count>\d+)?x? *(?P<name>.+?)(?P<cmdr> ?\*cmdr\*)?$',
@@ -367,7 +369,7 @@ class DeckForm(forms.ModelForm):
         try:
             # We have to ignore tokens, as otherwise Earthshaker Khenra would return two results
             # But you shouldn't be putting tokens in a deck anyway
-            card = Card.objects.get(name=card_name, is_token=False)
+            card = Card.objects.get(name__iexact=card_name, is_token=False)
         except Card.DoesNotExist:
             raise ValidationError(f'Unknown card "{card_name}"')
 

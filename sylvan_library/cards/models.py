@@ -658,6 +658,9 @@ class Deck(models.Model):
             .exclude(card__tpe__contains='Land') \
             .aggregate(Avg('card__cmd'))['card__cmc__avg']
 
+    def get_card_count(self) -> int:
+        return sum(deck_card.count for deck_card in self.cards.all())
+
 
 class DeckCard(models.Model):
     """
