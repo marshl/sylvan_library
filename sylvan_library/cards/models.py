@@ -675,6 +675,7 @@ class DeckCard(models.Model):
     card = models.ForeignKey(Card, related_name='deck_cards', on_delete=models.CASCADE)
     deck = models.ForeignKey(Deck, related_name='cards', on_delete=models.CASCADE)
     board = models.CharField(max_length=20, choices=BOARD_CHOICES, default='main')
+    is_commander = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.card} in {self.deck}'
@@ -688,7 +689,10 @@ class DeckCard(models.Model):
             card_name = ' // '.join(c.name for c in self.card.get_all_sides())
         else:
             card_name = self.card.name
-        return f'{self.count}x {card_name}'
+        result = f'{self.count}x {card_name}'
+        if self.is_commander:
+            result += ' *CMDR*'
+        return result
 
 
 class Language(models.Model):

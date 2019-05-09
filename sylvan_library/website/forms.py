@@ -342,7 +342,8 @@ class DeckForm(forms.ModelForm):
 
         # Note that this regex won't work for cards that start with numbers
         # Fortunately the only card like that is "1998 World Champion"
-        matches = re.match(r'(?P<count>\d+)?x? *(?P<name>.+)', text)
+        matches = re.match(r'(?P<count>\d+)?x? *(?P<name>.+?)(?P<cmdr> ?\*cmdr\*)?$',
+                           text, re.IGNORECASE)
 
         if not matches:
             raise ValidationError(f"Invalid card {text}")
@@ -384,4 +385,7 @@ class DeckForm(forms.ModelForm):
             raise ValidationError(f'Reverse side meld cards like {card.name} are not allowed')
 
         deck_card = DeckCard(card=card, count=count, board=board, deck=self.instance)
+        if matches['cmdr']:
+            deck_card.is_commander = True
+
         return deck_card
