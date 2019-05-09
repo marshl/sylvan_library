@@ -257,6 +257,7 @@ class DeckForm(forms.ModelForm):
         fields = [
             'date_created',
             'name',
+            'subtitle',
             'format',
             'description',
         ]

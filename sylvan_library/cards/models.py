@@ -602,6 +602,7 @@ class Deck(models.Model):
     date_created = models.DateField()
     last_modified = models.DateField(auto_now=True)
     name = models.CharField(max_length=200)
+    subtitle = models.CharField(max_length=200, blank=True, null=True)
     description = models.TextField(null=True, blank=True)
     owner = models.ForeignKey(User, related_name='decks', on_delete=models.CASCADE)
     format = models.CharField(max_length=50, choices=FORMAT_CHOICES)
