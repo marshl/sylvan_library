@@ -34,6 +34,7 @@
                         <div class="field-container">
                             {{ deck_form.date_created.label_tag }}
                             {{ deck_form.date_created }}
+                            {{ deck_form.date_created.errors }}
                         </div>
                     </div>
                     <div class="row">
@@ -92,22 +93,22 @@
                                         </ul>
                                         <div class="js-board-tab-content"
                                              data-tab-type="main">
-                                            {{ deck_form.main_board }}
+                                            {% render_field deck_form.main_board rows="20" %}
                                         </div>
                                         <div class="js-board-tab-content"
                                              data-tab-type="side"
                                              style="display:none;">
-                                            {{ deck_form.side_board }}
+                                            {% render_field deck_form.side_board rows="20" %}
                                         </div>
                                         <div class="js-board-tab-content"
                                              data-tab-type="maybe"
                                              style="display:none;">
-                                            {{ deck_form.maybe_board }}
+                                            {% render_field deck_form.maybe_board rows="20" %}
                                         </div>
                                         <div class="js-board-tab-content"
                                              data-tab-type="acquire"
                                              style="display:none;">
-                                            {{ deck_form.acquire_board }}
+                                            {% render_field deck_form.acquire_board rows="20" %}
                                         </div>
                                     </div>
                                 </div>
