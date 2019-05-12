@@ -263,10 +263,6 @@ class DeckForm(forms.ModelForm):
             'description',
         ]
 
-        widgets = {
-            'date_created': forms.DateInput(attrs={'class': 'datepicker'}),
-        }
-
     def clean(self) -> dict:
         """
         Validates the content of this form

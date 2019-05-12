@@ -33,7 +33,7 @@
                         </div>
                         <div class="field-container">
                             {{ deck_form.date_created.label_tag }}
-                            {{ deck_form.date_created }}
+                            {% render_field deck_form.date_created type="date" %}
                             {{ deck_form.date_created.errors }}
                         </div>
                     </div>
