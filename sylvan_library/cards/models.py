@@ -622,7 +622,7 @@ class Deck(models.Model):
             card__type__contains='Artifact')
         planeswalkers = board_cards.filter(card__type__contains='Planeswalker')
         other = board_cards.exclude(
-            id__in=lands | creatures | instants | sorceries | artifacts | enchantments)
+            id__in=lands | creatures | instants | sorceries | artifacts | enchantments | planeswalkers)
 
         return {
             'Land': lands,
