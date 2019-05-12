@@ -9,6 +9,8 @@ from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.core.paginator import Paginator
+from pagination import get_page_buttons
 
 from cards.models import (
     Card,
@@ -114,7 +116,7 @@ def name_search(request) -> HttpResponse:
         'name_form': name_form, 'form': search_form, 'results': search.results,
         'result_count': search.paginator.count,
         'page': search.page,
-        'page_buttons': search.get_page_buttons(name_form.get_page_number(), 3)})
+        'page_buttons': get_page_buttons(search.paginator, name_form.get_page_number(), 3)})
 
 
 def simple_search(request) -> HttpResponse:
@@ -130,7 +132,7 @@ def simple_search(request) -> HttpResponse:
         'form': form, 'results': search.results,
         'result_count': search.paginator.count,
         'page': search.page,
-        'page_buttons': search.get_page_buttons(form.get_page_number(), 3)})
+        'page_buttons': get_page_buttons(search.paginator, form.get_page_number(), 3)})
 
 
 # pylint: disable=unused-argument, missing-docstring
@@ -215,15 +217,29 @@ def ajax_search_result_set_summary(request, printing_id: int):
     })
 
 
+def get_page_number(request):
+    try:
+        return int(request.GET.get('page'))
+    except (TypeError, ValueError):
+        return 1
+
+
 def deck_list(request) -> HttpResponse:
     """
     Shows the list of all decks the user owns
     :param request: The HttpRequest
     :return: THe HttpResponse
     """
-    users_decks = Deck.objects.filter(owner=request.user).order_by('id')
+    page_size = 15
+    users_decks = Deck.objects \
+        .filter(owner=request.user) \
+        .order_by('-date_created', '-last_modified', '-id')
+    paginator = Paginator(users_decks, page_size)
+    page_number = get_page_number(request)
+    page_buttons = get_page_buttons(paginator, page_number, 3)
     return render(request, 'website/decks.html', {
-        'decks': users_decks.all(),
+        'decks': list(paginator.page(page_number)),
+        'page_buttons': page_buttons
     })
 
 

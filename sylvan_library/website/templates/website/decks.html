@@ -30,8 +30,11 @@
             </div>
         </div>
     </div>
-    <script type="text/css">
-    </script>
+
+
+    {% if page_buttons|length > 3 %}
+        {% include "website/pager.html" with page_buttons=page_buttons %}
+    {% endif %}
 
     <script>
         let deckColours = [
