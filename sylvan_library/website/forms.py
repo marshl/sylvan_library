@@ -337,16 +337,24 @@ class DeckForm(forms.ModelForm):
         if text is None or text.strip() == '':
             return None
 
-        text = text.replace('’', '\'')
+        text = text.replace('’', '\'').replace('Æ', 'Ae')
+        if re.match(r'^\d+$', text):
+            return None
 
         # Note that this regex won't work for cards that start with numbers
         # Fortunately the only card like that is "1998 World Champion"
-        matches = re.match(r'(?P<count>\d+)?x? *(?P<name>.+?)(?P<cmdr> ?\*cmdr\*)?$',
+        matches = re.match(r'((?P<count>\d+)\s*x?)? *(?P<name>.+?)(?P<cmdr> ?\*cmdr\*)?$',
                            text, re.IGNORECASE)
 
         if not matches:
             raise ValidationError(f"Invalid card {text}")
         card_name = matches['name'].strip()
+
+        if card_name.lower() in (
+                'creatures', 'creature', 'artifacts', 'artifact', 'land', 'lands', 'basic land',
+                'non-basic land', 'nonbasic land', 'planeswalker', 'planeswalkers', 'instant', 'instants', 'sorcery',
+                'sorceries', 'general', 'commander', 'x', 'enchantment', 'enchantments'):
+            return None
 
         # If the user doesn't enter a count, assume one card
         if matches['count'] is None:
@@ -368,7 +376,7 @@ class DeckForm(forms.ModelForm):
             # But you shouldn't be putting tokens in a deck anyway
             card = Card.objects.get(name__iexact=card_name, is_token=False)
         except Card.DoesNotExist:
-            stripped_name = re.sub('\W', '', card_name)
+            stripped_name = re.sub(r'\W', '', card_name)
             card_matches = Card.objects.annotate(short_name=Func(
                 F('name'),
                 Value(r"\W"), Value(''), Value('g'),
