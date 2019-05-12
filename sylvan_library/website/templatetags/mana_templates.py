@@ -8,20 +8,20 @@ from django import template
 
 register = template.Library()
 
-MINUS_SYMBOLS = ('−', '-')
+MINUS_SYMBOLS = ("−", "-")
 
 
-@register.filter(name='replace_reminder_text')
+@register.filter(name="replace_reminder_text")
 def replace_reminder_text(text: str) -> str:
     """
     Wraps any reminder text blocks in italics
     :param text: The rules tet to replace
     :return: The rules text with the reminder tet wrapped
     """
-    return re.sub(r'(\(.+?\))', r'<i>\1</i>', text)
+    return re.sub(r"(\(.+?\))", r"<i>\1</i>", text)
 
 
-@register.filter(name='replace_loyalty_symbols')
+@register.filter(name="replace_loyalty_symbols")
 def replace_loyalty_symbols(text: str, scale: str = None) -> str:
     """
     Converts any loyalty costs in the given string with CSS images
@@ -39,26 +39,30 @@ def replace_loyalty_symbols(text: str, scale: str = None) -> str:
         :param loyalty_match: The text match to be replaced
         :return: The resulting symbol
         """
-        matches = re.search(r'(?P<sign>[+−\-]?)(?P<number>[\dx]+)', loyalty_match.group())
-        sign = matches.group('sign')
-        number = matches.group('number')
-        classes = ['ms', 'ms-loyalty-' + number]
+        matches = re.search(
+            r"(?P<sign>[+−\-]?)(?P<number>[\dx]+)", loyalty_match.group()
+        )
+        sign = matches.group("sign")
+        number = matches.group("number")
+        classes = ["ms", "ms-loyalty-" + number]
         if scale is not None:
-            classes.append(f'ms-{scale}')
+            classes.append(f"ms-{scale}")
 
         if sign in MINUS_SYMBOLS:
-            classes.append('ms-loyalty-down')
-        elif sign == '+':
-            classes.append('ms-loyalty-up')
+            classes.append("ms-loyalty-down")
+        elif sign == "+":
+            classes.append("ms-loyalty-up")
         else:
-            classes.append('ms-loyalty-zero')
+            classes.append("ms-loyalty-zero")
 
-        return '<i class="' + ' '.join(classes) + '"></i>'
+        return '<i class="' + " ".join(classes) + '"></i>'
 
-    return re.sub(r'([+' + '\\'.join(MINUS_SYMBOLS) + r']?[\dx]+?)(?=:)', replace_symbol, text)
+    return re.sub(
+        r"([+" + "\\".join(MINUS_SYMBOLS) + r"]?[\dx]+?)(?=:)", replace_symbol, text
+    )
 
 
-@register.filter(name='replace_mana_symbols')
+@register.filter(name="replace_mana_symbols")
 def replace_mana_symbols(text: str, scale: str = None) -> str:
     """
     Converts any mana symbols in the given string with CSS images
@@ -68,7 +72,7 @@ def replace_mana_symbols(text: str, scale: str = None) -> str:
     """
 
     if text is None:
-        return ''
+        return ""
 
     def replace_symbol(match):
         """
@@ -79,38 +83,38 @@ def replace_mana_symbols(text: str, scale: str = None) -> str:
         :param match: The text match to be replaced
         :return: The resulting symbol
         """
-        classes = ['ms']
+        classes = ["ms"]
 
         if scale is not None:
-            classes.append(f'ms-{scale}')
+            classes.append(f"ms-{scale}")
 
         grp = match.groups()[0].lower()
         symbol = grp
-        if '/' in grp:
-            if grp[-1] == 'p':
-                classes.append('ms-p')
+        if "/" in grp:
+            if grp[-1] == "p":
+                classes.append("ms-p")
                 symbol = grp[0]
             else:
-                symbol = grp.replace('/', '')
+                symbol = grp.replace("/", "")
 
-        if symbol == 't':
-            symbol = 'tap'
-        elif symbol == 'q':
-            symbol = 'untap'
+        if symbol == "t":
+            symbol = "tap"
+        elif symbol == "q":
+            symbol = "untap"
 
-        if len(symbol) == 2 and symbol[0].lower() == 'h':
-            classes.append('ms-half')
+        if len(symbol) == 2 and symbol[0].lower() == "h":
+            classes.append("ms-half")
             symbol = symbol[1]
 
-        classes.append(f'ms-{symbol}')
-        classes.append(f'ms-cost')
+        classes.append(f"ms-{symbol}")
+        classes.append(f"ms-cost")
 
-        return '<i class="' + ' '.join(classes) + '"></i>'
+        return '<i class="' + " ".join(classes) + '"></i>'
 
-    return re.sub(r'{(.+?)}', replace_symbol, text)
+    return re.sub(r"{(.+?)}", replace_symbol, text)
 
 
-@register.filter(name='shadowed')
+@register.filter(name="shadowed")
 def shadowed(text: str) -> str:
     """
     Adds a shadow to any mana symbols in the given text
@@ -118,6 +122,6 @@ def shadowed(text: str) -> str:
     :return: The text with all mana icons with a shadow added
     """
     if text is None:
-        return ''
+        return ""
 
-    return text.replace('ms-cost', 'ms-cost ms-shadow')
+    return text.replace("ms-cost", "ms-cost ms-shadow")

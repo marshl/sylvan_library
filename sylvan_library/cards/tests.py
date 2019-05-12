@@ -23,7 +23,7 @@ def create_test_card(fields: dict) -> Card:
     :return: A card object
     """
     card = Card()
-    card.name = 'undefined'
+    card.name = "undefined"
     card.cmc = 0
     card.num_power = 0
     card.num_toughness = 0
@@ -52,9 +52,9 @@ def create_test_card_printing(card: Card, set_obj: Set, fields: dict) -> CardPri
     printing = CardPrinting()
     printing.card = card
     printing.set = set_obj
-    printing.rarity = create_test_rarity('Common', 'C')
+    printing.rarity = create_test_rarity("Common", "C")
     printing.is_starter = False
-    printing.is_timeshifted = fields.get('is_timeshifted', False)
+    printing.is_timeshifted = fields.get("is_timeshifted", False)
 
     for key, value in fields.items():
         printing.__dict__[key] = value
@@ -76,8 +76,9 @@ def create_test_language(name: str, code: str) -> Language:
     return lang
 
 
-def create_test_card_printing_language(printing: CardPrinting,
-                                       language: Language) -> CardPrintingLanguage:
+def create_test_card_printing_language(
+    printing: CardPrinting, language: Language
+) -> CardPrintingLanguage:
     """
     Creates a dummy CardPrintingLanguage object
     :param printing: The printing to use
@@ -100,7 +101,7 @@ def create_test_physical_card(printlang: CardPrintingLanguage) -> PhysicalCard:
     :return:
     """
     physcard = PhysicalCard()
-    physcard.layout = 'normal'
+    physcard.layout = "normal"
     physcard.full_clean()
     physcard.save()
     physcard.printed_languages.add(printlang)
@@ -145,7 +146,7 @@ def create_test_user():
     """
     Creates a test user
     """
-    user = User(username='testuser', password='password')
+    user = User(username="testuser", password="password")
     user.full_clean()
     user.save()
     return user
@@ -161,10 +162,10 @@ class CardOwnershipTestCase(TestCase):
         Sets up the for the unit tests
         """
         self.user = create_test_user()
-        card = create_test_card({'name': 'Bionic Beaver'})
-        set_obj = create_test_set('Setty', 'SET', {})
+        card = create_test_card({"name": "Bionic Beaver"})
+        set_obj = create_test_set("Setty", "SET", {})
         printing = create_test_card_printing(card, set_obj, {})
-        lang = create_test_language('English', 'en')
+        lang = create_test_language("English", "en")
         printlang = create_test_card_printing_language(printing, lang)
         self.physical_card = create_test_physical_card(printlang)
 

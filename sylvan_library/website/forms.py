@@ -19,7 +19,7 @@ from cards.models import (
     Language,
     PhysicalCard,
     Rarity,
-    Set
+    Set,
 )
 from cardsearch.fieldsearch import FieldSearch
 from cardsearch.namesearch import NameSearch
@@ -32,31 +32,45 @@ def get_physical_card_key_pair(physical_card: PhysicalCard, printing: CardPrinti
     :param printing: The printing of the physical card
     :return: A tuple of the physical card's ID and a display string
     """
-    return physical_card.id, f'{physical_card.get_display_for_adding()} ({printing.number})'
+    return (
+        physical_card.id,
+        f"{physical_card.get_display_for_adding()} ({printing.number})",
+    )
 
 
 class ChangeCardOwnershipForm(forms.Form):
     """
     A for mfor changing the number of cards that a user owns
     """
+
     count = forms.IntegerField()
     printed_language = forms.ChoiceField(widget=forms.Select)
 
     def __init__(self, printing: CardPrinting):
         super().__init__()
-        if any(pl for pl in printing.printed_languages.all()
-               if pl.language_id == Language.english().id):
+        if any(
+            pl
+            for pl in printing.printed_languages.all()
+            if pl.language_id == Language.english().id
+        ):
             # Put the english print first as that is the most likely one that the user will add
-            english_print = next(pl for pl in printing.printed_languages.all()
-                                 if pl.language_id == Language.english().id)
-            choices = [get_physical_card_key_pair(physical_card, printing)
-                       for physical_card in english_print.physical_cards.all()]
-            choices.extend([
+            english_print = next(
+                pl
+                for pl in printing.printed_languages.all()
+                if pl.language_id == Language.english().id
+            )
+            choices = [
                 get_physical_card_key_pair(physical_card, printing)
-                for lang in printing.printed_languages.all()
-                for physical_card in lang.physical_cards.all()
-                if lang.language_id != Language.english().id
-            ])
+                for physical_card in english_print.physical_cards.all()
+            ]
+            choices.extend(
+                [
+                    get_physical_card_key_pair(physical_card, printing)
+                    for lang in printing.printed_languages.all()
+                    for physical_card in lang.physical_cards.all()
+                    if lang.language_id != Language.english().id
+                ]
+            )
         else:
             choices = [
                 get_physical_card_key_pair(physical_card, printing)
@@ -64,7 +78,7 @@ class ChangeCardOwnershipForm(forms.Form):
                 for physical_card in lang.physical_cards.all()
             ]
 
-        self.fields['printed_language'].choices = choices
+        self.fields["printed_language"].choices = choices
 
 
 class SearchForm(forms.Form):
@@ -78,7 +92,7 @@ class SearchForm(forms.Form):
         :return: The current page number if it exists, otherwise the first page
         """
         try:
-            return int(self.data.get('page'))
+            return int(self.data.get("page"))
         except (TypeError, ValueError):
             return 1
 
@@ -87,6 +101,7 @@ class NameSearchForm(SearchForm):
     """
     The search form for searching only bu the card's name
     """
+
     card_name = forms.CharField(required=False)
 
     def get_search(self) -> NameSearch:
@@ -96,7 +111,7 @@ class NameSearchForm(SearchForm):
         """
         self.full_clean()
         search = NameSearch()
-        search.card_name = self.data.get('card_name')
+        search.card_name = self.data.get("card_name")
         search.build_parameters()
         search.search(self.get_page_number())
         return search
@@ -106,6 +121,7 @@ class FieldSearchForm(SearchForm):
     """
     The primary search form
     """
+
     card_name = forms.CharField(required=False)
     rules_text = forms.CharField(required=False)
     flavour_text = forms.CharField(required=False)
@@ -130,34 +146,47 @@ class FieldSearchForm(SearchForm):
 
     match_rarity = forms.BooleanField(required=False)
 
-    sets = forms.ModelMultipleChoiceField(queryset=Set.objects.all().order_by('-release_date'),
-                                          widget=Select2MultipleWidget, required=False)
+    sets = forms.ModelMultipleChoiceField(
+        queryset=Set.objects.all().order_by("-release_date"),
+        widget=Select2MultipleWidget,
+        required=False,
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        for colour in Colour.objects.all().order_by('display_order'):
-            self.fields['colour_' + colour.symbol.lower()] = forms.BooleanField(required=False)
-            self.fields['colourid_' + colour.symbol.lower()] = forms.BooleanField(required=False)
+        for colour in Colour.objects.all().order_by("display_order"):
+            self.fields["colour_" + colour.symbol.lower()] = forms.BooleanField(
+                required=False
+            )
+            self.fields["colourid_" + colour.symbol.lower()] = forms.BooleanField(
+                required=False
+            )
 
-        for rarity in Rarity.objects.all().order_by('display_order'):
-            self.fields['rarity_' + rarity.symbol.lower()] = forms.BooleanField(required=False)
+        for rarity in Rarity.objects.all().order_by("display_order"):
+            self.fields["rarity_" + rarity.symbol.lower()] = forms.BooleanField(
+                required=False
+            )
 
     def colour_fields(self) -> dict:
         """
         Gets all the colour fields
         :return:
         """
-        return {colour.symbol.lower(): self['colour_' + colour.symbol.lower()]
-                for colour in Colour.objects.all().order_by('display_order')}
+        return {
+            colour.symbol.lower(): self["colour_" + colour.symbol.lower()]
+            for colour in Colour.objects.all().order_by("display_order")
+        }
 
     def colourid_fields(self) -> dict:
         """
         Gets all the colour identity fields
         :return: A dictionary of fields
         """
-        return {colour.symbol.lower(): self['colourid_' + colour.symbol.lower()]
-                for colour in Colour.objects.all().order_by('display_order')}
+        return {
+            colour.symbol.lower(): self["colourid_" + colour.symbol.lower()]
+            for colour in Colour.objects.all().order_by("display_order")
+        }
 
     def is_colour_enabled(self) -> bool:
         """
@@ -178,8 +207,10 @@ class FieldSearchForm(SearchForm):
         Gets a dictionary of the rarity fields
         :return:
         """
-        return {r.symbol.lower(): self['rarity_' + r.symbol.lower()]
-                for r in Rarity.objects.all().order_by('display_order')}
+        return {
+            r.symbol.lower(): self["rarity_" + r.symbol.lower()]
+            for r in Rarity.objects.all().order_by("display_order")
+        }
 
     def is_rarity_enabled(self) -> bool:
         """
@@ -196,39 +227,41 @@ class FieldSearchForm(SearchForm):
         self.full_clean()
 
         search = FieldSearch()
-        search.card_name = self.data.get('card_name')
-        search.rules_text = self.data.get('rules_text')
-        search.flavour_text = self.data.get('flavour_text')
-        search.type_text = self.data.get('type_text')
-        search.subtype_text = self.data.get('subtype_text')
-        search.mana_cost = self.data.get('mana_cost_text')
+        search.card_name = self.data.get("card_name")
+        search.rules_text = self.data.get("rules_text")
+        search.flavour_text = self.data.get("flavour_text")
+        search.type_text = self.data.get("type_text")
+        search.subtype_text = self.data.get("subtype_text")
+        search.mana_cost = self.data.get("mana_cost_text")
 
-        search.min_cmc = self.cleaned_data.get('min_cmc')
-        search.max_cmc = self.cleaned_data.get('max_cmc')
-        search.min_power = self.cleaned_data.get('min_power')
-        search.max_power = self.cleaned_data.get('max_power')
-        search.min_toughness = self.cleaned_data.get('min_toughness')
-        search.max_toughness = self.cleaned_data.get('max_toughness')
+        search.min_cmc = self.cleaned_data.get("min_cmc")
+        search.max_cmc = self.cleaned_data.get("max_cmc")
+        search.min_power = self.cleaned_data.get("min_power")
+        search.max_power = self.cleaned_data.get("max_power")
+        search.min_toughness = self.cleaned_data.get("min_toughness")
+        search.max_toughness = self.cleaned_data.get("max_toughness")
 
         for colour in Colour.objects.all():
-            if self.data.get('colour_' + colour.symbol.lower()):
+            if self.data.get("colour_" + colour.symbol.lower()):
                 search.colours.append(colour.bit_value)
 
-            if self.data.get('colourid_' + colour.symbol.lower()):
+            if self.data.get("colourid_" + colour.symbol.lower()):
                 search.colour_identities.append(colour.bit_value)
 
-        search.exclude_unselected_colours = bool(self.data.get('exclude_colours'))
-        search.match_colours_exactly = bool(self.data.get('match_colours'))
-        search.exclude_unselected_colour_identities = bool(self.data.get('exclude_colourids'))
-        search.match_colour_identities_exactly = bool(self.data.get('match_colourids'))
+        search.exclude_unselected_colours = bool(self.data.get("exclude_colours"))
+        search.match_colours_exactly = bool(self.data.get("match_colours"))
+        search.exclude_unselected_colour_identities = bool(
+            self.data.get("exclude_colourids")
+        )
+        search.match_colour_identities_exactly = bool(self.data.get("match_colourids"))
 
         for rarity in Rarity.objects.all():
-            if self.data.get('rarity_' + rarity.symbol.lower()):
+            if self.data.get("rarity_" + rarity.symbol.lower()):
                 search.rarities.append(rarity)
 
-        search.match_rarities_exactly = bool(self.data.get('match_rarity'))
+        search.match_rarities_exactly = bool(self.data.get("match_rarity"))
 
-        search.sets = self.data.get('sets')
+        search.sets = self.data.get("sets")
         if search.sets and not isinstance(search.sets, list):
             search.sets = [search.sets]
 
@@ -242,9 +275,14 @@ class DeckForm(forms.ModelForm):
     Form for creating or updating a deck plus all of its cards
     """
 
-    cards = forms.ModelMultipleChoiceField(queryset=Card.objects.all().order_by('name'),
-                                           widget=Select2MultipleWidget, required=False)
-    quantity = forms.IntegerField(validators=[MinValueValidator(1)], required=False, min_value=1)
+    cards = forms.ModelMultipleChoiceField(
+        queryset=Card.objects.all().order_by("name"),
+        widget=Select2MultipleWidget,
+        required=False,
+    )
+    quantity = forms.IntegerField(
+        validators=[MinValueValidator(1)], required=False, min_value=1
+    )
 
     main_board = forms.CharField(widget=forms.widgets.Textarea(), required=False)
     side_board = forms.CharField(widget=forms.widgets.Textarea(), required=False)
@@ -255,13 +293,7 @@ class DeckForm(forms.ModelForm):
 
     class Meta:
         model = Deck
-        fields = [
-            'date_created',
-            'name',
-            'subtitle',
-            'format',
-            'description',
-        ]
+        fields = ["date_created", "name", "subtitle", "format", "description"]
 
     def clean(self) -> dict:
         """
@@ -278,20 +310,21 @@ class DeckForm(forms.ModelForm):
         :return: The board keys to their text values
         """
         return {
-            'main': self.cleaned_data.get('main_board'),
-            'side': self.cleaned_data.get('side_board'),
-            'maybe': self.cleaned_data.get('maybe_board'),
-            'acquire': self.cleaned_data.get('acquire_board'),
+            "main": self.cleaned_data.get("main_board"),
+            "side": self.cleaned_data.get("side_board"),
+            "maybe": self.cleaned_data.get("maybe_board"),
+            "acquire": self.cleaned_data.get("acquire_board"),
         }
 
     def populate_boards(self) -> None:
         """
         Populates the text values of all teh boards
         """
-        for board_key in ['main', 'side', 'maybe', 'acquire']:
-            board_cards = self.instance.cards.filter(board=board_key) \
-                .order_by('card__name')
-            self.fields[board_key + '_board'].initial = '\n'.join(
+        for board_key in ["main", "side", "maybe", "acquire"]:
+            board_cards = self.instance.cards.filter(board=board_key).order_by(
+                "card__name"
+            )
+            self.fields[board_key + "_board"].initial = "\n".join(
                 card.as_deck_text() for card in board_cards
             )
 
@@ -304,15 +337,20 @@ class DeckForm(forms.ModelForm):
         deck_cards = []
         validation_errors = []
         for board_key, board in self.get_boards().items():
-            for line in board.split('\n'):
+            for line in board.split("\n"):
                 try:
                     deck_card = self.card_from_text(line.strip(), board_key)
                     if not deck_card:
                         continue
                     # If the card already exists in this board...
-                    existing_card = next((dc for dc in deck_cards if
-                                          dc.card == deck_card.card and dc.board == board_key),
-                                         None)
+                    existing_card = next(
+                        (
+                            dc
+                            for dc in deck_cards
+                            if dc.card == deck_card.card and dc.board == board_key
+                        ),
+                        None,
+                    )
                     # ... then just add to the existing count
                     if existing_card:
                         existing_card.count += deck_card.count
@@ -334,41 +372,64 @@ class DeckForm(forms.ModelForm):
         :return: A DeckCard object if it is valid
         :raises: ValidationError if the card could not be parsed for some reason
         """
-        if text is None or text.strip() == '':
+        if text is None or text.strip() == "":
             return None
 
-        text = text.replace('’', '\'').replace('Æ', 'Ae')
-        if re.match(r'^\d+$', text):
+        text = text.replace("’", "'").replace("Æ", "Ae")
+        if re.match(r"^\d+$", text):
             return None
 
         # Note that this regex won't work for cards that start with numbers
         # Fortunately the only card like that is "1998 World Champion"
-        matches = re.match(r'((?P<count>\d+)\s*x?)? *(?P<name>.+?)(?P<cmdr> ?\*cmdr\*)?$',
-                           text, re.IGNORECASE)
+        matches = re.match(
+            r"((?P<count>\d+)\s*x?)? *(?P<name>.+?)(?P<cmdr> ?\*cmdr\*)?$",
+            text,
+            re.IGNORECASE,
+        )
 
         if not matches:
             raise ValidationError(f"Invalid card {text}")
-        card_name = matches['name'].strip()
+        card_name = matches["name"].strip()
 
         if card_name.lower() in (
-                'creatures', 'creature', 'artifacts', 'artifact', 'land', 'lands', 'basic land',
-                'non-basic land', 'nonbasic land', 'planeswalker', 'planeswalkers', 'instant', 'instants', 'sorcery',
-                'sorceries', 'general', 'commander', 'x', 'enchantment', 'enchantments'):
+            "creatures",
+            "creature",
+            "artifacts",
+            "artifact",
+            "land",
+            "lands",
+            "basic land",
+            "non-basic land",
+            "nonbasic land",
+            "planeswalker",
+            "planeswalkers",
+            "instant",
+            "instants",
+            "sorcery",
+            "sorceries",
+            "general",
+            "commander",
+            "x",
+            "enchantment",
+            "enchantments",
+        ):
             return None
 
         # If the user doesn't enter a count, assume one card
-        if matches['count'] is None:
+        if matches["count"] is None:
             count = 1
         else:
             try:
-                count = int(matches['count'])
+                count = int(matches["count"])
             except (TypeError, ValueError):
-                raise ValidationError(f"Invalid count '{matches['count']}'' for {card_name}")
+                raise ValidationError(
+                    f"Invalid count '{matches['count']}'' for {card_name}"
+                )
 
         # If they enter a card name like "Fire // Ice", then use Fire (a DeckCard is tied to a
         # single Card object, so the first half of split/flip/transform cards should be used
-        if '//' in card_name:
-            names = card_name.split('/')
+        if "//" in card_name:
+            names = card_name.split("/")
             card_name = names[0].strip()
 
         try:
@@ -376,32 +437,38 @@ class DeckForm(forms.ModelForm):
             # But you shouldn't be putting tokens in a deck anyway
             card = Card.objects.get(name__iexact=card_name, is_token=False)
         except Card.DoesNotExist:
-            stripped_name = re.sub(r'\W', '', card_name)
-            card_matches = Card.objects.annotate(short_name=Func(
-                F('name'),
-                Value(r"\W"), Value(''), Value('g'),
-                function='regexp_replace',
-            )).filter(is_token=False, short_name__icontains=stripped_name)
+            stripped_name = re.sub(r"\W", "", card_name)
+            card_matches = Card.objects.annotate(
+                short_name=Func(
+                    F("name"),
+                    Value(r"\W"),
+                    Value(""),
+                    Value("g"),
+                    function="regexp_replace",
+                )
+            ).filter(is_token=False, short_name__icontains=stripped_name)
             if card_matches.count() == 1:
                 card = card_matches.first()
             else:
                 raise ValidationError(f'Unknown card "{card_name}"')
 
-        if card.layout in ('scheme', 'planer', 'vanguard', 'emblem'):
+        if card.layout in ("scheme", "planer", "vanguard", "emblem"):
             raise ValidationError(f"You can't out {card.name} in a deck")
 
         # Two-sided cards should always be stored as the front-facing card
         # This even includes cards like Fire // Ice (which will be stored as Fire)
         # However the DeckCard will be displayed as "Fire // Ice"
-        if card.layout in ('flip', 'split', 'transform') and card.side == 'b':
-            card = card.links.get(side='a')
+        if card.layout in ("flip", "split", "transform") and card.side == "b":
+            card = card.links.get(side="a")
 
         # Related to the above rule, it doesn't make sense to put a back half of a meld card in
-        if card.layout == 'meld' and card.side == 'c':
-            raise ValidationError(f'Reverse side meld cards like {card.name} are not allowed')
+        if card.layout == "meld" and card.side == "c":
+            raise ValidationError(
+                f"Reverse side meld cards like {card.name} are not allowed"
+            )
 
         deck_card = DeckCard(card=card, count=count, board=board, deck=self.instance)
-        if matches['cmdr']:
+        if matches["cmdr"]:
             deck_card.is_commander = True
 
         return deck_card

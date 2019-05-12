@@ -5,14 +5,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0065_deck_subtitle'),
-    ]
+    dependencies = [("cards", "0065_deck_subtitle")]
 
     operations = [
         migrations.AddField(
-            model_name='deckcard',
-            name='is_commander',
+            model_name="deckcard",
+            name="is_commander",
             field=models.BooleanField(default=False),
-        ),
+        )
     ]

@@ -11,195 +11,415 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-    ]
+    dependencies = [migrations.swappable_dependency(settings.AUTH_USER_MODEL)]
 
     operations = [
         migrations.CreateModel(
-            name='Block',
+            name="Block",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200, unique=True)),
-                ('release_date', models.DateField()),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=200, unique=True)),
+                ("release_date", models.DateField()),
             ],
         ),
         migrations.CreateModel(
-            name='Card',
+            name="Card",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200, unique=True)),
-                ('cost', models.CharField(blank=True, max_length=50, null=True)),
-                ('cmc', models.FloatField()),
-                ('colour', models.IntegerField()),
-                ('colour_identity', models.IntegerField()),
-                ('colour_count', models.IntegerField()),
-                ('type', models.CharField(blank=True, max_length=100, null=True)),
-                ('subtype', models.CharField(blank=True, max_length=100, null=True)),
-                ('power', models.CharField(blank=True, max_length=20, null=True)),
-                ('num_power', models.FloatField()),
-                ('toughness', models.CharField(blank=True, max_length=20, null=True)),
-                ('num_toughness', models.FloatField()),
-                ('loyalty', models.CharField(blank=True, max_length=20, null=True)),
-                ('num_loyalty', models.FloatField()),
-                ('rules_text', models.CharField(blank=True, max_length=1000, null=True)),
-                ('links', models.ManyToManyField(related_name='_card_links_+', to='cards.Card')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=200, unique=True)),
+                ("cost", models.CharField(blank=True, max_length=50, null=True)),
+                ("cmc", models.FloatField()),
+                ("colour", models.IntegerField()),
+                ("colour_identity", models.IntegerField()),
+                ("colour_count", models.IntegerField()),
+                ("type", models.CharField(blank=True, max_length=100, null=True)),
+                ("subtype", models.CharField(blank=True, max_length=100, null=True)),
+                ("power", models.CharField(blank=True, max_length=20, null=True)),
+                ("num_power", models.FloatField()),
+                ("toughness", models.CharField(blank=True, max_length=20, null=True)),
+                ("num_toughness", models.FloatField()),
+                ("loyalty", models.CharField(blank=True, max_length=20, null=True)),
+                ("num_loyalty", models.FloatField()),
+                (
+                    "rules_text",
+                    models.CharField(blank=True, max_length=1000, null=True),
+                ),
+                (
+                    "links",
+                    models.ManyToManyField(
+                        related_name="_card_links_+", to="cards.Card"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='CardPrinting',
+            name="CardPrinting",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('flavour_text', models.CharField(blank=True, max_length=500, null=True)),
-                ('artist', models.CharField(max_length=100)),
-                ('collector_number', models.IntegerField()),
-                ('collector_letter', models.CharField(blank=True, max_length=1, null=True)),
-                ('original_text', models.CharField(blank=True, max_length=1000, null=True)),
-                ('original_type', models.CharField(blank=True, max_length=200, null=True)),
-                ('mci_number', models.IntegerField(blank=True, null=True)),
-                ('card', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cards.Card')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "flavour_text",
+                    models.CharField(blank=True, max_length=500, null=True),
+                ),
+                ("artist", models.CharField(max_length=100)),
+                ("collector_number", models.IntegerField()),
+                (
+                    "collector_letter",
+                    models.CharField(blank=True, max_length=1, null=True),
+                ),
+                (
+                    "original_text",
+                    models.CharField(blank=True, max_length=1000, null=True),
+                ),
+                (
+                    "original_type",
+                    models.CharField(blank=True, max_length=200, null=True),
+                ),
+                ("mci_number", models.IntegerField(blank=True, null=True)),
+                (
+                    "card",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="cards.Card"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='CardPrintingLanguage',
+            name="CardPrintingLanguage",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('card_name', models.CharField(max_length=200)),
-                ('multiverse_id', models.IntegerField(blank=True, null=True)),
-                ('card_printing', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cards.CardPrinting')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("card_name", models.CharField(max_length=200)),
+                ("multiverse_id", models.IntegerField(blank=True, null=True)),
+                (
+                    "card_printing",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="cards.CardPrinting",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='CardRuling',
+            name="CardRuling",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateField()),
-                ('text', models.CharField(max_length=4000)),
-                ('card', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cards.Card')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date", models.DateField()),
+                ("text", models.CharField(max_length=4000)),
+                (
+                    "card",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="cards.Card"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='CardTag',
+            name="CardTag",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=200)),
             ],
         ),
         migrations.CreateModel(
-            name='CardTagLink',
+            name="CardTagLink",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('card', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cards.Card')),
-                ('tag', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cards.CardTag')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "card",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="cards.Card"
+                    ),
+                ),
+                (
+                    "tag",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="cards.CardTag"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Deck',
+            name="Deck",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date_created', models.DateField()),
-                ('last_modified', models.DateField()),
-                ('name', models.CharField(max_length=200)),
-                ('owner', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date_created", models.DateField()),
+                ("last_modified", models.DateField()),
+                ("name", models.CharField(max_length=200)),
+                (
+                    "owner",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='DeckCard',
+            name="DeckCard",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('count', models.IntegerField()),
-                ('card', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cards.Card')),
-                ('deck', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cards.Deck')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("count", models.IntegerField()),
+                (
+                    "card",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="cards.Card"
+                    ),
+                ),
+                (
+                    "deck",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="cards.Deck"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Language',
+            name="Language",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50, unique=True)),
-                ('mci_code', models.CharField(blank=True, max_length=10, null=True, unique=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=50, unique=True)),
+                (
+                    "mci_code",
+                    models.CharField(blank=True, max_length=10, null=True, unique=True),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='PhysicalCard',
+            name="PhysicalCard",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('layout', models.CharField(max_length=20)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("layout", models.CharField(max_length=20)),
             ],
         ),
         migrations.CreateModel(
-            name='Rarity',
+            name="Rarity",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('symbol', models.CharField(max_length=1, unique=True)),
-                ('name', models.CharField(max_length=15, unique=True)),
-                ('display_order', models.IntegerField(unique=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("symbol", models.CharField(max_length=1, unique=True)),
+                ("name", models.CharField(max_length=15, unique=True)),
+                ("display_order", models.IntegerField(unique=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Set',
+            name="Set",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('code', models.CharField(max_length=10, unique=True)),
-                ('release_date', models.DateField(blank=True, null=True)),
-                ('name', models.CharField(max_length=200, unique=True)),
-                ('mci_code', models.CharField(blank=True, max_length=10, null=True)),
-                ('block', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='cards.Block')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("code", models.CharField(max_length=10, unique=True)),
+                ("release_date", models.DateField(blank=True, null=True)),
+                ("name", models.CharField(max_length=200, unique=True)),
+                ("mci_code", models.CharField(blank=True, max_length=10, null=True)),
+                (
+                    "block",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="cards.Block",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='UserCardChange',
+            name="UserCardChange",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateTimeField()),
-                ('difference', models.IntegerField()),
-                ('owner', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('physical_card', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cards.PhysicalCard')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date", models.DateTimeField()),
+                ("difference", models.IntegerField()),
+                (
+                    "owner",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "physical_card",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="cards.PhysicalCard",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='UserOwnedCard',
+            name="UserOwnedCard",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('count', models.IntegerField()),
-                ('owner', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('physical_card', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cards.PhysicalCard')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("count", models.IntegerField()),
+                (
+                    "owner",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "physical_card",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="cards.PhysicalCard",
+                    ),
+                ),
             ],
         ),
         migrations.AddField(
-            model_name='cardprintinglanguage',
-            name='language',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cards.Language'),
+            model_name="cardprintinglanguage",
+            name="language",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="cards.Language"
+            ),
         ),
         migrations.AddField(
-            model_name='cardprintinglanguage',
-            name='physical_cards',
-            field=models.ManyToManyField(to='cards.PhysicalCard'),
+            model_name="cardprintinglanguage",
+            name="physical_cards",
+            field=models.ManyToManyField(to="cards.PhysicalCard"),
         ),
         migrations.AddField(
-            model_name='cardprinting',
-            name='rarity',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cards.Rarity'),
+            model_name="cardprinting",
+            name="rarity",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="cards.Rarity"
+            ),
         ),
         migrations.AddField(
-            model_name='cardprinting',
-            name='set',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cards.Set'),
+            model_name="cardprinting",
+            name="set",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="cards.Set"
+            ),
         ),
         migrations.AlterUniqueTogether(
-            name='userownedcard',
-            unique_together=set([('physical_card', 'owner')]),
+            name="userownedcard", unique_together=set([("physical_card", "owner")])
         ),
         migrations.AlterUniqueTogether(
-            name='cardruling',
-            unique_together=set([('date', 'text', 'card')]),
+            name="cardruling", unique_together=set([("date", "text", "card")])
         ),
         migrations.AlterUniqueTogether(
-            name='cardprintinglanguage',
-            unique_together=set([('language', 'card_name', 'card_printing')]),
+            name="cardprintinglanguage",
+            unique_together=set([("language", "card_name", "card_printing")]),
         ),
         migrations.AlterUniqueTogether(
-            name='cardprinting',
-            unique_together=set([('set', 'card', 'collector_number', 'collector_letter')]),
+            name="cardprinting",
+            unique_together=set(
+                [("set", "card", "collector_number", "collector_letter")]
+            ),
         ),
     ]

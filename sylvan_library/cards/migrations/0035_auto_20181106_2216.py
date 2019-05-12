@@ -7,14 +7,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0034_auto_20181106_2215'),
-    ]
+    dependencies = [("cards", "0034_auto_20181106_2215")]
 
     operations = [
         migrations.AlterField(
-            model_name='block',
-            name='release_date',
+            model_name="block",
+            name="release_date",
             field=models.DateField(blank=True, null=True),
-        ),
+        )
     ]

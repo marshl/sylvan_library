@@ -9,7 +9,7 @@ from django.core.management.base import BaseCommand
 from data_import.importers import JsonImporter
 from data_import.staging import StagedSet
 
-logger = logging.getLogger('django')
+logger = logging.getLogger("django")
 
 # pylint: disable=abstract-method
 class DataImportCommand(BaseCommand):
@@ -36,7 +36,9 @@ class DataImportCommand(BaseCommand):
 
         staged_sets = importer.get_staged_sets()
         if not staged_sets:
-            logger.error('No sets could be found, Please run the fetch_data command first')
+            logger.error(
+                "No sets could be found, Please run the fetch_data command first"
+            )
             exit(1)
 
         return staged_sets
@@ -76,14 +78,16 @@ class DataImportCommand(BaseCommand):
         """
         Logs all updated/created/ignored objects
         """
-        logger.info('%s', '\n' + ('=' * 80) + '\n\nUpdate complete:\n')
+        logger.info("%s", "\n" + ("=" * 80) + "\n\nUpdate complete:\n")
         elapsed_time = time.time() - self.start_time
-        logger.info('Time elapsed: %s', time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
+        logger.info(
+            "Time elapsed: %s", time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
+        )
         for key, value in self.created_counts.items():
-            logger.info('Created %s %s', key, value)
+            logger.info("Created %s %s", key, value)
 
         for key, value in self.update_counts.items():
-            logger.info('Updated %s %s', key, value)
+            logger.info("Updated %s %s", key, value)
 
         for key, value in self.ignored_counts.items():
-            logger.info('Ignored %s %s', key, value)
+            logger.info("Ignored %s %s", key, value)

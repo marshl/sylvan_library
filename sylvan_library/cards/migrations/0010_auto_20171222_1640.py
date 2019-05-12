@@ -7,17 +7,9 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0009_card_original_type'),
-    ]
+    dependencies = [("cards", "0009_card_original_type")]
 
     operations = [
-        migrations.RemoveField(
-            model_name='card',
-            name='original_text',
-        ),
-        migrations.RemoveField(
-            model_name='card',
-            name='original_type',
-        ),
+        migrations.RemoveField(model_name="card", name="original_text"),
+        migrations.RemoveField(model_name="card", name="original_type"),
     ]

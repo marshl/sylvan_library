@@ -7,22 +7,14 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0033_auto_20181106_1951'),
-    ]
+    dependencies = [("cards", "0033_auto_20181106_1951")]
 
     operations = [
-        migrations.RemoveField(
-            model_name='cardprinting',
-            name='collector_letter',
-        ),
-        migrations.RemoveField(
-            model_name='cardprinting',
-            name='collector_number',
-        ),
+        migrations.RemoveField(model_name="cardprinting", name="collector_letter"),
+        migrations.RemoveField(model_name="cardprinting", name="collector_number"),
         migrations.AddField(
-            model_name='cardprinting',
-            name='number',
+            model_name="cardprinting",
+            name="number",
             field=models.CharField(blank=True, max_length=10, null=True),
         ),
     ]

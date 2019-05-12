@@ -8,4 +8,5 @@ class DataExportConfig(AppConfig):
     """
     Class for data_export configuration
     """
-    name = 'data_export'
+
+    name = "data_export"

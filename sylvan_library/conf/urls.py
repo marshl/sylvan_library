@@ -19,14 +19,12 @@ from django.conf import settings
 from django.urls import include, path
 
 urlpatterns = [
-    path('', RedirectView.as_view(url='/website/')),
-    path('website/', include('website.urls')),
-    path('admin/', admin.site.urls),
+    path("", RedirectView.as_view(url="/website/")),
+    path("website/", include("website.urls")),
+    path("admin/", admin.site.urls),
 ]
 
 if settings.DEBUG_TOOLBAR:
     import debug_toolbar
 
-    urlpatterns.append(
-        path('__debug__/', include(debug_toolbar.urls))
-    )
+    urlpatterns.append(path("__debug__/", include(debug_toolbar.urls)))

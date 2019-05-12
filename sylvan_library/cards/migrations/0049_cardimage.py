@@ -6,17 +6,30 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0048_auto_20190210_1412'),
-    ]
+    dependencies = [("cards", "0048_auto_20190210_1412")]
 
     operations = [
         migrations.CreateModel(
-            name='CardImage',
+            name="CardImage",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('downloaded', models.BooleanField()),
-                ('printed_language', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='image', to='cards.CardPrintingLanguage')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("downloaded", models.BooleanField()),
+                (
+                    "printed_language",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="image",
+                        to="cards.CardPrintingLanguage",
+                    ),
+                ),
             ],
-        ),
+        )
     ]

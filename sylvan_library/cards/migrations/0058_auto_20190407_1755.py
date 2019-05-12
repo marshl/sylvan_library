@@ -6,18 +6,56 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cards', '0057_auto_20190406_1722_squashed_0065_auto_20190406_2141'),
+        ("cards", "0057_auto_20190406_1722_squashed_0065_auto_20190406_2141")
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='card',
-            name='layout',
-            field=models.CharField(choices=[('normal', 'Normal'), ('split', 'Split'), ('flip', 'Flip'), ('transform', 'Transform'), ('token', 'Token'), ('planar', 'Planar'), ('scheme', 'Scheme'), ('leveler', 'Leveler'), ('vanguard', 'Vanguard'), ('meld', 'Meld'), ('host', 'Host'), ('augment', 'Augment'), ('saga', 'Saga'), ('emblem', 'Emblem'), ('double_faced_token', 'Double-faced Token')], max_length=50),
+            model_name="card",
+            name="layout",
+            field=models.CharField(
+                choices=[
+                    ("normal", "Normal"),
+                    ("split", "Split"),
+                    ("flip", "Flip"),
+                    ("transform", "Transform"),
+                    ("token", "Token"),
+                    ("planar", "Planar"),
+                    ("scheme", "Scheme"),
+                    ("leveler", "Leveler"),
+                    ("vanguard", "Vanguard"),
+                    ("meld", "Meld"),
+                    ("host", "Host"),
+                    ("augment", "Augment"),
+                    ("saga", "Saga"),
+                    ("emblem", "Emblem"),
+                    ("double_faced_token", "Double-faced Token"),
+                ],
+                max_length=50,
+            ),
         ),
         migrations.AlterField(
-            model_name='physicalcard',
-            name='layout',
-            field=models.CharField(choices=[('normal', 'Normal'), ('split', 'Split'), ('flip', 'Flip'), ('transform', 'Transform'), ('token', 'Token'), ('planar', 'Planar'), ('scheme', 'Scheme'), ('leveler', 'Leveler'), ('vanguard', 'Vanguard'), ('meld', 'Meld'), ('host', 'Host'), ('augment', 'Augment'), ('saga', 'Saga'), ('emblem', 'Emblem'), ('double_faced_token', 'Double-faced Token')], max_length=50),
+            model_name="physicalcard",
+            name="layout",
+            field=models.CharField(
+                choices=[
+                    ("normal", "Normal"),
+                    ("split", "Split"),
+                    ("flip", "Flip"),
+                    ("transform", "Transform"),
+                    ("token", "Token"),
+                    ("planar", "Planar"),
+                    ("scheme", "Scheme"),
+                    ("leveler", "Leveler"),
+                    ("vanguard", "Vanguard"),
+                    ("meld", "Meld"),
+                    ("host", "Host"),
+                    ("augment", "Augment"),
+                    ("saga", "Saga"),
+                    ("emblem", "Emblem"),
+                    ("double_faced_token", "Double-faced Token"),
+                ],
+                max_length=50,
+            ),
         ),
     ]

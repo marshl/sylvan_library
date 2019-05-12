@@ -5,14 +5,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0054_format_code'),
-    ]
+    dependencies = [("cards", "0054_format_code")]
 
     operations = [
         migrations.AlterField(
-            model_name='format',
-            name='code',
+            model_name="format",
+            name="code",
             field=models.CharField(max_length=100, unique=True),
-        ),
+        )
     ]

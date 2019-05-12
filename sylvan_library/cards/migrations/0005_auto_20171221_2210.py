@@ -8,33 +8,62 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0004_auto_20171221_1543'),
-    ]
+    dependencies = [("cards", "0004_auto_20171221_1543")]
 
     operations = [
         migrations.CreateModel(
-            name='CardLegality',
+            name="CardLegality",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('card', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='legalities', to='cards.Card')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "card",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="legalities",
+                        to="cards.Card",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Format',
+            name="Format",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100, unique=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100, unique=True)),
             ],
         ),
         migrations.AlterField(
-            model_name='cardruling',
-            name='card',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='rulings', to='cards.Card'),
+            model_name="cardruling",
+            name="card",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="rulings",
+                to="cards.Card",
+            ),
         ),
         migrations.AddField(
-            model_name='cardlegality',
-            name='format',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='card_legalities', to='cards.Format'),
+            model_name="cardlegality",
+            name="format",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="card_legalities",
+                to="cards.Format",
+            ),
         ),
     ]

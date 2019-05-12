@@ -57,10 +57,12 @@ class SimpleSearch(BaseSearch):
 
         if self.colours:
             self.root_parameter.add_parameter(
-                create_colour_param(self.colours,
-                                    CardColourParam,
-                                    match_colours=self.match_colours,
-                                    exclude_colours=self.exclude_colours)
+                create_colour_param(
+                    self.colours,
+                    CardColourParam,
+                    match_colours=self.match_colours,
+                    exclude_colours=self.exclude_colours,
+                )
             )
 
         if self.set:

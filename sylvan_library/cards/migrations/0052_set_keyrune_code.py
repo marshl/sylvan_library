@@ -5,15 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0051_set_type'),
-    ]
+    dependencies = [("cards", "0051_set_type")]
 
     operations = [
         migrations.AddField(
-            model_name='set',
-            name='keyrune_code',
-            field=models.CharField(default='pmtg1', max_length=10),
+            model_name="set",
+            name="keyrune_code",
+            field=models.CharField(default="pmtg1", max_length=10),
             preserve_default=False,
-        ),
+        )
     ]

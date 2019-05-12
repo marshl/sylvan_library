@@ -5,18 +5,16 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0058_auto_20190407_1755'),
-    ]
+    dependencies = [("cards", "0058_auto_20190407_1755")]
 
     operations = [
         migrations.AlterModelOptions(
-            name='cardprinting',
-            options={'ordering': ['set__release_date', 'set__name', 'number']},
+            name="cardprinting",
+            options={"ordering": ["set__release_date", "set__name", "number"]},
         ),
         migrations.AddField(
-            model_name='deck',
-            name='description',
+            model_name="deck",
+            name="description",
             field=models.CharField(blank=True, max_length=9999, null=True),
         ),
     ]

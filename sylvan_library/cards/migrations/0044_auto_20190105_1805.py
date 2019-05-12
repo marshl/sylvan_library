@@ -7,19 +7,17 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0043_auto_20190105_1602'),
-    ]
+    dependencies = [("cards", "0043_auto_20190105_1602")]
 
     operations = [
         migrations.AddField(
-            model_name='cardprintinglanguage',
-            name='flavour_text',
+            model_name="cardprintinglanguage",
+            name="flavour_text",
             field=models.CharField(blank=True, max_length=500, null=True),
         ),
         migrations.AddField(
-            model_name='cardprintinglanguage',
-            name='type',
+            model_name="cardprintinglanguage",
+            name="type",
             field=models.CharField(blank=True, max_length=200, null=True),
         ),
     ]

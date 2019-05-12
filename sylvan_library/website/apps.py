@@ -8,4 +8,5 @@ class WebsiteConfig(AppConfig):
     """
     The configuration for the website app
     """
-    name = 'website'
+
+    name = "website"

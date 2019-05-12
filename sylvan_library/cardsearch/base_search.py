@@ -16,11 +16,7 @@ from cardsearch.parameters import (
     OrParam,
 )
 
-from cards.models import (
-    Card,
-    CardPrinting,
-    Set,
-)
+from cards.models import Card, CardPrinting, Set
 
 
 class SearchResult:
@@ -28,32 +24,45 @@ class SearchResult:
     A single search result including the card and it's selected printing
     """
 
-    def __init__(self, card: Card, selected_printing: CardPrinting = None,
-                 selected_set: Set = None):
+    def __init__(
+        self,
+        card: Card,
+        selected_printing: CardPrinting = None,
+        selected_set: Set = None,
+    ):
         self.card = card
         self.selected_printing = selected_printing
 
         if self.card and selected_set and not self.selected_printing:
-            self.selected_printing = next((p for p in self.card.printings.all()
-                                           if p.set == selected_set), None)
+            self.selected_printing = next(
+                (p for p in self.card.printings.all() if p.set == selected_set), None
+            )
 
         if self.card and not self.selected_printing:
-            self.selected_printing = sorted(self.card.printings.all(),
-                                            key=lambda x: x.set.release_date)[-1]
+            self.selected_printing = sorted(
+                self.card.printings.all(), key=lambda x: x.set.release_date
+            )[-1]
 
-        assert self.selected_printing is None or self.card is None \
-               or self.selected_printing in self.card.printings.all()
+        assert (
+            self.selected_printing is None
+            or self.card is None
+            or self.selected_printing in self.card.printings.all()
+        )
 
     def is_planeswalker(self) -> bool:
         """
         Returns true if this card result is a planeswalker card
         :return: True if this result is a planeswalker, otherwise False
         """
-        return self.card.type and 'Planeswalker' in self.card.type
+        return self.card.type and "Planeswalker" in self.card.type
 
 
-def create_colour_param(colour_params: List[Bit], param_class: type, match_colours: bool,
-                        exclude_colours: bool) -> AndParam:
+def create_colour_param(
+    colour_params: List[Bit],
+    param_class: type,
+    match_colours: bool,
+    exclude_colours: bool,
+) -> AndParam:
     """
     Creates a series of colour parameters based on the given colours
     :param colour_params: A list of bits flags that should be searched for
@@ -114,7 +123,12 @@ class BaseSearch:
         self.add_sort_param(CardColourSortParam())
         self.add_sort_param(CardPowerSortParam())
         queryset = queryset.order_by(
-            *[order for sort_param in self.sort_params for order in sort_param.get_sort_list()])
+            *[
+                order
+                for sort_param in self.sort_params
+                for order in sort_param.get_sort_list()
+            ]
+        )
 
         self.paginator = Paginator(queryset, page_size)
         try:
@@ -122,13 +136,17 @@ class BaseSearch:
         except EmptyPage:
             return
         cards = list(self.page)
-        prefetch_related_objects(cards, 'printings__printed_languages__physical_cards__ownerships')
-        prefetch_related_objects(cards, 'printings__printed_languages__language')
-        prefetch_related_objects(cards, 'printings__set')
-        prefetch_related_objects(cards, 'printings__rarity')
+        prefetch_related_objects(
+            cards, "printings__printed_languages__physical_cards__ownerships"
+        )
+        prefetch_related_objects(cards, "printings__printed_languages__language")
+        prefetch_related_objects(cards, "printings__set")
+        prefetch_related_objects(cards, "printings__rarity")
 
         preferred_set = self.get_preferred_set()
-        self.results = [SearchResult(card, selected_set=preferred_set) for card in cards]
+        self.results = [
+            SearchResult(card, selected_set=preferred_set) for card in cards
+        ]
 
     def get_preferred_set(self) -> Optional[Set]:
         """

@@ -6,21 +6,19 @@ from typing import List
 
 from django.db import transaction
 
-from cards.models import (
-    Card,
-    CardRuling,
-)
+from cards.models import Card, CardRuling
 from data_import.staging import StagedSet
 from data_import.management.data_import_command import DataImportCommand
 
-logger = logging.getLogger('django')
+logger = logging.getLogger("django")
 
 
 class Command(DataImportCommand):
     """
     Command for updating all card rulings
     """
-    help = 'Updates all card rulings'
+
+    help = "Updates all card rulings"
 
     def handle(self, *args, **options):
         with transaction.atomic():
@@ -33,28 +31,33 @@ class Command(DataImportCommand):
         Updates all card rulings
         :param staged_sets: The list of staged sets
         """
-        logger.info('Updating card rulings')
+        logger.info("Updating card rulings")
         CardRuling.objects.all().delete()
 
         for staged_set in staged_sets:
-            logger.info('Updating rulings in %s', staged_set.get_name())
+            logger.info("Updating rulings in %s", staged_set.get_name())
             for staged_card in staged_set.get_cards():
 
                 if not staged_card.has_rulings() or staged_card.is_token:
                     continue
 
                 try:
-                    card_obj = Card.objects.get(name=staged_card.get_name(), is_token=False)
+                    card_obj = Card.objects.get(
+                        name=staged_card.get_name(), is_token=False
+                    )
                 except Card.DoesNotExist as ex:
-                    raise Exception(f'Could not find card {staged_card.get_name()}: {ex}')
+                    raise Exception(
+                        f"Could not find card {staged_card.get_name()}: {ex}"
+                    )
 
                 for ruling in staged_card.get_rulings():
                     ruling, created = CardRuling.objects.get_or_create(
-                        card=card_obj, text=ruling['text'], date=ruling['date'])
+                        card=card_obj, text=ruling["text"], date=ruling["date"]
+                    )
 
                     if created:
-                        self.increment_created('CardRuling')
+                        self.increment_created("CardRuling")
                     else:
-                        self.increment_updated('CardRuling')
+                        self.increment_updated("CardRuling")
 
-        logger.info('Card rulings updated')
+        logger.info("Card rulings updated")

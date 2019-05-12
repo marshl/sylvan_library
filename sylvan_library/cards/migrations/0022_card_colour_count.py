@@ -7,15 +7,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0021_auto_20180208_1805'),
-    ]
+    dependencies = [("cards", "0021_auto_20180208_1805")]
 
     operations = [
         migrations.AddField(
-            model_name='card',
-            name='colour_count',
+            model_name="card",
+            name="colour_count",
             field=models.IntegerField(default=0),
             preserve_default=False,
-        ),
+        )
     ]

@@ -7,14 +7,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0016_card_is_reserved'),
-    ]
+    dependencies = [("cards", "0016_card_is_reserved")]
 
     operations = [
         migrations.AddField(
-            model_name='cardprinting',
-            name='release_date',
+            model_name="cardprinting",
+            name="release_date",
             field=models.DateField(blank=True, null=True),
-        ),
+        )
     ]

@@ -10,23 +10,24 @@ from django.db.models import Sum, Case, When, IntegerField, Value
 from django.contrib.auth.models import User
 from bitfield.types import Bit
 
-from cards.models import (
-    Block,
-    Card,
-    Rarity,
-    Set,
-)
+from cards.models import Block, Card, Rarity, Set
 
-logger = logging.getLogger('django')
+logger = logging.getLogger("django")
 
-OPERATOR_MAPPING = {'LT': '__lt', 'LTE': '__lte', 'GT': '__gt', 'GTE': '__gte', 'EQ': ''}
+OPERATOR_MAPPING = {
+    "LT": "__lt",
+    "LTE": "__lte",
+    "GT": "__gt",
+    "GTE": "__gte",
+    "EQ": "",
+}
 
 NUMERICAL_OPERATOR_CHOICES = (
-    ('GT', '>'),
-    ('GTE', '>='),
-    ('LT', '<'),
-    ('LTE', '<='),
-    ('EQ', '='),
+    ("GT", ">"),
+    ("GTE", ">="),
+    ("LT", "<"),
+    ("LTE", "<="),
+    ("EQ", "="),
 )
 
 
@@ -43,7 +44,7 @@ class CardSearchParam:
         Returns the query of this parameter and all child parameters
         :return:
         """
-        raise NotImplementedError('Please implement this method')
+        raise NotImplementedError("Please implement this method")
 
 
 # pylint: disable=abstract-method
@@ -77,7 +78,7 @@ class AndParam(BranchParam):
 
     def query(self) -> Q:
         if not self.child_parameters:
-            logger.info('No child parameters found, returning empty set')
+            logger.info("No child parameters found, returning empty set")
             return Q()
 
         query = Q()
@@ -100,7 +101,7 @@ class OrParam(BranchParam):
 
     def query(self) -> Q:
         if not self.child_parameters:
-            logger.info('No child parameters found,returning empty set')
+            logger.info("No child parameters found,returning empty set")
             return Card.objects.none()
 
         query = Q()
@@ -133,10 +134,10 @@ class CardRulesTextParam(CardSearchParam):
         self.card_rules = card_rules
 
     def query(self) -> Q:
-        if '~' not in self.card_rules:
+        if "~" not in self.card_rules:
             return Q(rules_text__icontains=self.card_rules)
-        chunks = [Value(c) for c in self.card_rules.split('~')]
-        params = [F('name')] * (len(chunks) * 2 - 1)
+        chunks = [Value(c) for c in self.card_rules.split("~")]
+        params = [F("name")] * (len(chunks) * 2 - 1)
         params[0::2] = chunks
         return Q(rules_text__icontains=Concat(*params))
 
@@ -251,7 +252,9 @@ class CardOwnerParam(CardSearchParam):
         self.user = user
 
     def query(self) -> Q:
-        return Q(printings__printed_languages__physical_cards__ownerships__owner=self.user)
+        return Q(
+            printings__printed_languages__physical_cards__ownerships__owner=self.user
+        )
 
 
 class CardManaCostParam(CardSearchParam):
@@ -298,7 +301,7 @@ class CardNumericalParam(CardSearchParam):
         :param field: The card field to compare with
         :return:
         """
-        return {f'{field}{OPERATOR_MAPPING[self.operator]}': self.number}
+        return {f"{field}{OPERATOR_MAPPING[self.operator]}": self.number}
 
 
 class CardNumPowerParam(CardNumericalParam):
@@ -312,7 +315,7 @@ class CardNumPowerParam(CardNumericalParam):
         self.comparison = comparison
 
     def query(self) -> Q:
-        args = self.get_args('num_power')
+        args = self.get_args("num_power")
         return Q(**args)
 
 
@@ -322,7 +325,7 @@ class CardNumToughnessParam(CardNumericalParam):
     """
 
     def query(self) -> Q:
-        args = self.get_args('num_toughness')
+        args = self.get_args("num_toughness")
         return Q(**args)
 
 
@@ -332,7 +335,7 @@ class CardNumLoyaltyParam(CardNumericalParam):
     """
 
     def query(self) -> Q:
-        args = self.get_args('num_loyalty')
+        args = self.get_args("num_loyalty")
         return Q(**args)
 
 
@@ -342,7 +345,7 @@ class CardCmcParam(CardNumericalParam):
     """
 
     def query(self) -> Q:
-        args = self.get_args('cmc')
+        args = self.get_args("cmc")
         return Q(**args)
 
 
@@ -358,13 +361,18 @@ class CardOwnershipCountParam(CardNumericalParam):
     def query(self) -> Q:
         annotated_result = Card.objects.annotate(
             ownership_count=Sum(
-                Case(When(printings__printed_languages__physical_cards__ownerships__owner=self.user,
-                          then='printings__printed_languages__physical_cards__ownerships__count'),
-                     output_field=IntegerField(),
-                     default=0
-                     )))
+                Case(
+                    When(
+                        printings__printed_languages__physical_cards__ownerships__owner=self.user,
+                        then="printings__printed_languages__physical_cards__ownerships__count",
+                    ),
+                    output_field=IntegerField(),
+                    default=0,
+                )
+            )
+        )
 
-        kwargs = {f'ownership_count{OPERATOR_MAPPING[self.operator]}': self.number}
+        kwargs = {f"ownership_count{OPERATOR_MAPPING[self.operator]}": self.number}
         query = Q(**kwargs)
         return Q(id__in=annotated_result.filter(query))
 
@@ -383,7 +391,9 @@ class CardSortParam:
         Gets the sort list taking order into account
         :return:
         """
-        return ['-' + arg if self.sort_descending else arg for arg in self.get_sort_keys()]
+        return [
+            "-" + arg if self.sort_descending else arg for arg in self.get_sort_keys()
+        ]
 
     def get_sort_keys(self) -> list:
         """
@@ -402,7 +412,7 @@ class CardNameSortParam(CardSortParam):
         """
         Gets the list of attributes to be sorted by
         """
-        return ['name']
+        return ["name"]
 
 
 class CardPowerSortParam(CardSortParam):
@@ -414,7 +424,7 @@ class CardPowerSortParam(CardSortParam):
         """
         Gets the list of attributes to be sorted by
         """
-        return ['num_power']
+        return ["num_power"]
 
 
 class CardCollectorNumSortParam(CardSortParam):
@@ -423,7 +433,7 @@ class CardCollectorNumSortParam(CardSortParam):
     """
 
     def get_sort_keys(self) -> list:
-        return ['printings__number']
+        return ["printings__number"]
 
 
 class CardColourSortParam(CardSortParam):
@@ -432,7 +442,7 @@ class CardColourSortParam(CardSortParam):
     """
 
     def get_sort_keys(self) -> list:
-        return ['colour_sort_key']
+        return ["colour_sort_key"]
 
 
 class CardColourWeightSortParam(CardSortParam):
@@ -441,4 +451,4 @@ class CardColourWeightSortParam(CardSortParam):
     """
 
     def get_sort_keys(self) -> list:
-        return ['cmc', 'colour_sort_key', 'colour_weight']
+        return ["cmc", "colour_sort_key", "colour_weight"]

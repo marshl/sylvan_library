@@ -7,20 +7,49 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0003_cardprinting_json_id'),
-    ]
+    dependencies = [("cards", "0003_cardprinting_json_id")]
 
     operations = [
         migrations.AddField(
-            model_name='card',
-            name='layout',
-            field=models.CharField(choices=[('normal', 'Normal'), ('split', 'Split'), ('flip', 'Flip'), ('double-faced', 'Double-faced'), ('token', 'Token'), ('plane', 'Plane'), ('scheme', 'Scheme'), ('phenomenon', 'Phenomenon'), ('leveler', 'Leveler'), ('vanguard', 'Vanguard'), ('meld', 'Meld')], default='normal', max_length=50),
+            model_name="card",
+            name="layout",
+            field=models.CharField(
+                choices=[
+                    ("normal", "Normal"),
+                    ("split", "Split"),
+                    ("flip", "Flip"),
+                    ("double-faced", "Double-faced"),
+                    ("token", "Token"),
+                    ("plane", "Plane"),
+                    ("scheme", "Scheme"),
+                    ("phenomenon", "Phenomenon"),
+                    ("leveler", "Leveler"),
+                    ("vanguard", "Vanguard"),
+                    ("meld", "Meld"),
+                ],
+                default="normal",
+                max_length=50,
+            ),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='physicalcard',
-            name='layout',
-            field=models.CharField(choices=[('normal', 'Normal'), ('split', 'Split'), ('flip', 'Flip'), ('double-faced', 'Double-faced'), ('token', 'Token'), ('plane', 'Plane'), ('scheme', 'Scheme'), ('phenomenon', 'Phenomenon'), ('leveler', 'Leveler'), ('vanguard', 'Vanguard'), ('meld', 'Meld')], max_length=50),
+            model_name="physicalcard",
+            name="layout",
+            field=models.CharField(
+                choices=[
+                    ("normal", "Normal"),
+                    ("split", "Split"),
+                    ("flip", "Flip"),
+                    ("double-faced", "Double-faced"),
+                    ("token", "Token"),
+                    ("plane", "Plane"),
+                    ("scheme", "Scheme"),
+                    ("phenomenon", "Phenomenon"),
+                    ("leveler", "Leveler"),
+                    ("vanguard", "Vanguard"),
+                    ("meld", "Meld"),
+                ],
+                max_length=50,
+            ),
         ),
     ]

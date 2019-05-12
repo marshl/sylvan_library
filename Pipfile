@@ -15,6 +15,7 @@ seaborn = "*"
 django-select2 = "*"
 psycopg2 = "*"
 psycopg2-binary = "*"
+black = "*"
 
 [dev-packages]
 jupyter_core = "==4.4.0"

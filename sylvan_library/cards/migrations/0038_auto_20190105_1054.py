@@ -7,19 +7,47 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0037_auto_20190104_2227'),
-    ]
+    dependencies = [("cards", "0037_auto_20190104_2227")]
 
     operations = [
         migrations.AlterField(
-            model_name='card',
-            name='layout',
-            field=models.CharField(choices=[('normal', 'Normal'), ('split', 'Split'), ('flip', 'Flip'), ('transform', 'Transform'), ('token', 'Token'), ('plane', 'Plane'), ('scheme', 'Scheme'), ('phenomenon', 'Phenomenon'), ('leveler', 'Leveler'), ('vanguard', 'Vanguard'), ('meld', 'Meld')], max_length=50),
+            model_name="card",
+            name="layout",
+            field=models.CharField(
+                choices=[
+                    ("normal", "Normal"),
+                    ("split", "Split"),
+                    ("flip", "Flip"),
+                    ("transform", "Transform"),
+                    ("token", "Token"),
+                    ("plane", "Plane"),
+                    ("scheme", "Scheme"),
+                    ("phenomenon", "Phenomenon"),
+                    ("leveler", "Leveler"),
+                    ("vanguard", "Vanguard"),
+                    ("meld", "Meld"),
+                ],
+                max_length=50,
+            ),
         ),
         migrations.AlterField(
-            model_name='physicalcard',
-            name='layout',
-            field=models.CharField(choices=[('normal', 'Normal'), ('split', 'Split'), ('flip', 'Flip'), ('transform', 'Transform'), ('token', 'Token'), ('plane', 'Plane'), ('scheme', 'Scheme'), ('phenomenon', 'Phenomenon'), ('leveler', 'Leveler'), ('vanguard', 'Vanguard'), ('meld', 'Meld')], max_length=50),
+            model_name="physicalcard",
+            name="layout",
+            field=models.CharField(
+                choices=[
+                    ("normal", "Normal"),
+                    ("split", "Split"),
+                    ("flip", "Flip"),
+                    ("transform", "Transform"),
+                    ("token", "Token"),
+                    ("plane", "Plane"),
+                    ("scheme", "Scheme"),
+                    ("phenomenon", "Phenomenon"),
+                    ("leveler", "Leveler"),
+                    ("vanguard", "Vanguard"),
+                    ("meld", "Meld"),
+                ],
+                max_length=50,
+            ),
         ),
     ]

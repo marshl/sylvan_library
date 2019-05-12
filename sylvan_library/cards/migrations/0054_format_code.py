@@ -5,15 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0053_cardprinting_is_timeshifted'),
-    ]
+    dependencies = [("cards", "0053_cardprinting_is_timeshifted")]
 
     operations = [
         migrations.AddField(
-            model_name='format',
-            name='code',
-            field=models.CharField(default='default', max_length=100),
+            model_name="format",
+            name="code",
+            field=models.CharField(default="default", max_length=100),
             preserve_default=False,
-        ),
+        )
     ]

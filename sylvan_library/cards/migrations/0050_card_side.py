@@ -5,14 +5,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0049_cardimage'),
-    ]
+    dependencies = [("cards", "0049_cardimage")]
 
     operations = [
         migrations.AddField(
-            model_name='card',
-            name='side',
+            model_name="card",
+            name="side",
             field=models.CharField(blank=True, max_length=1, null=True),
-        ),
+        )
     ]

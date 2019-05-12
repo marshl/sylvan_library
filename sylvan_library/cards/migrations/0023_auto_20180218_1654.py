@@ -8,19 +8,21 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0022_card_colour_count'),
-    ]
+    dependencies = [("cards", "0022_card_colour_count")]
 
     operations = [
         migrations.AddField(
-            model_name='card',
-            name='colour_flags',
-            field=bitfield.models.BitField(('white', 'blue', 'black', 'red', 'green'), default=0),
+            model_name="card",
+            name="colour_flags",
+            field=bitfield.models.BitField(
+                ("white", "blue", "black", "red", "green"), default=0
+            ),
         ),
         migrations.AddField(
-            model_name='card',
-            name='colour_identity_flags',
-            field=bitfield.models.BitField(('white', 'blue', 'black', 'red', 'green'), default=0),
+            model_name="card",
+            name="colour_identity_flags",
+            field=bitfield.models.BitField(
+                ("white", "blue", "black", "red", "green"), default=0
+            ),
         ),
     ]

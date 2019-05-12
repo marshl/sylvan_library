@@ -7,15 +7,21 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0005_auto_20171221_2210'),
-    ]
+    dependencies = [("cards", "0005_auto_20171221_2210")]
 
     operations = [
         migrations.AddField(
-            model_name='cardlegality',
-            name='restriction',
-            field=models.CharField(choices=[('Legal', 'Legal'), ('Banned', 'Banned'), ('Restricted', 'Restricted')], default='Legal', max_length=50),
+            model_name="cardlegality",
+            name="restriction",
+            field=models.CharField(
+                choices=[
+                    ("Legal", "Legal"),
+                    ("Banned", "Banned"),
+                    ("Restricted", "Restricted"),
+                ],
+                default="Legal",
+                max_length=50,
+            ),
             preserve_default=False,
-        ),
+        )
     ]

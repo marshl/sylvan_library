@@ -8,4 +8,5 @@ class ReportsConfig(AppConfig):
     """
     Configuration for the reports app
     """
-    name = 'reports'
+
+    name = "reports"

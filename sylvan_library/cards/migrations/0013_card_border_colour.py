@@ -7,14 +7,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0012_cardprinting_watermark'),
-    ]
+    dependencies = [("cards", "0012_cardprinting_watermark")]
 
     operations = [
         migrations.AddField(
-            model_name='card',
-            name='border_colour',
+            model_name="card",
+            name="border_colour",
             field=models.CharField(blank=True, max_length=10, null=True),
-        ),
+        )
     ]

@@ -5,15 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0052_set_keyrune_code'),
-    ]
+    dependencies = [("cards", "0052_set_keyrune_code")]
 
     operations = [
         migrations.AddField(
-            model_name='cardprinting',
-            name='is_timeshifted',
+            model_name="cardprinting",
+            name="is_timeshifted",
             field=models.BooleanField(default=False),
             preserve_default=False,
-        ),
+        )
     ]

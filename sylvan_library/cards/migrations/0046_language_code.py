@@ -5,15 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0045_auto_20190210_1233'),
-    ]
+    dependencies = [("cards", "0045_auto_20190210_1233")]
 
     operations = [
         migrations.AddField(
-            model_name='language',
-            name='code',
-            field=models.CharField(default='en', max_length=10),
+            model_name="language",
+            name="code",
+            field=models.CharField(default="en", max_length=10),
             preserve_default=False,
-        ),
+        )
     ]

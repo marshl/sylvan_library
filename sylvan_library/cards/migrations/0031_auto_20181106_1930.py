@@ -7,17 +7,9 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0030_remove_cardprinting_mci_number'),
-    ]
+    dependencies = [("cards", "0030_remove_cardprinting_mci_number")]
 
     operations = [
-        migrations.RemoveField(
-            model_name='card',
-            name='hand_modifier',
-        ),
-        migrations.RemoveField(
-            model_name='card',
-            name='life_modifier',
-        ),
+        migrations.RemoveField(model_name="card", name="hand_modifier"),
+        migrations.RemoveField(model_name="card", name="life_modifier"),
     ]

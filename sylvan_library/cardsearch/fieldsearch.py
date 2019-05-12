@@ -25,7 +25,7 @@ from cardsearch.parameters import (
 )
 from cardsearch.base_search import BaseSearch, create_colour_param
 
-logger = logging.getLogger('django')
+logger = logging.getLogger("django")
 
 
 # pylint: disable=too-many-instance-attributes
@@ -86,49 +86,51 @@ class FieldSearch(BaseSearch):
             root_param.add_parameter(CardSubtypeParam(self.subtype_text))
 
         if self.min_cmc is not None:
-            root_param.add_parameter(CardCmcParam(self.min_cmc, 'GTE'))
+            root_param.add_parameter(CardCmcParam(self.min_cmc, "GTE"))
 
         if self.max_cmc is not None:
-            root_param.add_parameter(CardCmcParam(self.max_cmc, 'LTE'))
+            root_param.add_parameter(CardCmcParam(self.max_cmc, "LTE"))
 
         if self.min_power is not None:
-            root_param.add_parameter(CardNumPowerParam(self.min_power, 'GTE'))
+            root_param.add_parameter(CardNumPowerParam(self.min_power, "GTE"))
 
         if self.max_power is not None:
-            root_param.add_parameter(CardNumPowerParam(self.max_power, 'LTE'))
+            root_param.add_parameter(CardNumPowerParam(self.max_power, "LTE"))
 
         if self.min_toughness is not None:
-            root_param.add_parameter(CardNumToughnessParam(self.min_toughness, 'GTE'))
+            root_param.add_parameter(CardNumToughnessParam(self.min_toughness, "GTE"))
 
         if self.max_toughness is not None:
-            root_param.add_parameter(CardNumToughnessParam(self.max_toughness, 'LTE'))
+            root_param.add_parameter(CardNumToughnessParam(self.max_toughness, "LTE"))
 
         if self.mana_cost is not None:
             root_param.add_parameter(CardManaCostParam(self.mana_cost, False))
 
         if self.colours:
             self.root_parameter.add_parameter(
-                create_colour_param(self.colours,
-                                    CardColourParam,
-                                    match_colours=self.match_colours_exactly,
-                                    exclude_colours=self.exclude_unselected_colours)
+                create_colour_param(
+                    self.colours,
+                    CardColourParam,
+                    match_colours=self.match_colours_exactly,
+                    exclude_colours=self.exclude_unselected_colours,
+                )
             )
 
         if self.colour_identities:
             self.root_parameter.add_parameter(
-                create_colour_param(self.colour_identities,
-                                    CardColourIdentityParam,
-                                    match_colours=self.match_colour_identities_exactly,
-                                    exclude_colours=self.exclude_unselected_colour_identities)
+                create_colour_param(
+                    self.colour_identities,
+                    CardColourIdentityParam,
+                    match_colours=self.match_colour_identities_exactly,
+                    exclude_colours=self.exclude_unselected_colour_identities,
+                )
             )
 
         if self.rarities:
             rarity_node = AndParam() if self.match_rarities_exactly else OrParam()
             self.root_parameter.add_parameter(rarity_node)
             for rarity in self.rarities:
-                rarity_node.add_parameter(
-                    CardRarityParam(rarity)
-                )
+                rarity_node.add_parameter(CardRarityParam(rarity))
 
         if self.sets:
             for set_obj in self.sets:
@@ -136,6 +138,8 @@ class FieldSearch(BaseSearch):
 
     def get_preferred_set(self) -> Optional[Set]:
         if self.sets:
-            return Set.objects.filter(id__in=self.sets).order_by('-release_date').first()
+            return (
+                Set.objects.filter(id__in=self.sets).order_by("-release_date").first()
+            )
 
         return None

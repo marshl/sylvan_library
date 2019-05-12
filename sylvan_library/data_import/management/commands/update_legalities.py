@@ -6,22 +6,19 @@ from typing import List
 
 from django.db import transaction
 
-from cards.models import (
-    Card,
-    CardLegality,
-    Format
-)
+from cards.models import Card, CardLegality, Format
 from data_import.staging import StagedSet
 from data_import.management.data_import_command import DataImportCommand
 
-logger = logging.getLogger('django')
+logger = logging.getLogger("django")
 
 
 class Command(DataImportCommand):
     """
     Command for updating all card legalities
     """
-    help = 'Updates all card legalities'
+
+    help = "Updates all card legalities"
 
     def handle(self, *args, **options):
         with transaction.atomic():
@@ -39,7 +36,7 @@ class Command(DataImportCommand):
         format_map = {f.code: f for f in Format.objects.all()}
 
         for staged_set in staged_sets:
-            logger.info('Finding legalities for %s', staged_set.get_name())
+            logger.info("Finding legalities for %s", staged_set.get_name())
 
             for staged_card in staged_set.get_cards():
 
@@ -59,6 +56,6 @@ class Command(DataImportCommand):
                     )
                     legality_obj.full_clean()
                     legality_obj.save()
-                    self.increment_created('Legality')
+                    self.increment_created("Legality")
 
                 cards_updated.add(staged_card.get_name())

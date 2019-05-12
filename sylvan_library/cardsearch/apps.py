@@ -8,4 +8,5 @@ class CardsearchConfig(AppConfig):
     """
     Configuration for the cardsearch app
     """
-    name = 'cardsearch'
+
+    name = "cardsearch"

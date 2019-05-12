@@ -7,14 +7,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0027_colour_bit_value'),
-    ]
+    dependencies = [("cards", "0027_colour_bit_value")]
 
     operations = [
         migrations.AlterField(
-            model_name='cardprinting',
-            name='json_id',
+            model_name="cardprinting",
+            name="json_id",
             field=models.CharField(max_length=40, unique=True),
-        ),
+        )
     ]

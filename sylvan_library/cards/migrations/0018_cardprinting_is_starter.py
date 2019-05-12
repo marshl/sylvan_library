@@ -7,15 +7,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0017_cardprinting_release_date'),
-    ]
+    dependencies = [("cards", "0017_cardprinting_release_date")]
 
     operations = [
         migrations.AddField(
-            model_name='cardprinting',
-            name='is_starter',
+            model_name="cardprinting",
+            name="is_starter",
             field=models.BooleanField(default=False),
             preserve_default=False,
-        ),
+        )
     ]

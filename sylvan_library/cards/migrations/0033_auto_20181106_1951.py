@@ -7,17 +7,9 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0032_remove_set_border_colour'),
-    ]
+    dependencies = [("cards", "0032_remove_set_border_colour")]
 
     operations = [
-        migrations.RemoveField(
-            model_name='language',
-            name='mci_code',
-        ),
-        migrations.RemoveField(
-            model_name='set',
-            name='mci_code',
-        ),
+        migrations.RemoveField(model_name="language", name="mci_code"),
+        migrations.RemoveField(model_name="set", name="mci_code"),
     ]

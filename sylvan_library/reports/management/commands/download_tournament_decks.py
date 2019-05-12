@@ -14,46 +14,43 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from bs4 import BeautifulSoup
 
-from cards.models import (
-    Card,
-    Deck,
-    DeckCard,
-    User,
-)
+from cards.models import Card, Deck, DeckCard, User
 
 
 class Command(BaseCommand):
     """
     THe command for downloading major tournament decks from MTGTop8
     """
-    help = 'Downloads tournament decks from MTGTop8'
 
-    deck_owner_username = 'MTGTOP8_TOURNAMENT_DECK_OWNER'
+    help = "Downloads tournament decks from MTGTop8"
+
+    deck_owner_username = "MTGTOP8_TOURNAMENT_DECK_OWNER"
 
     def __init__(self):
-        self.base_uri = 'https://www.mtgtop8.com/'
-        self.output_path = os.path.join('reports', 'output', 'parsed_decks.json')
+        self.base_uri = "https://www.mtgtop8.com/"
+        self.output_path = os.path.join("reports", "output", "parsed_decks.json")
         if not os.path.exists(self.output_path):
-            with open(self.output_path, 'w') as json_file:
-                json.dump({'decks': [], 'events': []}, json_file)
+            with open(self.output_path, "w") as json_file:
+                json.dump({"decks": [], "events": []}, json_file)
 
         with open(self.output_path) as json_file:
             json_data = json.load(json_file)
-            self.parsed_deck_uris = json_data['decks']
-            self.parsed_event_uris = json_data['events']
+            self.parsed_deck_uris = json_data["decks"]
+            self.parsed_event_uris = json_data["events"]
 
         try:
             self.deck_user = User.objects.get(username=Command.deck_owner_username)
         except User.DoesNotExist:
-            self.deck_user = User.objects.create(username=Command.deck_owner_username,
-                                                 is_active=False)
+            self.deck_user = User.objects.create(
+                username=Command.deck_owner_username, is_active=False
+            )
 
         super().__init__()
 
     def handle(self, *args, **options) -> None:
-        worlds_uri = 'format?f=ST&meta=97'
-        pro_tour_uri = 'format?f=ST&meta=91'
-        grand_prix_uri = 'format?f=ST&meta=96'
+        worlds_uri = "format?f=ST&meta=97"
+        pro_tour_uri = "format?f=ST&meta=91"
+        grand_prix_uri = "format?f=ST&meta=96"
         for uri in [worlds_uri, pro_tour_uri, grand_prix_uri]:
             self.parse_event_summary(self.base_uri + uri)
 
@@ -67,20 +64,22 @@ class Command(BaseCommand):
         while pages_to_visit:
             page = pages_to_visit.pop()
             visited_pages.add(page)
-            print(f'Parsing event list {event_summary_uri} on page{page}')
-            resp = requests.post(event_summary_uri, {'cp': page})
+            print(f"Parsing event list {event_summary_uri} on page{page}")
+            resp = requests.post(event_summary_uri, {"cp": page})
             resp.raise_for_status()
-            soup = BeautifulSoup(resp.content, features='html.parser')
+            soup = BeautifulSoup(resp.content, features="html.parser")
             pages_to_visit.update(self.find_event_summary_pages(soup, visited_pages))
-            event_list = soup.select('table.Stable')[2]
-            event_trs = event_list.find_all('tr', class_='hover_tr')
+            event_list = soup.select("table.Stable")[2]
+            event_trs = event_list.find_all("tr", class_="hover_tr")
             for event in event_trs:
-                link = event.find('a')
-                href = link.attrs['href']
+                link = event.find("a")
+                href = link.attrs["href"]
                 self.parse_event(self.base_uri + href)
 
     # pylint: disable=no-self-use
-    def find_event_summary_pages(self, soup: BeautifulSoup, visited_pages: Set[int]) -> List[int]:
+    def find_event_summary_pages(
+        self, soup: BeautifulSoup, visited_pages: Set[int]
+    ) -> List[int]:
         """
         Finds the page numbers of the event type that haven't been parsed yet
         :param soup: THe page soup to parse
@@ -99,21 +98,21 @@ class Command(BaseCommand):
         :param event_uri: The URI of te event page
         """
         if event_uri in self.parsed_event_uris:
-            print(f'Skipping event {event_uri}')
+            print(f"Skipping event {event_uri}")
             return
 
-        print(f'Parsing event {event_uri}')
+        print(f"Parsing event {event_uri}")
         resp = requests.get(event_uri)
         resp.raise_for_status()
 
         # The event page will default to the winning deck, so the page can be parsed as a deck
         self.parse_deck(event_uri)
 
-        soup = BeautifulSoup(resp.text, features='html.parser')
-        deck_links = soup.select('div.hover_tr div.S14 a')
+        soup = BeautifulSoup(resp.text, features="html.parser")
+        deck_links = soup.select("div.hover_tr div.S14 a")
         for link in deck_links:
-            href = link.attrs['href']
-            self.parse_deck(self.base_uri + 'event' + href)
+            href = link.attrs["href"]
+            self.parse_deck(self.base_uri + "event" + href)
 
         self.parsed_event_uris.append(event_uri)
         self.write_parsed_decks_to_file()
@@ -125,32 +124,33 @@ class Command(BaseCommand):
         :param deck_uri: The URI of the deck
         """
         if deck_uri in self.parsed_deck_uris:
-            print(f'Skipping deck {deck_uri}')
+            print(f"Skipping deck {deck_uri}")
             return
 
-        print(f'Parsing deck {deck_uri}')
+        print(f"Parsing deck {deck_uri}")
 
         resp = requests.get(deck_uri)
         resp.raise_for_status()
-        soup = BeautifulSoup(resp.text, features='html.parser')
-        deck_table = soup.select('table.Stable')[1]
-        tables = deck_table.find_all('table')
+        soup = BeautifulSoup(resp.text, features="html.parser")
+        deck_table = soup.select("table.Stable")[1]
+        tables = deck_table.find_all("table")
         with transaction.atomic():
             deck = Deck()
             deck.owner = self.deck_user
-            deck.name = soup.select_one('div.w_title').text
-            deck.name = re.sub(r'\s+', ' ', deck.name).strip()
+            deck.name = soup.select_one("div.w_title").text
+            deck.name = re.sub(r"\s+", " ", deck.name).strip()
 
-            summary = soup.select_one('td.S14')
-            date_match = re.search(r'(?P<date>\d+/\d+/\d+)', summary.text)
+            summary = soup.select_one("td.S14")
+            date_match = re.search(r"(?P<date>\d+/\d+/\d+)", summary.text)
             if not date_match:
-                raise Exception('Could not find the date')
-            deck.date_created = deck.last_modified = \
-                datetime.strptime(date_match['date'], '%d/%m/%y')
+                raise Exception("Could not find the date")
+            deck.date_created = deck.last_modified = datetime.strptime(
+                date_match["date"], "%d/%m/%y"
+            )
             deck.save()
 
             for table in tables:
-                card_rows = table.select('td.G14')
+                card_rows = table.select("td.G14")
                 for card_row in card_rows:
                     self.parse_deck_card(card_row.text, deck)
 
@@ -166,21 +166,21 @@ class Command(BaseCommand):
         :param deck: The deck to add the card to
         :return: The created DeckCard
         """
-        matches = re.match(r'(?P<count>\d+) +(?P<name>.+)', row_text)
+        matches = re.match(r"(?P<count>\d+) +(?P<name>.+)", row_text)
         if not matches:
-            raise Exception(f'Could not parse {row_text}')
+            raise Exception(f"Could not parse {row_text}")
 
-        print(matches['count'] + ' x ' + matches['name'])
-        if matches['name'] == 'Unknown Card':
+        print(matches["count"] + " x " + matches["name"])
+        if matches["name"] == "Unknown Card":
             return
         deck_card = DeckCard()
         deck_card.deck = deck
-        deck_card.count = int(matches['count'])
+        deck_card.count = int(matches["count"])
         try:
-            card = Card.objects.get(name=matches['name'], is_token=False)
+            card = Card.objects.get(name=matches["name"], is_token=False)
         except Card.DoesNotExist:
             print(f"Couldn't find card {matches['name']}. Testing split card")
-            first_name = matches['name'].split('/')[0].strip()
+            first_name = matches["name"].split("/")[0].strip()
             card = Card.objects.get(name=first_name)
 
         deck_card.card = card
@@ -191,6 +191,8 @@ class Command(BaseCommand):
         WRite out the list of decks and events that have already been parsed to file
         (this is performed periodically so that decks aren't duplicated if an error occurred.
         """
-        with open(self.output_path, 'w') as json_file:
-            json.dump({'decks': self.parsed_deck_uris,
-                       'events': self.parsed_event_uris}, json_file)
+        with open(self.output_path, "w") as json_file:
+            json.dump(
+                {"decks": self.parsed_deck_uris, "events": self.parsed_event_uris},
+                json_file,
+            )

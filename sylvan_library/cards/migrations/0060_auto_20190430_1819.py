@@ -5,19 +5,26 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0059_auto_20190428_1213'),
-    ]
+    dependencies = [("cards", "0059_auto_20190428_1213")]
 
     operations = [
         migrations.AddField(
-            model_name='deckcard',
-            name='board',
-            field=models.CharField(choices=[('main', 'MAIN'), ('side', 'SIDE'), ('maybe', 'MAYBE'), ('acquire', 'ACQUIRE')], default='main', max_length=20),
+            model_name="deckcard",
+            name="board",
+            field=models.CharField(
+                choices=[
+                    ("main", "MAIN"),
+                    ("side", "SIDE"),
+                    ("maybe", "MAYBE"),
+                    ("acquire", "ACQUIRE"),
+                ],
+                default="main",
+                max_length=20,
+            ),
         ),
         migrations.AlterField(
-            model_name='deck',
-            name='last_modified',
+            model_name="deck",
+            name="last_modified",
             field=models.DateField(auto_now=True),
         ),
     ]

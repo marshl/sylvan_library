@@ -7,15 +7,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0002_set_border_color'),
-    ]
+    dependencies = [("cards", "0002_set_border_color")]
 
     operations = [
         migrations.AddField(
-            model_name='cardprinting',
-            name='json_id',
+            model_name="cardprinting",
+            name="json_id",
             field=models.CharField(default=0, max_length=40),
             preserve_default=False,
-        ),
+        )
     ]

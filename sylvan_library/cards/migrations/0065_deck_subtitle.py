@@ -5,14 +5,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0064_auto_20190501_2322'),
-    ]
+    dependencies = [("cards", "0064_auto_20190501_2322")]
 
     operations = [
         migrations.AddField(
-            model_name='deck',
-            name='subtitle',
+            model_name="deck",
+            name="subtitle",
             field=models.CharField(blank=True, max_length=200, null=True),
-        ),
+        )
     ]

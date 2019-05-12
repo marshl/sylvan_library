@@ -9,6 +9,6 @@ from django.db.models import QuerySet, Sum
 register = template.Library()
 
 
-@register.filter(name='deck_group_count')
+@register.filter(name="deck_group_count")
 def deck_card_group_count(cards: QuerySet) -> int:
-    return cards.aggregate(sum=Sum('count'))['sum']
+    return cards.aggregate(sum=Sum("count"))["sum"]

@@ -32,7 +32,7 @@ def param_replace(context, **kwargs):
     Source:
     https://www.caktusgroup.com/blog/2018/10/18/filtering-and-pagination-django/
     """
-    params = context['request'].GET.copy()
+    params = context["request"].GET.copy()
     for key, val in kwargs.items():
         params[key] = val
 

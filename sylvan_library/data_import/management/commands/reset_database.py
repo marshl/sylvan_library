@@ -36,7 +36,8 @@ def reset_sequence(table_name: str):
     """
     with connection.cursor() as cursor:
         cursor.execute(
-            f"SELECT setval(pg_get_serial_sequence('\"{table_name}\"','id'), 1, false);")
+            f"SELECT setval(pg_get_serial_sequence('\"{table_name}\"','id'), 1, false);"
+        )
 
 
 def truncate_model(model_obj: Type[models.Model]):
@@ -44,22 +45,24 @@ def truncate_model(model_obj: Type[models.Model]):
     Truncates the table of the given model
     :param model_obj: The model to truncate
     """
-    print('Truncating {0}... '.format(model_obj.__name__), end='')
+    print("Truncating {0}... ".format(model_obj.__name__), end="")
     model_obj.objects.all().delete()
     # pylint: disable=protected-access
     reset_sequence(model_obj.objects.model._meta.db_table)
-    print('Done')
+    print("Done")
 
 
 class Command(BaseCommand):
     """
     Command for soft resetting the database
     """
-    help = 'Delete all records from all tables without dropping the tables'
+
+    help = "Delete all records from all tables without dropping the tables"
 
     def handle(self, *args, **options):
         confirm = _query.query_yes_no(
-            'Are you sure you want to delete all data in the database?', 'no')
+            "Are you sure you want to delete all data in the database?", "no"
+        )
 
         if not confirm:
             return
@@ -82,5 +85,5 @@ class Command(BaseCommand):
         truncate_model(Language)
         truncate_model(Colour)
 
-        reset_sequence('cards_card_links')
-        reset_sequence('cards_cardprintinglanguage_physical_cards')
+        reset_sequence("cards_card_links")
+        reset_sequence("cards_cardprintinglanguage_physical_cards")

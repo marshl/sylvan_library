@@ -11,95 +11,145 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('cards', '0010_auto_20171222_1640'),
+        ("cards", "0010_auto_20171222_1640"),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='cardtaglink',
-            name='card',
-        ),
-        migrations.RemoveField(
-            model_name='cardtaglink',
-            name='tag',
+        migrations.RemoveField(model_name="cardtaglink", name="card"),
+        migrations.RemoveField(model_name="cardtaglink", name="tag"),
+        migrations.AddField(
+            model_name="cardtag",
+            name="cards",
+            field=models.ManyToManyField(related_name="tags", to="cards.Card"),
         ),
         migrations.AddField(
-            model_name='cardtag',
-            name='cards',
-            field=models.ManyToManyField(related_name='tags', to='cards.Card'),
-        ),
-        migrations.AddField(
-            model_name='cardtag',
-            name='owner',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='card_tags', to=settings.AUTH_USER_MODEL),
+            model_name="cardtag",
+            name="owner",
+            field=models.ForeignKey(
+                default=1,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="card_tags",
+                to=settings.AUTH_USER_MODEL,
+            ),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='cardprinting',
-            name='card',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='printings', to='cards.Card'),
+            model_name="cardprinting",
+            name="card",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="printings",
+                to="cards.Card",
+            ),
         ),
         migrations.AlterField(
-            model_name='cardprinting',
-            name='rarity',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='card_printings', to='cards.Rarity'),
+            model_name="cardprinting",
+            name="rarity",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="card_printings",
+                to="cards.Rarity",
+            ),
         ),
         migrations.AlterField(
-            model_name='cardprinting',
-            name='set',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='card_printings', to='cards.Set'),
+            model_name="cardprinting",
+            name="set",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="card_printings",
+                to="cards.Set",
+            ),
         ),
         migrations.AlterField(
-            model_name='cardprintinglanguage',
-            name='card_printing',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='printed_languages', to='cards.CardPrinting'),
+            model_name="cardprintinglanguage",
+            name="card_printing",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="printed_languages",
+                to="cards.CardPrinting",
+            ),
         ),
         migrations.AlterField(
-            model_name='cardprintinglanguage',
-            name='language',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='cards', to='cards.Language'),
+            model_name="cardprintinglanguage",
+            name="language",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="cards",
+                to="cards.Language",
+            ),
         ),
         migrations.AlterField(
-            model_name='deck',
-            name='owner',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='decks', to=settings.AUTH_USER_MODEL),
+            model_name="deck",
+            name="owner",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="decks",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AlterField(
-            model_name='deckcard',
-            name='card',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='deck_cards', to='cards.Card'),
+            model_name="deckcard",
+            name="card",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="deck_cards",
+                to="cards.Card",
+            ),
         ),
         migrations.AlterField(
-            model_name='deckcard',
-            name='deck',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='cards', to='cards.Deck'),
+            model_name="deckcard",
+            name="deck",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="cards",
+                to="cards.Deck",
+            ),
         ),
         migrations.AlterField(
-            model_name='set',
-            name='block',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='sets', to='cards.Block'),
+            model_name="set",
+            name="block",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="sets",
+                to="cards.Block",
+            ),
         ),
         migrations.AlterField(
-            model_name='usercardchange',
-            name='owner',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='card_changes', to=settings.AUTH_USER_MODEL),
+            model_name="usercardchange",
+            name="owner",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="card_changes",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AlterField(
-            model_name='usercardchange',
-            name='physical_card',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_changes', to='cards.PhysicalCard'),
+            model_name="usercardchange",
+            name="physical_card",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="user_changes",
+                to="cards.PhysicalCard",
+            ),
         ),
         migrations.AlterField(
-            model_name='userownedcard',
-            name='owner',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='owned_cards', to=settings.AUTH_USER_MODEL),
+            model_name="userownedcard",
+            name="owner",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="owned_cards",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AlterField(
-            model_name='userownedcard',
-            name='physical_card',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='ownerships', to='cards.PhysicalCard'),
+            model_name="userownedcard",
+            name="physical_card",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="ownerships",
+                to="cards.PhysicalCard",
+            ),
         ),
-        migrations.DeleteModel(
-            name='CardTagLink',
-        ),
+        migrations.DeleteModel(name="CardTagLink"),
     ]

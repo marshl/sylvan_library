@@ -7,23 +7,14 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0020_auto_20180206_2310'),
-    ]
+    dependencies = [("cards", "0020_auto_20180206_2310")]
 
     operations = [
         migrations.RenameField(
-            model_name='card',
-            old_name='colour_identity',
-            new_name='colour_identities',
+            model_name="card", old_name="colour_identity", new_name="colour_identities"
         ),
         migrations.RenameField(
-            model_name='card',
-            old_name='colour',
-            new_name='colours',
+            model_name="card", old_name="colour", new_name="colours"
         ),
-        migrations.RemoveField(
-            model_name='card',
-            name='colour_count',
-        ),
+        migrations.RemoveField(model_name="card", name="colour_count"),
     ]

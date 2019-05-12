@@ -6,12 +6,10 @@ from typing import Optional
 
 from cards.models import Set
 
-from cardsearch.parameters import (
-    CardNameParam,
-)
+from cardsearch.parameters import CardNameParam
 from cardsearch.base_search import BaseSearch
 
-logger = logging.getLogger('django')
+logger = logging.getLogger("django")
 
 
 class NameSearch(BaseSearch):

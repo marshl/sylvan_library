@@ -7,14 +7,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0035_auto_20181106_2216'),
-    ]
+    dependencies = [("cards", "0035_auto_20181106_2216")]
 
     operations = [
         migrations.AlterField(
-            model_name='rarity',
-            name='symbol',
+            model_name="rarity",
+            name="symbol",
             field=models.CharField(max_length=5, unique=True),
-        ),
+        )
     ]

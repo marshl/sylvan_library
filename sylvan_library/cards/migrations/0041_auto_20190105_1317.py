@@ -7,19 +7,51 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('cards', '0040_auto_20190105_1305'),
-    ]
+    dependencies = [("cards", "0040_auto_20190105_1305")]
 
     operations = [
         migrations.AlterField(
-            model_name='card',
-            name='layout',
-            field=models.CharField(choices=[('normal', 'Normal'), ('split', 'Split'), ('flip', 'Flip'), ('transform', 'Transform'), ('token', 'Token'), ('planar', 'Planar'), ('scheme', 'Scheme'), ('phenomenon', 'Phenomenon'), ('leveler', 'Leveler'), ('vanguard', 'Vanguard'), ('meld', 'Meld'), ('host', 'Host'), ('augment', 'Augment')], max_length=50),
+            model_name="card",
+            name="layout",
+            field=models.CharField(
+                choices=[
+                    ("normal", "Normal"),
+                    ("split", "Split"),
+                    ("flip", "Flip"),
+                    ("transform", "Transform"),
+                    ("token", "Token"),
+                    ("planar", "Planar"),
+                    ("scheme", "Scheme"),
+                    ("phenomenon", "Phenomenon"),
+                    ("leveler", "Leveler"),
+                    ("vanguard", "Vanguard"),
+                    ("meld", "Meld"),
+                    ("host", "Host"),
+                    ("augment", "Augment"),
+                ],
+                max_length=50,
+            ),
         ),
         migrations.AlterField(
-            model_name='physicalcard',
-            name='layout',
-            field=models.CharField(choices=[('normal', 'Normal'), ('split', 'Split'), ('flip', 'Flip'), ('transform', 'Transform'), ('token', 'Token'), ('planar', 'Planar'), ('scheme', 'Scheme'), ('phenomenon', 'Phenomenon'), ('leveler', 'Leveler'), ('vanguard', 'Vanguard'), ('meld', 'Meld'), ('host', 'Host'), ('augment', 'Augment')], max_length=50),
+            model_name="physicalcard",
+            name="layout",
+            field=models.CharField(
+                choices=[
+                    ("normal", "Normal"),
+                    ("split", "Split"),
+                    ("flip", "Flip"),
+                    ("transform", "Transform"),
+                    ("token", "Token"),
+                    ("planar", "Planar"),
+                    ("scheme", "Scheme"),
+                    ("phenomenon", "Phenomenon"),
+                    ("leveler", "Leveler"),
+                    ("vanguard", "Vanguard"),
+                    ("meld", "Meld"),
+                    ("host", "Host"),
+                    ("augment", "Augment"),
+                ],
+                max_length=50,
+            ),
         ),
     ]

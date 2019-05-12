@@ -14,27 +14,27 @@ from django.contrib.auth.models import User
 from bitfield import BitField
 
 CARD_LAYOUT_CHOICES = (
-    ('normal', 'Normal'),
-    ('split', 'Split'),
-    ('flip', 'Flip'),
-    ('transform', 'Transform'),
-    ('token', 'Token'),
-    ('planar', 'Planar'),
-    ('scheme', 'Scheme'),
-    ('leveler', 'Leveler'),
-    ('vanguard', 'Vanguard'),
-    ('meld', 'Meld'),
-    ('host', 'Host'),
-    ('augment', 'Augment'),
-    ('saga', 'Saga'),
-    ('emblem', 'Emblem'),
-    ('double_faced_token', 'Double-faced Token'),
+    ("normal", "Normal"),
+    ("split", "Split"),
+    ("flip", "Flip"),
+    ("transform", "Transform"),
+    ("token", "Token"),
+    ("planar", "Planar"),
+    ("scheme", "Scheme"),
+    ("leveler", "Leveler"),
+    ("vanguard", "Vanguard"),
+    ("meld", "Meld"),
+    ("host", "Host"),
+    ("augment", "Augment"),
+    ("saga", "Saga"),
+    ("emblem", "Emblem"),
+    ("double_faced_token", "Double-faced Token"),
 )
 
 CARD_LEGALITY_RESTRICTION_CHOICES = (
-    ('Legal', 'Legal'),
-    ('Banned', 'Banned'),
-    ('Restricted', 'Restricted'),
+    ("Legal", "Legal"),
+    ("Banned", "Banned"),
+    ("Restricted", "Restricted"),
 )
 
 
@@ -42,6 +42,7 @@ class Block(models.Model):
     """
     Model for a block of sets
     """
+
     name = models.CharField(max_length=200, unique=True)
     release_date = models.DateField(blank=True, null=True)
 
@@ -53,6 +54,7 @@ class Format(models.Model):
     """
     Model for a format of cards
     """
+
     name = models.CharField(max_length=100, unique=True)
     code = models.CharField(max_length=100, unique=True)
 
@@ -64,13 +66,15 @@ class Set(models.Model):
     """
     Model for a set of cards
     """
+
     code = models.CharField(max_length=10, unique=True)
     release_date = models.DateField(blank=True, null=True)
     name = models.CharField(max_length=200, unique=True)
     type = models.CharField(max_length=50, blank=True, null=True)
 
-    block = models.ForeignKey(Block, null=True, blank=True, related_name='sets',
-                              on_delete=models.CASCADE)
+    block = models.ForeignKey(
+        Block, null=True, blank=True, related_name="sets", on_delete=models.CASCADE
+    )
 
     keyrune_code = models.CharField(max_length=10)
 
@@ -82,6 +86,7 @@ class Rarity(models.Model):
     """
     Model for a card rarity
     """
+
     symbol = models.CharField(max_length=5, unique=True)
     name = models.CharField(max_length=30, unique=True)
     display_order = models.IntegerField(unique=True)
@@ -94,50 +99,51 @@ class Colour(models.Model):
     """
     Model for a card's colour
     """
+
     symbol = models.CharField(max_length=1, unique=True)
     name = models.CharField(max_length=15, unique=True)
     display_order = models.IntegerField(unique=True)
     bit_value = models.IntegerField(unique=True)
 
     @staticmethod
-    def white() -> 'Colour':
+    def white() -> "Colour":
         """
         Gets the colour object for white
         :return:
         """
-        return Colour.objects.get(symbol='W')
+        return Colour.objects.get(symbol="W")
 
     @staticmethod
-    def blue() -> 'Colour':
+    def blue() -> "Colour":
         """
         Gets the colour object for blue
         :return:
         """
-        return Colour.objects.get(symbol='U')
+        return Colour.objects.get(symbol="U")
 
     @staticmethod
-    def black() -> 'Colour':
+    def black() -> "Colour":
         """
         Gets the colour object for black
         :return:
         """
-        return Colour.objects.get(symbol='B')
+        return Colour.objects.get(symbol="B")
 
     @staticmethod
-    def red() -> 'Colour':
+    def red() -> "Colour":
         """
         Gets the colour object for red
         :return:
         """
-        return Colour.objects.get(symbol='R')
+        return Colour.objects.get(symbol="R")
 
     @staticmethod
-    def green() -> 'Colour':
+    def green() -> "Colour":
         """
         Gets the colour object for green
         :return:
         """
-        return Colour.objects.get(symbol='G')
+        return Colour.objects.get(symbol="G")
 
     @staticmethod
     def colour_names_to_flags(colour_names: List[str]) -> int:
@@ -173,12 +179,13 @@ class Card(models.Model):
     """
     Model for a unique card
     """
+
     name = models.CharField(max_length=200)
 
     cost = models.CharField(max_length=50, blank=True, null=True)
     cmc = models.FloatField()
-    colour_flags = BitField(flags=('white', 'blue', 'black', 'red', 'green'))
-    colour_identity_flags = BitField(flags=('white', 'blue', 'black', 'red', 'green'))
+    colour_flags = BitField(flags=("white", "blue", "black", "red", "green"))
+    colour_identity_flags = BitField(flags=("white", "blue", "black", "red", "green"))
     colour_count = models.IntegerField()
     colour_sort_key = models.IntegerField()
     colour_weight = models.IntegerField()
@@ -199,10 +206,10 @@ class Card(models.Model):
     is_reserved = models.BooleanField()
     scryfall_oracle_id = models.CharField(max_length=36, blank=True, null=True)
     is_token = models.BooleanField()
-    links = models.ManyToManyField('self')
+    links = models.ManyToManyField("self")
 
     @staticmethod
-    def get_random_card() -> 'Card':
+    def get_random_card() -> "Card":
         """
         Gets a card chosen at random
         :return:
@@ -236,21 +243,23 @@ class Card(models.Model):
                 Case(
                     When(
                         printed_languages__physical_cards__ownerships__owner=user,
-                        then='printed_languages__physical_cards__ownerships__count'),
+                        then="printed_languages__physical_cards__ownerships__count",
+                    ),
                     output_field=IntegerField(),
-                    default=0
+                    default=0,
                 )
             )
-        )['card_count']
+        )["card_count"]
 
-    def get_all_sides(self) -> List['Card']:
-        return [self] + list(self.links.order_by('side').all())
+    def get_all_sides(self) -> List["Card"]:
+        return [self] + list(self.links.order_by("side").all())
 
 
 class CardPrinting(models.Model):
     """
     Model for a certain card printed in a certain set
     """
+
     flavour_text = models.CharField(max_length=500, blank=True, null=True)
     artist = models.CharField(max_length=100, blank=True, null=True)
     number = models.CharField(max_length=10, blank=True, null=True)
@@ -268,9 +277,13 @@ class CardPrinting(models.Model):
     # (e.g. basic lands in Unglued)
     border_colour = models.CharField(max_length=10, blank=True, null=True)
 
-    set = models.ForeignKey(Set, related_name='card_printings', on_delete=models.CASCADE)
-    card = models.ForeignKey(Card, related_name='printings', on_delete=models.CASCADE)
-    rarity = models.ForeignKey(Rarity, related_name='card_printings', on_delete=models.CASCADE)
+    set = models.ForeignKey(
+        Set, related_name="card_printings", on_delete=models.CASCADE
+    )
+    card = models.ForeignKey(Card, related_name="printings", on_delete=models.CASCADE)
+    rarity = models.ForeignKey(
+        Rarity, related_name="card_printings", on_delete=models.CASCADE
+    )
 
     # Set to true if this card was only released as part of a core box set.
     # These are technically part of the core sets and are tournament
@@ -283,10 +296,11 @@ class CardPrinting(models.Model):
         """
         Metaclass for CardPrinting
         """
-        ordering = ['set__release_date', 'set__name', 'number']
+
+        ordering = ["set__release_date", "set__name", "number"]
 
     def __str__(self):
-        return f'{self.card} in {self.set}'
+        return f"{self.card} in {self.set}"
 
     def get_set_keyrune_code(self) -> str:
         """
@@ -295,7 +309,7 @@ class CardPrinting(models.Model):
         But for Guild Kit printings, the guild symbol should be used instead
         :return:
         """
-        if self.set.code in ('GK1', 'GK2') and self.watermark:
+        if self.set.code in ("GK1", "GK2") and self.watermark:
             return self.watermark.lower()
 
         return self.set.keyrune_code
@@ -321,22 +335,24 @@ class CardPrinting(models.Model):
                 Case(
                     When(
                         physical_cards__ownerships__owner=user,
-                        then='physical_cards__ownerships__count'),
+                        then="physical_cards__ownerships__count",
+                    ),
                     output_field=IntegerField(),
-                    default=0
+                    default=0,
                 )
             )
-        )['card_count']
+        )["card_count"]
 
 
 class PhysicalCard(models.Model):
     """
     Model for joining one or more CardPrintingLanguages into a single card that can be owned
     """
+
     layout = models.CharField(max_length=50, choices=CARD_LAYOUT_CHOICES)
 
     def __str__(self):
-        return '//'.join([str(x) for x in self.printed_languages.all()])
+        return "//".join([str(x) for x in self.printed_languages.all()])
 
     def get_simple_string(self) -> str:
         """
@@ -347,9 +363,13 @@ class PhysicalCard(models.Model):
             return str(self.printed_languages.first())
 
         base = self.printed_languages.first()
-        return base.language.name + ' ' \
-               + '//'.join(p.card_printing.card.name for p in self.printed_languages.all()) \
-               + ' in ' + base.card_printing.set.name
+        return (
+            base.language.name
+            + " "
+            + "//".join(p.card_printing.card.name for p in self.printed_languages.all())
+            + " in "
+            + base.card_printing.set.name
+        )
 
     def get_display_for_adding(self) -> str:
         """
@@ -391,8 +411,12 @@ class PhysicalCard(models.Model):
             new_card.clean()
             new_card.save()
 
-        change = UserCardChange(physical_card=self, owner=user, difference=change_count,
-                                date=datetime.datetime.now())
+        change = UserCardChange(
+            physical_card=self,
+            owner=user,
+            difference=change_count,
+            date=datetime.datetime.now(),
+        )
         change.clean()
         change.save()
         return True
@@ -402,25 +426,32 @@ class CardPrintingLanguage(models.Model):
     """
     Model for a card printed in a certain set of a certain language
     """
-    language = models.ForeignKey('Language', related_name='cards', on_delete=models.CASCADE)
+
+    language = models.ForeignKey(
+        "Language", related_name="cards", on_delete=models.CASCADE
+    )
     card_name = models.CharField(max_length=200)
     flavour_text = models.CharField(max_length=500, blank=True, null=True)
     type = models.CharField(max_length=200, blank=True, null=True)
     multiverse_id = models.IntegerField(blank=True, null=True)
 
-    card_printing = models.ForeignKey(CardPrinting, related_name='printed_languages',
-                                      on_delete=models.CASCADE)
+    card_printing = models.ForeignKey(
+        CardPrinting, related_name="printed_languages", on_delete=models.CASCADE
+    )
 
-    physical_cards = models.ManyToManyField(PhysicalCard, related_name='printed_languages')
+    physical_cards = models.ManyToManyField(
+        PhysicalCard, related_name="printed_languages"
+    )
 
     class Meta:
         """
         Meta information for CardPrintingLanguages
         """
-        unique_together = ('language', 'card_name', 'card_printing')
+
+        unique_together = ("language", "card_name", "card_printing")
 
     def __str__(self):
-        return f'{self.language} {self.card_printing}'
+        return f"{self.language} {self.card_printing}"
 
     def get_image_path(self) -> Optional[str]:
         """
@@ -429,18 +460,19 @@ class CardPrintingLanguage(models.Model):
         """
         if self.language.code is None:
             return None
-        image_name = re.sub(r'\W', 's', self.card_printing.number)
-        if self.card_printing.card.layout in ('transform', 'double_faced_token'):
-            image_name += '_' + self.card_printing.card.side
+        image_name = re.sub(r"\W", "s", self.card_printing.number)
+        if self.card_printing.card.layout in ("transform", "double_faced_token"):
+            image_name += "_" + self.card_printing.card.side
 
         if self.card_printing.card.is_token:
-            image_name = 't' + image_name
+            image_name = "t" + image_name
 
         return os.path.join(
-            'card_images',
+            "card_images",
             self.language.code.lower(),
-            '_' + self.card_printing.set.code.lower(),
-            image_name + '.jpg')
+            "_" + self.card_printing.set.code.lower(),
+            image_name + ".jpg",
+        )
 
     def get_user_ownership_count(self, user: User, prefetched: bool = False) -> int:
         """
@@ -460,98 +492,110 @@ class CardPrintingLanguage(models.Model):
         return self.physical_cards.aggregate(
             card_count=Sum(
                 Case(
-                    When(
-                        ownerships__owner=user,
-                        then='ownerships__count'),
+                    When(ownerships__owner=user, then="ownerships__count"),
                     output_field=IntegerField(),
-                    default=0
+                    default=0,
                 )
             )
-        )['card_count']
+        )["card_count"]
 
 
 class UserOwnedCard(models.Model):
     """
     Model for a user owned a number of physical cards
     """
+
     count = models.IntegerField()
-    physical_card = models.ForeignKey(PhysicalCard, related_name='ownerships',
-                                      on_delete=models.CASCADE)
-    owner = models.ForeignKey(User, related_name='owned_cards', on_delete=models.CASCADE)
+    physical_card = models.ForeignKey(
+        PhysicalCard, related_name="ownerships", on_delete=models.CASCADE
+    )
+    owner = models.ForeignKey(
+        User, related_name="owned_cards", on_delete=models.CASCADE
+    )
 
     class Meta:
         """
         Meta information for the UserOwnedCard class
         """
-        unique_together = ('physical_card', 'owner')
+
+        unique_together = ("physical_card", "owner")
 
     def __str__(self):
-        return f'{self.owner} owns {self.count} of {self.physical_card}'
+        return f"{self.owner} owns {self.count} of {self.physical_card}"
 
 
 class UserCardChange(models.Model):
     """
     Model for a change in the number of cards that a user owns
     """
+
     date = models.DateTimeField()
     difference = models.IntegerField()
 
-    physical_card = models.ForeignKey(PhysicalCard, related_name='user_changes',
-                                      on_delete=models.CASCADE)
-    owner = models.ForeignKey(User, related_name='card_changes', on_delete=models.CASCADE)
+    physical_card = models.ForeignKey(
+        PhysicalCard, related_name="user_changes", on_delete=models.CASCADE
+    )
+    owner = models.ForeignKey(
+        User, related_name="card_changes", on_delete=models.CASCADE
+    )
 
     def __str__(self):
-        return f'{self.date} {self.difference} {self.physical_card}'
+        return f"{self.date} {self.difference} {self.physical_card}"
 
 
 class CardRuling(models.Model):
     """
     Model for a ruling made on a card
     """
+
     date = models.DateField()
     text = models.CharField(max_length=4000)
 
-    card = models.ForeignKey(Card, related_name='rulings', on_delete=models.CASCADE)
+    card = models.ForeignKey(Card, related_name="rulings", on_delete=models.CASCADE)
 
     class Meta:
         """
         Meta configuration for the CardRuling class
         """
-        unique_together = ('date', 'text', 'card')
+
+        unique_together = ("date", "text", "card")
 
     def __str__(self):
-        return f'Ruling for {self.card}: {self.text}'
+        return f"Ruling for {self.card}: {self.text}"
 
 
 class CardLegality(models.Model):
     """
     Model for a restriction on the legality of a card in a format
     """
-    card = models.ForeignKey(Card, related_name='legalities', on_delete=models.CASCADE)
-    format = models.ForeignKey(Format, related_name='card_legalities', on_delete=models.CASCADE)
-    restriction = models.CharField(max_length=50, choices=CARD_LEGALITY_RESTRICTION_CHOICES)
+
+    card = models.ForeignKey(Card, related_name="legalities", on_delete=models.CASCADE)
+    format = models.ForeignKey(
+        Format, related_name="card_legalities", on_delete=models.CASCADE
+    )
+    restriction = models.CharField(
+        max_length=50, choices=CARD_LEGALITY_RESTRICTION_CHOICES
+    )
 
     class Meta:
         """
         Meta configuration for the CardLegality class
         """
-        unique_together = (
-            'card',
-            'format',
-            'restriction',
-        )
+
+        unique_together = ("card", "format", "restriction")
 
     def __str__(self):
-        return f'{self.card} is {self.restriction} in {self.format}'
+        return f"{self.card} is {self.restriction} in {self.format}"
 
 
 class CardTag(models.Model):
     """
     Model for a user owned tag that can be applied to many cards
     """
+
     name = models.CharField(max_length=200)
-    owner = models.ForeignKey(User, related_name='card_tags', on_delete=models.CASCADE)
-    cards = models.ManyToManyField(Card, related_name='tags')
+    owner = models.ForeignKey(User, related_name="card_tags", on_delete=models.CASCADE)
+    cards = models.ManyToManyField(Card, related_name="tags")
 
     def __str__(self):
         return self.name
@@ -563,40 +607,40 @@ class Deck(models.Model):
     """
 
     FORMAT_CHOICES = (
-        ('standard', 'Standard'),
-        ('legacy', 'Legacy'),
-        ('prerelease', 'Pre-release'),
-        ('mtgo', 'MTGO'),
-        ('unformat', 'Unformat'),
-        ('unknown', 'Unknown'),
-        ('heirloom', 'Heirloom'),
-        ('vintage', 'Vintage'),
-        ('edh', 'Commander / EDH'),
-        ('archenemy', 'Archenemy'),
-        ('planechase', 'Planechase'),
-        ('vanguard', 'Vanguard'),
-        ('modern', 'Modern'),
-        ('pauper', 'Pauper'),
-        ('noble', 'Noble'),
-        ('casual', 'Casual'),
-        ('hero', 'Hero'),
-        ('quest_magic_rpg', 'Quest Magic RPGs'),
-        ('quest_magic', 'Quest Magic'),
-        ('block_constructed', 'Block Constructed'),
-        ('limited', 'Limited'),
-        ('duel_commander', 'Duel Commander'),
-        ('tiny_leaders', 'Tiny Leaders'),
-        ('highlander', 'Highlander'),
-        ('magic_duels', 'Magic Duels'),
-        ('penny_dreadful', 'Penny Dreadful'),
-        ('frontier', 'Frontier'),
-        ('leviathan', 'Leviathan'),
-        ('1v1_commander', '1v1 Commander'),
-        ('pauper_edh', 'Pauper EDH'),
-        ('canadian_highlander', 'Canadian Highlander'),
-        ('brawl', 'Brawl'),
-        ('arena', 'Arena'),
-        ('oathbreaker', 'Oathbreaker'),
+        ("standard", "Standard"),
+        ("legacy", "Legacy"),
+        ("prerelease", "Pre-release"),
+        ("mtgo", "MTGO"),
+        ("unformat", "Unformat"),
+        ("unknown", "Unknown"),
+        ("heirloom", "Heirloom"),
+        ("vintage", "Vintage"),
+        ("edh", "Commander / EDH"),
+        ("archenemy", "Archenemy"),
+        ("planechase", "Planechase"),
+        ("vanguard", "Vanguard"),
+        ("modern", "Modern"),
+        ("pauper", "Pauper"),
+        ("noble", "Noble"),
+        ("casual", "Casual"),
+        ("hero", "Hero"),
+        ("quest_magic_rpg", "Quest Magic RPGs"),
+        ("quest_magic", "Quest Magic"),
+        ("block_constructed", "Block Constructed"),
+        ("limited", "Limited"),
+        ("duel_commander", "Duel Commander"),
+        ("tiny_leaders", "Tiny Leaders"),
+        ("highlander", "Highlander"),
+        ("magic_duels", "Magic Duels"),
+        ("penny_dreadful", "Penny Dreadful"),
+        ("frontier", "Frontier"),
+        ("leviathan", "Leviathan"),
+        ("1v1_commander", "1v1 Commander"),
+        ("pauper_edh", "Pauper EDH"),
+        ("canadian_highlander", "Canadian Highlander"),
+        ("brawl", "Brawl"),
+        ("arena", "Arena"),
+        ("oathbreaker", "Oathbreaker"),
     )
 
     date_created = models.DateField()
@@ -604,59 +648,79 @@ class Deck(models.Model):
     name = models.CharField(max_length=200)
     subtitle = models.CharField(max_length=200, blank=True, null=True)
     description = models.TextField(null=True, blank=True)
-    owner = models.ForeignKey(User, related_name='decks', on_delete=models.CASCADE)
+    owner = models.ForeignKey(User, related_name="decks", on_delete=models.CASCADE)
     format = models.CharField(max_length=50, choices=FORMAT_CHOICES)
 
     def __str__(self):
         return self.name
 
-    def get_card_groups(self) -> Dict[str, List['DeckCard']]:
-        board_cards = self.cards.filter(board='main').order_by('card__name')
-        lands = board_cards.filter(card__type__contains='Land')
-        creatures = board_cards.exclude(id__in=lands).filter(card__type__contains='Creature')
-        instants = board_cards.filter(card__type__contains='Instant')
-        sorceries = board_cards.filter(card__type__contains='Sorcery')
+    def get_card_groups(self) -> Dict[str, List["DeckCard"]]:
+        board_cards = self.cards.filter(board="main").order_by("card__name")
+        lands = board_cards.filter(card__type__contains="Land")
+        creatures = board_cards.exclude(id__in=lands).filter(
+            card__type__contains="Creature"
+        )
+        instants = board_cards.filter(card__type__contains="Instant")
+        sorceries = board_cards.filter(card__type__contains="Sorcery")
         enchantments = board_cards.exclude(id__in=lands | creatures).filter(
-            card__type__contains='Enchantment')
+            card__type__contains="Enchantment"
+        )
         artifacts = board_cards.exclude(id__in=lands | creatures | enchantments).filter(
-            card__type__contains='Artifact')
-        planeswalkers = board_cards.filter(card__type__contains='Planeswalker')
+            card__type__contains="Artifact"
+        )
+        planeswalkers = board_cards.filter(card__type__contains="Planeswalker")
         other = board_cards.exclude(
-            id__in=lands | creatures | instants | sorceries | artifacts | enchantments | planeswalkers)
+            id__in=lands
+            | creatures
+            | instants
+            | sorceries
+            | artifacts
+            | enchantments
+            | planeswalkers
+        )
 
         return {
-            'Land': lands,
-            'Creature': creatures,
-            'Instant': instants,
-            'Sorcery': sorceries,
-            'Artifact': artifacts,
-            'Enchantment': enchantments,
-            'Planeswalker': planeswalkers,
-            'Other': other
+            "Land": lands,
+            "Creature": creatures,
+            "Instant": instants,
+            "Sorcery": sorceries,
+            "Artifact": artifacts,
+            "Enchantment": enchantments,
+            "Planeswalker": planeswalkers,
+            "Other": other,
         }
 
     def get_land_symbol_counts(self) -> List[int]:
-        land_cards = self.cards.filter(board='main', card__type__contains='Land')
+        land_cards = self.cards.filter(board="main", card__type__contains="Land")
         result = []
-        for colour in Colour.objects.all().order_by('display_order'):
-            result.append(land_cards
-                          .filter(card__rules_text__iregex=':.*?add[^\n]*?{' + colour.symbol + '}')
-                          .aggregate(sum=Sum('count'))['sum'] or 0)
+        for colour in Colour.objects.all().order_by("display_order"):
+            result.append(
+                land_cards.filter(
+                    card__rules_text__iregex=":.*?add[^\n]*?{" + colour.symbol + "}"
+                ).aggregate(sum=Sum("count"))["sum"]
+                or 0
+            )
 
         return result
 
     def get_cost_symbol_counts(self) -> List[int]:
-        cards = self.cards.filter(board='main', card__cost__isnull=False)
+        cards = self.cards.filter(board="main", card__cost__isnull=False)
         result = []
-        for colour in Colour.objects.all().order_by('display_order'):
-            result.append(sum(deck_card.card.cost.count(colour.symbol) * deck_card.count
-                              for deck_card in cards))
+        for colour in Colour.objects.all().order_by("display_order"):
+            result.append(
+                sum(
+                    deck_card.card.cost.count(colour.symbol) * deck_card.count
+                    for deck_card in cards
+                )
+            )
         return result
 
     def deck_avg_cmc(self) -> float:
-        return self.cards.filter(board='main') \
-            .exclude(card__tpe__contains='Land') \
-            .aggregate(Avg('card__cmd'))['card__cmc__avg']
+        return (
+            self.cards.filter(board="main")
+            .exclude(card__tpe__contains="Land")
+            .aggregate(Avg("card__cmd"))["card__cmc__avg"]
+        )
 
     def get_card_count(self) -> int:
         return sum(deck_card.count for deck_card in self.cards.all())
@@ -668,33 +732,33 @@ class DeckCard(models.Model):
     """
 
     BOARD_CHOICES = (
-        ('main', 'Main'),
-        ('side', 'Side'),
-        ('maybe', 'Maybe'),
-        ('acquire', 'Acquire'),
+        ("main", "Main"),
+        ("side", "Side"),
+        ("maybe", "Maybe"),
+        ("acquire", "Acquire"),
     )
 
     count = models.IntegerField()
-    card = models.ForeignKey(Card, related_name='deck_cards', on_delete=models.CASCADE)
-    deck = models.ForeignKey(Deck, related_name='cards', on_delete=models.CASCADE)
-    board = models.CharField(max_length=20, choices=BOARD_CHOICES, default='main')
+    card = models.ForeignKey(Card, related_name="deck_cards", on_delete=models.CASCADE)
+    deck = models.ForeignKey(Deck, related_name="cards", on_delete=models.CASCADE)
+    board = models.CharField(max_length=20, choices=BOARD_CHOICES, default="main")
     is_commander = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'{self.card} in {self.deck}'
+        return f"{self.card} in {self.deck}"
 
     def as_deck_text(self) -> str:
         """
         COnverts this card to how it should appear in board text of the DeckForm
         :return: The text representation version of the card for use in the DeckForm
         """
-        if self.card.layout == 'split':
-            card_name = ' // '.join(c.name for c in self.card.get_all_sides())
+        if self.card.layout == "split":
+            card_name = " // ".join(c.name for c in self.card.get_all_sides())
         else:
             card_name = self.card.name
-        result = f'{self.count}x {card_name}'
+        result = f"{self.count}x {card_name}"
         if self.is_commander:
-            result += ' *CMDR*'
+            result += " *CMDR*"
         return result
 
 
@@ -702,6 +766,7 @@ class Language(models.Model):
     """
     Model for a language that a card could be printed in
     """
+
     name = models.CharField(max_length=50, unique=True)
     code = models.CharField(max_length=10, null=True, blank=True)
 
@@ -711,14 +776,14 @@ class Language(models.Model):
         return self.name
 
     @staticmethod
-    def english() -> 'Language':
+    def english() -> "Language":
         """
         Gets the cached english language object (English is the default language, and it used
         quite a lot, so this reduces the number of queries made quite a bit)
         :return:
         """
         if not Language.ENGLISH:
-            Language.ENGLISH = Language.objects.get(name='English')
+            Language.ENGLISH = Language.objects.get(name="English")
 
         return Language.ENGLISH
 
@@ -728,9 +793,9 @@ class CardImage(models.Model):
     Model for a CardPrintingLanguage's image download status
     (in the future, this might even contain the image itself)
     """
+
     printed_language = models.OneToOneField(
-        CardPrintingLanguage,
-        related_name='image',
-        on_delete=models.CASCADE)
+        CardPrintingLanguage, related_name="image", on_delete=models.CASCADE
+    )
 
     downloaded = models.BooleanField()
