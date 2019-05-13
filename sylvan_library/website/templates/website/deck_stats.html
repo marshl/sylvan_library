@@ -1,0 +1,21 @@
+{% extends 'website/base.html' %}
+{% load staticfiles %}
+{% block content %}
+    <div class="body-content">
+        <div class="main-content" style="color:white;">
+            <div class="group-container">
+                <div class="field-container">
+                    <h2>Some unused Cards</h2>
+                    <ul>
+                        {% for card in unused_cards %}
+                            <li>
+                                {{ card.name }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <h2>Decks</h2> {{ deck_count }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

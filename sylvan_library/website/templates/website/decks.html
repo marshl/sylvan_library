@@ -5,6 +5,7 @@
         <div class="main-content">
             <h1>My Decks</h1>
             <a href="{% url 'website:create_deck' %}">Create New Deck</a>
+            <a href="{% url 'website:deck_stats' %}">Deck Stats</a>
             <div class="search-result-list">
                 {% for deck in decks %}
                     <div class="search-result js-deck-result" style="flex-direction: row;" data-deck-id="{{ deck.id }}">
@@ -59,7 +60,7 @@
             let ctx = $(this).get(0).getContext('2d');
             let $deckId = $(this).closest('.js-deck-result').data('deck-id');
             $.ajax({
-                url: '/website/decks/' + $deckId + '/stats',
+                url: '/website/decks/' + $deckId + '/colour_weights',
             }).done(function (result) {
                 console.log(result);
                 var myDoughnutChart = new Chart(ctx, {

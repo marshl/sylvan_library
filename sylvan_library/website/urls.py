@@ -66,7 +66,8 @@ urlpatterns = [
     path("decks/card/", views.deck_card_search, name="deck_card_search"),
     path("decks/", views.deck_list, name="decks"),
     path("decks/create/", views.deck_create, name="create_deck"),
+    path('decks/stats', views.deck_stats, name='deck_stats'),
     path("decks/<int:deck_id>/", views.deck_view, name="deck_view"),
     path("decks/<int:deck_id>/edit", views.deck_edit, name="deck_edit"),
-    path("decks/<int:deck_id>/stats", views.deck_stats, name="deck_stats"),
+    path("decks/<int:deck_id>/colour_weights", views.deck_colour_weights(), name="deck_colour_weights"),
 ]
