@@ -105,57 +105,70 @@ class Command(BaseCommand):
         resp = requests.get(event_uri)
         resp.raise_for_status()
 
-        # The event page will default to the winning deck, so the page can be parsed as a deck
-        self.parse_deck(event_uri)
-
         soup = BeautifulSoup(resp.text, features="html.parser")
+        summary = soup.select_one("td.S14")
+        date_match = re.search(r"(?P<date>\d+/\d+/\d+)", summary.text)
+        if not date_match:
+            raise Exception("Could not find the date")
+        event_date = datetime.strptime(date_match["date"], "%d/%m/%y")
+
         deck_links = soup.select("div.hover_tr div.S14 a")
         for link in deck_links:
             href = link.attrs["href"]
-            self.parse_deck(self.base_uri + "event" + href)
+            matches = re.search(r"d=(?P<deck_id>\d+)", href)
+            deck_name = link.getText()
+            deck_id = matches["deck_id"]
+
+            self.parse_deck(
+                self.base_uri + "event" + href, event_date, deck_name, deck_id
+            )
 
         self.parsed_event_uris.append(event_uri)
         self.write_parsed_decks_to_file()
         time.sleep(1)
 
-    def parse_deck(self, deck_uri: str) -> None:
+    def parse_deck(
+        self, deck_uri: str, event_date: datetime.date, deck_name: str, deck_id: str
+    ) -> None:
         """
         Parses a single deck URI, creating a new Deck object
         :param deck_uri: The URI of the deck
         """
+        download_uri = f"https://www.mtgtop8.com/dec?d={deck_id}"
+
         if deck_uri in self.parsed_deck_uris:
             print(f"Skipping deck {deck_uri}")
             return
 
         print(f"Parsing deck {deck_uri}")
 
-        resp = requests.get(deck_uri)
+        resp = requests.get(download_uri)
         resp.raise_for_status()
-        soup = BeautifulSoup(resp.text, features="html.parser")
-        deck_table = soup.select("table.Stable")[1]
-        tables = deck_table.find_all("table")
+
         with transaction.atomic():
             deck = Deck()
+            deck.name = deck_name
             deck.owner = self.deck_user
-            deck.name = soup.select_one("div.w_title").text
-            deck.name = re.sub(r"\s+", " ", deck.name).strip()
-
-            summary = soup.select_one("td.S14")
-            date_match = re.search(r"(?P<date>\d+/\d+/\d+)", summary.text)
-            if not date_match:
-                raise Exception("Could not find the date")
-            deck.date_created = deck.last_modified = datetime.strptime(
-                date_match["date"], "%d/%m/%y"
-            )
+            deck.description = deck_uri
+            deck.date_created = deck.last_modified = event_date
             deck.save()
 
-            for table in tables:
-                card_rows = table.select("td.G14")
-                for card_row in card_rows:
-                    self.parse_deck_card(card_row.text, deck)
+            for line in resp.text.split("\n"):
+                if line.startswith("// FORMAT"):
+                    deck.format = line.split(":")[-1]
+                    continue
 
-        self.parsed_deck_uris.append(deck_uri)
-        self.write_parsed_decks_to_file()
+                if line.startswith("// CREATOR"):
+                    deck.subtitle = line.split(":")[-1]
+                    continue
+
+                if line.startswith("//") or line.strip() == "":
+                    continue
+
+                self.parse_deck_card(line, deck)
+
+            self.parsed_deck_uris.append(deck_uri)
+            self.write_parsed_decks_to_file()
         time.sleep(1)
 
     @staticmethod
@@ -166,22 +179,30 @@ class Command(BaseCommand):
         :param deck: The deck to add the card to
         :return: The created DeckCard
         """
-        matches = re.match(r"(?P<count>\d+) +(?P<name>.+)", row_text)
+        matches = re.match(
+            r"(?P<sb>SB: +)?(?P<count>\d+) \[.*?\] (?P<name>.+)", row_text
+        )
+
         if not matches:
             raise Exception(f"Could not parse {row_text}")
 
-        print(matches["count"] + " x " + matches["name"])
-        if matches["name"] == "Unknown Card":
+        card_name = matches["name"].strip()
+
+        print(matches["count"] + " x " + card_name)
+        if card_name == "Unknown Card":
             return
         deck_card = DeckCard()
         deck_card.deck = deck
         deck_card.count = int(matches["count"])
         try:
-            card = Card.objects.get(name=matches["name"], is_token=False)
+            card = Card.objects.get(name=card_name, is_token=False)
         except Card.DoesNotExist:
-            print(f"Couldn't find card {matches['name']}. Testing split card")
-            first_name = matches["name"].split("/")[0].strip()
-            card = Card.objects.get(name=first_name)
+            print(f"Couldn't find card {card_name}. Testing split card")
+            first_name = card_name.split("/")[0].strip()
+            card = Card.objects.get(name=first_name, is_token=False)
+
+        if matches["sb"]:
+            deck_card.board = "side"
 
         deck_card.card = card
         deck_card.save()
