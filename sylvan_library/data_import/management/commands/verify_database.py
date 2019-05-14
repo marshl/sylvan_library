@@ -21,6 +21,13 @@ from cards.models import (
     Set,
 )
 
+WUBRG = (
+    Card.colour_flags.white
+    | Card.colour_flags.blue
+    | Card.colour_flags.black
+    | Card.colour_flags.red
+    | Card.colour_flags.green
+)
 
 # pylint: disable=too-many-public-methods
 class Command(BaseCommand):
@@ -361,13 +368,6 @@ class Command(BaseCommand):
         """
         Tests the colour of various Card objects
         """
-        wubrg = (
-            Card.colour_flags.white
-            | Card.colour_flags.blue
-            | Card.colour_flags.black
-            | Card.colour_flags.red
-            | Card.colour_flags.green
-        )
 
         # Mono-coloured card
         self.assert_card_colour_eq("Glory Seeker", Card.colour_flags.white)
@@ -377,8 +377,8 @@ class Command(BaseCommand):
             "Dark Heart of the Wood", Card.colour_flags.black | Card.colour_flags.green
         )
 
-        self.assert_card_colour_eq("Progenitus", wubrg)
-        self.assert_card_colour_eq("Reaper King", wubrg)
+        self.assert_card_colour_eq("Progenitus", WUBRG)
+        self.assert_card_colour_eq("Reaper King", WUBRG)
 
         # Hybrid card
         self.assert_card_colour_eq(
@@ -386,7 +386,7 @@ class Command(BaseCommand):
         )
 
         # Colour indicator cards
-        self.assert_card_colour_eq("Transguild Courier", wubrg)
+        self.assert_card_colour_eq("Transguild Courier", WUBRG)
         self.assert_card_colour_eq("Ghostfire", 0)
         self.assert_card_colour_eq("Dryad Arbor", Card.colour_flags.green)
 
@@ -419,13 +419,6 @@ class Command(BaseCommand):
         Tests the colour identity of various Cards
         :return:
         """
-        wubrg = (
-            Card.colour_flags.white
-            | Card.colour_flags.blue
-            | Card.colour_flags.black
-            | Card.colour_flags.red
-            | Card.colour_flags.green
-        )
 
         self.assert_card_colour_identity_eq("Goblin Piker", Card.colour_flags.red)
 
@@ -446,7 +439,7 @@ class Command(BaseCommand):
         self.assert_card_colour_identity_eq(
             "Dawnray Archer", Card.colour_flags.white | Card.colour_flags.blue
         )
-        self.assert_card_colour_identity_eq("Obelisk of Alara", wubrg)
+        self.assert_card_colour_identity_eq("Obelisk of Alara", WUBRG)
 
         # Hybrid cards
         self.assert_card_colour_identity_eq(
@@ -675,7 +668,6 @@ class Command(BaseCommand):
     def test_card_rules_text(self):
         """
         Tests the rules texts
-        :return:
         """
         self.assert_card_rules_eq("Grizzly Bears", None)
         self.assert_card_rules_eq("Elite Vanguard", None)
@@ -692,10 +684,10 @@ class Command(BaseCommand):
         self.assert_card_rules_eq(
             "Ice Cauldron",
             "{X}, {T}: Put a charge counter on Ice Cauldron and exile a nonland card from your "
-            + "hand. You may cast that card for as long as it remains exiled. Note the type and "
-            + "amount of mana spent to pay this activation cost. Activate this ability only if "
-            + "there are no charge counters on Ice Cauldron.\n{T}, Remove a charge counter from "
-            + "Ice Cauldron: Add Ice Cauldron's last noted type and amount of mana. "
+            "hand. You may cast that card for as long as it remains exiled. Note the type and "
+            "amount of mana spent to pay this activation cost. Activate this ability only if "
+            "there are no charge counters on Ice Cauldron.\n{T}, Remove a charge counter from "
+            "Ice Cauldron: Add Ice Cauldron's last noted type and amount of mana. "
             "Spend this mana only to cast the last card exiled with Ice Cauldron.",
         )
 
@@ -710,9 +702,6 @@ class Command(BaseCommand):
         self.assert_card_layout_eq("Scarmaker", "flip")
         self.assert_card_layout_eq("Delver of Secrets", "transform")
         self.assert_card_layout_eq("Insectile Aberration", "transform")
-        # self.assert_card_layout_eq('Pegasus token card', 'token')
-        # self.assert_card_layout_eq('Hellion', 'token')
-        # self.assert_card_layout_eq('Angel', 'token')
         self.assert_card_layout_eq("Mount Keralia", "planar")
         self.assert_card_layout_eq("Glimmervoid Basin", "planar")
         self.assert_card_layout_eq("I Bask in Your Silent Awe", "scheme")
@@ -729,7 +718,6 @@ class Command(BaseCommand):
     def test_cardprinting_flavour(self):
         """
         Tests the flavour texts of various CardPrintings
-        :return:
         """
         self.assert_cardprinting_flavour_eq(
             "Goblin Chieftain",
@@ -759,7 +747,6 @@ class Command(BaseCommand):
     def test_cardprinting_artist(self):
         """
         Tests the properties of CardPrinting artists
-        :return:
         """
         # Misprint
         self.assert_cardprinting_artist_eq("Animate Artifact", "LEA", "Douglas Shuler")

@@ -7,8 +7,8 @@ from typing import Dict, Optional, List
 from django import forms
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
+from django.db.models import Func, Value, F
 from django_select2.forms import Select2MultipleWidget
-from django.db.models import Value, Func, Value, F
 
 from cards.models import (
     Card,

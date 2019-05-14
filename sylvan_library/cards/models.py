@@ -9,7 +9,7 @@ import re
 from typing import Dict, List, Optional
 
 from django.db import models
-from django.db.models import Sum, IntegerField, Case, When, Q, Avg
+from django.db.models import Sum, IntegerField, Case, When, Avg
 from django.contrib.auth.models import User
 from bitfield import BitField
 
@@ -252,6 +252,11 @@ class Card(models.Model):
         )["card_count"]
 
     def get_all_sides(self) -> List["Card"]:
+        """
+        Gets a list of all the sides of this card, including the front
+        :return: A list of all the sides in side order
+        """
+
         return [self] + list(self.links.order_by("side").all())
 
 
@@ -655,6 +660,10 @@ class Deck(models.Model):
         return self.name
 
     def get_card_groups(self) -> Dict[str, List["DeckCard"]]:
+        """
+        Gets the cards in this deck divided into type groups
+        :return: A dict of the names of the groups to the groups of cards
+        """
         board_cards = self.cards.filter(board="main").order_by("card__name")
         lands = board_cards.filter(card__type__contains="Land")
         creatures = board_cards.exclude(id__in=lands).filter(
@@ -691,6 +700,11 @@ class Deck(models.Model):
         }
 
     def get_land_symbol_counts(self) -> List[int]:
+        """
+        Gets a list of the number of each coloured mana symbol that lands in this deck can add
+        :return: A list of counts from white  to colourless (colorus without any symbols will still
+        be included)
+        """
         land_cards = self.cards.filter(board="main", card__type__contains="Land")
         result = []
         for colour in Colour.objects.all().order_by("display_order"):
@@ -704,6 +718,11 @@ class Deck(models.Model):
         return result
 
     def get_cost_symbol_counts(self) -> List[int]:
+        """
+        Gets a list of the number of each coloured mana symbol in costs of cards in the deck
+        :return: A list of counts from white to colourless (colorus without any symbols will still
+        be included)
+        """
         cards = self.cards.filter(board="main", card__cost__isnull=False)
         result = []
         for colour in Colour.objects.all().order_by("display_order"):
@@ -716,13 +735,28 @@ class Deck(models.Model):
         return result
 
     def deck_avg_cmc(self) -> float:
+        """
+        Gets the average converted mana cost of non-land cards in the deck
+        :return: The average converted mana cost
+        """
         return (
             self.cards.filter(board="main")
-            .exclude(card__tpe__contains="Land")
+            .exclude(card__type__contains="Land")
             .aggregate(Avg("card__cmd"))["card__cmc__avg"]
         )
 
-    def get_card_count(self) -> int:
+    def get_card_count(self, board: str = None) -> int:
+        """
+        Gets the total number of cards in the deck for the given board
+        :param board: if specified, only the cards in that board will be counted,
+                      otherwise all cards will be
+        :return: The total card count in the given board
+        """
+        if board:
+            return sum(
+                deck_card.count for deck_card in self.cards.filter(board=board).all()
+            )
+
         return sum(deck_card.count for deck_card in self.cards.all())
 
 
