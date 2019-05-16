@@ -6,7 +6,9 @@ from datetime import date
 from typing import List
 import pandas as pd
 from pandas.plotting import register_matplotlib_converters
-import seaborn as sns
+
+# import seaborn as sns
+import matplotlib as mp
 
 from django.core.management.base import BaseCommand
 from django.db.models.query import QuerySet
@@ -56,8 +58,18 @@ class Command(BaseCommand):
         )
         dates = self.get_dates(decks)
         rows = self.get_rarity_ratio_rows(dates, decks, options["exclude_lands"])
-        dataframe = self.generate_dataframe(dates, rows)
-        self.generate_plot(dataframe, output_path)
+        from matplotlib import pyplot as plt
+        import matplotlib.dates as mdates
+
+        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
+        plt.gca().xaxis.set_major_locator(mdates.YearLocator())
+        # fig, ax = plt.subplots()
+        frame = pd.DataFrame(rows)
+        data_perc = frame.divide(frame.sum(axis=1), axis=0)
+        plt.plot(dates[:5], rows)
+        plt.savefig(output_path)
+        # dataframe = self.generate_dataframe(dates, rows)
+        # self.generate_plot(dataframe, output_path)
 
     @staticmethod
     def get_dates(decks: QuerySet) -> List[date]:
@@ -93,9 +105,9 @@ class Command(BaseCommand):
 
                 deck_count += 1
 
-            if deck_count > 0:
-                row = [x / deck_count for x in row]
-                rows.append(row)
+            rows.append(row)
+            if len(rows) == 5:
+                break
 
         return rows
 
@@ -146,7 +158,6 @@ class Command(BaseCommand):
         :return: The rarity ratios
         """
         counts = {r: 0 for r in self.rarities}
-        total_count = 0
 
         for deck_card in deck.cards.all():
             if exclude_lands and "Land" in deck_card.card.type:
@@ -167,7 +178,5 @@ class Command(BaseCommand):
                     raise Exception(f"Could not find a valid printing for {deck_card}")
 
                 counts[closest_printing.rarity.symbol] += deck_card.count
-            total_count += deck_card.count
 
-        ratios = {key: value / total_count for key, value in counts.items()}
-        return ratios
+        return counts
