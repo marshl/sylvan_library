@@ -781,16 +781,18 @@ class DeckCard(models.Model):
     def __str__(self):
         return f"{self.card} in {self.deck}"
 
+    def get_card_name(self):
+        if self.card.layout == "split":
+            return " // ".join(c.name for c in self.card.get_all_sides())
+        return self.card.name
+
     def as_deck_text(self) -> str:
         """
         COnverts this card to how it should appear in board text of the DeckForm
         :return: The text representation version of the card for use in the DeckForm
         """
-        if self.card.layout == "split":
-            card_name = " // ".join(c.name for c in self.card.get_all_sides())
-        else:
-            card_name = self.card.name
-        result = f"{self.count}x {card_name}"
+
+        result = f"{self.count}x {self.get_card_name()}"
         if self.is_commander:
             result += " *CMDR*"
         return result

@@ -1,3 +1,7 @@
 {% block content %}
-    <p>{{ deck_card.card.name }}</p>
+    <div class="deck-card">{{ deck_card.count }}x
+        <span class="card-link">
+            <a href="{% url 'website:name_search' %}?card_name={{ deck_card.card.name }}">{{ deck_card.get_card_name }}</a>
+        </span>
+    </div>
 {% endblock %}

@@ -158,3 +158,17 @@ body {
     margin: 0;
     color: #ddd;
 }
+
+.card-link, .card-link a {
+    text-decoration: none;
+    color: #ccc;
+    transition: .3s;
+    cursor: hand;
+    border-bottom: 1px solid rgb(4, 137, 199);
+}
+
+.card-link:hover {
+    color: #333;
+    background-color: #0092d6;
+    border-radius: 2px;
+}

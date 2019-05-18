@@ -17,14 +17,14 @@
                 </div>
             </div>
             <div class="group-container">
-                <div style="column-count: 3">
+                <div class="deck-card-list">
                     <div style="font-weight: bold;">Total {{ deck.get_card_count }}</div>
                     {% for group_name, cards in deck.get_card_groups.items %}
                         {% if cards.exists %}
-                            <div style="break-inside: avoid;">
-                                <div style="font-weight: bold;">{{ group_name }} ({{ cards|deck_group_count }})</div>
+                            <div class="card-group">
+                                <div class="group-title">{{ group_name }} ({{ cards|deck_group_count }})</div>
                                 {% for deck_card in cards.all %}
-                                    <div>{{ deck_card.as_deck_text }}</div>
+                                    {% include "website/decks/deck_card.html" with deck_card=deck_card %}
                                 {% endfor %}
                             </div>
                         {% endif %}

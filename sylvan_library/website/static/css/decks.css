@@ -47,3 +47,20 @@
     margin-bottom: 5px;
     font-weight: bold;
 }
+
+.deck-card-list {
+    column-count: 3;
+}
+
+.deck-card-list .card-group {
+    break-inside: avoid;
+    margin-top: 15px;
+}
+
+.deck-card-list .card-group .group-title {
+    font-weight: bold;
+}
+
+.deck-card-list .deck-card {
+    margin-top: 2px;
+}
