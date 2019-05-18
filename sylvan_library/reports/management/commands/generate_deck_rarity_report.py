@@ -6,9 +6,15 @@ from datetime import date
 from typing import List
 import pandas as pd
 from pandas.plotting import register_matplotlib_converters
+from matplotlib import pyplot as plt
+import matplotlib.dates as mdates
 
 # import seaborn as sns
+# import plotly
 import matplotlib as mp
+
+# import plotly.plotly as py
+# import plotly.graph_objs as go
 
 from django.core.management.base import BaseCommand
 from django.db.models.query import QuerySet
@@ -56,17 +62,34 @@ class Command(BaseCommand):
         decks = Deck.objects.filter(owner=owner).prefetch_related(
             "cards__card__printings__set"
         )
-        dates = self.get_dates(decks)
+        dates = self.get_dates(decks)[:20]
+        dates.sort()
         rows = self.get_rarity_ratio_rows(dates, decks, options["exclude_lands"])
-        from matplotlib import pyplot as plt
-        import matplotlib.dates as mdates
 
         plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
         plt.gca().xaxis.set_major_locator(mdates.YearLocator())
-        # fig, ax = plt.subplots()
+        fig, ax = plt.subplots()
         frame = pd.DataFrame(rows)
         data_perc = frame.divide(frame.sum(axis=1), axis=0)
-        plt.plot(dates[:5], rows)
+        data = {"date": dates, "rarities": data_perc.values.tolist()}
+        combined_frame = pd.DataFrame(data, columns=["date", "rarities"])
+
+        # combined_frame = combined_frame.set_index(["date"])
+        combined_frame["date"] = pd.to_datetime(combined_frame["date"])
+        combined_frame.index = combined_frame["date"]
+        del combined_frame["date"]
+        # combined_frame.index = pd.to_datetime(combined_frame.index)
+
+        palette = ["#0E0C0C", "#8A8D91", "#C1A15B", "#EC7802"]
+        if not options["exclude_lands"]:
+            palette = ["#875438"] + palette
+        # frame = frame.transpose()
+        # ax.set_color_cycle(["red", "black", "yellow"])
+        # data_perc = frame.divide(frame.sum(axis=1), axis=0).transpose()
+
+        resampled = combined_frame.resample("M").mean()
+
+        plt.stackplot(range(len(dates)), combined_frame, colors=palette)
         plt.savefig(output_path)
         # dataframe = self.generate_dataframe(dates, rows)
         # self.generate_plot(dataframe, output_path)
@@ -106,8 +129,6 @@ class Command(BaseCommand):
                 deck_count += 1
 
             rows.append(row)
-            if len(rows) == 5:
-                break
 
         return rows
 
@@ -137,13 +158,6 @@ class Command(BaseCommand):
         :param data: The dataframe to generate the plot for
         :param output_path: THe file output path
         """
-        palette = {
-            "L": "#875438",
-            "C": "#0E0C0C",
-            "U": "#8A8D91",
-            "R": "#C1A15B",
-            "M": "#EC7802",
-        }
         plt = sns.lineplot(data=data, palette=palette, linewidth=1.5, hue="A")
         plt.set(ylabel="Average Proportion of Deck")
         fig = plt.figure
