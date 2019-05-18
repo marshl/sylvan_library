@@ -1,0 +1,65 @@
+
+.pagination-container .page-button:first-child {
+    flex: 4;
+}
+
+.pagination-container {
+    margin: 10px auto;
+    width: 600px;
+}
+
+
+.pagination-container .page-button:first-child, .pagination-container .page-button:last-child {
+    flex: 4;
+}
+
+.toggle-group, .page-button-list {
+    display: flex;
+    align-content: center;
+    text-align: center;
+    border-radius: 3px;
+    max-height: 30px;
+}
+
+.toggle-group.is-disabled {
+    display: none;
+}
+
+.toggle-item, .page-button {
+    flex: 1;
+    background-color: #333;
+    border: 1px solid #444;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    color: #ddd;
+    padding: 5px 10px;
+    border-right: none;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.toggle-item:first-child, .page-button:first-child {
+    border-radius: 3px 0 0 3px;
+}
+
+.toggle-item:first-child, .page-button:last-child {
+    border-radius: 0 3px 3px 0;
+    border-right: 1px solid #444;
+}
+
+.toggle-item.is-active, .page-button.is-active, .page-button:hover {
+    background-color: #08c;
+    color: #fff;
+    border-color: #08c;
+}
+
+.toggle-item.is-disabled, .page-button.is-disabled {
+    cursor: auto;
+    color: #777;
+    pointer-events: none;
+}
+
+.toggle-item-content, .page-button-text {
+    display: inline;
+}
