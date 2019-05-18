@@ -665,8 +665,9 @@ class Deck(models.Model):
         :return: A dict of the names of the groups to the groups of cards
         """
         board_cards = self.cards.filter(board="main").order_by("card__name")
+        commanders = board_cards.filter(is_commander=True)
         lands = board_cards.filter(card__type__contains="Land")
-        creatures = board_cards.exclude(id__in=lands).filter(
+        creatures = board_cards.exclude(id__in=lands | commanders).filter(
             card__type__contains="Creature"
         )
         instants = board_cards.filter(card__type__contains="Instant")
@@ -679,7 +680,8 @@ class Deck(models.Model):
         )
         planeswalkers = board_cards.filter(card__type__contains="Planeswalker")
         other = board_cards.exclude(
-            id__in=lands
+            id__in=commanders
+            | lands
             | creatures
             | instants
             | sorceries
@@ -689,6 +691,7 @@ class Deck(models.Model):
         )
 
         return {
+            "Commander": commanders,
             "Land": lands,
             "Creature": creatures,
             "Instant": instants,
