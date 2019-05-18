@@ -71,7 +71,7 @@
             {% endif %}
             <div class="search-result-list">
                 {% for result in results %}
-                    {% include "website/search_result.html" with card=result %}
+                    {% include "website/results/search_result.html" with card=result %}
                 {% endfor %}
             </div>
             {% if page_buttons|length > 3 %}

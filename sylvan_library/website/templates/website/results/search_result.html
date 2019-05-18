@@ -28,8 +28,7 @@
                 <div style="display:flex;">
                     <div class="search-result-base-details" style="display:inline-block;">
                         <h2 class="search-result-title">
-                            <a href="{% url 'website:card_detail' card_id=result.card.id %}"
-                               target="_blank">{{ result.card.name }}</a>
+                            <a target="_blank">{{ result.card.name }}</a>
                             {% if result.card.cost %}
                                 {{ result.card.cost | replace_mana_symbols | shadowed | safe }}
                                 ({{ result.card.cmc | floatformat }})
@@ -38,7 +37,7 @@
 
                             {% if render_usercards %}
                                 <span class="js-ownership-summary">
-                                    {% include 'website/ownership_summary.html' with card=result.card %}
+                                    {% include 'website/results/ownership_summary.html' with card=result.card %}
                                 </span>
                             {% endif %}
                         </h2>
@@ -97,7 +96,7 @@
                         </h3>
                     </div>
                     <div class="search-result-set-list js-card-result-set-summary">
-                        {% include 'website/search_result_sets.html' with card=result.card selected_printing=result.selected_printing %}
+                        {% include 'website/results/search_result_sets.html' with card=result.card selected_printing=result.selected_printing %}
                     </div>
                 </div>
                 <div class="search-result-tab-container">

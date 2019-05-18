@@ -3,19 +3,17 @@ Module for all website views
 """
 import datetime
 import logging
-import random
 
 from django.db import transaction
 from django.core.exceptions import ValidationError
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
-from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render, redirect
 from django.core.paginator import Paginator
 from pagination import get_page_buttons
 
 from cards.models import (
     Card,
     CardPrinting,
-    CardPrintingLanguage,
     Deck,
     PhysicalCard,
     Set,
@@ -40,67 +38,6 @@ def index(request) -> HttpResponse:
     """
     context = {"sets": Set.objects.all()}
     return render(request, "website/index.html", context)
-
-
-def card_detail(request, card_id) -> HttpResponse:
-    """
-
-    :param request:
-    :param card_id:
-    :return:
-    """
-    card = get_object_or_404(Card, pk=card_id)
-    context = {"card": card}
-    return render(request, "website/card_detail.html", context)
-
-
-def set_detail(request, set_code) -> HttpResponse:
-    """
-    The
-    :param request:
-    :param set_code:
-    :return:
-    """
-    set_obj = get_object_or_404(Set, code=set_code)
-    context = {"set": set_obj}
-    return render(request, "website/set.html", context)
-
-
-def usercard_form(request) -> HttpResponse:
-    """
-    The form where a user can update their list of cards
-    :param request: The user's request
-    :return: The HTTP response
-    """
-    return render(request, "website/usercard_form.html")
-
-
-def add_card(request, printlang_id) -> HttpResponse:
-    """
-    Adds a card to the user's cards
-    :param request: The user's request
-    :param printlang_id: The CardPrintingLanguage ID
-    :return: The HTTP response
-    """
-    cardlang = CardPrintingLanguage.objects.get(id=printlang_id)
-    phys = cardlang.physicalcardlink_set.first().physical_card
-
-    uoc = UserOwnedCard(physical_card=phys, owner=request.user, count=1)
-    uoc.save()
-
-    return render(request, "website/add_card.html")
-
-
-# pylint: disable=unused-argument
-def random_card(request) -> HttpResponse:
-    """
-    Gets a random card and redirects the user to that page
-    :param request: The user's request
-    :return: The HTTP response
-    """
-    card = random.choice(Card.objects.all())
-
-    return HttpResponseRedirect(f"../card/{card.id}")
 
 
 def name_search(request) -> HttpResponse:
@@ -164,18 +101,20 @@ def search_results(request):
 
 def ajax_search_result_details(request, printing_id: int) -> HttpResponse:
     printing = CardPrinting.objects.get(id=printing_id)
-    return render(request, "website/search_result_details.html", {"printing": printing})
+    return render(
+        request, "website/results/search_result_details.html", {"printing": printing}
+    )
 
 
 def ajax_search_result_rulings(request, card_id: int) -> HttpResponse:
     card = Card.objects.get(id=card_id)
-    return render(request, "website/search_result_rulings.html", {"card": card})
+    return render(request, "website/results/search_result_rulings.html", {"card": card})
 
 
 def ajax_search_result_languages(request, printing_id: int) -> HttpResponse:
     printing = CardPrinting.objects.get(id=printing_id)
     return render(
-        request, "website/search_result_languages.html", {"printing": printing}
+        request, "website/results/search_result_languages.html", {"printing": printing}
     )
 
 
@@ -187,7 +126,7 @@ def ajax_card_printing_image(request, printing_id: int) -> HttpResponse:
 def ajax_search_result_add(request, printing_id: int) -> HttpResponse:
     printing = CardPrinting.objects.get(id=printing_id)
     form = ChangeCardOwnershipForm(printing)
-    return render(request, "website/search_result_add.html", {"form": form})
+    return render(request, "website/results/search_result_add.html", {"form": form})
 
 
 def ajax_search_result_ownership(request, card_id: int) -> HttpResponse:
@@ -204,7 +143,7 @@ def ajax_search_result_ownership(request, card_id: int) -> HttpResponse:
     )
     return render(
         request,
-        "website/search_result_ownership.html",
+        "website/results/search_result_ownership.html",
         {"card": card, "ownerships": ownerships, "changes": changes},
     )
 
@@ -226,14 +165,14 @@ def ajax_change_card_ownership(request):
 
 def ajax_ownership_summary(request, card_id: int):
     card = Card.objects.get(id=card_id)
-    return render(request, "website/ownership_summary.html", {"card": card})
+    return render(request, "website/results/ownership_summary.html", {"card": card})
 
 
 def ajax_search_result_set_summary(request, printing_id: int):
     printing = CardPrinting.objects.get(id=printing_id)
     return render(
         request,
-        "website/search_result_sets.html",
+        "website/results/search_result_sets.html",
         {"card": printing.card, "selected_printing": printing},
     )
 
@@ -247,19 +186,23 @@ def get_page_number(request):
 
 def deck_stats(request) -> HttpResponse:
     if not request.user.is_authenticated:
-        return redirect('website:index')
+        return redirect("website:index")
 
     users_deck_cards = Card.objects.filter(deck_cards__deck__owner=request.user)
     users_cards = Card.objects.filter(
-        printings__printed_languages__physical_cards__ownerships__owner=request.user)
-    unused_cards = users_cards.exclude(id__in=users_deck_cards).distinct().order_by('?')[:10]
+        printings__printed_languages__physical_cards__ownerships__owner=request.user
+    )
+    unused_cards = (
+        users_cards.exclude(id__in=users_deck_cards).distinct().order_by("?")[:10]
+    )
 
     deck_count = Deck.objects.filter(owner=request.user).count()
 
-    return render(request, 'website/deck_stats.html', {
-        'unused_cards': unused_cards,
-        'deck_count': deck_count,
-    })
+    return render(
+        request,
+        "website/decks/deck_stats.html",
+        {"unused_cards": unused_cards, "deck_count": deck_count},
+    )
 
 
 def deck_list(request) -> HttpResponse:
@@ -277,7 +220,7 @@ def deck_list(request) -> HttpResponse:
     page_buttons = get_page_buttons(paginator, page_number, 3)
     return render(
         request,
-        "website/decks.html",
+        "website/decks/decks.html",
         {"decks": list(paginator.page(page_number)), "page_buttons": page_buttons},
     )
 
@@ -287,13 +230,13 @@ def deck_view(request, deck_id: int) -> HttpResponse:
         deck = Deck.objects.get(id=deck_id, owner=request.user)
     except Deck.DoesNotExist:
         return redirect("website:decks")
-    return render(request, "website/deck_view.html", {"deck": deck})
+    return render(request, "website/decks/deck_view.html", {"deck": deck})
 
 
 def deck_edit(request, deck_id: int) -> HttpResponse:
     deck = Deck.objects.get(pk=deck_id)
     if deck.owner != request.user:
-        return HttpResponseRedirect(f"../decks")
+        return redirect("website:decks")
 
     if request.method == "POST":
         deck_form = DeckForm(request.POST, instance=deck)
@@ -317,7 +260,7 @@ def deck_edit(request, deck_id: int) -> HttpResponse:
         deck_form = DeckForm(instance=deck)
 
     deck_form.populate_boards()
-    return render(request, "website/deck_edit.html", {"deck_form": deck_form})
+    return render(request, "website/decks/deck_edit.html", {"deck_form": deck_form})
 
 
 def deck_create(request):
@@ -349,7 +292,7 @@ def deck_create(request):
         deck_form = DeckForm(instance=deck)
 
     deck_form.populate_boards()
-    return render(request, "website/deck_edit.html", {"deck_form": deck_form})
+    return render(request, "website/decks/deck_edit.html", {"deck_form": deck_form})
 
 
 def deck_card_search(request) -> JsonResponse:
