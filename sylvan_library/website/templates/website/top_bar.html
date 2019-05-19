@@ -1,8 +1,8 @@
 {% block content %}
     <div class="top-bar">
         <div class="top-bar-content">
-            <a href="/" class="top-bar-action">Sylvan Library</a>
-            <a class="top-bar-action" href="#">About</a>
+            <a href="/" class="action-button">Sylvan Library</a>
+            <a class="action-button" href="#">About</a>
             <div class="header-search-container">
                 <form action="{% url 'website:name_search' %}" method="get">
                     <div class="search-icon"></div>
@@ -14,10 +14,10 @@
                 </form>
             </div>
             {% if not request.user.is_authenticated %}
-                <a class="top-bar-action" href="{% url 'admin:login' %}">Login</a>
-                <a class="top-bar-action" href="{% url 'admin:login' %}">Sign Up</a>
+                <a class="action-button" href="{% url 'admin:login' %}">Login</a>
+                <a class="action-button" href="{% url 'admin:login' %}">Sign Up</a>
             {% else %}
-                <a class="top-bar-action profile-button js-profile-button" href="#">
+                <a class="action-button profile-button js-profile-button" href="#">
                     {{ request.user.username }}
                 </a>
                 <div class="profile-container js-profile-container" style="display: none;" data-expanded="0">

@@ -64,3 +64,12 @@
 .deck-card-list .deck-card {
     margin-top: 2px;
 }
+
+.deck-action-bar {
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.deck-action-bar .action-button {
+    margin-left: 15px;
+}
