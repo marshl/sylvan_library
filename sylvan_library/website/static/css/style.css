@@ -175,3 +175,18 @@ body {
     background-color: #0092d6;
     border-radius: 2px;
 }
+
+.image-popup-container {
+    padding: 2px;
+    background: white;
+    border-radius: 3px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    pointer-events: none;
+}
+
+.image-popup-container img {
+    width: 200px;
+}

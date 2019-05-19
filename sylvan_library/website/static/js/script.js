@@ -19,7 +19,7 @@ $(function () {
     function toggleProfileContainer() {
         let $profileContainer = $('.js-profile-container');
         let isExpanded = !$profileContainer.data('expanded');
-        $profileContainer.data('expanded', isExpanded);
+            $profileContainer.data('expanded', isExpanded);
         $profileContainer.toggle(isExpanded);
     }
 
@@ -33,5 +33,28 @@ $(function () {
             toggleProfileContainer();
             return false;
         }
+    });
+
+    $(this).on('mouseenter', '.js-card-link', function (event) {
+        let imagePath = $(this).data('image-path');
+        let cardName = $(this).data('card-name');
+        let popupContainer = $('.js-image-popup-container');
+        if (!popupContainer.length) {
+            popupContainer = $('<div class="js-image-popup-container image-popup-container"><img src="" alt=""/></div>');
+            popupContainer.appendTo($('body'));
+        }
+
+        popupContainer.find('img').attr('src', imagePath).attr('alt', cardName);
+        popupContainer.stop().fadeIn(250);
+        let  bodyRect = document.body.getBoundingClientRect();
+        let elemRect = $(this).get(0).getBoundingClientRect();
+        popupContainer.css({
+            top: (elemRect.top - bodyRect.top + $(this).height() - popupContainer.height() / 2)+ "px",
+            left: (elemRect.left - bodyRect.left + $(this).width() + 20) + "px"
+        })
+    });
+
+    $(this).on('mouseleave', '.js-card-link', function () {
+        $('.js-image-popup-container').stop().fadeOut(150);
     });
 });
