@@ -1,6 +1,7 @@
 """
 Module for the verify_database command
 """
+# pylint: disable=too-many-lines
 import math
 import sys
 import traceback

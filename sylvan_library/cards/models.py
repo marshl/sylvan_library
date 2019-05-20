@@ -785,6 +785,11 @@ class DeckCard(models.Model):
         return f"{self.card} in {self.deck}"
 
     def get_card_name(self):
+        """
+        Gets the name of the card. For most cards this will be the same as teh name of the card,
+        but split cards combine the names of both halves together
+        :return:  The display name of the card
+        """
         if self.card.layout == "split":
             return " // ".join(c.name for c in self.card.get_all_sides())
         return self.card.name

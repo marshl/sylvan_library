@@ -18,7 +18,7 @@ from cardsearch.parameters import (
 
 from cards.models import Card, CardPrinting, Set
 
-
+# pylint: disable=too-few-public-methods
 class SearchResult:
     """
     A single search result including the card and it's selected printing

@@ -339,7 +339,13 @@ class DeckForm(forms.ModelForm):
         for board_key, board in self.get_boards().items():
             for line in board.split("\n"):
                 try:
-                    deck_card = self.card_from_text(line.strip(), board_key)
+                    parts = self.parse_card_text(line)
+                    if parts is None:
+                        continue
+                    count, card_name, options = parts
+                    deck_card = self.card_from_text(
+                        count, card_name, board_key, options
+                    )
                     if not deck_card:
                         continue
                     # If the card already exists in this board...
@@ -364,18 +370,18 @@ class DeckForm(forms.ModelForm):
 
         return deck_cards
 
-    def card_from_text(self, text: str, board: str) -> Optional[DeckCard]:
+    # pylint: disable=no-self-use
+    def parse_card_text(self, text: str) -> (int, str, dict):
         """
-        Parses a single line of text and returns the DeckCard for it
-        :param text: The text to parse
-        :param board: The board that the card belongs to
-        :return: A DeckCard object if it is valid
-        :raises: ValidationError if the card could not be parsed for some reason
+        Parses the text of a card row and returns the count, name and other options of the card
+        :param text: The line of deck text for the card
+        :return: If the text is valid, then a tuple containing the count, name and options
+                 for hte card, otherwise None
         """
         if text is None or text.strip() == "":
             return None
 
-        text = text.replace("’", "'").replace("Æ", "Ae")
+        text = text.strip().replace("’", "'").replace("Æ", "Ae")
         if re.match(r"^\d+$", text):
             return None
 
@@ -389,7 +395,36 @@ class DeckForm(forms.ModelForm):
 
         if not matches:
             raise ValidationError(f"Invalid card {text}")
+
         card_name = matches["name"].strip()
+
+        if matches["count"] is None:
+            count = 1
+        else:
+            try:
+                count = int(matches["count"])
+            except (TypeError, ValueError):
+                raise ValidationError(
+                    f"Invalid count '{matches['count']}'' for {card_name}"
+                )
+
+        if count == 0:
+            return None
+
+        return count, card_name, {"is_commander": bool(matches["cmdr"])}
+
+    def card_from_text(
+        self, count: int, card_name: str, board: str, options: Dict
+    ) -> Optional[DeckCard]:
+        """
+        Parses a single line of text and returns the DeckCard for it
+        :param count: The card count
+        :param card_name: The name of the card
+        :param board: The board that the card belongs to
+        :param options: A dict of additional configuration for the card, (e.g. is_commander: bool)
+        :return: A DeckCard object if it is valid
+        :raises: ValidationError if the card could not be parsed for some reason
+        """
 
         if card_name.lower() in (
             "creatures",
@@ -414,17 +449,6 @@ class DeckForm(forms.ModelForm):
             "enchantments",
         ):
             return None
-
-        # If the user doesn't enter a count, assume one card
-        if matches["count"] is None:
-            count = 1
-        else:
-            try:
-                count = int(matches["count"])
-            except (TypeError, ValueError):
-                raise ValidationError(
-                    f"Invalid count '{matches['count']}'' for {card_name}"
-                )
 
         # If they enter a card name like "Fire // Ice", then use Fire (a DeckCard is tied to a
         # single Card object, so the first half of split/flip/transform cards should be used
@@ -468,7 +492,7 @@ class DeckForm(forms.ModelForm):
             )
 
         deck_card = DeckCard(card=card, count=count, board=board, deck=self.instance)
-        if matches["cmdr"]:
+        if options["is_commander"]:
             deck_card.is_commander = True
 
         return deck_card
