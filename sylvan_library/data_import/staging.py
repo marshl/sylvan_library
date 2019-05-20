@@ -345,7 +345,7 @@ class StagedCard:
         Gets whether this card has rulings or not
         :return:
         """
-        return "rulings" in self.value_dict
+        return "rulings" in self.value_dict and self.value_dict["rulings"]
 
     def get_rulings(self) -> List[dict]:
         """
