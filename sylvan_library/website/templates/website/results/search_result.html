@@ -81,17 +81,11 @@
                                 </div>
                             {% endif %}
                             {% if result.card.power != None %}
-                                <div class="subtitle" style="display:inline-flex;">
-                                    <strong>P/T:</strong>
-                                    <span>{{ result.card.power }}</span>
-                                    <span>/</span>
-                                    <span>{{ result.card.toughness }}</span>
-                                    <br/>
+                                <div class="subtitle pow-tuff">
+                                    P/T: {{ result.card.power }}/{{ result.card.toughness }}
                                 </div>
                             {% elif result.card.loyalty != None %}
-                                <span class="subtitle">Loyalty:</span>
-                                <span>{{ result.card.loyalty }}</span>
-                                <br/>
+                                <span class="subtitle pow-tuff">Loyalty: {{ result.card.loyalty }}</span>
                             {% endif %}
                         </h3>
                     </div>
