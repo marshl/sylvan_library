@@ -19,7 +19,7 @@ $(function () {
     function toggleProfileContainer() {
         let $profileContainer = $('.js-profile-container');
         let isExpanded = !$profileContainer.data('expanded');
-            $profileContainer.data('expanded', isExpanded);
+        $profileContainer.data('expanded', isExpanded);
         $profileContainer.toggle(isExpanded);
     }
 
@@ -46,11 +46,17 @@ $(function () {
 
         popupContainer.find('img').attr('src', imagePath).attr('alt', cardName);
         popupContainer.stop().fadeIn(250);
-        let  bodyRect = document.body.getBoundingClientRect();
+        let bodyRect = document.body.getBoundingClientRect();
         let elemRect = $(this).get(0).getBoundingClientRect();
+        let offset = 20;
+        let left = elemRect.left - bodyRect.left + offset + $(this).width();
+        if (left + popupContainer.width() > $(document).width()) {
+            left = elemRect.left - bodyRect.left - offset - popupContainer.width();
+        }
+
         popupContainer.css({
-            top: (elemRect.top - bodyRect.top + $(this).height() - popupContainer.height() / 2)+ "px",
-            left: (elemRect.left - bodyRect.left + $(this).width() + 20) + "px"
+            top: (elemRect.top - bodyRect.top + $(this).height() - popupContainer.height() / 2) + "px",
+            left: (left) + "px"
         })
     });
 

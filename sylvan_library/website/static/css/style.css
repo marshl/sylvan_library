@@ -185,6 +185,7 @@ body {
     left: 0;
     display: block;
     pointer-events: none;
+    font-size: 0;
 }
 
 .image-popup-container img {
