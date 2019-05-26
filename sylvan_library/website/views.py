@@ -253,7 +253,7 @@ def deck_edit(request, deck_id: int) -> HttpResponse:
                     deck_card.save()
 
             if not request.POST.get("save_continue"):
-                return redirect("website:decks")
+                return redirect("website:deck_view", deck_id=deck.id)
 
             deck_form = DeckForm(instance=deck)
 
