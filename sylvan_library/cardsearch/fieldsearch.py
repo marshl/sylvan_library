@@ -103,7 +103,7 @@ class FieldSearch(BaseSearch):
         if self.max_toughness is not None:
             root_param.add_parameter(CardNumToughnessParam(self.max_toughness, "LTE"))
 
-        if self.mana_cost is not None:
+        if self.mana_cost is not None and self.mana_cost != "":
             root_param.add_parameter(CardManaCostParam(self.mana_cost, False))
 
         if self.colours:
