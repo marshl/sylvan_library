@@ -14,6 +14,7 @@ from pagination import get_page_buttons
 from cards.models import (
     Card,
     CardPrinting,
+    Colour,
     Deck,
     PhysicalCard,
     Set,
@@ -323,7 +324,26 @@ def deck_colour_weights(request, deck_id: int) -> JsonResponse:
     except Deck.DoesNotExist:
         return JsonResponse({"error": "Deck not found"})
 
+    colours = get_colour_info()
     land_symbols = deck.get_land_symbol_counts()
     mana_symbols = deck.get_cost_symbol_counts()
+    land_symbols = [
+        {"count": count, **colours[symbol]} for symbol, count in land_symbols.items()
+    ]
+    mana_symbols = [
+        {"count": count, **colours[symbol]} for symbol, count in mana_symbols.items()
+    ]
 
     return JsonResponse({"land_symbols": land_symbols, "mana_symbols": mana_symbols})
+
+
+def get_colour_info() -> dict:
+    return {
+        colour.symbol: {
+            "name": colour.name,
+            "symbol": colour.symbol,
+            "display_order": colour.display_order,
+            "chart_colour": colour.chart_colour,
+        }
+        for colour in Colour.objects.all().order_by("display_order")
+    }

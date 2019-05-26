@@ -104,6 +104,7 @@ class Colour(models.Model):
     name = models.CharField(max_length=15, unique=True)
     display_order = models.IntegerField(unique=True)
     bit_value = models.IntegerField(unique=True)
+    chart_colour = models.CharField(max_length=20)
 
     @staticmethod
     def white() -> "Colour":
@@ -702,39 +703,42 @@ class Deck(models.Model):
             "Other": other,
         }
 
-    def get_land_symbol_counts(self) -> List[int]:
+    def get_land_symbol_counts(self) -> Dict[str, int]:
         """
         Gets a list of the number of each coloured mana symbol that lands in this deck can add
         :return: A list of counts from white  to colourless (colorus without any symbols will still
         be included)
         """
         land_cards = self.cards.filter(board="main", card__type__contains="Land")
-        result = []
+        result = {}
         for colour in Colour.objects.all().order_by("display_order"):
-            result.append(
+            count = (
                 land_cards.filter(
                     card__rules_text__iregex=":.*?add[^\n]*?{" + colour.symbol + "}"
                 ).aggregate(sum=Sum("count"))["sum"]
                 or 0
             )
 
+            if count > 0:
+                result[colour.symbol] = count
+
         return result
 
-    def get_cost_symbol_counts(self) -> List[int]:
+    def get_cost_symbol_counts(self) -> Dict[str, int]:
         """
         Gets a list of the number of each coloured mana symbol in costs of cards in the deck
         :return: A list of counts from white to colourless (colorus without any symbols will still
         be included)
         """
         cards = self.cards.filter(board="main", card__cost__isnull=False)
-        result = []
+        result = {}
         for colour in Colour.objects.all().order_by("display_order"):
-            result.append(
-                sum(
-                    deck_card.card.cost.count(colour.symbol) * deck_card.count
-                    for deck_card in cards
-                )
+            count = sum(
+                deck_card.card.cost.count(colour.symbol) * deck_card.count
+                for deck_card in cards
             )
+            if count > 0:
+                result[colour.symbol] = count
         return result
 
     def deck_avg_cmc(self) -> float:

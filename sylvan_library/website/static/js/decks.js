@@ -29,17 +29,17 @@ $(function () {
         return false;
     });
 
-    $(this).on('click', '.js-add-card-to-board-btn', function() {
+    $(this).on('click', '.js-add-card-to-board-btn', function () {
         let $tabContainer = $('.js-deck-board-tab-container');
         let tabType = $tabContainer.data('selected-tab');
         let $tab = $tabContainer.find('.js-board-tab-content[data-tab-type="' + tabType + '"]');
         let $name_input = $('#card-input');
-        if(!$name_input.val()){
+        if (!$name_input.val()) {
             return false;
         }
 
         let $quantity_input = $('#id_quantity');
-        let quantity= $quantity_input.val();
+        let quantity = $quantity_input.val();
         if (!quantity) {
             quantity = 1;
         }
@@ -48,7 +48,7 @@ $(function () {
         console.log(card_as_text);
 
         let $textArea = $tab.find('textarea');
-        if($textArea.text()) {
+        if ($textArea.text()) {
             $textArea.text($textArea.text() + '\n' + card_as_text);
         } else {
             $textArea.text(card_as_text);
@@ -58,4 +58,61 @@ $(function () {
 
         return false;
     });
+
+    $('.js-mini-deck-chart').each(function () {
+        showChart($(this));
+    });
+
+
+    function showChart($chartContainer) {
+        let ctx = $chartContainer.get(0).getContext('2d');
+        let $deckId = $chartContainer.data('deck-id');
+        $.ajax({
+            url: '/website/decks/' + $deckId + '/colour_weights',
+        }).done(function (result) {
+            let manaSymbols = result['mana_symbols'];
+            let landSymbols = result['land_symbols'];
+            console.log(landSymbols);
+            let colours = result['colours'];
+
+            var myDoughnutChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    datasets: [{
+                        data: manaSymbols.map(function (x) {
+                            return x.count;
+                        }),
+                        backgroundColor: manaSymbols.map(function (x) {
+                            return x.chart_colour;
+                        }),
+                    }, {
+                        data: landSymbols.map(function (x) {
+                            return x.count;
+                        }),
+                        backgroundColor: landSymbols.map(function (x) {
+                            return x.chart_colour;
+                        }),
+                    }],
+                },
+                options: {
+                    legend: {
+                        display: false
+                    },
+                    tooltips: {
+                        callbacks: {
+                            label: function (tooltipItem, chart) {
+                                if (tooltipItem.datasetIndex === 1) {
+                                    return landSymbols[tooltipItem.index].count + ' ' + landSymbols[tooltipItem.index].name + ' lands';
+                                }
+                                return manaSymbols[tooltipItem.index].count + ' ' + manaSymbols[tooltipItem.index].name + ' symbols';
+                            },
+                        }
+                    },
+                    animation: {duration: 0},
+                }
+            });
+        });
+    }
+
+
 });

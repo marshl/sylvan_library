@@ -3,36 +3,42 @@
     "symbol": "W",
     "name": "White",
     "display_order": 10,
-    "bit_value": 1
+    "bit_value": 1,
+    "chart_colour": "#FFFBD5"
   },
   {
     "symbol": "U",
     "name": "Blue",
     "display_order": 20,
-    "bit_value": 2
+    "bit_value": 2,
+    "chart_colour": "#AAE0FA"
   },
   {
     "symbol": "B",
     "name": "Black",
     "display_order": 30,
-    "bit_value": 4
+    "bit_value": 4,
+    "chart_colour": "#A8A19F"
   },
   {
     "symbol": "R",
     "name": "Red",
     "display_order": 40,
-    "bit_value": 8
+    "bit_value": 8,
+    "chart_colour": "#F9AA8F"
   },
   {
     "symbol": "G",
     "name": "Green",
     "display_order": 50,
-    "bit_value": 16
+    "bit_value": 16,
+    "chart_colour": "#9BD3AE"
   },
   {
     "symbol": "C",
     "name": "Colourless",
     "display_order": 60,
-    "bit_value": 0
+    "bit_value": 0,
+    "chart_colour": "#D8D0CD"
   }
 ]

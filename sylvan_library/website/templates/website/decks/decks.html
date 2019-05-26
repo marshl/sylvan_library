@@ -1,5 +1,9 @@
 {% extends 'website/base.html' %}
 {% load widget_tweaks %}
+{% load staticfiles %}
+{% block head %}
+    <script src="{% static "js/decks.js" %}" type="text/javascript"></script>
+{% endblock %}
 {% block content %}
     <div class="body-content">
         <div class="main-content">
@@ -10,7 +14,7 @@
                 {% for deck in decks %}
                     <div class="search-result js-deck-result" style="flex-direction: row;" data-deck-id="{{ deck.id }}">
                         <div>
-                            <canvas class="js-mini-deck-chart" height="75px"></canvas>
+                            <canvas class="js-mini-deck-chart" height="75px" data-deck-id="{{ deck.id }}"></canvas>
                         </div>
                         <div>
                             <h2 class="search-result-title">
@@ -36,75 +40,5 @@
     {% if page_buttons|length > 3 %}
         {% include "website/pager.html" with page_buttons=page_buttons %}
     {% endif %}
-
-    <script>
-        let deckColours = [
-            '#FFFBD5',
-            '#AAE0FA',
-            '#A8A19F',
-            '#F9AA8F',
-            '#9BD3AE',
-            '#D8D0CD',
-        ];
-
-        let labels = [
-                            'White',
-                            'Blue',
-                            'Black',
-                            'Red',
-                            'Green',
-                            'Colourless',
-                        ];
-
-        $('.js-mini-deck-chart').each(function () {
-            let ctx = $(this).get(0).getContext('2d');
-            let $deckId = $(this).closest('.js-deck-result').data('deck-id');
-            $.ajax({
-                url: '/website/decks/' + $deckId + '/colour_weights',
-            }).done(function (result) {
-                console.log(result);
-                var myDoughnutChart = new Chart(ctx, {
-                    type: 'pie',
-                    data: {
-                        datasets: [{
-                            data: result['mana_symbols'],
-                            backgroundColor: deckColours,
-                        }, {
-                            data: result['land_symbols'],
-                            backgroundColor: deckColours,
-                        } ],
-
-                        // These labels appear in the legend and in the tooltips when hovering different arcs
-                        labels: [
-                            'White',
-                            'Blue',
-                            'Black',
-                            'Red',
-                            'Green',
-                            'Colourless',
-                        ],
-
-                    },
-                    options: {
-                        legend: {
-                            display: false
-                        },
-                        tooltips: {
-                            callbacks: {
-                                label: function (tooltipItem, chart) {
-                                    console.log(tooltipItem);
-                                    if(tooltipItem.datasetIndex === 1) {
-                                        return result['land_symbols'][tooltipItem.index] + ' ' + labels[tooltipItem.index] + ' lands';
-                                    }
-                                    return result['mana_symbols'][tooltipItem.index] + ' ' + labels[tooltipItem.index] + ' symbols';
-                                },
-                            }
-                        },
-                        animation: {duration: 0},
-                    }
-                });
-            });
-        });
-    </script>
 
 {% endblock %}

@@ -2,6 +2,9 @@
 {% load widget_tweaks %}
 {% load staticfiles %}
 {% load deck_templatetags %}
+{% block head %}
+    <script src="{% static "js/decks.js" %}" type="text/javascript"></script>
+{% endblock %}
 {% block content %}
     <div class="body-content">
         <div class="main-content" style="color:white;">
@@ -14,6 +17,9 @@
                 </div>
                 <div class="field-container">
                     {{ deck.date_created }}
+                </div>
+                <div>
+                    <canvas class="js-mini-deck-chart" height="75px" data-deck-id="{{ deck.id }}"></canvas>
                 </div>
             </div>
             <div class="group-container">

@@ -62,15 +62,14 @@ class Command(DataImportCommand):
                 self.increment_updated("Colour")
             else:
                 logger.info("Creating new colour %s", colour["name"])
-                colour_obj = Colour(
-                    symbol=colour["symbol"],
-                    name=colour["name"],
-                    display_order=colour["display_order"],
-                    bit_value=colour["bit_value"],
-                )
-                colour_obj.full_clean()
-                colour_obj.save()
-                self.increment_updated("Colour")
+                colour_obj = Colour(symbol=colour["symbol"])
+                self.increment_created("Colour")
+            colour_obj.name = colour["name"]
+            colour_obj.display_order = colour["display_order"]
+            colour_obj.bit_value = colour["bit_value"]
+            colour_obj.chart_colour = colour["chart_colour"]
+            colour_obj.full_clean()
+            colour_obj.save()
 
     def update_rarities(self):
         """
