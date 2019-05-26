@@ -8,7 +8,7 @@ from django import forms
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
 from django.db.models import Func, Value, F
-from django_select2.forms import Select2MultipleWidget
+from django_select2.forms import Select2MultipleWidget, Select2Widget
 
 from cards.models import (
     Card,
@@ -293,7 +293,16 @@ class DeckForm(forms.ModelForm):
 
     class Meta:
         model = Deck
-        fields = ["date_created", "name", "subtitle", "format", "description"]
+
+        widgets = {"exclude_colours": Select2MultipleWidget}
+        fields = [
+            "date_created",
+            "name",
+            "subtitle",
+            "format",
+            "description",
+            "exclude_colours",
+        ]
 
     def clean(self) -> dict:
         """
@@ -302,6 +311,7 @@ class DeckForm(forms.ModelForm):
         """
         form_data = super().clean()
         self.get_cards()
+        self.instance.exclude_colours.add(*form_data["exclude_colours"])
         return form_data
 
     def get_boards(self) -> Dict[str, str]:
@@ -320,7 +330,16 @@ class DeckForm(forms.ModelForm):
         """
         Populates the text values of all teh boards
         """
-        for board_key in ["main", "side", "maybe", "acquire"]:
+        self.fields["main_board"].initial = ""
+        for group_name, cards in self.instance.get_card_groups().items():
+            if not cards:
+                continue
+            self.fields["main_board"].initial += group_name + "\n"
+            self.fields["main_board"].initial += (
+                "\n".join(card.as_deck_text() for card in cards) + "\n\n"
+            )
+
+        for board_key in ["side", "maybe", "acquire"]:
             board_cards = self.instance.cards.filter(board=board_key).order_by(
                 "card__name"
             )

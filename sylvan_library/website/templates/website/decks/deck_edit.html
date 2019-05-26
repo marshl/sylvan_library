@@ -1,12 +1,16 @@
 {% extends 'website/base.html' %}
 {% load widget_tweaks %}
 {% load staticfiles %}
+
 {% block head %}
+    {{ deck_form.media.css }}
+    {{ deck_form.media.js }}
     <script>
         var DECK_CARD_SEARCH_URL = '{% url 'website:deck_card_search' %}';
     </script>
     <script src="{% static "js/decks.js" %}" type="text/javascript"></script>
 {% endblock %}
+
 {% block content %}
     <div class="body-content">
         <div class="main-content">
@@ -63,6 +67,7 @@
                                     {{ deck_form.card_board.label_tag }}
                                     {{ deck_form.card_board }}
                                 </div>
+
                             </div>
                             <div class="row">
                                 <button class="js-add-card-to-board-btn">Add card to board >></button>
@@ -116,6 +121,15 @@
                         </div>
                     </div>
                 </div>
+                <div class="group-container">
+                    <div class="row">
+                         <div class="field-container">
+                            {{ deck_form.exclude_colours.label_tag }}
+                            {{ deck_form.exclude_colours }}
+                        </div>
+                    </div>
+                </div>
+
 
                 {% if deck_form.non_field_errors %}
                     <div class="group-container">

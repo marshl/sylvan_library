@@ -656,6 +656,7 @@ class Deck(models.Model):
     description = models.TextField(null=True, blank=True)
     owner = models.ForeignKey(User, related_name="decks", on_delete=models.CASCADE)
     format = models.CharField(max_length=50, choices=FORMAT_CHOICES)
+    exclude_colours = models.ManyToManyField(Colour, related_name="exclude_from_decks")
 
     def __str__(self):
         return self.name
@@ -711,7 +712,9 @@ class Deck(models.Model):
         """
         land_cards = self.cards.filter(board="main", card__type__contains="Land")
         result = {}
-        for colour in Colour.objects.all().order_by("display_order"):
+        for colour in Colour.objects.exclude(
+            id__in=self.exclude_colours.all()
+        ).order_by("display_order"):
             count = (
                 land_cards.filter(
                     card__rules_text__iregex=":.*?add[^\n]*?{" + colour.symbol + "}"
@@ -732,7 +735,9 @@ class Deck(models.Model):
         """
         cards = self.cards.filter(board="main", card__cost__isnull=False)
         result = {}
-        for colour in Colour.objects.all().order_by("display_order"):
+        for colour in Colour.objects.exclude(
+            id__in=self.exclude_colours.all()
+        ).order_by("display_order"):
             count = sum(
                 deck_card.card.cost.count(colour.symbol) * deck_card.count
                 for deck_card in cards

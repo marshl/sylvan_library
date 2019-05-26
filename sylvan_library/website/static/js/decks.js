@@ -45,7 +45,6 @@ $(function () {
         }
 
         let card_as_text = String(quantity) + 'x ' + $name_input.val();
-        console.log(card_as_text);
 
         let $textArea = $tab.find('textarea');
         if ($textArea.text()) {
@@ -72,7 +71,6 @@ $(function () {
         }).done(function (result) {
             let manaSymbols = result['mana_symbols'];
             let landSymbols = result['land_symbols'];
-            console.log(landSymbols);
             let colours = result['colours'];
 
             var myDoughnutChart = new Chart(ctx, {
@@ -102,9 +100,9 @@ $(function () {
                         callbacks: {
                             label: function (tooltipItem, chart) {
                                 if (tooltipItem.datasetIndex === 1) {
-                                    return landSymbols[tooltipItem.index].count + ' ' + landSymbols[tooltipItem.index].name + ' lands';
+                                    return landSymbols[tooltipItem.index].count + ' ' + landSymbols[tooltipItem.index].name.toLowerCase() + ' lands';
                                 }
-                                return manaSymbols[tooltipItem.index].count + ' ' + manaSymbols[tooltipItem.index].name + ' symbols';
+                                return manaSymbols[tooltipItem.index].count + ' ' + manaSymbols[tooltipItem.index].name.toLowerCase() + ' symbols';
                             },
                         }
                     },
