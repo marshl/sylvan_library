@@ -146,6 +146,7 @@ class FieldSearchForm(SearchForm):
 
     match_rarity = forms.BooleanField(required=False)
 
+    match_sets = forms.BooleanField(required=False)
     sets = forms.ModelMultipleChoiceField(
         queryset=Set.objects.all().order_by("-release_date"),
         widget=Select2MultipleWidget,
@@ -261,9 +262,8 @@ class FieldSearchForm(SearchForm):
 
         search.match_rarities_exactly = bool(self.data.get("match_rarity"))
 
-        search.sets = self.data.get("sets")
-        if search.sets and not isinstance(search.sets, list):
-            search.sets = [search.sets]
+        search.match_sets_exactly = bool(self.cleaned_data.get("match_sets"))
+        search.sets = self.cleaned_data.get("sets")
 
         search.build_parameters()
         search.search(self.get_page_number())

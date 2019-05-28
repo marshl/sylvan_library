@@ -62,6 +62,7 @@ class FieldSearch(BaseSearch):
         self.match_rarities_exactly = False
 
         self.sets = []
+        self.match_sets_exactly = False
 
     # pylint: disable=too-many-branches
     def build_parameters(self):
@@ -133,8 +134,10 @@ class FieldSearch(BaseSearch):
                 rarity_node.add_parameter(CardRarityParam(rarity))
 
         if self.sets:
+            set_node = AndParam() if self.match_sets_exactly else OrParam()
+            self.root_parameter.add_parameter(set_node)
             for set_obj in self.sets:
-                self.root_parameter.add_parameter(CardSetParam(set_obj))
+                set_node.add_parameter(CardSetParam(set_obj))
 
     def get_preferred_set(self) -> Optional[Set]:
         if self.sets:
