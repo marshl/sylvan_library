@@ -14,6 +14,13 @@
                         {% endfor %}
                     </ul>
                     <h2>Decks</h2> {{ deck_count }}
+                    <h2>Warnings</h2>
+                    {% for warning in deck_warnings %}
+                        <div>
+                            <a href="{% url "website:deck_view" deck_id=warning.deck.id %}">{{ warning.deck.name}}: </a>
+                            {{warning.msg}}
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>

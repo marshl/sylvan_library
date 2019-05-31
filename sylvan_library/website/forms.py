@@ -291,6 +291,8 @@ class DeckForm(forms.ModelForm):
 
     card_board = forms.ChoiceField(choices=DeckCard.BOARD_CHOICES)
 
+    skip_validation = forms.BooleanField(required=False)
+
     class Meta:
         model = Deck
 
@@ -311,7 +313,8 @@ class DeckForm(forms.ModelForm):
         """
         form_data = super().clean()
         self.get_cards()
-        self.instance.exclude_colours.add(*form_data["exclude_colours"])
+        for exclude_colour in form_data["exclude_colours"]:
+            self.instance.exclude_colours.add(exclude_colour)
         return form_data
 
     def get_boards(self) -> Dict[str, str]:

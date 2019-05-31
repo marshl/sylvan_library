@@ -123,21 +123,25 @@
                 </div>
                 <div class="group-container">
                     <div class="row">
-                         <div class="field-container">
+                        <div class="field-container">
                             {{ deck_form.exclude_colours.label_tag }}
                             {{ deck_form.exclude_colours }}
                         </div>
                     </div>
                 </div>
 
-
-                {% if deck_form.non_field_errors %}
+                {% if deck_form.errors %}
                     <div class="group-container">
-                        {% for error in deck_form.non_field_errors %}
-                            <div>
-                                <strong>{{ error|escape }}</strong>
-                            </div>
+
+                        {% for field, errors in deck_form.errors.items %}
+                            {% for error in errors %}
+                                <div>
+                                    <strong>{{ error|escape }}</strong>
+                                </div>
+                            {% endfor %}
                         {% endfor %}
+                        {{ deck_form.skip_validation.label_tag }}
+                        {{ deck_form.skip_validation }}
                     </div>
                 {% endif %}
 

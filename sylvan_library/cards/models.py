@@ -8,6 +8,7 @@ import random
 import re
 from typing import Dict, List, Optional
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Sum, IntegerField, Case, When, Avg
 from django.contrib.auth.models import User
@@ -656,7 +657,9 @@ class Deck(models.Model):
     description = models.TextField(null=True, blank=True)
     owner = models.ForeignKey(User, related_name="decks", on_delete=models.CASCADE)
     format = models.CharField(max_length=50, choices=FORMAT_CHOICES)
-    exclude_colours = models.ManyToManyField(Colour, related_name="exclude_from_decks")
+    exclude_colours = models.ManyToManyField(
+        Colour, related_name="exclude_from_decks", blank=True
+    )
 
     def __str__(self):
         return self.name
@@ -680,7 +683,9 @@ class Deck(models.Model):
         artifacts = board_cards.exclude(id__in=lands | creatures | enchantments).filter(
             card__type__contains="Artifact"
         )
-        planeswalkers = board_cards.filter(card__type__contains="Planeswalker")
+        planeswalkers = board_cards.filter(card__type__contains="Planeswalker").exclude(
+            id__in=commanders
+        )
         other = board_cards.exclude(
             id__in=commanders
             | lands
@@ -770,6 +775,99 @@ class Deck(models.Model):
             )
 
         return sum(deck_card.count for deck_card in self.cards.all())
+
+    def validate_format(self):
+        if self.format in ("edh", "dual_commander", "1v1_commander"):
+            self.validate_card_limit(1)
+            self.validate_commander(True)
+            self.validate_size(100)
+            self.validate_board_limit("side", 0)
+
+        if self.format in ("highlander",):
+            self.validate_card_limit(1)
+            self.validate_size(100)
+
+        if self.format == "brawl":
+            self.validate_card_limit(1)
+            self.validate_size(60)
+            self.validate_commander(True)
+
+        if self.format in (
+            "standard",
+            "legacy",
+            "mtgo",
+            "vintage",
+            "planechase",
+            "modern",
+        ):
+            self.validate_card_limit(4)
+            self.validate_size(60)
+            self.validate_board_limit("side", 15)
+
+        if self.format in ("pauper",):
+            self.validate_rarities(Rarity.objects.filter(symbol="C").all())
+
+    def validate_card_limit(self, limit: int):
+        overcount_cards = (
+            self.cards.exclude(count__lte=limit)
+            .exclude(card__type__contains="Basic")
+            .exclude(
+                card__rules_text__icontains="A deck can have any number of cards named"
+            )
+        )
+        if overcount_cards.exists():
+            raise ValidationError(
+                "You have over {} of the following cards: {}".format(
+                    limit, ", ".join(c.card.name for c in overcount_cards)
+                )
+            )
+
+    def validate_commander(self, validate_type: bool):
+        assert self.format in ("edh",)
+
+        commanders = self.cards.filter(is_commander=True)
+        if not commanders.exists():
+            raise ValidationError(
+                f"A commander deck should have at least one commander"
+            )
+
+        if commanders.count() != 1:
+            if commanders.exclude(card__rules_text__icontains="partner").exists():
+                raise ValidationError(
+                    f"A commander deck can only have multiple commanders if they have partner"
+                )
+
+        if validate_type:
+            if commanders.exclude(card__type__contains="Legend").exists():
+                raise ValidationError(
+                    f"A command deck should have a legend as the commander"
+                )
+
+    def validate_size(self, minimum_count: int):
+        card_count = self.get_card_count("main")
+        if card_count < minimum_count:
+            raise ValidationError(
+                f"Not enough cards for a {self.get_format_display()} deck ({card_count}/{minimum_count})"
+            )
+
+    def validate_board_limit(self, board: str, max_count: int):
+        card_count = self.get_card_count(board)
+        if card_count > max_count:
+            raise ValidationError(
+                f"A {self.get_format_display()} deck can't have more than {max_count} cards in the {board}board."
+                if max_count > 0
+                else f"A {self.get_format_display()} deck can't have any cards in the {board}board"
+            )
+
+    def validate_rarities(self, allowed_rarities: List[Rarity]):
+        disallowed_cards = self.cards.exclude(
+            card__printings__rarity__id__in=allowed_rarities
+        )
+        if disallowed_cards.exists():
+            raise ValidationError(
+                f"A {self.get_format_display()} deck should only have "
+                + ", ".join(r.name for r in allowed_rarities)
+            )
 
 
 class DeckCard(models.Model):

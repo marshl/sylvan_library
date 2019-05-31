@@ -199,10 +199,21 @@ def deck_stats(request) -> HttpResponse:
 
     deck_count = Deck.objects.filter(owner=request.user).count()
 
+    deck_warnings = []
+    for deck in Deck.objects.filter(owner=request.user):
+        try:
+            deck.validate_format()
+        except ValidationError as error:
+            deck_warnings.append({"deck": deck, "msg": error.message})
+
     return render(
         request,
         "website/decks/deck_stats.html",
-        {"unused_cards": unused_cards, "deck_count": deck_count},
+        {
+            "unused_cards": unused_cards,
+            "deck_count": deck_count,
+            "deck_warnings": deck_warnings,
+        },
     )
 
 
@@ -241,26 +252,32 @@ def deck_edit(request, deck_id: int) -> HttpResponse:
 
     if request.method == "POST":
         deck_form = DeckForm(request.POST, instance=deck)
-        deck_form.full_clean()
-        if deck_form.is_valid():
+        try:
+            deck_form.full_clean()
             with transaction.atomic():
                 deck.full_clean()
                 deck.save()
                 deck.cards.all().delete()
 
-                for deck_card in deck_form.get_cards():
+                deck_cards = deck_form.get_cards()
+                for deck_card in deck_cards:
                     deck_card.full_clean()
                     deck_card.save()
+
+                if not deck_form.cleaned_data.get("skip_validation"):
+                    deck.validate_format()
 
             if not request.POST.get("save_continue"):
                 return redirect("website:deck_view", deck_id=deck.id)
 
+        except ValidationError as err:
+            deck_form.add_error(None, err)
+            deck_form.instance.id = deck_id
+        else:
             deck_form = DeckForm(instance=deck)
-
     else:
         deck_form = DeckForm(instance=deck)
-
-    deck_form.populate_boards()
+        deck_form.populate_boards()
     return render(request, "website/decks/deck_edit.html", {"deck_form": deck_form})
 
 
@@ -272,27 +289,30 @@ def deck_create(request):
             try:
                 deck = deck_form.instance
                 deck.owner = request.user
-                deck_form.full_clean()
+                # deck_form.full_clean()
                 with transaction.atomic():
                     deck.full_clean()
                     deck.save()
                     deck.cards.all().delete()
-
                     for deck_card in deck_form.get_cards():
                         deck_card.full_clean()
                         deck_card.save()
 
+                    if not deck_form.cleaned_data.get("skip_validation"):
+                        deck.validate_format()
                 if not request.POST.get("save_continue"):
-                    return redirect("website:decks")
-            except ValidationError:
-                pass
+                    return redirect("website:deck_edit", deck_id=deck.id)
+            except ValidationError as err:
+                deck_form.add_error(None, err)
+                deck_form.instance.id = None
+                # deck_form = DeckForm(request.POST)
     else:
         deck = Deck()
         deck.owner = request.user
         deck.date_created = datetime.date.today()
         deck_form = DeckForm(instance=deck)
 
-    deck_form.populate_boards()
+    #    deck_form.populate_boards()
     return render(request, "website/decks/deck_edit.html", {"deck_form": deck_form})
 
 
