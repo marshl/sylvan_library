@@ -2,8 +2,6 @@
 {% load staticfiles %}
 {% block content %}
     <div class="deck-card">{{ deck_card.count }}x
-        <span class="card-link js-card-link" data-image-path="{% static deck_card.card|card_image_url|safe %}">
-            <a href="{% url 'website:name_search' %}?card_name={{ deck_card.card.name }}">{{ deck_card.get_card_name }}</a>
-        </span>
+        {% include "website/card_link.html" with card=deck_card.card card_name=deck_card.get_card_name%}
     </div>
 {% endblock %}

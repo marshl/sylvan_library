@@ -9,7 +9,7 @@
                     <ul>
                         {% for card in unused_cards %}
                             <li>
-                                {{ card.name }}
+                                {% include "website/card_link.html" with card=card %}
                             </li>
                         {% endfor %}
                     </ul>

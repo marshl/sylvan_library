@@ -1,0 +1,7 @@
+{% load card_image %}
+{% load staticfiles %}
+{% block content %}
+    <span class="card-link js-card-link" data-image-path="{% static card|card_image_url|safe %}">
+        <a href="{% url 'website:name_search' %}?card_name={{ card.name }}">{% if card_name %}{{ card_name }}{% else %}{{ card.name }}{% endif %}</a>
+    </span>
+{% endblock %}
