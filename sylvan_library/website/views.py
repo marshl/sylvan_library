@@ -3,6 +3,8 @@ Module for all website views
 """
 import datetime
 import logging
+import random
+import sys
 
 from django.db import transaction
 from django.core.exceptions import ValidationError
@@ -20,6 +22,7 @@ from cards.models import (
     Set,
     UserCardChange,
     UserOwnedCard,
+    UserProps,
 )
 from website.forms import (
     FieldSearchForm,
@@ -197,19 +200,24 @@ def deck_stats(request) -> HttpResponse:
         )
         .exclude(side="b")
         .exclude(side="c")
+        .distinct()
     )
-    unused_cards = (
-        users_cards.exclude(id__in=users_deck_cards).distinct().order_by("?")[:10]
-    )
+    if not hasattr(request.user, "userprops"):
+        UserProps.add_to_user(request.user)
+
+    rand = random.Random(request.user.userprops.unused_cards_seed)
+    unused_cards = list(users_cards.exclude(id__in=users_deck_cards).order_by("id"))
+    rand.shuffle(unused_cards)
+    unused_cards = unused_cards[:10]
 
     deck_count = Deck.objects.filter(owner=request.user).count()
 
     deck_warnings = []
-    for deck in Deck.objects.filter(owner=request.user):
-        try:
-            deck.validate_format()
-        except ValidationError as error:
-            deck_warnings.append({"deck": deck, "msg": error.message})
+    # for deck in Deck.objects.filter(owner=request.user):
+    #     try:
+    #         deck.validate_format()
+    #     except ValidationError as error:
+    #         deck_warnings.append({"deck": deck, "msg": error.message})
 
     return render(
         request,
@@ -220,6 +228,17 @@ def deck_stats(request) -> HttpResponse:
             "deck_warnings": deck_warnings,
         },
     )
+
+
+def change_unused_decks(request):
+    if not hasattr(request.user, "userprops"):
+        UserProps.add_to_user(request.user)
+
+    props = request.user.userprops
+    props.unused_cards_seed = random.randint(0, sys.maxsize)
+    props.full_clean()
+    props.save()
+    return redirect("website:deck_stats")
 
 
 def deck_list(request) -> HttpResponse:

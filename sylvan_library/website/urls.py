@@ -69,4 +69,9 @@ urlpatterns = [
         views.deck_colour_weights,
         name="deck_colour_weights",
     ),
+    path(
+        "decks/change_unused_decks",
+        views.change_unused_decks,
+        name="change_unused_decks",
+    ),
 ]

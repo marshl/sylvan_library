@@ -8,7 +8,7 @@ from django import forms
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
 from django.db.models import Func, Value, F
-from django_select2.forms import Select2MultipleWidget, Select2Widget
+from django_select2.forms import Select2MultipleWidget
 
 from cards.models import (
     Card,

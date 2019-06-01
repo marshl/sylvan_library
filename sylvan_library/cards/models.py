@@ -777,9 +777,13 @@ class Deck(models.Model):
         return sum(deck_card.count for deck_card in self.cards.all())
 
     def validate_format(self):
+        """
+        Validates that this deck passes the restrictions set by its format
+        :return:
+        """
         if self.format in ("edh", "dual_commander", "1v1_commander"):
             self.validate_card_limit(1)
-            self.validate_commander(True)
+            self.validate_commander("Legend")
             self.validate_size(100)
             self.validate_board_limit("side", 0)
 
@@ -790,7 +794,7 @@ class Deck(models.Model):
         if self.format == "brawl":
             self.validate_card_limit(1)
             self.validate_size(60)
-            self.validate_commander(True)
+            self.validate_commander("Legend")
 
         if self.format in (
             "standard",
@@ -807,7 +811,12 @@ class Deck(models.Model):
         if self.format in ("pauper",):
             self.validate_rarities(Rarity.objects.filter(symbol="C").all())
 
-    def validate_card_limit(self, limit: int):
+    def validate_card_limit(self, limit: int) -> None:
+        """
+        Validates that this deck doesn't have any cards more than the given limit
+        :param limit: The card limit (4 for standard, 1 for EDH etc)
+        """
+        # We can exclude basic land and cards that you can have any number of (i.e. Relentless Rats)
         overcount_cards = (
             self.cards.exclude(count__lte=limit)
             .exclude(card__type__contains="Basic")
@@ -822,7 +831,11 @@ class Deck(models.Model):
                 )
             )
 
-    def validate_commander(self, validate_type: bool):
+    def validate_commander(self, validate_type: str) -> None:
+        """
+        Validates that this deck has a commander card
+        :param validate_type: The card type that the commander should be
+        """
         assert self.format in ("edh",)
 
         commanders = self.cards.filter(is_commander=True)
@@ -838,28 +851,43 @@ class Deck(models.Model):
                 )
 
         if validate_type:
-            if commanders.exclude(card__type__contains="Legend").exists():
+            if commanders.exclude(card__type__contains=validate_type).exists():
                 raise ValidationError(
                     f"A command deck should have a legend as the commander"
                 )
 
-    def validate_size(self, minimum_count: int):
+    def validate_size(self, minimum_count: int) -> None:
+        """
+        Validates that this deck has at leas the given number of cards
+        :param minimum_count: The minimum number of cards (60 for standard, 100 for highlander etc)
+        """
         card_count = self.get_card_count("main")
         if card_count < minimum_count:
             raise ValidationError(
-                f"Not enough cards for a {self.get_format_display()} deck ({card_count}/{minimum_count})"
+                f"Not enough cards for a {self.get_format_display()} "
+                f"deck ({card_count}/{minimum_count})"
             )
 
-    def validate_board_limit(self, board: str, max_count: int):
+    def validate_board_limit(self, board: str, max_count: int) -> None:
+        """
+        Validates that the deck doesn't haven't more than the given number of cards in the board
+        :param board: The board to check (side, main etc)
+        :param max_count: The maximum number of cards that can be in that board
+        """
         card_count = self.get_card_count(board)
         if card_count > max_count:
             raise ValidationError(
-                f"A {self.get_format_display()} deck can't have more than {max_count} cards in the {board}board."
+                f"A {self.get_format_display()} deck can't have more than "
+                f"{max_count} cards in the {board}board."
                 if max_count > 0
                 else f"A {self.get_format_display()} deck can't have any cards in the {board}board"
             )
 
-    def validate_rarities(self, allowed_rarities: List[Rarity]):
+    def validate_rarities(self, allowed_rarities: List[Rarity]) -> None:
+        """
+        Validates that the deck doesn't contain any cards that aren't of the given rarities
+        :param allowed_rarities: The list of rarties that are allowed in the deck
+        """
         disallowed_cards = self.cards.exclude(
             card__printings__rarity__id__in=allowed_rarities
         )
@@ -950,3 +978,25 @@ class CardImage(models.Model):
     )
 
     downloaded = models.BooleanField()
+
+
+class UserProps(models.Model):
+    """
+    Additional properties for the Django User model
+    """
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    unused_cards_seed = IntegerField(default=0)
+
+    @staticmethod
+    def add_to_user(user: User) -> "UserProps":
+        """
+        Adds a new UserProps instance to the given user
+        (user.userpops existence should be checked every time a value from it is used,
+        and this function should be called it if doesn't exist)
+        :param user: The user to add the props to
+        """
+        props = UserProps(user=user)
+        props.full_clean()
+        props.save()
+        return props
