@@ -190,8 +190,13 @@ def deck_stats(request) -> HttpResponse:
         return redirect("website:index")
 
     users_deck_cards = Card.objects.filter(deck_cards__deck__owner=request.user)
-    users_cards = Card.objects.filter(
-        printings__printed_languages__physical_cards__ownerships__owner=request.user
+    users_cards = (
+        Card.objects.filter(
+            printings__printed_languages__physical_cards__ownerships__owner=request.user,
+            is_token=False,
+        )
+        .exclude(side="b")
+        .exclude(side="c")
     )
     unused_cards = (
         users_cards.exclude(id__in=users_deck_cards).distinct().order_by("?")[:10]
