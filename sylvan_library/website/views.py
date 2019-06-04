@@ -18,6 +18,7 @@ from cards.models import (
     CardPrinting,
     Colour,
     Deck,
+    DeckCard,
     PhysicalCard,
     Set,
     UserCardChange,
@@ -178,6 +179,18 @@ def ajax_search_result_set_summary(request, printing_id: int):
         request,
         "website/results/search_result_sets.html",
         {"card": printing.card, "selected_printing": printing},
+    )
+
+
+def ajax_search_result_decks(request, card_id: int):
+    card = Card.objects.get(pk=card_id)
+    deck_cards = (
+        DeckCard.objects.filter(deck__owner=request.user)
+        .filter(card=card)
+        .order_by("-deck__date_created")
+    )
+    return render(
+        request, "website/results/search_result_decks.html", {"deck_cards": deck_cards}
     )
 
 

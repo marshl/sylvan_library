@@ -96,6 +96,12 @@ $(function () {
                     $tab.find('input[type!="hidden"]').first().focus();
                 }
             });
+
+
+        $.ajax('/website/ajax/search_result_decks/' + card_id)
+            .done(function (result) {
+                $tabContainer.find('.js-card-result-tab-content[data-tab-type="decks"]').html(result);
+            });
     }
 
     function loadOwnershipTab($tabContainer, card_id) {
