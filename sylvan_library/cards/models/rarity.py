@@ -1,3 +1,7 @@
+"""
+Models for rarity objects
+"""
+
 from django.db import models
 
 

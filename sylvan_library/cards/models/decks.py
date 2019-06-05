@@ -1,6 +1,6 @@
-from cards.models.card import Card
-from cards.models.colour import Colour
-from cards.models.rarity import Rarity
+"""
+Models for deck objects
+"""
 
 from typing import List, Dict
 
@@ -8,6 +8,10 @@ from django.db import models
 from django.db.models import Sum, Avg
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+
+from cards.models.card import Card
+from cards.models.colour import Colour
+from cards.models.rarity import Rarity
 
 
 class Deck(models.Model):

@@ -1,3 +1,6 @@
+"""
+Models for set related objects
+"""
 from django.db import models
 
 

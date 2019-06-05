@@ -1,5 +1,8 @@
-from django.db import models
+"""
+Models for Colour objects
+"""
 from typing import List
+from django.db import models
 
 
 class Colour(models.Model):

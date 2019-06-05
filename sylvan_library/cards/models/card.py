@@ -1,3 +1,6 @@
+"""
+Module for Card related models
+"""
 import random
 from typing import List
 
@@ -26,6 +29,7 @@ CARD_LAYOUT_CHOICES = (
 )
 
 
+# pylint: disable=too-many-instance-attributes
 class Card(models.Model):
     """
     Model for a unique card

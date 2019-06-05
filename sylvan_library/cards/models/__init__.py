@@ -1,9 +1,6 @@
-from cards.models.decks import Deck, DeckCard
-from cards.models.sets import Block, Format, Set
-from cards.models.colour import Colour
-from cards.models.card import Card, CARD_LAYOUT_CHOICES
-from cards.models.rarity import Rarity
-
+"""
+Models for the card app
+"""
 import datetime
 import os
 import re
@@ -12,6 +9,12 @@ from typing import Optional
 from django.db import models
 from django.db.models import Sum, IntegerField, Case, When
 from django.contrib.auth.models import User
+
+from cards.models.card import Card, CARD_LAYOUT_CHOICES
+from cards.models.sets import Block, Set, Format
+from cards.models.rarity import Rarity
+from cards.models.colour import Colour
+from cards.models.decks import Deck, DeckCard
 
 
 CARD_LEGALITY_RESTRICTION_CHOICES = (
