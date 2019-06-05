@@ -1,0 +1,11 @@
+{% block content %}
+    <div class="extraDetails">
+        {% for link in links %}
+            <span class="subtitle">
+                <a href="{{ link.url }}" target="_blank">{{ link.name }}</a>
+            </span>
+            <br/>
+        {% endfor %}
+    </div>
+
+{% endblock %}

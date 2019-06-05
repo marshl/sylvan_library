@@ -85,22 +85,27 @@ $(function () {
                 $tabContainer.find('.js-card-result-tab-content[data-tab-type="languages"]').html(result);
             });
 
-        loadOwnershipTab($tabContainer, card_id);
+        if (IS_LOGGED_IN) {
+            loadOwnershipTab($tabContainer, card_id);
+            $.ajax('/website/ajax/search_result_add/' + printing_id)
+                .done(function (result) {
+                    let $tab = $tabContainer.find('.js-card-result-tab-content[data-tab-type="add"]');
+                    $tab.html(result);
+                    if (!$tab.isHidden) {
+                        $tab.find('input[type!="hidden"]').first().focus();
+                    }
+                });
 
 
-        $.ajax('/website/ajax/search_result_add/' + printing_id)
+            $.ajax('/website/ajax/search_result_decks/' + card_id)
+                .done(function (result) {
+                    $tabContainer.find('.js-card-result-tab-content[data-tab-type="decks"]').html(result);
+                });
+        }
+
+        $.ajax('/website/ajax/search_result_links/' + card_id)
             .done(function (result) {
-                let $tab = $tabContainer.find('.js-card-result-tab-content[data-tab-type="add"]');
-                $tab.html(result);
-                if (!$tab.isHidden) {
-                    $tab.find('input[type!="hidden"]').first().focus();
-                }
-            });
-
-
-        $.ajax('/website/ajax/search_result_decks/' + card_id)
-            .done(function (result) {
-                $tabContainer.find('.js-card-result-tab-content[data-tab-type="decks"]').html(result);
+                $tabContainer.find('.js-card-result-tab-content[data-tab-type="links"]').html(result);
             });
     }
 

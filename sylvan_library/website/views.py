@@ -5,6 +5,8 @@ import datetime
 import logging
 import random
 import sys
+import urllib.parse
+import urllib.request
 
 from django.db import transaction
 from django.core.exceptions import ValidationError
@@ -16,9 +18,11 @@ from pagination import get_page_buttons
 from cards.models import (
     Card,
     CardPrinting,
+    CardPrintingLanguage,
     Colour,
     Deck,
     DeckCard,
+    Language,
     PhysicalCard,
     Set,
     UserCardChange,
@@ -192,6 +196,63 @@ def ajax_search_result_decks(request, card_id: int):
     return render(
         request, "website/results/search_result_decks.html", {"deck_cards": deck_cards}
     )
+
+
+def ajax_search_result_links(request, card_id: int):
+    card = Card.objects.get(pk=card_id)
+    links = [
+        {
+            "name": "TCGPlayer Decks",
+            "url": "https://decks.tcgplayer.com/magic/deck/search?{}".format(
+                urllib.parse.urlencode({"contains": card.name, "page": 1})
+            ),
+        },
+        {
+            "name": "Card Analysis on EDHREC",
+            "url": "http://edhrec.com/route/?{}".format(
+                urllib.parse.urlencode({"cc": card.name})
+            ),
+        },
+        {
+            "name": "Search DeckStats for this card",
+            "url": "https://deckstats.net/decks/search/?{}".format(
+                urllib.parse.urlencode({"search_cards[]": card.name})
+            ),
+        },
+        {
+            "name": "Search MTGTop8 for this card",
+            "url": "http://mtgtop8.com/search?{}".format(
+                urllib.parse.urlencode(
+                    {"MD_check": 1, "SB_check": 1, "cards": card.name}
+                )
+            ),
+        },
+        {
+            "name": "View on Starcity Games",
+            "url": "http://www.starcitygames.com/results?{}".format(
+                urllib.parse.urlencode({"name": card.name})
+            ),
+        },
+    ]
+
+    printlang = (
+        CardPrintingLanguage.objects.filter(card_printing__card=card)
+        .filter(multiverse_id__isnull=False)
+        .filter(language=Language.english())
+        .order_by("card_printing__set__release_date")
+        .last()
+    )
+    if printlang:
+        links.append(
+            {
+                "name": "View on Gatherer",
+                "url": "https://gatherer.wizards.com/Pages/Card/Details.aspx?{}".format(
+                    urllib.parse.urlencode({"multiverseid": printlang.multiverse_id})
+                ),
+            }
+        )
+
+    return render(request, "website/results/search_result_links.html", {"links": links})
 
 
 def get_page_number(request):

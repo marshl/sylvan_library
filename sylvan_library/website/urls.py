@@ -62,6 +62,11 @@ urlpatterns = [
         views.ajax_search_result_decks,
         name="ajax_search_result_decks",
     ),
+    path(
+        "ajax/search_result_links/<int:card_id>/",
+        views.ajax_search_result_links,
+        name="ajax_search_result_links",
+    ),
     # Decks
     path("decks/card/", views.deck_card_search, name="deck_card_search"),
     path("decks/", views.deck_list, name="decks"),
