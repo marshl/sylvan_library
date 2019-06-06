@@ -3,161 +3,164 @@
 {% load card_ownership %}
 {% load staticfiles %}
 
-{% with render_usercards=request.user.is_authenticated %}
-    {% block content %}
-        <div class="search-result js-card-result"
-             id="card-result-{{ result.card.id }}"
-             data-card-id="{{ result.card.id }}"
-             data-card-printing-id="{{ result.selected_printing.id }}"
-             data-is-expanded="false">
-            <div class="listImgDiv">
+
+{% block content %}
+    <div class="search-result js-card-result"
+         id="card-result-{{ result.card.id }}"
+         data-card-id="{{ result.card.id }}"
+         data-card-printing-id="{{ result.selected_printing.id }}"
+         data-is-expanded="false">
+        <div class="listImgDiv">
                 <span class="js-card-result-image-container">
                     {% include 'website/card_image.html' with printing=result.selected_printing %}
                 </span>
-                <span class="image-actions">
+            <span class="image-actions">
                     {% if result.card.layout == 'split' %}
                         <button class="js-image-split-btn">Rotate</button>
                     {% endif %}
-                    {% if result.card.layout == 'flip' %}
-                        <button class="js-image-flip-btn">Flip</button>
-                    {% endif %}
+                {% if result.card.layout == 'flip' %}
+                    <button class="js-image-flip-btn">Flip</button>
+                {% endif %}
                 </span>
-            </div>
+        </div>
 
-            <div style="width:100%;">
-                <div style="display:flex;">
-                    <div class="search-result-base-details" style="display:inline-block;">
-                        <h2 class="search-result-title">
-                            <a target="_blank">{{ result.card.name }}</a>
-                            {% if result.card.cost %}
-                                {{ result.card.cost | replace_mana_symbols | shadowed | safe }}
-                                ({{ result.card.cmc | floatformat }})
-                            {% endif %}
+        <div style="width:100%;">
+            <div style="display:flex;">
+                <div class="search-result-base-details" style="display:inline-block;">
+                    <h2 class="search-result-title">
+                        <a target="_blank">{{ result.card.name }}</a>
+                        {% if result.card.cost %}
+                            {{ result.card.cost | replace_mana_symbols | shadowed | safe }}
+                            ({{ result.card.cmc | floatformat }})
+                        {% endif %}
 
 
-                            {% if render_usercards %}
-                                <span class="js-ownership-summary">
+                        {% if request.user.is_authenticated %}
+                            <span class="js-ownership-summary">
                                     {% include 'website/results/ownership_summary.html' with card=result.card %}
                                 </span>
+                        {% endif %}
+                    </h2>
+                    {% if result.card.layout == 'flip' or result.card.layout == 'split' or result.card.layout == 'transform' or result.card.layout == 'meld' %}
+                        <div class="subtitle">
+                            {% if result.card.layout == 'flip' or result.card.layout == 'split' %}
+                                Other half of
+                            {% elif result.card.layout == 'transform' %}
+                                Transforms {% if result.card.side == 'a' %}into{% else %}from{% endif %}
+                            {% elif result.card.layout == 'meld' and result.card.side != 'c' %}
+                                Melds into
+                            {% else %}
+                                Melded from
                             {% endif %}
-                        </h2>
-                        {% if result.card.layout == 'flip' or result.card.layout == 'split' or result.card.layout == 'transform' or result.card.layout == 'meld' %}
-                            <div class="subtitle">
-                                {% if result.card.layout == 'flip' or result.card.layout == 'split' %}
-                                    Other half of
-                                {% elif result.card.layout == 'transform' %}
-                                    Transforms {% if result.card.side == 'a' %}into{% else %}from{% endif %}
-                                {% elif result.card.layout == 'meld' and result.card.side != 'c' %}
-                                    Melds into
-                                {% else %}
-                                    Melded from
-                                {% endif %}
-                                {% for link in result.card.links.all %}
-                                    <span class="filter-link">
+                            {% for link in result.card.links.all %}
+                                <span class="filter-link">
                                         <a href="{% url 'website:name_search' %}?card_name={{ link.name }}"
                                            target="_blank">{{ link.name }}</a>
                                     </span>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        <div style="display:inline-flex;" class="subtitle type-line">
-                            <div style="display:inline-flex;">
-                                <span>{{ result.card.type }}</span>
-                                {% if result.card.subtype %}
-                                    <span>&nbsp;&mdash;&nbsp;</span>
-                                    <span>{{ result.card.subtype }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div style="display:inline-flex;" class="subtitle type-line">
+                        <div style="display:inline-flex;">
+                            <span>{{ result.card.type }}</span>
+                            {% if result.card.subtype %}
+                                <span>&nbsp;&mdash;&nbsp;</span>
+                                <span>{{ result.card.subtype }}</span>
+                            {% endif %}
+                        </div>
+                        <span></span>
+                    </div>
+                    <h3 class="subtitle">
+                        {% if result.card.rules_text != None %}
+                            <div>
+                                {% if result.is_planeswalker %}
+                                    {{ result.card.rules_text | linebreaks | replace_mana_symbols | replace_reminder_text | replace_loyalty_symbols:'3x' | safe }}
+                                {% else %}
+                                    {{ result.card.rules_text | linebreaks | replace_mana_symbols | replace_reminder_text | safe }}
                                 {% endif %}
                             </div>
-                            <span></span>
-                        </div>
-                        <h3 class="subtitle">
-                            {% if result.card.rules_text != None %}
-                                <div>
-                                    {% if result.is_planeswalker %}
-                                        {{ result.card.rules_text | linebreaks | replace_mana_symbols | replace_reminder_text | replace_loyalty_symbols:'3x' | safe }}
-                                    {% else %}
-                                        {{ result.card.rules_text | linebreaks | replace_mana_symbols | replace_reminder_text | safe }}
-                                    {% endif %}
-                                </div>
-                            {% endif %}
-                            {% if result.card.power != None %}
-                                <div class="subtitle pow-tuff">
-                                    P/T: {{ result.card.power }}/{{ result.card.toughness }}
-                                </div>
-                            {% elif result.card.loyalty != None %}
-                                <span class="subtitle pow-tuff">Loyalty: {{ result.card.loyalty }}</span>
-                            {% endif %}
-                        </h3>
-                    </div>
-                    <div class="search-result-set-list js-card-result-set-summary">
-                        {% include 'website/results/search_result_sets.html' with card=result.card selected_printing=result.selected_printing %}
-                    </div>
-                </div>
-                <div class="search-result-tab-container">
-                    <span class="tab-expander js-card-result-expander">Details ▼</span>
-
-                    <div class="tab-container js-card-result-tab-container" style="display:none;">
-                        <ul class="tab-list">
-                            <li class="tab js-card-result-tab selected"
-                                data-tab-type="details">
-                                Details
-                            </li>
-                            <li class="tab js-card-result-tab"
-                                data-tab-type="rulings">
-                                Rulings
-                            </li>
-                            <li class="tab js-card-result-tab"
-                                data-tab-type="languages">
-                                Languages
-                            </li>
-                            {% if render_usercards %}
-                                <li class="tab js-card-result-tab"
-                                    data-tab-type="ownership">
-                                    Ownership
-                                </li>
-                                <li class="tab js-card-result-tab"
-                                    data-tab-type="add">
-                                    Add cards
-                                </li>
-                                <li class="tab js-card-result-tab"
-                                    data-tab-type="decks">
-                                    Decks
-                                </li>
-                                <li class="tab js-card-result-tab"
-                                    data-tab-type="links">
-                                    Links
-                                </li>
-                            {% endif %}
-                        </ul>
-                        <div class="js-card-result-tab-content"
-                             data-tab-type="details"
-                             style="display: none;">
-                        </div>
-                        <div class="js-card-result-tab-content"
-                             data-tab-type="rulings"
-                             style="display:none;">
-                        </div>
-                        <div class="js-card-result-tab-content"
-                             data-tab-type="languages"
-                             style="display:none;">
-                        </div>
-                        {% if render_usercards %}
-                            <div class="js-card-result-tab-content"
-                                 data-tab-type="ownership"
-                                 style="display:none;">
-                            </div>
-                            <div class="js-card-result-tab-content"
-                                 data-tab-type="add"
-                                 style="display:none;">
-                            </div>
                         {% endif %}
+                        {% if result.card.power != None %}
+                            <div class="subtitle pow-tuff">
+                                P/T: {{ result.card.power }}/{{ result.card.toughness }}
+                            </div>
+                        {% elif result.card.loyalty != None %}
+                            <span class="subtitle pow-tuff">Loyalty: {{ result.card.loyalty }}</span>
+                        {% endif %}
+                    </h3>
+                </div>
+                <div class="search-result-set-list js-card-result-set-summary">
+                    {% include 'website/results/search_result_sets.html' with card=result.card selected_printing=result.selected_printing %}
+                </div>
+            </div>
+            <div class="search-result-tab-container">
+                <span class="tab-expander js-card-result-expander">Details ▼</span>
+
+                <div class="tab-container js-card-result-tab-container" style="display:none;">
+                    <ul class="tab-list">
+                        <li class="tab js-card-result-tab selected"
+                            data-tab-type="details">
+                            Details
+                        </li>
+                        <li class="tab js-card-result-tab"
+                            data-tab-type="rulings">
+                            Rulings
+                        </li>
+                        <li class="tab js-card-result-tab"
+                            data-tab-type="languages">
+                            Languages
+                        </li>
+                        {% if request.user.is_authenticated %}
+                            <li class="tab js-card-result-tab"
+                                data-tab-type="ownership">
+                                Ownership
+                            </li>
+                            <li class="tab js-card-result-tab"
+                                data-tab-type="add">
+                                Add cards
+                            </li>
+                            <li class="tab js-card-result-tab"
+                                data-tab-type="decks">
+                                Decks
+                            </li>
+                            <li class="tab js-card-result-tab"
+                                data-tab-type="links">
+                                Links
+                            </li>
+                        {% endif %}
+                    </ul>
+                    <div class="js-card-result-tab-content"
+                         data-tab-type="details"
+                         style="display: none;">
+                    </div>
+                    <div class="js-card-result-tab-content"
+                         data-tab-type="rulings"
+                         style="display:none;">
+                    </div>
+                    <div class="js-card-result-tab-content"
+                         data-tab-type="languages"
+                         style="display:none;">
+                    </div>
+                    {% if request.user.is_authenticated %}
                         <div class="js-card-result-tab-content"
-                             data-tab-type="links"
+                             data-tab-type="ownership"
                              style="display:none;">
                         </div>
+                        <div class="js-card-result-tab-content"
+                             data-tab-type="add"
+                             style="display:none;">
+                        </div>
+                        <div class="js-card-result-tab-content"
+                             data-tab-type="decks"
+                             style="display:none;">
+                        </div>
+                    {% endif %}
+                    <div class="js-card-result-tab-content"
+                         data-tab-type="links"
+                         style="display:none;">
                     </div>
                 </div>
             </div>
         </div>
-    {% endblock %}
-{% endwith %}
+    </div>
+{% endblock %}
