@@ -70,6 +70,12 @@ class Deck(models.Model):
     def __str__(self):
         return self.name
 
+    def get_cards(self, board: str) -> List["DeckCard"]:
+        return self.cards.filter(board=board).order_by("card__name")
+
+    def get_sideboard(self) -> List["DeckCard"]:
+        return self.get_cards("side")
+
     def get_card_groups(self) -> Dict[str, List["DeckCard"]]:
         """
         Gets the cards in this deck divided into type groups
@@ -167,6 +173,9 @@ class Deck(models.Model):
             .exclude(card__type__contains="Land")
             .aggregate(Avg("card__cmd"))["card__cmc__avg"]
         )
+
+    def get_mainboard_count(self) -> int:
+        return self.get_card_count("main")
 
     def get_card_count(self, board: str = None) -> int:
         """

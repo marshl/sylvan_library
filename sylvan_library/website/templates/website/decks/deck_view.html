@@ -25,7 +25,7 @@
             </div>
             <div class="group-container">
                 <div class="deck-card-list">
-                    <div style="font-weight: bold;">Total {{ deck.get_card_count }}</div>
+                    <div style="font-weight: bold;">Main {{ deck.get_mainboard_count }}</div>
                     {% for group_name, cards in deck.get_card_groups.items %}
                         {% if cards.exists %}
                             <div class="card-group">
@@ -36,6 +36,14 @@
                             </div>
                         {% endif %}
                     {% endfor %}
+                    {% if deck.get_sideboard.exists %}
+                        <div class="card-group">
+                            <div class="group-title">Sideboard</div>
+                            {% for deck_card in deck.get_sideboard %}
+                                {% include "website/decks/deck_card.html" with deck_card=deck_card %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 </div>
             </div>
             <div class="group-container">
