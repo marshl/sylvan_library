@@ -9,6 +9,7 @@ import urllib.parse
 import urllib.request
 
 from django.db import transaction
+from django.db.models import Sum, Count
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
@@ -193,8 +194,13 @@ def ajax_search_result_decks(request, card_id: int):
         .filter(card=card)
         .order_by("-deck__date_created")
     )
+    card_count = deck_cards.aggregate(card_count=Sum("count"))["card_count"]
+    deck_count = deck_cards.aggregate(deck_count=Count("deck_id"))["deck_count"]
+
     return render(
-        request, "website/results/search_result_decks.html", {"deck_cards": deck_cards}
+        request,
+        "website/results/search_result_decks.html",
+        {"deck_cards": deck_cards, "card_count": card_count, "deck_count": deck_count},
     )
 
 
