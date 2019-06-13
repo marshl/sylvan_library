@@ -39,9 +39,15 @@ class SearchResult:
             )
 
         if self.card and not self.selected_printing:
-            self.selected_printing = sorted(
+            sorted_printings = sorted(
                 self.card.printings.all(), key=lambda x: x.set.release_date
-            )[-1]
+            )
+            # Prefer non-promotional cards if possible
+            non_promo_prints = [p for p in sorted_printings if p.set.type != "promo"]
+            if non_promo_prints:
+                self.selected_printing = non_promo_prints[-1]
+            else:
+                self.selected_printing = sorted_printings[-1]
 
         assert (
             self.selected_printing is None
