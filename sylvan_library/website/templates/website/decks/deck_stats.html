@@ -7,9 +7,9 @@
                 <div class="field-container">
                     <h2>Some unused Cards</h2>
                     <ul>
-                        {% for card in unused_cards %}
+                        {% for unused_card in unused_cards %}
                             <li>
-                                {% include "website/card_link.html" with card=card %}
+                                {% include "website/card_link.html" with card=unused_card.card preferred_printing=unused_card.preferred_printing %}
                             </li>
                         {% endfor %}
                     </ul>

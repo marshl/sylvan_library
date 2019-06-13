@@ -289,6 +289,17 @@ def deck_stats(request) -> HttpResponse:
     unused_cards = list(users_cards.exclude(id__in=users_deck_cards).order_by("id"))
     rand.shuffle(unused_cards)
     unused_cards = unused_cards[:10]
+    unused_cards = [
+        {
+            "card": card,
+            "preferred_printing": card.printings.filter(
+                printed_languages__physical_cards__ownerships__owner=request.user
+            )
+            .order_by("set__release_date")
+            .last(),
+        }
+        for card in unused_cards
+    ]
 
     deck_count = Deck.objects.filter(owner=request.user).count()
 
