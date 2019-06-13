@@ -326,7 +326,9 @@ def change_unused_decks(request):
         UserProps.add_to_user(request.user)
 
     props = request.user.userprops
-    props.unused_cards_seed = random.randint(0, sys.maxsize)
+    props.unused_cards_seed = random.randint(
+        0, abs(UserProps._meta.get_field("unused_cards_seed").validators[0].limit_value)
+    )
     props.full_clean()
     props.save()
     return redirect("website:deck_stats")
