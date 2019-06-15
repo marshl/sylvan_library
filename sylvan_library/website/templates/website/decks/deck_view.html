@@ -36,10 +36,10 @@
                             </div>
                         {% endif %}
                     {% endfor %}
-                    {% if deck.get_sideboard.exists %}
+                    {% if deck|board_cards:'side' %}
                         <div class="card-group">
                             <div class="group-title">Sideboard</div>
-                            {% for deck_card in deck.get_sideboard %}
+                            {% for deck_card in deck|board_cards:'side' %}
                                 {% include "website/decks/deck_card.html" with deck_card=deck_card %}
                             {% endfor %}
                         </div>

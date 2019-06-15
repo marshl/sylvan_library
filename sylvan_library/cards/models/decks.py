@@ -71,9 +71,18 @@ class Deck(models.Model):
         return self.name
 
     def get_cards(self, board: str) -> List["DeckCard"]:
+        """
+        Gets the cards in the given board
+        :param board: The board to get the cards for
+        :return: The cards in that board
+        """
         return self.cards.filter(board=board).order_by("card__name")
 
     def get_sideboard(self) -> List["DeckCard"]:
+        """
+        Gets all the cards that are in the sideboard
+        :return:
+        """
         return self.get_cards("side")
 
     def get_card_groups(self) -> Dict[str, List["DeckCard"]]:
@@ -175,6 +184,10 @@ class Deck(models.Model):
         )
 
     def get_mainboard_count(self) -> int:
+        """
+        Gets the total number of cards in tbe mainboard
+        :return: The number of cards
+        """
         return self.get_card_count("main")
 
     def get_card_count(self, board: str = None) -> int:

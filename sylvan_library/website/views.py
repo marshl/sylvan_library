@@ -4,7 +4,6 @@ Module for all website views
 import datetime
 import logging
 import random
-import sys
 import urllib.parse
 import urllib.request
 

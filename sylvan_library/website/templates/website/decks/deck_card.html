@@ -1,7 +1,8 @@
 {% load card_image %}
 {% load staticfiles %}
+{% load deck_templatetags %}
 {% block content %}
     <div class="deck-card">{{ deck_card.count }}x
-        {% include "website/card_link.html" with card=deck_card.card card_name=deck_card.get_card_name%}
+        {% include "website/card_link.html" with card=deck_card.card card_name=deck_card.get_card_name preferred_printing=deck_card|owner_preferred_card %}
     </div>
 {% endblock %}
