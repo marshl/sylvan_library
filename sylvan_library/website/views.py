@@ -190,7 +190,7 @@ def ajax_search_result_decks(request, card_id: int):
     card = Card.objects.get(pk=card_id)
     deck_cards = (
         DeckCard.objects.filter(deck__owner=request.user)
-        .filter(card=card)
+        .filter(card__in=card.get_all_sides())
         .order_by("-deck__date_created")
     )
     card_count = deck_cards.aggregate(card_count=Sum("count"))["card_count"]
