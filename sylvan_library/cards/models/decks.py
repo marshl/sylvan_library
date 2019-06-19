@@ -347,7 +347,7 @@ class DeckCard(models.Model):
     def __str__(self):
         return f"{self.card} in {self.deck}"
 
-    def get_card_name(self):
+    def get_card_name(self) -> str:
         """
         Gets the name of the card. For most cards this will be the same as teh name of the card,
         but split cards combine the names of both halves together

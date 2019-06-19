@@ -205,6 +205,8 @@ def ajax_search_result_decks(request, card_id: int):
 
 def ajax_search_result_links(request, card_id: int):
     card = Card.objects.get(pk=card_id)
+    linked_card_name = card.name if card.layout != "split" else card.get_linked_name()
+
     links = [
         {
             "name": "TCGPlayer Decks",
@@ -228,7 +230,7 @@ def ajax_search_result_links(request, card_id: int):
             "name": "Search MTGTop8 for this card",
             "url": "http://mtgtop8.com/search?{}".format(
                 urllib.parse.urlencode(
-                    {"MD_check": 1, "SB_check": 1, "cards": card.name}
+                    {"MD_check": 1, "SB_check": 1, "cards": linked_card_name}
                 )
             ),
         },
