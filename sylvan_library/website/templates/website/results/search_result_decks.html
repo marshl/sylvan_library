@@ -7,9 +7,9 @@
                     <span class="subtitle">
                         {{ deck_card.count }}x in
                         <a href="{% url "website:deck_view" deck_id=deck_card.deck.id %}" target="_blank">
-                            {{ deck_card.deck.name }} {{ deck_card.deck.subtitle }} ({{ deck_card.deck.date_created }})
+                            {{ deck_card.deck.name }} {{ deck_card.deck.subtitle|default_if_none:''}} ({{ deck_card.deck.date_created }})
                             {% if deck_card.board != 'main' %}
-                                ({{ deck_card.get_board_display }}board)
+                                <em>({{ deck_card.get_board_display }}board)</em>
                             {% endif %}
                         </a>
                     </span>
