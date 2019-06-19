@@ -168,7 +168,6 @@
 }
 
 
-
 .action-bar .select-group, .page-button-list {
     margin-left: 15px;
 }
@@ -188,50 +187,58 @@
 }
 
 
-.listImg {
+.card-image {
     border-radius: 6px;
     transition: .3s;
     position: relative;
 }
 
-.listImg.clicked {
+.card-image.wide {
+    border-radius: 8px;
+}
+
+.card-image.clicked {
     width: 223px;
+    border-radius: 10px;
 }
 
-.listImg.clicked.split {
+.card-image.wide.clicked {
+    border-radius: 13px;
+}
+
+.card-image.clicked.split {
     transform: rotate(90deg);
     z-index: 100;
 }
 
-.listImg.clicked.flip {
+.card-image.clicked.flip {
     transform: rotate(180deg);
 }
 
-.listImg.clicked.double-faced, .listImg.clicked.meld {
+.card-image.clicked.double-faced, .card-image.clicked.meld {
     transform: rotateY(1turn);
 }
 
-.listImg.split {
+.card-image.split {
     transform: rotate(90deg);
     z-index: 100;
 }
 
-.listImg.flip {
+.card-image.flip {
     transform: rotate(180deg);
 }
 
-.listImg.double-faced, .listImg.meld {
+.card-image.double-faced, .card-image.meld {
     transform: rotateY(1turn);
 }
 
-.listImgDiv {
+.card-image-container {
     transition: .3s;
 }
 
 .subtitle.type-line {
     font-weight: 700;
 }
-
 
 
 .setIcon {

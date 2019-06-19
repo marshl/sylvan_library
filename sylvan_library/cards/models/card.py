@@ -122,3 +122,7 @@ class Card(models.Model):
         :return: THe names of this card joined together (.e.g Assault / Battery)
         """
         return delimiter.join(s.name for s in self.get_all_sides(sort=True))
+
+    @property
+    def is_wide(self):
+        return self.layout == "planar"
