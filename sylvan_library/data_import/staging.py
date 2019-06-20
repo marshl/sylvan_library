@@ -572,6 +572,8 @@ class StagedSet:
             "PSDC": "pmtg1",
             "PTC": "pmtg1",
             "RQS": "pmtg1",
+            "PANA": "pmtg1",
+            "PJJT": "pmtg1",
             # DCI Symbol
             "PSUS": "parl",
             "G00": "parl",
@@ -646,6 +648,7 @@ class StagedSet:
             "J16": "pmei",
             "J17": "pmei",
             "J18": "pmei",
+            "J19": "pmei",
             "OLGC": "pmei",
             "OVNT": "pmei",
             "PF19": "pmei",
@@ -681,6 +684,7 @@ class StagedSet:
             "OPCA": "pca",
             "UGIN": "frf",
             # Core set promos
+            "4BB": "x4ea",
             "PM10": "m10",
             "PM11": "m11",
             "PM12": "m12",
@@ -740,6 +744,8 @@ class StagedSet:
             "THP1": "ths",
             "THP2": "bng",
             "THP3": "jou",
+            "PMH1": "mh1",
+            "PWAR": "war",
             # Open the Helvault
             "PHEL": "avr",
             "PAL99": "usg",
