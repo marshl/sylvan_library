@@ -102,7 +102,7 @@ class OrParam(BranchParam):
     def query(self) -> Q:
         if not self.child_parameters:
             logger.info("No child parameters found,returning empty set")
-            return Card.objects.none()
+            return Q()
 
         query = Q()
         for child in self.child_parameters:

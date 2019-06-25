@@ -89,10 +89,12 @@ def create_colour_param(
 
     if exclude_colours:
         exclude_param = OrParam(inverse=True)
-        root_param.add_parameter(exclude_param)
         for colour in [c for c in Card.colour_flags.values() if c not in colour_params]:
             param = param_class(colour)
             exclude_param.add_parameter(param)
+
+        if exclude_param.child_parameters:
+            root_param.add_parameter(exclude_param)
 
     return root_param
 
