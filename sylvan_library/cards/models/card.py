@@ -26,6 +26,7 @@ CARD_LAYOUT_CHOICES = (
     ("saga", "Saga"),
     ("emblem", "Emblem"),
     ("double_faced_token", "Double-faced Token"),
+    ("aftermath", "Aftermath"),
 )
 
 
