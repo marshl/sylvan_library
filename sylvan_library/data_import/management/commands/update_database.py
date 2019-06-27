@@ -214,6 +214,7 @@ class Command(DataImportCommand):
                     release_date=staged_set.get_release_date(),
                     keyrune_code=staged_set.get_keyrune_code(),
                     block=block,
+                    card_count=staged_set.get_card_count(),
                 )
                 set_obj.full_clean()
                 set_obj.save()
@@ -225,6 +226,7 @@ class Command(DataImportCommand):
                 set_obj.name = staged_set.get_name()
                 set_obj.type = staged_set.get_type()
                 set_obj.keyrune_code = staged_set.get_keyrune_code()
+                set_obj.card_count = staged_set.get_card_count()
                 set_obj.full_clean()
                 set_obj.save()
                 self.increment_updated("Set")

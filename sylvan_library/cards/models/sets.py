@@ -37,6 +37,7 @@ class Set(models.Model):
     release_date = models.DateField(blank=True, null=True)
     name = models.CharField(max_length=200, unique=True)
     type = models.CharField(max_length=50, blank=True, null=True)
+    card_count = models.IntegerField()
 
     block = models.ForeignKey(
         Block, null=True, blank=True, related_name="sets", on_delete=models.CASCADE

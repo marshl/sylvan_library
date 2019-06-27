@@ -506,6 +506,15 @@ class StagedSet:
         """
         return self.value_dict.get("type")
 
+    def get_card_count(self) -> int:
+        """
+        Gets the total number of cards in the set
+        :return: THe number of cards in the set
+        """
+        return self.value_dict.get(
+            "baseSetSize", self.value_dict.get("totalSetSize", 0)
+        )
+
     def get_block(self) -> str:
         """
         Gets the name of the block for this set
