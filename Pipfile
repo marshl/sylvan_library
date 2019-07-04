@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 django-bitfield = "==1.9.3"
-Django = "==2.2.1"
+Django = "==2.2.3"
 django-extensions = "==2.1.6"
 django-widget-tweaks = "==1.4.3"
 requests = "==2.21.0"
