@@ -6,11 +6,14 @@ import time
 from typing import List, Optional, Dict, Tuple
 from django.db import transaction
 
+from django.core.management.base import BaseCommand
 from cards.models import (
     Block,
     Card,
+    CardLegality,
     CardPrinting,
     CardPrintingLanguage,
+    CardRuling,
     Colour,
     Language,
     PhysicalCard,
@@ -41,12 +44,8 @@ class StagedCard:
         self.name = json_data.get("name")
         self.power = json_data.get("number")
         self.scryfall_oracle_id = json_data.get("scryfallOracleId")
-        # self.subtypes = json_data.get("subtypes")
-        # self.supertypes = json_data.get("supertypes")
         self.rules_text = json_data.get("text")
         self.toughness = json_data.get("toughness")
-        # self.type = json_data.get("type")
-        # self.type = json_data.get("types")
 
         self.type = None
         if self.is_token:
@@ -63,6 +62,16 @@ class StagedCard:
                 self.subtype = json_data["type"].split("—")[-1].strip()
         elif "subtypes" in json_data:
             self.subtype = " ".join(json_data.get("subtypes"))
+
+        self.rulings = json_data.get("rulings", [])
+        self.legalities = json_data.get("legalities")
+        self.has_other_names = "names" in json_data
+        self.other_names = (
+            [n for n in json_data["names"] if n != self.name]
+            if self.has_other_names
+            else []
+        )
+        self.side = json_data.get("side")
 
 
 class StagedSet:
@@ -84,8 +93,6 @@ class StagedSet:
 
 
 class StagedCardPrinting:
-    # Staged Card
-    # Staged Set
     def __init__(self, card_name: str, json_data: dict, set_data: dict):
         self.card_name = card_name
 
@@ -109,11 +116,23 @@ class StagedCardPrinting:
 
 
 class StagedLegality:
-    pass
+    def __init__(self, card_name: str, format_code: str, restriction: str):
+        self.card_name = card_name
+        self.format_code = format_code
+        self.restriction = restriction
 
 
 class StagedRuling:
-    pass
+    def __init__(self, card_name: str, text: str, ruling_date: str):
+        self.card_name = card_name
+        self.text = text
+        self.ruling_data = ruling_date
+
+
+class StagedBlock:
+    def __init__(self, name: str, release_date: date):
+        self.name = name
+        self.release_date = release_date
 
 
 class StagedCardPrintingLanguage:
@@ -153,26 +172,7 @@ class StagedPhysicalCard:
         return f"{'/'.join(self.printing_uids)} in {self.language_code} ({self.layout})"
 
 
-"""
-Two split cards have the same scryfall IDs and scryfall oracle ids
- but different names and different uuids
-
-Two tokens of the same type have different scryfall ids and different uuids, 
-but the same scryfall oracle ids
-
-json_id (uuid) is unique on the DB
-
-
-Non-token cards have unique names
-
-Card Printings have unique UUIDs
-
-
-
-"""
-
-
-class Command(DataImportCommand):
+class Command(BaseCommand):
     """
     The command for updating hte database
     """
@@ -185,6 +185,10 @@ class Command(DataImportCommand):
 
     existing_cards = {}  # type: Dict[str, Card]
     existing_card_printings = {}  # type: Dict[str, CardPrinting]
+    existing_sets = {}  # type: Dict[str, Set]
+    existing_blocks = {}  # type: Dict[str, Block]
+    existing_rulings = {}  # type: Dict[str, Dict[str, str]]
+    existing_legalities = {}  # type: Dict[str, Dict[str, str]]
 
     cards_to_create = {}  # type: Dict[str, StagedCard]
     cards_to_update = {}  # type: Dict[str, Dict[str, Dict[str]]]
@@ -195,6 +199,22 @@ class Command(DataImportCommand):
 
     printed_languages_to_create = []
     physical_cards_to_create = []
+
+    sets_to_create = {}  # type: Dict[str, StagedSet]
+    sets_to_update = {}  # type: Dict[str, Dict[str, Dict[str]]]
+
+    blocks_to_create = {}  # type: Dict[str, StagedBlock]
+
+    rulings_to_create = []  # type: List[dict]
+    rulings_to_delete = []  # type: List[dict]
+    cards_checked_For_rulings = set()  # type: Set
+
+    cards_checked_for_legalities = set()  # type: Set
+    legalities_to_create = []  # type: List[StagedLegality]
+    legalities_to_delete = {}  # type: Dict[str, List[str]]
+    legalities_to_update = {}  # type: Dict[str, Dict[str, Dict[str, str]]]
+
+    card_links_to_create = {}  # type: Dict[str, List[str]]
 
     force_update = False
 
@@ -225,24 +245,35 @@ class Command(DataImportCommand):
             self.existing_cards[card.name] = card
 
         self.existing_card_printings = {
-            cp.scryfall_id: cp
+            cp.json_id: cp
             for cp in CardPrinting.objects.prefetch_related(
                 "printed_languages__language"
             ).all()
         }
+
+        self.existing_sets = {s.code: s for s in Set.objects.all()}
+        self.existing_blocks = {b.name: b for b in Block.objects.all()}
+        for ruling in CardRuling.objects.select_related("card"):
+            if ruling.card.name not in self.existing_rulings:
+                self.existing_rulings[ruling.card.name] = {}
+            self.existing_rulings[ruling.card.name][ruling.text] = ruling
+
+        for legality in (
+            CardLegality.objects.prefetch_related("card")
+            .prefetch_related("format")
+            .all()
+        ):
+            if legality.card.name not in self.existing_legalities:
+                self.existing_legalities[legality.card.name] = {}
+            self.existing_legalities[legality.card.name][
+                legality.format.code
+            ] = legality.restriction
 
         for set_file_path in [
             os.path.join(_paths.SET_FOLDER, s) for s in os.listdir(_paths.SET_FOLDER)
         ]:
             if not set_file_path.endswith(".json"):
                 continue
-
-            # setcode = os.path.splitext(os.path.basename(set_file_path))[0].strip("_")
-
-            # if not Set.objects.filter(code__iexact=setcode).exists():
-            #     print(f"changed {setcode}")
-            # else:
-            #     continue
 
             with open(set_file_path, "r", encoding="utf8") as set_file:
                 set_data = json.load(set_file, encoding="UTF-8")
@@ -256,32 +287,38 @@ class Command(DataImportCommand):
         for card_name, differences in self.cards_to_update.items():
             print(f"{card_name}: {differences}")
 
-        # for scryfall_id, staged_printing in self.card_printings_to_create.items():
-        #     print(f"{staged_printing.scryfall_oracle_id} in {staged_printing.set_code}")
-
         print(time.time() - self.start_time)
 
     def parse_set_data(self, set_data: dict) -> None:
-        # new_printings = []
         staged_set = StagedSet(set_data)
-        if not Set.objects.filter(code=staged_set.code).exists():
-            print(staged_set.name)
+        if staged_set.code in self.existing_sets:
+            self.sets_to_create[staged_set.code] = staged_set
+            if staged_set.block and staged_set.block not in self.existing_blocks:
+                block_to_create = self.blocks_to_create.get(staged_set.block)
+                if not block_to_create:
+                    self.blocks_to_create[staged_set.block] = StagedBlock(
+                        staged_set.block, staged_set.release_date
+                    )
+                else:
+                    block_to_create.release_date = min(
+                        block_to_create.release_date, staged_set.release_date
+                    )
+        self.process_physical_cards(set_data)
+        self.process_card_links(set_data)
 
+    def process_physical_cards(self, set_data: dict) -> None:
         new_printlangs = []
-
         for card_data in set_data.get("cards", []):
             staged_card = self.process_card(card_data, False)
             staged_printing, printlangs = self.process_card_printing(
                 staged_card, set_data, card_data
             )
-            # if staged_printing.is_new:
-            #     new_printings.append(staged_printing)
 
             for printlang in printlangs:
                 if printlang.is_new:
                     new_printlangs.append(printlang)
 
-        for new_printlang in new_printlangs:  # new_printings:
+        for new_printlang in new_printlangs:
             if new_printlang.has_physical_card or (
                 new_printlang.layout == "meld" and new_printlang.side == "c"
             ):
@@ -311,10 +348,8 @@ class Command(DataImportCommand):
             )
             self.physical_cards_to_create.append(staged_physical_card)
             new_printlang.has_physical_card = True
-            # print(staged_physical_card)
 
     def process_card(self, card_data: dict, is_token: bool) -> StagedCard:
-        # scryfall_oracle_id = card_data["scryfallOracleId"]
         staged_card = StagedCard(card_data, is_token=is_token)
         if staged_card.name not in self.existing_cards:
             if staged_card.name not in self.cards_to_create:
@@ -325,50 +360,151 @@ class Command(DataImportCommand):
             if differences:
                 self.cards_to_update[staged_card.name] = differences
 
+        self.process_card_rulings(staged_card)
+        self.process_card_legalities(staged_card)
         return staged_card
+
+    def process_card_rulings(self, staged_card: StagedCard) -> None:
+
+        # If this card has already had its rulings parsed, than ignore it
+        if staged_card.name in self.cards_checked_For_rulings:
+            return
+
+        self.cards_checked_For_rulings.add(staged_card.name)
+
+        for ruling in staged_card.rulings:
+            if (
+                staged_card.name not in self.existing_rulings
+                or ruling["text"] not in self.existing_rulings[staged_card.name]
+            ):
+                staged_ruling = StagedRuling(
+                    staged_card.name, ruling["text"], ruling["date"]
+                )
+                self.rulings_to_create.append(staged_ruling)
+
+        # For every existing ruling, it if isn't contained in the list of rulings,
+        # then mark it for deletion
+        if staged_card.name in self.existing_rulings:
+            for existing_ruling, _ in self.existing_rulings[staged_card.name]:
+                if not any(
+                    True
+                    for ruling in staged_card.rulings
+                    if ruling["text"] == existing_ruling
+                ):
+                    if staged_card.name not in self.rulings_to_delete:
+                        self.rulings_to_delete[staged_card.name] = []
+
+                    self.rulings_to_delete[staged_card.name].append(
+                        existing_ruling.text
+                    )
+
+    def process_card_legalities(self, staged_card: StagedCard) -> None:
+        if staged_card.name in self.cards_checked_for_legalities:
+            return
+
+        self.cards_checked_for_legalities.add(staged_card.name)
+
+        for format, restriction in staged_card.legalities.items():
+            if (
+                staged_card.name not in self.existing_legalities
+                or format not in self.existing_legalities[staged_card.name]
+            ):
+                staged_legality = StagedLegality(staged_card.name, format, restriction)
+                self.legalities_to_create.append(staged_legality)
+
+        if staged_card.name in self.existing_legalities:
+            for old_format, old_restriction in self.existing_legalities[
+                staged_card.name
+            ].items():
+                # Legalities to delete
+                if old_format not in staged_card.legalities:
+                    if staged_card.name not in self.legalities_to_delete:
+                        self.legalities_to_delete[staged_card.name] = []
+                    self.legalities_to_delete[staged_card.name].append(old_format)
+
+                # Legalities to change
+                elif staged_card.legalities[old_format] != old_restriction:
+                    if staged_card.name not in self.legalities_to_update:
+                        self.legalities_to_update[staged_card.name] = {}
+
+                    self.legalities_to_update[staged_card.name][old_format] = {
+                        "from": old_restriction,
+                        "to": staged_card.legalities[old_format],
+                    }
+
+    def process_card_links(self, set_data: dict):
+        for card in set_data.get("cards", []):
+            if "names" not in card or not card["names"]:
+                continue
+            if card["name"] not in self.cards_to_create:
+                continue
+
+            staged_card = self.cards_to_create[card["name"]]
+            for other_name in staged_card.other_names:
+                if other_name not in self.cards_to_create:
+                    continue
+                other_staged_card = self.cards_to_create[other_name]
+                if (
+                    staged_card.layout == "meld"
+                    and staged_card.side != "c"
+                    and other_staged_card.layout != "c"
+                ):
+                    continue
+
+                if staged_card.name not in self.card_links_to_create:
+                    self.card_links_to_create[staged_card.name] = []
+
+                self.card_links_to_create[staged_card.name].append(other_name)
+
+    def get_object_differences(self, old_object, new_object, fields: List[str]) -> dict:
+        result = {}
+        for field in fields:
+            old_val = getattr(old_object, field)
+            new_val = getattr(new_object, field)
+            if type(old_val) != type(new_val) and type(None) not in [
+                type(old_val),
+                type(new_val),
+            ]:
+                raise Exception(f"Type mismatch for '{field}: {old_val} != {new_val}")
+
+            if old_val != new_val:
+                result[field] = {"from": old_val, "to": new_val}
+
+        return result
+
+    def get_set_differences(
+        self, existing_set: Set, staged_set: StagedSet
+    ) -> Dict[str, dict]:
+        return self.get_object_differences(
+            existing_set, staged_set, ["keyrune_code", "name", "total_set_size", "type"]
+        )
 
     def get_card_differences(
         self, existing_card: Card, staged_card: StagedCard
     ) -> Dict[str, dict]:
-        result = {}
-        if staged_card.name != existing_card.name:
-            result["name"] = {"from": existing_card.name, "to": staged_card.name}
-
-        if staged_card.rules_text != existing_card.rules_text:
-            result["rules_text"] = {
-                "from": existing_card.rules_text,
-                "to": staged_card.rules_text,
-            }
-
-        if staged_card.type != existing_card.type:
-            result["type"] = {"from": existing_card.type, "to": staged_card.type}
-
-        if staged_card.subtype != existing_card.subtype:
-            result["subtype"] = {
-                "from": existing_card.subtype,
-                "to": staged_card.subtype,
-            }
-        return result
+        return self.get_object_differences(
+            existing_card, staged_card, ["name", "rules_text", "type", "subtype"]
+        )
 
     def get_card_printing_differences(
         self, existing_printing: CardPrinting, staged_printing: StagedCardPrinting
     ) -> Dict[str, dict]:
+        """
+        Gets the differences between an existing printing and one from the json
+
+        Most of the time there won't be any differences, but this will be useful for adding in new
+        fields that didn't exist before
+        :param existing_printing:
+        :param staged_printing:
+        :return:
+        """
         result = {}
         return result
-
-    # def get_existing_card(self, scryfall_oracle_id: str, side: str):
-    #     if scryfall_oracle_id not in self.existing_cards:
-    #         return None
-    #
-    #     cards = self.existing_cards[scryfall_oracle_id]
-    #
-    #     return next((card for card in cards if card.side == side), None)
 
     def process_card_printing(
         self, staged_card: StagedCard, set_data: dict, card_data: dict
     ) -> Tuple[StagedCardPrinting, List[StagedCardPrintingLanguage]]:
         staged_card_printing = StagedCardPrinting(staged_card.name, card_data, set_data)
-        # scryfall_id = staged_card_printing.scryfall_id
         uuid = staged_card_printing.uuid
         if uuid not in self.existing_card_printings:
             if uuid not in self.card_printings_to_update:
@@ -416,16 +552,13 @@ class Command(DataImportCommand):
         )
 
         existing_print = self.get_existing_printed_language(
-            staged_card_printing.scryfall_id, staged_card_printing_language.language
+            staged_card_printing.uuid, staged_card_printing_language.language
         )
 
         if not existing_print:
             staged_card_printing_language.is_new = True
             self.printed_languages_to_create.append(staged_card_printing_language)
-            # self.process_physical_cards(staged_card_printing_language, card_data)
-            # print(
-            #     f"Need to make new print {staged_card_printing_language.language} {staged_card_printing_language.name} in {staged_card_printing.set_code}"
-            # )
+
         return staged_card_printing_language
 
     def get_existing_printed_language(
@@ -440,8 +573,3 @@ class Command(DataImportCommand):
                 return printlang
 
         return None
-
-    def process_physical_cards(
-        self, printing_language: StagedCardPrintingLanguage, card_data: dict
-    ) -> None:
-        pass
