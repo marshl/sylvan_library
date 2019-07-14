@@ -12,3 +12,6 @@ LANGUAGE_JSON_PATH = path.join(DATA_FOLDER, "languages.json")
 COLOUR_JSON_PATH = path.join(DATA_FOLDER, "colours.json")
 RARITY_JSON_PATH = path.join(DATA_FOLDER, "rarities.json")
 FORMAT_JSON_PATH = path.join(DATA_FOLDER, "formats.json")
+
+IMPORT_FOLDER = path.join(DATA_FOLDER, "import")
+JSON_DIFF_PATH = path.join(IMPORT_FOLDER, "json_differences.json")

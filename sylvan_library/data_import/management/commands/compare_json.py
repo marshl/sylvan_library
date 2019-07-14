@@ -73,6 +73,24 @@ class StagedCard:
         )
         self.side = json_data.get("side")
 
+    def to_dict(self) -> dict:
+        return {
+            "is_token": self.is_token,
+            "colour_identity": self.colour_identity,
+            "colours": self.colours,
+            "cmc": self.cmc,
+            "layout": self.layout,
+            "mana_cost": self.mana_cost,
+            "name": self.name,
+            "power": self.power,
+            "scryfall_oracle_id": self.scryfall_oracle_id,
+            "rules_text": self.rules_text,
+            "toughness": self.toughness,
+            "type": self.type,
+            "subtype": self.subtype,
+            "side": self.side,
+        }
+
 
 class StagedSet:
     def __init__(self, set_data: dict):
@@ -81,15 +99,32 @@ class StagedSet:
         self.code = set_data["code"]
         self.is_foil_only = set_data["isFoilOnly"]
         self.is_online_only = set_data["isOnlineOnly"]
-        self.keyruneCode = set_data["keyruneCode"]
+        self.keyrune_code = set_data["keyruneCode"]
         self.mcm_id = set_data.get("mcmId")
         self.mcm_name = set_data.get("mcmName")
         self.mtg_code = set_data.get("mtgoCode")
         self.name = set_data["name"]
         self.release_date = set_data["releaseDate"]
         self.tcg_player_group_id = set_data.get("tcg_player_group_id")
-        self.total_set_sie = set_data["totalSetSize"]
+        self.total_set_size = set_data["totalSetSize"]
         self.type = set_data["type"]
+
+    def to_dict(self) -> dict:
+        return {
+            "base_set_size": self.base_set_size,
+            "block": self.block,
+            "code": self.code,
+            "is_foil_only": self.is_foil_only,
+            "is_online_only": self.is_online_only,
+            "keyrune_code": self.keyrune_code,
+            "mcm_id": self.mcm_id,
+            "mcm_name": self.mcm_name,
+            "name": self.name,
+            "release_date": self.release_date,
+            "tcg_player_group_id": self.tcg_player_group_id,
+            "total_set_size": self.total_set_size,
+            "type": self.type,
+        }
 
 
 class StagedCardPrinting:
@@ -114,6 +149,23 @@ class StagedCardPrinting:
 
         self.is_new = False
 
+    def to_dict(self):
+        return {
+            "card_name": self.card_name,
+            "artist": self.artist,
+            "border_colour": self.border_colour,
+            "frame_version": self.frame_version,
+            "hasfoil": self.hasFoil,
+            "has_non_foil": self.hasNonFoil,
+            "number": self.number,
+            "rarity": self.rarity,
+            "scryfall_id": self.scryfall_id,
+            "scryfall_illustration_id": self.scryfall_illustration_id,
+            "uuid": self.uuid,
+            "multiverse_id": self.multiverse_id,
+            "set_code": self.set_code,
+        }
+
 
 class StagedLegality:
     def __init__(self, card_name: str, format_code: str, restriction: str):
@@ -121,18 +173,35 @@ class StagedLegality:
         self.format_code = format_code
         self.restriction = restriction
 
+    def to_dict(self) -> dict:
+        return {
+            "card_name": self.card_name,
+            "format": self.format_code,
+            "restriction": self.restriction,
+        }
+
 
 class StagedRuling:
     def __init__(self, card_name: str, text: str, ruling_date: str):
         self.card_name = card_name
         self.text = text
-        self.ruling_data = ruling_date
+        self.ruling_date = ruling_date
+
+    def to_dict(self) -> dict:
+        return {
+            "card_name": self.card_name,
+            "text": self.text,
+            "date": self.ruling_date,
+        }
 
 
 class StagedBlock:
     def __init__(self, name: str, release_date: date):
         self.name = name
         self.release_date = release_date
+
+    def to_dict(self) -> dict:
+        return {"name": self.name, "release_date": self.release_date}
 
 
 class StagedCardPrintingLanguage:
@@ -161,12 +230,30 @@ class StagedCardPrintingLanguage:
         self.is_new = False
         self.has_physical_card = False
 
+    def to_dict(self) -> dict:
+        return {
+            "printing_uid": self.printing_uuid,
+            "language": self.language,
+            "foreign_name": self.foreign_name,
+            "multiverse_id": self.multiverse_id,
+            "text": self.text,
+            "type": self.type,
+            "base_name": self.base_name,
+        }
+
 
 class StagedPhysicalCard:
     def __init__(self, printing_uuids: List[str], language_code: str, layout: str):
         self.printing_uids = printing_uuids
         self.language_code = language_code
         self.layout = layout
+
+    def to_dict(self) -> dict:
+        return {
+            "printing_uids": self.printing_uids,
+            "language": self.language_code,
+            "layout": self.layout,
+        }
 
     def __str__(self) -> str:
         return f"{'/'.join(self.printing_uids)} in {self.language_code} ({self.layout})"
@@ -192,12 +279,14 @@ class Command(BaseCommand):
 
     cards_to_create = {}  # type: Dict[str, StagedCard]
     cards_to_update = {}  # type: Dict[str, Dict[str, Dict[str]]]
-    cards_to_delete = {}  # type: Dict[str, Card]
+    cards_to_delete = set()
+
+    cards_parsed = set()
 
     card_printings_to_create = {}  # type: Dict[str, StagedCardPrinting]
-    card_printings_to_update = {}  # type: Dict[str, StagedCardPrinting]
+    card_printings_to_update = {}  # type: Dict[str, Dict[str,dict]]
 
-    printed_languages_to_create = []
+    printed_languages_to_create = []  # type: List[StagedCardPrintingLanguage]
     physical_cards_to_create = []
 
     sets_to_create = {}  # type: Dict[str, StagedSet]
@@ -205,7 +294,7 @@ class Command(BaseCommand):
 
     blocks_to_create = {}  # type: Dict[str, StagedBlock]
 
-    rulings_to_create = []  # type: List[dict]
+    rulings_to_create = []  # type: List[StagedRuling]
     rulings_to_delete = []  # type: List[dict]
     cards_checked_For_rulings = set()  # type: Set
 
@@ -269,6 +358,8 @@ class Command(BaseCommand):
                 legality.format.code
             ] = legality.restriction
 
+        set_data_list = []
+
         for set_file_path in [
             os.path.join(_paths.SET_FOLDER, s) for s in os.listdir(_paths.SET_FOLDER)
         ]:
@@ -277,21 +368,31 @@ class Command(BaseCommand):
 
             with open(set_file_path, "r", encoding="utf8") as set_file:
                 set_data = json.load(set_file, encoding="UTF-8")
-                self.parse_set_data(set_data)
+                set_data_list.append(set_data)
 
-        print("\nCards to create:")
-        for card_name, staged_card in self.cards_to_create.items():
-            print(card_name)
+        set_data_list.sort(key=lambda s: s.get("releaseDate") or str(date.max()))
 
-        print("\nCards to update:")
-        for card_name, differences in self.cards_to_update.items():
-            print(f"{card_name}: {differences}")
+        for set_data in set_data_list:
+            self.parse_set_data(set_data)
+
+        self.cards_to_delete = set(self.existing_cards.keys()).difference(
+            self.cards_parsed
+        )
+
+        # print("\nCards to create:")
+        # for card_name, staged_card in self.cards_to_create.items():
+        #     print(card_name)
+        #
+        # print("\nCards to update:")
+        # for card_name, differences in self.cards_to_update.items():
+        #     print(f"{card_name}: {differences}")
+        self.write_to_file()
 
         print(time.time() - self.start_time)
 
     def parse_set_data(self, set_data: dict) -> None:
         staged_set = StagedSet(set_data)
-        if staged_set.code in self.existing_sets:
+        if staged_set.code not in self.existing_sets:
             self.sets_to_create[staged_set.code] = staged_set
             if staged_set.block and staged_set.block not in self.existing_blocks:
                 block_to_create = self.blocks_to_create.get(staged_set.block)
@@ -362,6 +463,7 @@ class Command(BaseCommand):
 
         self.process_card_rulings(staged_card)
         self.process_card_legalities(staged_card)
+        self.cards_parsed.add(staged_card.name)
         return staged_card
 
     def process_card_rulings(self, staged_card: StagedCard) -> None:
@@ -517,7 +619,8 @@ class Command(BaseCommand):
             differences = self.get_card_printing_differences(
                 existing_printing, staged_card_printing
             )
-            self.card_printings_to_create[uuid] = differences
+            if differences:
+                self.card_printings_to_update[uuid] = differences
 
         printlangs = [
             self.process_printed_language(
@@ -573,3 +676,61 @@ class Command(BaseCommand):
                 return printlang
 
         return None
+
+    def write_to_file(self):
+        output = {
+            "blocks_to_create": {},
+            "sets_to_create": {},
+            "sets_to_update": {},
+            "cards_to_create": {},
+            "cards_to_update": {},
+            "cards_to_delete": [],
+            "card_printings_to_create": {},
+            "card_printing_languages_to_create": [],
+            "physical_cards_to_create": [],
+            "rulings_to_create": [],
+            "rulings_to_delete": [],
+            "legalities_to_create": [],
+            "legalities_to_delete": {},
+            "card_links_to_create": [],
+        }
+
+        for block_name, staged_block in self.blocks_to_create.items():
+            output["blocks_to_create"][block_name] = staged_block.to_dict()
+
+        for set_code, set_to_create in self.sets_to_create.items():
+            output["sets_to_create"][set_code] = set_to_create.to_dict()
+
+        for set_code, set_to_update in self.sets_to_update.items():
+            output["sets_to_update"][set_code] = set_to_update
+
+        for card_name, card_to_create in self.cards_to_create.items():
+            output["cards_to_create"][card_name] = card_to_create.to_dict()
+
+        for card_name, card_to_update in self.cards_to_update.items():
+            output["cards_to_update"][card_name] = card_to_update
+
+        output["cards_to_delete"] = list(self.cards_to_delete)
+
+        for uuid, printing_to_create in self.card_printings_to_create.items():
+            output["card_printings_to_create"][uuid] = printing_to_create.to_dict()
+
+        for printlang_to_create in self.printed_languages_to_create:
+            output["card_printing_languages_to_create"].append(
+                printlang_to_create.to_dict()
+            )
+
+        for physical_card_to_create in self.physical_cards_to_create:
+            output["physical_cards_to_create"].append(physical_card_to_create.to_dict())
+
+        for ruling in self.rulings_to_create:
+            output["rulings_to_create"].append(ruling.to_dict())
+
+        output["rulings_to_delete"] = self.rulings_to_delete
+        for legality in self.legalities_to_create:
+            output["legalities_to_create"].append(legality.to_dict())
+        output["legalities_to_delete"] = self.legalities_to_delete
+        output["card_links_to_create"] = self.card_links_to_create
+
+        with open(_paths.JSON_DIFF_PATH, "w") as output_file:
+            json.dump(output, output_file, indent=2)
