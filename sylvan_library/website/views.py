@@ -419,7 +419,7 @@ def deck_create(request):
                     if not deck_form.cleaned_data.get("skip_validation"):
                         deck.validate_format()
                 if not request.POST.get("save_continue"):
-                    return redirect("website:deck_edit", deck_id=deck.id)
+                    return redirect("website:deck_view", deck_id=deck.id)
             except ValidationError as err:
                 deck_form.add_error(None, err)
                 deck_form.instance.id = None
