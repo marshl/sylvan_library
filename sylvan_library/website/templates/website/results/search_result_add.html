@@ -3,6 +3,7 @@
     <div class="extraDetails">
         <form action="{% url 'website:ajax_change_card_ownership' %}" class="js-change-card-ownership-form">
             {% csrf_token %}
+            <p>Add to {{ printing.set.name }}</p>
             <span class="text-input add-card-count-input">
                 {{ form.count }}
             </span>

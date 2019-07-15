@@ -147,7 +147,7 @@ class PhysicalCard(models.Model):
         """
         if self.printed_languages.count() == 1:
             printlang = self.printed_languages.first()
-            return f"{printlang.language} {printlang.card_printing.set}"
+            return f"{printlang.language}"
 
         return self.get_simple_string()
 
