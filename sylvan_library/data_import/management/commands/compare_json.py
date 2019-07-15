@@ -675,60 +675,93 @@ class Command(BaseCommand):
 
         return None
 
-    def write_to_file(self):
-        output = {
-            "blocks_to_create": {},
-            "sets_to_create": {},
-            "sets_to_update": {},
-            "cards_to_create": {},
-            "cards_to_update": {},
-            "cards_to_delete": [],
-            "card_printings_to_create": {},
-            "card_printing_languages_to_create": [],
-            "physical_cards_to_create": [],
-            "rulings_to_create": [],
-            "rulings_to_delete": [],
-            "legalities_to_create": [],
-            "legalities_to_delete": {},
-            "card_links_to_create": [],
-        }
+    def write_object_to_json(self, filename: str, data: object) -> None:
+        with open(filename, "w") as output_file:
+            json.dump(data, output_file, indent=2)
 
-        for block_name, staged_block in self.blocks_to_create.items():
-            output["blocks_to_create"][block_name] = staged_block.to_dict()
+    def write_to_file(self) -> None:
+        self.write_object_to_json(
+            _paths.BLOCKS_TO_CREATE_PATH,
+            {
+                block_name: staged_block.to_dict()
+                for block_name, staged_block in self.blocks_to_create.items()
+            },
+        )
 
-        for set_code, set_to_create in self.sets_to_create.items():
-            output["sets_to_create"][set_code] = set_to_create.to_dict()
+        self.write_object_to_json(
+            _paths.SETS_TO_CREATE_PATH,
+            {
+                set_code: set_to_create.to_dict()
+                for set_code, set_to_create in self.sets_to_create.items()
+            },
+        )
 
-        for set_code, set_to_update in self.sets_to_update.items():
-            output["sets_to_update"][set_code] = set_to_update
+        self.write_object_to_json(
+            _paths.SETS_TO_UPDATE_PATH,
+            {
+                set_code: set_to_update
+                for set_code, set_to_update in self.sets_to_update.items()
+            },
+        )
 
-        for card_name, card_to_create in self.cards_to_create.items():
-            output["cards_to_create"][card_name] = card_to_create.to_dict()
+        self.write_object_to_json(
+            _paths.CARDS_TO_CREATE,
+            {
+                card_name: card_to_create.to_dict()
+                for card_name, card_to_create in self.cards_to_create.items()
+            },
+        )
 
-        for card_name, card_to_update in self.cards_to_update.items():
-            output["cards_to_update"][card_name] = card_to_update
+        self.write_object_to_json(
+            _paths.CARDS_TO_UPDATE,
+            {
+                card_name: card_to_update
+                for card_name, card_to_update in self.cards_to_update.items()
+            },
+        )
 
-        output["cards_to_delete"] = list(self.cards_to_delete)
+        self.write_object_to_json(_paths.CARDS_TO_DELETE, list(self.cards_to_delete))
 
-        for uuid, printing_to_create in self.card_printings_to_create.items():
-            output["card_printings_to_create"][uuid] = printing_to_create.to_dict()
+        self.write_object_to_json(
+            _paths.PRINTINGS_TO_CREATE,
+            {
+                uuid: printing_to_create.to_dict()
+                for uuid, printing_to_create in self.card_printings_to_create.items()
+            },
+        )
 
-        for printlang_to_create in self.printed_languages_to_create:
-            output["card_printing_languages_to_create"].append(
+        self.write_object_to_json(
+            _paths.PRINTLANGS_TO_CREATE,
+            [
                 printlang_to_create.to_dict()
-            )
+                for printlang_to_create in self.printed_languages_to_create
+            ],
+        )
 
-        for physical_card_to_create in self.physical_cards_to_create:
-            output["physical_cards_to_create"].append(physical_card_to_create.to_dict())
+        self.write_object_to_json(
+            _paths.PHYSICAL_CARDS_TO_CREATE,
+            [
+                physical_card_to_create.to_dict()
+                for physical_card_to_create in self.physical_cards_to_create
+            ],
+        )
 
-        for ruling in self.rulings_to_create:
-            output["rulings_to_create"].append(ruling.to_dict())
+        self.write_object_to_json(
+            _paths.RULINGS_TO_CREATE,
+            [ruling.to_dict() for ruling in self.rulings_to_create],
+        )
 
-        output["rulings_to_delete"] = self.rulings_to_delete
-        for legality in self.legalities_to_create:
-            output["legalities_to_create"].append(legality.to_dict())
-        output["legalities_to_delete"] = self.legalities_to_delete
-        output["card_links_to_create"] = self.card_links_to_create
+        self.write_object_to_json(_paths.RULINGS_TO_DELETE, self.rulings_to_delete)
 
-        with open(_paths.JSON_DIFF_PATH, "w") as output_file:
-            json.dump(output, output_file, indent=2)
+        self.write_object_to_json(
+            _paths.LEGALITIES_TO_CREATE,
+            [legality.to_dict() for legality in self.legalities_to_create],
+        )
+
+        self.write_object_to_json(
+            _paths.LEGALITIES_TO_DELETE, self.legalities_to_delete
+        )
+
+        self.write_object_to_json(
+            _paths.CARD_LINKS_TO_CREATE, self.card_links_to_create
+        )
