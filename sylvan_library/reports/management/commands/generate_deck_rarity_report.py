@@ -66,7 +66,7 @@ class Command(BaseCommand):
         :param decks: The list of decks to get te date for
         :return: The list of dates
         """
-        return [d["date_created"] for d in decks.values("date_created").distinct()]
+        return list(decks.values_list("date_created", flat=True).distinct())
 
     def get_rarity_ratio_rows(
         self, dates: List[date], decks: QuerySet, exclude_lands: bool = False
