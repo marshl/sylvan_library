@@ -295,7 +295,7 @@ class Command(BaseCommand):
     blocks_to_create = {}  # type: Dict[str, StagedBlock]
 
     rulings_to_create = []  # type: List[StagedRuling]
-    rulings_to_delete = []  # type: List[dict]
+    rulings_to_delete = {}  # type: Dict[str, List[str]]
     cards_checked_For_rulings = set()  # type: Set
 
     cards_checked_for_legalities = set()  # type: Set
@@ -487,7 +487,7 @@ class Command(BaseCommand):
         # For every existing ruling, it if isn't contained in the list of rulings,
         # then mark it for deletion
         if staged_card.name in self.existing_rulings:
-            for existing_ruling, _ in self.existing_rulings[staged_card.name]:
+            for existing_ruling, _ in self.existing_rulings[staged_card.name].items():
                 if not any(
                     True
                     for ruling in staged_card.rulings
@@ -496,9 +496,7 @@ class Command(BaseCommand):
                     if staged_card.name not in self.rulings_to_delete:
                         self.rulings_to_delete[staged_card.name] = []
 
-                    self.rulings_to_delete[staged_card.name].append(
-                        existing_ruling.text
-                    )
+                    self.rulings_to_delete[staged_card.name].append(existing_ruling)
 
     def process_card_legalities(self, staged_card: StagedCard) -> None:
         if staged_card.name in self.cards_checked_for_legalities:
