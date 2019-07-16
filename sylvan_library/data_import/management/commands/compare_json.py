@@ -436,13 +436,15 @@ class Command(BaseCommand):
             },
         )
 
-        if staged_card.colour_flags != existing_card.colour_flags:
+        if staged_card.colour_flags != int(existing_card.colour_flags):
             differences["colour_flags"] = {
                 "old": int(existing_card.colour_flags),
                 "new": staged_card.colour_flags,
             }
 
-        if staged_card.colour_identity_flags != existing_card.colour_identity_flags:
+        if staged_card.colour_identity_flags != int(
+            existing_card.colour_identity_flags
+        ):
             differences["colour_identity_flags"] = {
                 "old": int(existing_card.colour_identity_flags),
                 "new": staged_card.colour_identity_flags,

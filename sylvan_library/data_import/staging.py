@@ -125,7 +125,7 @@ class StagedCard:
 
         self.layout = json_data["layout"]
 
-        self.power = json_data.get("number")
+        self.power = json_data.get("power")
         self.num_power = float(
             convert_number_field_to_numerical(json_data["power"])
             if "power" in json_data
