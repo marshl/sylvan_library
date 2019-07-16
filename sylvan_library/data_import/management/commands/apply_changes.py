@@ -90,7 +90,7 @@ class Command(BaseCommand):
                 release_date=set_data["release_date"],
                 name=set_data["name"],
                 type=set_data["type"],
-                card_count=set_data["total_set_size"],
+                card_count=set_data["card_count"],
                 block=Block.objects.get(name=set_data["block"])
                 if set_data["block"]
                 else None,

@@ -91,710 +91,288 @@ def convert_number_field_to_numerical(val: str) -> float:
     if match:
         return float(match.group())
 
-    return 0
+    return 0.0
 
 
-# pylint: disable=too-many-public-methods
 class StagedCard:
-    """
-    Class for staging a card record from json
-    """
-
-    def __init__(self, value_dict: dict, is_token: bool = False):
-        self.value_dict = value_dict
+    def __init__(self, json_data: dict, is_token: bool):
         self.is_token = is_token
-        self.number = value_dict.get("number")
+        self.name = json_data.get("name")
+        self.scryfall_oracle_id = json_data.get("scryfallOracleId")
 
-    def get_scryfall_oracle_id(self):
-        """
-        Gets the scryfall oracle ID
-        :return:
-        """
-        return self.value_dict["scryfallOracleId"]
+        self.cost = json_data.get("manaCost")
+        self.cmc = json_data.get("convertedManaCost", 0)
+        self.colour_flags = (
+            Colour.colour_codes_to_flags(json_data["colors"])
+            if "colors" in json_data
+            else 0
+        )
+        self.colour_identity_flags = (
+            Colour.colour_codes_to_flags(json_data["colorIdentity"])
+            if "colorIdentity" in json_data
+            else 0
+        )
+        self.colour_count = bin(self.colour_flags).count("1")
+        self.colour_sort_key = COLOUR_TO_SORT_KEY[int(self.colour_flags)]
 
-    def get_number(self) -> str:
-        """
-        Gets the collector number of this printing
-        :return:
-        """
-        return self.number
+        self.colour_weight = 0
+        if self.cost:
+            generic_mana = re.search(r"(\d+)", self.cost)
+            if not generic_mana:
+                self.colour_weight = int(self.cmc)
+            else:
+                self.colour_weight = int(self.cmc) - int(generic_mana.group(0))
 
-    def get_multiverse_id(self) -> str:
-        """
-        Gets the multiverse ID of this printing (only applicable for cards on Gatherer)
-        :return:
-        """
-        return self.value_dict.get("multiverseId")
+        self.layout = json_data["layout"]
 
-    def has_foreign_data(self) -> bool:
-        """
-        Gets whether this card has foreign data or not
-        :return:
-        """
-        return bool(self.value_dict.get("foreignData"))
+        self.power = json_data.get("number")
+        self.num_power = float(
+            convert_number_field_to_numerical(json_data["power"])
+            if "power" in json_data
+            else 0
+        )
+        self.toughness = json_data.get("toughness")
+        self.num_toughness = float(
+            convert_number_field_to_numerical(json_data["toughness"])
+            if "toughness" in json_data
+            else 0
+        )
+        self.loyalty = json_data.get("loyalty")
+        self.num_loyalty = float(
+            convert_number_field_to_numerical(json_data["loyalty"])
+            if "loyalty" in json_data
+            else 0
+        )
 
-    def get_foreign_data(self) -> dict:
-        """
-        Gets the foreign data of this card
-        :return:
-        """
-        return self.value_dict.get("foreignData", [])
+        self.rules_text = json_data.get("text")
 
-    def get_name(self) -> str:
-        """
-        Gets the card name
-        :return:
-        """
-        return self.value_dict["name"]
-
-    def get_mana_cost(self) -> str:
-        """
-        Gets the mana cost of the card
-        :return:
-        """
-        return self.value_dict.get("manaCost")
-
-    def get_cmc(self) -> float:
-        """
-        Gets the converted mana cost of the card
-        :return:
-        """
-        return self.value_dict.get("convertedManaCost") or 0
-
-    def get_colour(self) -> int:
-        """
-        Gets the colour bits of the card
-        :return:
-        """
-        if "colors" in self.value_dict:
-            return Colour.colour_codes_to_flags(self.value_dict["colors"])
-
-        return 0
-
-    def get_colour_sort_key(self) -> int:
-        """
-        Gets the colour sort key of this card
-        The sort key ensures that white cards appear before blue cards, single colour cards
-        before multicolour cards, shard cards before wedge cards etc
-        :return:
-        """
-        return COLOUR_TO_SORT_KEY[int(self.get_colour())]
-
-    def get_colour_weight(self) -> int:
-        """
-        Gets the "colour weight" of the card, the number of coloured mana symbols te card has
-        :return:
-        """
-        if not self.get_mana_cost():
-            return 0
-
-        generic_mana = re.search(r"(\d+)", self.get_mana_cost())
-        if not generic_mana:
-            return int(self.get_cmc())
-
-        return int(self.get_cmc()) - int(generic_mana.group(0))
-
-    def get_colour_identity(self) -> int:
-        """
-        Gets the bits of the colour identity for this card
-        :return:
-        """
-        if "colorIdentity" in self.value_dict:
-            return Colour.colour_codes_to_flags(self.value_dict["colorIdentity"])
-
-        return 0
-
-    def get_colour_count(self) -> int:
-        """
-        Gets the number of colours of the card
-        :return:
-        """
-        return bin(self.get_colour()).count("1")
-
-    def get_power(self) -> str:
-        """
-        Gets the string representation of the power of the card
-        :return:
-        """
-        return self.value_dict.get("power")
-
-    def get_toughness(self) -> str:
-        """
-        Gets the string represeentation of the toughness of the card
-        :return:
-        """
-        return self.value_dict.get("toughness")
-
-    def get_num_power(self) -> float:
-        """
-        Gets the numerical representation of the power of the card
-        :return:
-        """
-        if "power" in self.value_dict:
-            return convert_number_field_to_numerical(self.value_dict["power"])
-
-        return 0
-
-    def get_num_toughness(self) -> float:
-        """
-        Gets the numerical representation of the toughness of the card
-        :return:
-        """
-        if "toughness" in self.value_dict:
-            return convert_number_field_to_numerical(self.value_dict["toughness"])
-
-        return 0
-
-    def get_loyalty(self) -> str:
-        """
-        Gets the string representation of the loyalty of the card
-        :return:
-        """
-        return self.value_dict.get("loyalty")
-
-    def get_num_loyalty(self) -> float:
-        """
-        Gets the numerical representation of the loyalty of the card
-        :return:
-        """
-        if "loyalty" in self.value_dict:
-            return convert_number_field_to_numerical(self.value_dict["loyalty"])
-
-        return 0
-
-    def get_types(self) -> Optional[str]:
-        """
-        Gets the types of the card
-        :return: The card's types
-        """
+        self.type = None
         if self.is_token:
-            if "type" not in self.value_dict:
-                return None
-            return self.value_dict["type"].split("—")[0].strip()
-
-        if "types" in self.value_dict:
-            types = (self.value_dict.get("supertypes") or []) + (
-                self.value_dict["types"]
+            if "type" in json_data:
+                self.type = json_data["type"].split("—")[0].strip()
+        elif "types" in json_data:
+            self.type = " ".join(
+                (json_data.get("supertypes") or []) + (json_data["types"])
             )
-            return " ".join(types)
 
-        return None
-
-    def get_subtypes(self) -> Optional[str]:
-        """
-        Gets the subtypes of the card
-        :return: The card's subtypes
-        """
+        self.subtype = None
         if self.is_token:
-            if "type" not in self.value_dict:
-                return None
-            return self.value_dict["type"].split("—")[-1].strip()
+            if "type" in json_data:
+                self.subtype = json_data["type"].split("—")[-1].strip()
+        elif "subtypes" in json_data:
+            self.subtype = " ".join(json_data.get("subtypes"))
 
-        if "subtypes" in self.value_dict:
-            return " ".join(self.value_dict.get("subtypes"))
+        self.rulings = json_data.get("rulings", [])
+        self.legalities = json_data.get("legalities")
+        self.has_other_names = "names" in json_data
+        self.other_names = (
+            [n for n in json_data["names"] if n != self.name]
+            if self.has_other_names
+            else []
+        )
+        self.side = json_data.get("side")
+        self.is_reserved = bool(json_data.get("isReserved", False))
 
-        return None
-
-    def get_rules_text(self) -> str:
-        """
-        Gets the rules text of the card
-        :return: The card's rules text
-        """
-        return self.value_dict.get("text")
-
-    def get_original_text(self) -> str:
-        """
-        Gets the original (non-oracle) rules text of the card printing
-        :return: The card printing's original text
-        """
-        return self.value_dict.get("originalText")
-
-    def get_artist(self) -> str:
-        """
-        Gets the artist of this card printing
-        :return:
-        """
-        return self.value_dict.get("artist")
-
-    def get_rarity_name(self) -> str:
-        """
-        Gets the rarity name of this card
-        :return:
-        """
-        # Tokens don't have a rarity, so default to common
-        if self.is_token and "rarity" not in self.value_dict:
-            return "common"
-        return self.value_dict["rarity"]
-
-    def get_flavour_text(self) -> str:
-        """
-        Gets the flavour text of this printing
-        :return:
-        """
-        return self.value_dict.get("flavorText")
-
-    def get_original_type(self) -> str:
-        """
-        Gets the original type text for this printing (includes both type and subtype)
-        :return:
-        """
-        return self.value_dict.get("originalType")
-
-    def has_rulings(self) -> bool:
-        """
-        Gets whether this card has rulings or not
-        :return:
-        """
-        return "rulings" in self.value_dict and self.value_dict["rulings"]
-
-    def get_rulings(self) -> List[dict]:
-        """
-        Gets the rulings for this card
-        :return:
-        """
-        return self.value_dict["rulings"]
-
-    def get_json_id(self) -> str:
-        """
-        Gets the JSON ID of this printing
-        :return:
-        """
-        return self.value_dict["uuid"]
-
-    def get_layout(self) -> str:
-        """
-        Gets the layout of this card
-        :return:
-        """
-        return self.value_dict["layout"]
-
-    def get_side(self) -> str:
-        """
-        Gets the side symbol of this card
-        :return:
-        """
-        return self.value_dict.get("side")
-
-    def get_legalities(self) -> Dict[str, str]:
-        """
-        Gets the list of legalities for this card
-        :return:
-        """
-        return self.value_dict.get("legalities", {})
-
-    def get_name_count(self) -> int:
-        """
-        Gets the number of names this card has
-        :return:
-        """
-        return len(self.value_dict["names"])
-
-    def get_watermark(self) -> str:
-        """
-        Gets the watermark for this printing
-        :return:
-        """
-        return self.value_dict.get("watermark")
-
-    def get_border_colour(self) -> str:
-        """
-        Gets the card border colour for this printing
-        :return:
-        """
-        return self.value_dict.get("borderColor")
-
-    def get_scryfall_id(self) -> str:
-        """
-        Gets the scryfall API id for this printing
-        :return:
-        """
-        return self.value_dict.get("scryfallId")
-
-    def is_reserved(self) -> bool:
-        """
-        Gets whether this card is on the reserved list
-        :return:
-        """
-        return "reserved" in self.value_dict and self.value_dict["reserved"]
-
-    def is_starter_printing(self) -> bool:
-        """
-        Gets whether this printing is in a starter set or not
-        :return:
-        """
-        return "starter" in self.value_dict and self.value_dict["starter"]
-
-    def is_timeshifted(self) -> bool:
-        """
-        Gets whether this
-        :return:
-        """
-        return "isTimeshifted" in self.value_dict and self.value_dict["isTimeshifted"]
-
-    def has_other_names(self) -> bool:
-        """
-        Gets whether this card has other nams (for split/flip/transform cards)
-        :return:
-        """
-        return "names" in self.value_dict
-
-    def get_other_names(self) -> List[str]:
-        """
-        Gets the other names of this card
-        :return:
-        """
-        return [n for n in self.value_dict["names"] if n != self.get_name()]
+    def to_dict(self) -> dict:
+        return {
+            "cmc": self.cmc,
+            "colour_flags": self.colour_flags,
+            "colour_count": self.colour_count,
+            "colour_identity_flags": self.colour_identity_flags,
+            "colour_sort_key": self.colour_sort_key,
+            "cost": self.cost,
+            "is_reserved": self.is_reserved,
+            "is_token": self.is_token,
+            "layout": self.layout,
+            "loyalty": self.loyalty,
+            "name": self.name,
+            "num_loyalty": self.num_loyalty,
+            "num_power": self.num_power,
+            "num_toughness": self.num_toughness,
+            "power": self.power,
+            "rules_text": self.rules_text,
+            "scryfall_oracle_id": self.scryfall_oracle_id,
+            "side": self.side,
+            "subtype": self.subtype,
+            "toughness": self.toughness,
+            "type": self.type,
+        }
 
 
 class StagedSet:
-    """
-    Class for staging a set record from json
-    """
+    def __init__(self, set_data: dict):
+        self.base_set_size = set_data["baseSetSize"]
+        self.block = set_data.get("block")
+        self.code = set_data["code"]
+        self.is_foil_only = set_data["isFoilOnly"]
+        self.is_online_only = set_data["isOnlineOnly"]
+        self.keyrune_code = set_data["keyruneCode"]
+        self.mcm_id = set_data.get("mcmId")
+        self.mcm_name = set_data.get("mcmName")
+        self.mtg_code = set_data.get("mtgoCode")
+        self.name = set_data["name"]
+        self.release_date = set_data["releaseDate"]
+        self.tcg_player_group_id = set_data.get("tcg_player_group_id")
+        self.card_count = set_data["totalSetSize"]
+        self.type = set_data["type"]
 
-    def __init__(self, code: str, value_dict: dict):
-        self.code = code.upper()
-        self.value_dict = value_dict
-        self.staged_cards = list()
-
-        for card in self.value_dict["cards"]:
-            self.add_card(card, is_token=False)
-
-        for card in self.value_dict.get("tokens", []):
-            self.add_card(card, is_token=True)
-
-    def add_card(self, card: dict, is_token: bool):
-        """
-        Adds a card to this set
-        :param card: The card data dictionary to add
-        :param is_token: Whether the card is a token or not
-        """
-        staged_card = StagedCard(card, is_token=is_token)
-        self.staged_cards.append(staged_card)
-
-    def get_cards(self) -> List[StagedCard]:
-        """
-        Gets the cards in this set
-        :return:
-        """
-        return self.staged_cards
-
-    def get_code(self) -> str:
-        """
-        Gets the code of this set
-        :return:
-        """
-        return self.code
-
-    def get_release_date(self) -> Optional[datetime.date]:
-        """
-        Gets the date that this set was released
-        :return:
-        """
-        return self.value_dict["releaseDate"]
-
-    def get_name(self) -> str:
-        """
-        Gets the name of the set
-        :return:
-        """
-        return self.value_dict["name"]
-
-    def get_type(self) -> str:
-        """
-        Gets the type of the set
-        :return:
-        """
-        return self.value_dict.get("type")
-
-    def get_card_count(self) -> int:
-        """
-        Gets the total number of cards in the set
-        :return: THe number of cards in the set
-        """
-        return self.value_dict.get(
-            "baseSetSize", self.value_dict.get("totalSetSize", 0)
-        )
-
-    def get_block(self) -> str:
-        """
-        Gets the name of the block for this set
-        :return:
-        """
-        return self.value_dict.get("block")
-
-    def has_block(self) -> bool:
-        """
-        Gets whether this set has a block or not
-        :return:
-        """
-        return "block" in self.value_dict
-
-    def get_keyrune_code(self) -> str:
-        """
-        Gets the code to be used for keyrune set symbols
-        :return:
-        """
-        mappings = {
-            # Generic M Symbol
-            "PWOR": "pmtg1",
-            "WC99": "pmtg1",
-            "PWOS": "pmtg1",
-            "WC00": "pmtg1",
-            "CST": "pmtg1",
-            "G99": "pmtg1",
-            "WC01": "pmtg1",
-            "WC02": "pmtg1",
-            "WC03": "pmtg1",
-            "WC04": "pmtg1",
-            "WC97": "pmtg1",
-            "WC98": "pmtg1",
-            "G11": "pmtg1",
-            "L12": "pmtg1",
-            "L13": "pmtg1",
-            "L14": "pmtg1",
-            "L15": "pmtg1",
-            "L16": "pmtg1",
-            "L17": "pmtg1",
-            "JGP": "pmtg1",
-            "MGB": "pmtg1",
-            "P07": "pmtg1",
-            "P08": "pmtg1",
-            "P09": "pmtg1",
-            "P10": "pmtg1",
-            "P11": "pmtg1",
-            "P15A": "pmtg1",
-            "PCEL": "pmtg1",
-            "PCMP": "pmtg1",
-            "PGPX": "pmtg1",
-            "PJJT": "pmtg1",
-            "PLGM": "pmtg1",
-            "PLPA": "pmtg1",
-            "PMPS06": "pmtg1",
-            "PPRE": "pmtg1",
-            "PRED": "pmtg1",
-            "PREL": "pmtg1",
-            "PS14": "pmtg1",
-            "PS15": "pmtg1",
-            "PS16": "pmtg1",
-            "PS17": "pmtg1",
-            "PS18": "pmtg1",
-            "PSDC": "pmtg1",
-            "PTC": "pmtg1",
-            "RQS": "pmtg1",
-            "PANA": "pmtg1",
-            "PJJT": "pmtg1",
-            # DCI Symbol
-            "PSUS": "parl",
-            "G00": "parl",
-            "G01": "parl",
-            "G02": "parl",
-            "G03": "parl",
-            "G04": "parl",
-            "G05": "parl",
-            "G06": "parl",
-            "G07": "parl",
-            "G08": "parl",
-            "G09": "parl",
-            "G10": "parl",
-            "F01": "parl",
-            "F02": "parl",
-            "F03": "parl",
-            "F04": "parl",
-            "F05": "parl",
-            "F06": "parl",
-            "F07": "parl",
-            "F08": "parl",
-            "F09": "parl",
-            "F10": "parl",
-            "MPR": "parl",
-            "PR2": "parl",
-            "P03": "parl",
-            "P04": "parl",
-            "P05": "parl",
-            "P06": "parl",
-            "P2HG": "parl",
-            "PARC": "parl",
-            "PGTW": "parl",
-            "PG07": "parl",
-            "PG08": "parl",
-            "PHOP": "parl",
-            "PJSE": "parl",
-            "PRES": "parl",
-            "PWP09": "parl",
-            "PWP10": "parl",
-            "PWPN": "parl",
-            "PAL00": "parl2",
-            "PAL02": "parl2",
-            "PAL03": "parl2",
-            "PAL04": "parl2",
-            "PAL05": "parl2",
-            "PAL06": "parl2",
-            # FNM Symbol
-            "FNM": "pfnm",
-            "PAL01": "parl2",
-            "ANA": "parl3",
-            "CED": "xcle",
-            "CEI": "xice",
-            "CP1": "pmei",
-            "CP2": "pmei",
-            "CP3": "pmei",
-            "F11": "pmei",
-            "F12": "pmei",
-            "F13": "pmei",
-            "F14": "pmei",
-            "F15": "pmei",
-            "F16": "pmei",
-            "F17": "pmei",
-            "F18": "pmei",
-            "G17": "pmei",
-            "HHO": "pmei",
-            "HTR": "pmei",
-            "HTR17": "pmei",
-            "J12": "pmei",
-            "J13": "pmei",
-            "J14": "pmei",
-            "J15": "pmei",
-            "J16": "pmei",
-            "J17": "pmei",
-            "J18": "pmei",
-            "J19": "pmei",
-            "OLGC": "pmei",
-            "OVNT": "pmei",
-            "PF19": "pmei",
-            "PLNY": "pmei",
-            "PNAT": "pmei",
-            "PPRO": "pmei",
-            "PURL": "pmei",
-            "PWCQ": "pmei",
-            "PWP11": "pmei",
-            "PWP12": "pmei",
-            # Duel Decks
-            "DD1": "evg",
-            "DVD": "ddc",
-            "PDD2": "dd2",
-            "GVL": "ddd",
-            "JVC": "dd2",
-            "FBB": "3ed",
-            "SUM": "3ed",
-            # Oversized
-            "OC13": "c13",
-            "OC14": "c14",
-            "OC15": "c15",
-            "OC16": "c16",
-            "OC17": "c17",
-            "OC18": "c18",
-            "OHOP": "hop",
-            "OPC2": "pc2",
-            "OARC": "arc",
-            "OCM1": "cm1",
-            "OCMD": "cmd",
-            "PCMD": "cmd",
-            "OE01": "e01",
-            "OPCA": "pca",
-            "UGIN": "frf",
-            # Core set promos
-            "4BB": "x4ea",
-            "PM10": "m10",
-            "PM11": "m11",
-            "PM12": "m12",
-            "PM13": "m13",
-            "PM14": "m14",
-            "PM15": "m15",
-            "PM19": "m19",
-            "PPC1": "m15",
-            "G18": "m19",
-            "GK2": "rna",
-            "P10E": "10e",
-            "PAER": "aer",
-            "PAKH": "akh",
-            "PAVR": "avr",
-            "PBBD": "bbd",
-            "PBFZ": "bfz",
-            "PBNG": "bng",
-            "PDGM": "dgm",
-            "PDKA": "dka",
-            "PDOM": "dom",
-            "PDTK": "dtk",
-            "PEMN": "emn",
-            "PFRF": "frf",
-            "PGRN": "grn",
-            "PGTC": "gtc",
-            "PHOU": "hou",
-            "PISD": "isd",
-            "PJOU": "jou",
-            "PKLD": "kld",
-            "PKTK": "ktk",
-            "PMBS": "mbs",
-            "PNPH": "nph",
-            "POGW": "ogw",
-            "PORI": "ori",
-            "PRIX": "rix",
-            "PRNA": "rna",
-            "PROE": "roe",
-            "PRTR": "rtr",
-            "PRW2": "rna",
-            "PRWK": "grn",
-            "PSOI": "soi",
-            "PSOM": "som",
-            "PSS1": "bfz",
-            "PSS2": "xln",
-            "PSS3": "m19",
-            "PTHS": "ths",
-            "PTKDF": "dtk",
-            "PUST": "ust",
-            "PVAN": "van",
-            "PWWK": "wwk",
-            "PXLN": "xln",
-            "PXTC": "xln",
-            "PZEN": "zen",
-            "TBTH": "bng",
-            "TDAG": "ths",
-            "TFTH": "ths",
-            "THP1": "ths",
-            "THP2": "bng",
-            "THP3": "jou",
-            "PMH1": "mh1",
-            "PWAR": "war",
-            # Open the Helvault
-            "PHEL": "avr",
-            "PAL99": "usg",
-            "PUMA": "usg",
-            # Asia Pacific Lands
-            "PALP": "papac",
-            "PJAS": "papac",
-            "PELP": "peuro",
-            "PBOK": "pbook",
-            "PHPR": "pbook",
-            "PDTP": "dpa",
-            "PDP11": "dpa",
-            "PDP12": "dpa",
-            "PDP10": "dpa",
-            "PDP13": "dpa",
-            "PDP14": "dpa",
-            # Salvat
-            "PHUK": "psalvat05",
-            "PSAL": "psalvat05",
-            "PS11": "psalvat11",
-            # IDW
-            "PI13": "pidw",
-            "PI14": "pidw",
-            "PMOA": "pmodo",
-            "PRM": "pmodo",
-            "TD0": "xmods",
-            "PMPS07": "pmps",
-            "PMPS08": "pmps",
-            "PMPS09": "pmps",
-            "PMPS10": "pmps",
-            "PMPS11": "pmps",
-            "PPOD": "por",
-            # Timeshifted
-            "TSB": "tsp",
-            "REN": "xren",
-            "RIN": "xren",
-            "ITP": "x2ps",
+    def to_dict(self) -> dict:
+        return {
+            "base_set_size": self.base_set_size,
+            "block": self.block,
+            "card_count": self.card_count,
+            "code": self.code,
+            "is_foil_only": self.is_foil_only,
+            "is_online_only": self.is_online_only,
+            "keyrune_code": self.keyrune_code,
+            "mcm_id": self.mcm_id,
+            "mcm_name": self.mcm_name,
+            "name": self.name,
+            "release_date": self.release_date,
+            "tcg_player_group_id": self.tcg_player_group_id,
+            "type": self.type,
         }
-        code = mappings.get(self.get_code())
-        if code:
-            return code
 
-        return self.code.lower()
+
+class StagedCardPrinting:
+    def __init__(self, card_name: str, card_data: dict, set_data: dict):
+        self.card_name = card_name
+
+        self.artist = card_data.get("artist")
+        self.border_colour = card_data.get("borderColor")
+        self.frame_version = card_data.get("frameVersion")
+        self.has_foil = card_data.get("hasFoil")
+        self.has_non_foil = card_data.get("hasNonFoil")
+        self.number = card_data.get("number")
+        self.rarity = card_data.get("rarity")
+        self.scryfall_id = card_data.get("scryfallId")
+        self.scryfall_illustration_id = card_data.get("scryfallIllustrationId")
+        self.json_id = card_data.get("uuid")
+        self.multiverse_id = card_data.get("multiverseId")
+        self.other_languages = card_data.get("foreignData")
+        self.names = card_data.get("names", [])
+        self.is_timeshifted = (
+            "isTimeshifted" in card_data and card_data["isTimeshifted"]
+        )
+        self.is_starter = "starter" in card_data and card_data["starter"]
+        self.set_code = set_data["code"]
+        self.watermark = card_data.get("watermark")
+        self.original_type = card_data.get("originalType")
+        self.original_text = card_data.get("originalText")
+        self.flavour_text = card_data.get("flavorText")
+
+        self.is_new = False
+
+    def to_dict(self):
+        return {
+            "artist": self.artist,
+            "border_colour": self.border_colour,
+            "card_name": self.card_name,
+            "flavour_text": self.flavour_text,
+            "frame_version": self.frame_version,
+            "has_non_foil": self.has_non_foil,
+            "hasfoil": self.has_foil,
+            "is_starter": self.is_starter,
+            "is_timeshifted": self.is_timeshifted,
+            "json_id": self.json_id,
+            "multiverse_id": self.multiverse_id,
+            "number": self.number,
+            "original_text": self.original_text,
+            "original_type": self.original_type,
+            "rarity": self.rarity,
+            "scryfall_id": self.scryfall_id,
+            "scryfall_illustration_id": self.scryfall_illustration_id,
+            "set_code": self.set_code,
+        }
+
+
+class StagedLegality:
+    def __init__(self, card_name: str, format_code: str, restriction: str):
+        self.card_name = card_name
+        self.format_code = format_code
+        self.restriction = restriction
+
+    def to_dict(self) -> dict:
+        return {
+            "card_name": self.card_name,
+            "format": self.format_code,
+            "restriction": self.restriction,
+        }
+
+
+class StagedRuling:
+    def __init__(self, card_name: str, text: str, ruling_date: str):
+        self.card_name = card_name
+        self.text = text
+        self.ruling_date = ruling_date
+
+    def to_dict(self) -> dict:
+        return {
+            "card_name": self.card_name,
+            "text": self.text,
+            "date": self.ruling_date,
+        }
+
+
+class StagedBlock:
+    def __init__(self, name: str, release_date: datetime.date):
+        self.name = name
+        self.release_date = release_date
+
+    def to_dict(self) -> dict:
+        return {"name": self.name, "release_date": self.release_date}
+
+
+class StagedCardPrintingLanguage:
+    def __init__(
+        self,
+        staged_card_printing: StagedCardPrinting,
+        foreign_data: dict,
+        card_data: dict,
+    ):
+        self.printing_uuid = staged_card_printing.json_id
+
+        self.language = foreign_data["language"]
+        self.foreign_name = foreign_data["name"]
+
+        self.multiverse_id = foreign_data.get("multiverseId")
+        self.text = foreign_data.get("text")
+        self.type = foreign_data.get("type")
+
+        self.other_names = card_data.get("names", [])
+        self.base_name = card_data["name"]
+        if self.base_name in self.other_names:
+            self.other_names.remove(self.base_name)
+        self.layout = card_data["layout"]
+        self.side = card_data.get("side")
+
+        self.is_new = False
+        self.has_physical_card = False
+
+    def to_dict(self) -> dict:
+        return {
+            "printing_uid": self.printing_uuid,
+            "language": self.language,
+            "foreign_name": self.foreign_name,
+            "multiverse_id": self.multiverse_id,
+            "text": self.text,
+            "type": self.type,
+            "base_name": self.base_name,
+        }
+
+
+class StagedPhysicalCard:
+    def __init__(self, printing_uuids: List[str], language_code: str, layout: str):
+        self.printing_uids = printing_uuids
+        self.language_code = language_code
+        self.layout = layout
+
+    def to_dict(self) -> dict:
+        return {
+            "printing_uids": self.printing_uids,
+            "language": self.language_code,
+            "layout": self.layout,
+        }
+
+    def __str__(self) -> str:
+        return f"{'/'.join(self.printing_uids)} in {self.language_code} ({self.layout})"

@@ -4,7 +4,7 @@ Module for the update_database command
 import logging
 import time
 import datetime
-from typing import List, Optional, Dict, Tuple
+from typing import List, Optional, Dict, Tuple, Set as SetType
 from django.db import transaction
 
 from django.core.management.base import BaseCommand
@@ -32,234 +32,16 @@ from datetime import date
 
 logger = logging.getLogger("django")
 
-
-class StagedCard:
-    def __init__(self, json_data: dict, is_token: bool):
-        self.is_token = is_token
-
-        self.colour_identity = json_data.get("colourIdentity", [])
-        self.colours = json_data.get("colors", [])
-        self.cmc = json_data.get("convertedManaCost", 0)
-        self.layout = json_data.get("layout")
-        self.cost = json_data.get("maaaCost")
-        self.name = json_data.get("name")
-        self.power = json_data.get("number")
-        self.scryfall_oracle_id = json_data.get("scryfallOracleId")
-        self.rules_text = json_data.get("text")
-        self.toughness = json_data.get("toughness")
-
-        self.type = None
-        if self.is_token:
-            if "type" in json_data:
-                self.type = json_data["type"].split("—")[0].strip()
-        elif "types" in json_data:
-            self.type = " ".join(
-                (json_data.get("supertypes") or []) + (json_data["types"])
-            )
-
-        self.subtype = None
-        if self.is_token:
-            if "type" in json_data:
-                self.subtype = json_data["type"].split("—")[-1].strip()
-        elif "subtypes" in json_data:
-            self.subtype = " ".join(json_data.get("subtypes"))
-
-        self.rulings = json_data.get("rulings", [])
-        self.legalities = json_data.get("legalities")
-        self.has_other_names = "names" in json_data
-        self.other_names = (
-            [n for n in json_data["names"] if n != self.name]
-            if self.has_other_names
-            else []
-        )
-        self.side = json_data.get("side")
-        self.is_reserved = bool(json_data.get("isReserved", False))
-
-    def to_dict(self) -> dict:
-        return {
-            "is_token": self.is_token,
-            "colour_identity": self.colour_identity,
-            "colours": self.colours,
-            "cmc": self.cmc,
-            "layout": self.layout,
-            "cost": self.cost,
-            "name": self.name,
-            "power": self.power,
-            "scryfall_oracle_id": self.scryfall_oracle_id,
-            "rules_text": self.rules_text,
-            "toughness": self.toughness,
-            "type": self.type,
-            "subtype": self.subtype,
-            "side": self.side,
-            "is_reserved": self.is_reserved,
-        }
-
-
-class StagedSet:
-    def __init__(self, set_data: dict):
-        self.base_set_size = set_data["baseSetSize"]
-        self.block = set_data.get("block")
-        self.code = set_data["code"]
-        self.is_foil_only = set_data["isFoilOnly"]
-        self.is_online_only = set_data["isOnlineOnly"]
-        self.keyrune_code = set_data["keyruneCode"]
-        self.mcm_id = set_data.get("mcmId")
-        self.mcm_name = set_data.get("mcmName")
-        self.mtg_code = set_data.get("mtgoCode")
-        self.name = set_data["name"]
-        self.release_date = set_data["releaseDate"]
-        self.tcg_player_group_id = set_data.get("tcg_player_group_id")
-        self.total_set_size = set_data["totalSetSize"]
-        self.type = set_data["type"]
-
-    def to_dict(self) -> dict:
-        return {
-            "base_set_size": self.base_set_size,
-            "block": self.block,
-            "code": self.code,
-            "is_foil_only": self.is_foil_only,
-            "is_online_only": self.is_online_only,
-            "keyrune_code": self.keyrune_code,
-            "mcm_id": self.mcm_id,
-            "mcm_name": self.mcm_name,
-            "name": self.name,
-            "release_date": self.release_date,
-            "tcg_player_group_id": self.tcg_player_group_id,
-            "total_set_size": self.total_set_size,
-            "type": self.type,
-        }
-
-
-class StagedCardPrinting:
-    def __init__(self, card_name: str, json_data: dict, set_data: dict):
-        self.card_name = card_name
-
-        self.artist = json_data.get("artist")
-        self.border_colour = json_data.get("borderColor")
-        self.frame_version = json_data.get("frameVersion")
-        self.hasFoil = json_data.get("hasFoil")
-        self.hasNonFoil = json_data.get("hasNonFoil")
-        self.number = json_data.get("number")
-        self.rarity = json_data.get("rarity")
-        self.scryfall_id = json_data.get("scryfallId")
-        self.scryfall_illustration_id = json_data.get("scryfallIllustrationId")
-        self.uuid = json_data.get("uuid")
-        self.multiverse_id = json_data.get("multiverseId")
-        self.other_languages = json_data.get("foreignData")
-        self.names = json_data.get("names", [])
-
-        self.set_code = set_data["code"]
-
-        self.is_new = False
-
-    def to_dict(self):
-        return {
-            "card_name": self.card_name,
-            "artist": self.artist,
-            "border_colour": self.border_colour,
-            "frame_version": self.frame_version,
-            "hasfoil": self.hasFoil,
-            "has_non_foil": self.hasNonFoil,
-            "number": self.number,
-            "rarity": self.rarity,
-            "scryfall_id": self.scryfall_id,
-            "scryfall_illustration_id": self.scryfall_illustration_id,
-            "uuid": self.uuid,
-            "multiverse_id": self.multiverse_id,
-            "set_code": self.set_code,
-        }
-
-
-class StagedLegality:
-    def __init__(self, card_name: str, format_code: str, restriction: str):
-        self.card_name = card_name
-        self.format_code = format_code
-        self.restriction = restriction
-
-    def to_dict(self) -> dict:
-        return {
-            "card_name": self.card_name,
-            "format": self.format_code,
-            "restriction": self.restriction,
-        }
-
-
-class StagedRuling:
-    def __init__(self, card_name: str, text: str, ruling_date: str):
-        self.card_name = card_name
-        self.text = text
-        self.ruling_date = ruling_date
-
-    def to_dict(self) -> dict:
-        return {
-            "card_name": self.card_name,
-            "text": self.text,
-            "date": self.ruling_date,
-        }
-
-
-class StagedBlock:
-    def __init__(self, name: str, release_date: date):
-        self.name = name
-        self.release_date = release_date
-
-    def to_dict(self) -> dict:
-        return {"name": self.name, "release_date": self.release_date}
-
-
-class StagedCardPrintingLanguage:
-    def __init__(
-        self,
-        staged_card_printing: StagedCardPrinting,
-        foreign_data: dict,
-        card_data: dict,
-    ):
-        self.printing_uuid = staged_card_printing.uuid
-
-        self.language = foreign_data["language"]
-        self.foreign_name = foreign_data["name"]
-
-        self.multiverse_id = foreign_data.get("multiverseId")
-        self.text = foreign_data.get("text")
-        self.type = foreign_data.get("type")
-
-        self.other_names = card_data.get("names", [])
-        self.base_name = card_data["name"]
-        if self.base_name in self.other_names:
-            self.other_names.remove(self.base_name)
-        self.layout = card_data["layout"]
-        self.side = card_data.get("side")
-
-        self.is_new = False
-        self.has_physical_card = False
-
-    def to_dict(self) -> dict:
-        return {
-            "printing_uid": self.printing_uuid,
-            "language": self.language,
-            "foreign_name": self.foreign_name,
-            "multiverse_id": self.multiverse_id,
-            "text": self.text,
-            "type": self.type,
-            "base_name": self.base_name,
-        }
-
-
-class StagedPhysicalCard:
-    def __init__(self, printing_uuids: List[str], language_code: str, layout: str):
-        self.printing_uids = printing_uuids
-        self.language_code = language_code
-        self.layout = layout
-
-    def to_dict(self) -> dict:
-        return {
-            "printing_uids": self.printing_uids,
-            "language": self.language_code,
-            "layout": self.layout,
-        }
-
-    def __str__(self) -> str:
-        return f"{'/'.join(self.printing_uids)} in {self.language_code} ({self.layout})"
+from data_import.staging import (
+    StagedCard,
+    StagedBlock,
+    StagedSet,
+    StagedLegality,
+    StagedCardPrintingLanguage,
+    StagedPhysicalCard,
+    StagedCardPrinting,
+    StagedRuling,
+)
 
 
 class Command(BaseCommand):
@@ -396,7 +178,7 @@ class Command(BaseCommand):
             differences = self.get_object_differences(
                 existing_set,
                 staged_set,
-                [
+                {
                     # "base_set_size",
                     # "is_foil_only",
                     # "is_online_only",
@@ -407,8 +189,9 @@ class Command(BaseCommand):
                     "name",
                     # "tcgplayer_group_id",
                     # "total_set_size",
+                    "card_count",
                     "type",
-                ],
+                },
             )
             if (not existing_set.block and staged_set.block) or (
                 existing_set.block and existing_set.block.name != staged_set.block
@@ -593,7 +376,9 @@ class Command(BaseCommand):
 
                 self.card_links_to_create[staged_card.name].append(other_name)
 
-    def get_object_differences(self, old_object, new_object, fields: List[str]) -> dict:
+    def get_object_differences(
+        self, old_object, new_object, fields: SetType[str]
+    ) -> dict:
         result = {}
         for field in fields:
             old_val = getattr(old_object, field)
@@ -616,15 +401,54 @@ class Command(BaseCommand):
         self, existing_set: Set, staged_set: StagedSet
     ) -> Dict[str, dict]:
         return self.get_object_differences(
-            existing_set, staged_set, ["keyrune_code", "name", "total_set_size", "type"]
+            existing_set, staged_set, {"keyrune_code", "name", "total_set_size", "type"}
         )
 
     def get_card_differences(
         self, existing_card: Card, staged_card: StagedCard
     ) -> Dict[str, dict]:
-        return self.get_object_differences(
-            existing_card, staged_card, ["name", "rules_text", "type", "subtype"]
+        differences = self.get_object_differences(
+            existing_card,
+            staged_card,
+            {
+                "rules_text",
+                "type",
+                "subtype",
+                "cmc",
+                "colour_count",
+                "colour_sort_key",
+                "cost",
+                "is_reserved",
+                "is_token",
+                "layout",
+                "loyalty",
+                "name",
+                "num_loyalty",
+                "num_power",
+                "num_toughness",
+                "power",
+                "rules_text",
+                "scryfall_oracle_id",
+                "side",
+                "subtype",
+                "toughness",
+                "type",
+            },
         )
+
+        if staged_card.colour_flags != existing_card.colour_flags:
+            differences["colour_flags"] = {
+                "old": int(existing_card.colour_flags),
+                "new": staged_card.colour_flags,
+            }
+
+        if staged_card.colour_identity_flags != existing_card.colour_identity_flags:
+            differences["colour_identity_flags"] = {
+                "old": int(existing_card.colour_identity_flags),
+                "new": staged_card.colour_identity_flags,
+            }
+
+        return differences
 
     def get_card_printing_differences(
         self, existing_printing: CardPrinting, staged_printing: StagedCardPrinting
@@ -645,7 +469,7 @@ class Command(BaseCommand):
         self, staged_card: StagedCard, set_data: dict, card_data: dict
     ) -> Tuple[StagedCardPrinting, List[StagedCardPrintingLanguage]]:
         staged_card_printing = StagedCardPrinting(staged_card.name, card_data, set_data)
-        uuid = staged_card_printing.uuid
+        uuid = staged_card_printing.json_id
         if uuid not in self.existing_card_printings:
             if uuid not in self.card_printings_to_update:
                 staged_card_printing.is_new = True
@@ -693,7 +517,7 @@ class Command(BaseCommand):
         )
 
         existing_print = self.get_existing_printed_language(
-            staged_card_printing.uuid, staged_card_printing_language.language
+            staged_card_printing.json_id, staged_card_printing_language.language
         )
 
         if not existing_print:
