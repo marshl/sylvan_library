@@ -3,6 +3,7 @@ Module for the update_database command
 """
 import logging
 import time
+import datetime
 from typing import List, Optional, Dict, Tuple
 from django.db import transaction
 
@@ -40,7 +41,7 @@ class StagedCard:
         self.colours = json_data.get("colors", [])
         self.cmc = json_data.get("convertedManaCost", 0)
         self.layout = json_data.get("layout")
-        self.mana_cost = json_data.get("maaaCost")
+        self.cost = json_data.get("maaaCost")
         self.name = json_data.get("name")
         self.power = json_data.get("number")
         self.scryfall_oracle_id = json_data.get("scryfallOracleId")
@@ -72,6 +73,7 @@ class StagedCard:
             else []
         )
         self.side = json_data.get("side")
+        self.is_reserved = bool(json_data.get("isReserved", False))
 
     def to_dict(self) -> dict:
         return {
@@ -80,7 +82,7 @@ class StagedCard:
             "colours": self.colours,
             "cmc": self.cmc,
             "layout": self.layout,
-            "mana_cost": self.mana_cost,
+            "cost": self.cost,
             "name": self.name,
             "power": self.power,
             "scryfall_oracle_id": self.scryfall_oracle_id,
@@ -89,6 +91,7 @@ class StagedCard:
             "type": self.type,
             "subtype": self.subtype,
             "side": self.side,
+            "is_reserved": self.is_reserved,
         }
 
 
@@ -306,6 +309,7 @@ class Command(BaseCommand):
     card_links_to_create = {}  # type: Dict[str, List[str]]
 
     force_update = False
+    start_time = None
 
     def add_arguments(self, parser):
 
@@ -318,13 +322,6 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-
-        if not Colour.objects.exists() or not Rarity.objects.exists():
-            logger.error(
-                "No colours or rarities were found. "
-                "Please run the update_metadata command first"
-            )
-            return
 
         self.start_time = time.time()
 
@@ -367,7 +364,7 @@ class Command(BaseCommand):
                 continue
 
             with open(set_file_path, "r", encoding="utf8") as set_file:
-                set_data = json.load(set_file, encoding="UTF-8")
+                set_data = json.load(set_file, encoding="utf8")
                 set_data_list.append(set_data)
 
         set_data_list.sort(key=lambda s: s.get("releaseDate") or str(date.max()))
@@ -394,16 +391,56 @@ class Command(BaseCommand):
         staged_set = StagedSet(set_data)
         if staged_set.code not in self.existing_sets:
             self.sets_to_create[staged_set.code] = staged_set
-            if staged_set.block and staged_set.block not in self.existing_blocks:
-                block_to_create = self.blocks_to_create.get(staged_set.block)
-                if not block_to_create:
-                    self.blocks_to_create[staged_set.block] = StagedBlock(
-                        staged_set.block, staged_set.release_date
-                    )
-                else:
-                    block_to_create.release_date = min(
-                        block_to_create.release_date, staged_set.release_date
-                    )
+        else:
+            existing_set = self.existing_sets[staged_set.code]
+            differences = self.get_object_differences(
+                existing_set,
+                staged_set,
+                [
+                    # "base_set_size",
+                    # "is_foil_only",
+                    # "is_online_only",
+                    "keyrune_code",
+                    # "mcm_id",
+                    # "mcm_name",
+                    # "mtgo_code",
+                    "name",
+                    # "tcgplayer_group_id",
+                    # "total_set_size",
+                    "type",
+                ],
+            )
+            if (not existing_set.block and staged_set.block) or (
+                existing_set.block and existing_set.block.name != staged_set.block
+            ):
+                differences["block"] = {
+                    "from": existing_set.block.name if existing_set.block else None,
+                    "to": staged_set.block,
+                }
+
+            if (
+                existing_set.release_date.strftime("%Y-%m-%d")
+                != staged_set.release_date
+            ):
+                differences["release_date"] = {
+                    "from": existing_set.release_date.strftime("%Y-%m-%d"),
+                    "to": staged_set.release_date,
+                }
+
+            if differences:
+                self.sets_to_update[staged_set.code] = differences
+
+        if staged_set.block and staged_set.block not in self.existing_blocks:
+            block_to_create = self.blocks_to_create.get(staged_set.block)
+            if not block_to_create:
+                self.blocks_to_create[staged_set.block] = StagedBlock(
+                    staged_set.block, staged_set.release_date
+                )
+            else:
+                block_to_create.release_date = min(
+                    block_to_create.release_date, staged_set.release_date
+                )
+
         self.process_physical_cards(set_data)
         self.process_card_links(set_data)
 
@@ -565,7 +602,10 @@ class Command(BaseCommand):
                 type(old_val),
                 type(new_val),
             ]:
-                raise Exception(f"Type mismatch for '{field}: {old_val} != {new_val}")
+                raise Exception(
+                    f"Type mismatch for '{field}: {old_val} != {new_val} "
+                    f"({type(old_val)} != {type(new_val)})"
+                )
 
             if old_val != new_val:
                 result[field] = {"from": old_val, "to": new_val}
