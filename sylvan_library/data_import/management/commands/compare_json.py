@@ -272,6 +272,9 @@ class Command(BaseCommand):
 
     def process_card(self, card_data: dict, is_token: bool) -> StagedCard:
         staged_card = StagedCard(card_data, is_token=is_token)
+        if staged_card.name in self.cards_parsed:
+            return staged_card
+
         if staged_card.name not in self.existing_cards:
             if staged_card.name not in self.cards_to_create:
                 self.cards_to_create[staged_card.name] = staged_card
@@ -416,6 +419,7 @@ class Command(BaseCommand):
                 "subtype",
                 "cmc",
                 "colour_count",
+                "colour_weight",
                 "colour_sort_key",
                 "cost",
                 "is_reserved",

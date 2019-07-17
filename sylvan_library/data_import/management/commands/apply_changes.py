@@ -67,7 +67,8 @@ class Command(BaseCommand):
             self.create_new_sets()
             self.update_sets()
             self.create_cards()
-            raise Exception()
+            self.update_cards()
+            # raise Exception()
 
     def create_new_blocks(self) -> None:
         with open(_paths.BLOCKS_TO_CREATE_PATH, "r", encoding="utf8") as block_file:
@@ -106,14 +107,10 @@ class Command(BaseCommand):
         for set_code, set_diff in set_list.items():
             set_obj = Set.objects.get(code=set_code)
             for field, change in set_diff.items():
-                if field == "keyrune_code":
-                    set_obj.keyrune_code = change["to"]
+                if field in {"keyrune_code", "release_date", "name", "card_count"}:
+                    setattr(set_obj, field, change["to"])
                 elif field == "block":
                     set_obj.block = Block.objects.get(name=change["to"])
-                elif field == "release_date":
-                    set_obj.release_date = change["to"]
-                elif field == "name":
-                    set_obj.name = change["to"]
                 else:
                     raise NotImplementedError(
                         f"Cannot update unrecognised field Set.{field}"
@@ -126,29 +123,36 @@ class Command(BaseCommand):
             card_list = json.load(card_file, encoding="utf8")
 
         for _, card_data in card_list.items():
-            card = Card(
-                name=card_data["name"],
-                cost=card_data["cost"],
-                cmc=card_data["cmc"],
-                colour_flags=card_data["colour"],
-                colour_identity_flags=card_data["colour_identity"],
-                colour_count=card_data["colour_count"],
-                colour_sort_key=card_data["colour_sort_key"],
-                colour_weight=card_data["colour_weight"],
-                type=card_data["type"],
-                subtype=card_data["subtype"],
-                power=card_data["power"],
-                num_power=card_data["num_power"],
-                toughness=card_data["toughness"],
-                num_toughness=card_data["num_toughness"],
-                loyalty=card_data["loyalty"],
-                num_loyalty=card_data["num_loyalty"],
-                rules_text=card_data["rules_text"],
-                layout=card_data["rules_text"],
-                side=card_data["side"],
-                is_reserved=card_data["is_reserved"],
-                scryfall_oracle_id=card_data["scryfall_oracle_id"],
-                is_token=card_data["is_token"],
-            )
+            card = Card()
+            for field, value in card_data:
+                setattr(card, field, value)
+            card.full_clean()
+            card.save()
+
+    def update_cards(self) -> None:
+        with open(_paths.CARDS_TO_UPDATE, "r", encoding="utf8") as card_file:
+            card_list = json.load(card_file, encoding="utf8")
+
+        for card_name, card_diff in card_list.items():
+            card = Card.objects.get(name=card_name, is_token=False)
+            for field, change in card_diff.items():
+                if field in {
+                    "is_reserved",
+                    "layout",
+                    "loyalty",
+                    "num_loyalty",
+                    "num_power",
+                    "num_toughness",
+                    "power",
+                    "rules_text",
+                    "subtype",
+                    "toughness",
+                    "type",
+                }:
+                    setattr(card, field, change["to"])
+                else:
+                    raise NotImplementedError(
+                        f"Cannot update unrecognised field Card.{field}"
+                    )
             card.full_clean()
             card.save()

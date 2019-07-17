@@ -180,6 +180,7 @@ class StagedCard:
             "colour_count": self.colour_count,
             "colour_identity_flags": self.colour_identity_flags,
             "colour_sort_key": self.colour_sort_key,
+            "colour_weight": self.colour_weight,
             "cost": self.cost,
             "is_reserved": self.is_reserved,
             "is_token": self.is_token,
