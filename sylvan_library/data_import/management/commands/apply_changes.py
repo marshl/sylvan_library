@@ -5,6 +5,7 @@ import logging
 import time
 from typing import List, Optional, Dict, Tuple
 from django.db import transaction
+from django.core.exceptions import ValidationError
 
 from django.core.management.base import BaseCommand
 from cards.models import (
@@ -68,9 +69,13 @@ class Command(BaseCommand):
             self.update_sets()
             self.create_cards()
             self.update_cards()
-            # raise Exception()
+            self.create_card_links()
+            self.create_card_printings()
+            self.create_printed_languages()
+            self.create_physical_cards()
 
     def create_new_blocks(self) -> None:
+        logger.info("Creating new blocks")
         with open(_paths.BLOCKS_TO_CREATE_PATH, "r", encoding="utf8") as block_file:
             block_list = json.load(block_file, encoding="utf8")
 
@@ -82,6 +87,7 @@ class Command(BaseCommand):
             block.save()
 
     def create_new_sets(self) -> None:
+        logger.info("Creating new sets")
         with open(_paths.SETS_TO_CREATE_PATH, "r", encoding="utf8") as set_file:
             set_list = json.load(set_file, encoding="utf8")
 
@@ -101,6 +107,7 @@ class Command(BaseCommand):
             set_obj.save()
 
     def update_sets(self) -> None:
+        logger.info("Updating sets")
         with open(_paths.SETS_TO_UPDATE_PATH, "r", encoding="utf8") as set_file:
             set_list = json.load(set_file, encoding="utf8")
 
@@ -119,17 +126,19 @@ class Command(BaseCommand):
             set_obj.save()
 
     def create_cards(self) -> None:
+        logger.info("Creating new cards")
         with open(_paths.CARDS_TO_CREATE, "r", encoding="utf8") as card_file:
             card_list = json.load(card_file, encoding="utf8")
 
         for _, card_data in card_list.items():
             card = Card()
-            for field, value in card_data:
+            for field, value in card_data.items():
                 setattr(card, field, value)
             card.full_clean()
             card.save()
 
     def update_cards(self) -> None:
+        logger.info("Updating cards")
         with open(_paths.CARDS_TO_UPDATE, "r", encoding="utf8") as card_file:
             card_list = json.load(card_file, encoding="utf8")
 
@@ -145,6 +154,7 @@ class Command(BaseCommand):
                     "num_toughness",
                     "power",
                     "rules_text",
+                    "scryfall_oracle_id",
                     "subtype",
                     "toughness",
                     "type",
@@ -156,3 +166,111 @@ class Command(BaseCommand):
                     )
             card.full_clean()
             card.save()
+
+    def create_card_links(self) -> None:
+        logger.info("Creating card links")
+        with open(_paths.CARD_LINKS_TO_CREATE, "r", encoding="utf8") as lnks_file:
+            link_list = json.load(lnks_file, encoding="utf8")
+
+        for card_name, links in link_list.items():
+            card_obj = Card.objects.get(name=card_name, is_token=False)
+            for link in links:
+                card_obj.links.add(Card.objects.get(name=link, is_token=False))
+            card_obj.save()
+
+    def create_card_printings(self) -> None:
+        logger.info("Creating card printings")
+        with open(_paths.PRINTINGS_TO_CREATE, "r", encoding="utf8") as printing_file:
+            printing_list = json.load(printing_file, encoding="utf8")
+
+        for scryfall_id, printing_data in printing_list.items():
+            card = Card.objects.get(name=printing_data["card_name"])
+            set_obj = Set.objects.get(code=printing_data["set_code"])
+            printing = CardPrinting(card=card, set=set_obj)
+            for field, value in printing_data.items():
+                if field in {"card_name", "set_code"}:
+                    continue
+                elif field in {
+                    "artist",
+                    "border_colour",
+                    "flavour_text",
+                    "frame_version",
+                    "has_non_foil",
+                    "is_starter",
+                    "is_timeshifted",
+                    "json_id",
+                    "multiverse_id",
+                    "number",
+                    "original_text",
+                    "original_ty[e",
+                    "scryfall_id",
+                    "scryfall_illustration_id",
+                }:
+                    setattr(printing, field, value)
+                elif field == "rarity":
+                    printing.rarity = Rarity.objects.get(name__iexact=value)
+                else:
+                    raise NotImplementedError(
+                        f"Cannot update unrecognised field CardPrinting.{field}"
+                    )
+
+            try:
+                printing.full_clean()
+            except ValidationError:
+                logger.error(
+                    f"Failed to validated {printing_data['card_name']} ({scryfall_id})"
+                )
+                raise
+            printing.save()
+
+    def create_printed_languages(self) -> None:
+        logger.info("Creating card printing languages")
+        with open(_paths.PRINTLANGS_TO_CREATE, "r", encoding="utf8") as printlang_file:
+            printlang_list = json.load(printlang_file, encoding="utf8")
+
+        for printlang_data in printlang_list:
+            printed_language = CardPrintingLanguage()
+            for field, value in printlang_data.items():
+                if field == "printing_uid":
+                    printed_language.card_printing = CardPrinting.objects.get(
+                        json_id=value
+                    )
+                elif field == "language":
+                    printed_language.language = Language.objects.get(name=value)
+                elif field in {"card_name", "multiverse_id", "text", "type"}:
+                    setattr(printed_language, field, value)
+                elif field in {"base_name"}:
+                    continue
+                else:
+                    raise NotImplementedError(
+                        f"Cannot update unrecognised field CardPrintingLanguage.{field}"
+                    )
+
+            try:
+                printed_language.full_clean()
+                printed_language.save()
+            except ValidationError:
+                logger.error(
+                    f"Failed to validate CardPrintingLanguage {printed_language}"
+                )
+                raise
+
+    def create_physical_cards(self) -> None:
+        logger.info("Creating physical cards")
+        with open(
+            _paths.PHYSICAL_CARDS_TO_CREATE, "r", encoding="utf8"
+        ) as physcard_file:
+            physical_card_list = json.load(physcard_file, encoding="utf8")
+
+        for phys_data in physical_card_list:
+            physical_card = PhysicalCard()
+            physical_card.layout = phys_data["layout"]
+            physical_card.full_clean()
+            physical_card.save()
+
+            language = Language.objects.get(name=phys_data["language"])
+            for printing_uid in phys_data["printing_uids"]:
+                printed_language = CardPrintingLanguage.objects.get(
+                    card_printing__json_id=printing_uid, language=language
+                )
+                printed_language.physical_cards.add(physical_card)

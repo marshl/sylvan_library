@@ -272,14 +272,14 @@ class StagedCardPrinting:
             "flavour_text": self.flavour_text,
             "frame_version": self.frame_version,
             "has_non_foil": self.has_non_foil,
-            "hasfoil": self.has_foil,
+            # "hasfoil": self.has_foil,
             "is_starter": self.is_starter,
             "is_timeshifted": self.is_timeshifted,
             "json_id": self.json_id,
             "multiverse_id": self.multiverse_id,
             "number": self.number,
-            "original_text": self.original_text,
-            "original_type": self.original_type,
+            # "original_text": self.original_text,
+            # "original_type": self.original_type,
             "rarity": self.rarity,
             "scryfall_id": self.scryfall_id,
             "scryfall_illustration_id": self.scryfall_illustration_id,
@@ -334,7 +334,7 @@ class StagedCardPrintingLanguage:
         self.printing_uuid = staged_card_printing.json_id
 
         self.language = foreign_data["language"]
-        self.foreign_name = foreign_data["name"]
+        self.card_name = foreign_data["name"]
 
         self.multiverse_id = foreign_data.get("multiverseId")
         self.text = foreign_data.get("text")
@@ -354,7 +354,7 @@ class StagedCardPrintingLanguage:
         return {
             "printing_uid": self.printing_uuid,
             "language": self.language,
-            "foreign_name": self.foreign_name,
+            "card_name": self.card_name,
             "multiverse_id": self.multiverse_id,
             "text": self.text,
             "type": self.type,

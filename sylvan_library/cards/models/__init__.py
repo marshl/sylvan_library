@@ -81,7 +81,7 @@ class CardPrinting(models.Model):
         if self.set.code in ("GK1", "GK2") and self.watermark:
             return self.watermark.lower()
 
-        return self.set.keyrune_code
+        return self.set.keyrune_code.lower()
 
     def get_user_ownership_count(self, user: User, prefetched: bool = False) -> int:
         """
