@@ -151,6 +151,7 @@ class Command(BaseCommand):
             card = Card.objects.get(name=card_name, is_token=False)
             for field, change in card_diff.items():
                 if field in {
+                    "display_name",
                     "is_reserved",
                     "layout",
                     "loyalty",

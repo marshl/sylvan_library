@@ -97,8 +97,10 @@ def convert_number_field_to_numerical(val: str) -> float:
 class StagedCard:
     def __init__(self, json_data: dict, is_token: bool):
         self.is_token = is_token
-        self.name = json_data.get("name")
+        self.name = self.display_name = json_data["name"]
         self.scryfall_oracle_id = json_data.get("scryfallOracleId")
+        if self.is_token:
+            self.name = f"{self.name} ({self.scryfall_oracle_id.split('-')[0]})"
 
         self.cost = json_data.get("manaCost")
         self.cmc = json_data.get("convertedManaCost", 0)
@@ -163,8 +165,10 @@ class StagedCard:
             self.subtype = " ".join(json_data.get("subtypes"))
 
         self.rulings = json_data.get("rulings", [])
-        self.legalities = json_data.get("legalities")
-        self.has_other_names = "names" in json_data
+        self.legalities = json_data.get("legalities", [])
+        self.has_other_names = (
+            "names" in json_data and self.layout != "double_faced_token"
+        )
         self.other_names = (
             [n for n in json_data["names"] if n != self.name]
             if self.has_other_names
@@ -187,6 +191,7 @@ class StagedCard:
             "layout": self.layout,
             "loyalty": self.loyalty,
             "name": self.name,
+            "display_name": self.display_name,
             "num_loyalty": self.num_loyalty,
             "num_power": self.num_power,
             "num_toughness": self.num_toughness,
@@ -245,12 +250,12 @@ class StagedCardPrinting:
         self.has_foil = card_data.get("hasFoil")
         self.has_non_foil = card_data.get("hasNonFoil")
         self.number = card_data.get("number")
-        self.rarity = card_data.get("rarity")
+        self.rarity = card_data.get("rarity", "common")
         self.scryfall_id = card_data.get("scryfallId")
         self.scryfall_illustration_id = card_data.get("scryfallIllustrationId")
         self.json_id = card_data.get("uuid")
         self.multiverse_id = card_data.get("multiverseId")
-        self.other_languages = card_data.get("foreignData")
+        self.other_languages = card_data.get("foreignData", [])
         self.names = card_data.get("names", [])
         self.is_timeshifted = (
             "isTimeshifted" in card_data and card_data["isTimeshifted"]

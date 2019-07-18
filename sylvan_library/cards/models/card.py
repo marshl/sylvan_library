@@ -37,6 +37,7 @@ class Card(models.Model):
     """
 
     name = models.CharField(max_length=200)
+    display_name = models.CharField(max_length=200)
 
     cost = models.CharField(max_length=50, blank=True, null=True)
     cmc = models.FloatField()

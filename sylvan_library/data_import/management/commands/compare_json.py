@@ -107,7 +107,7 @@ class Command(BaseCommand):
 
         self.start_time = time.time()
 
-        for card in Card.objects.filter(is_token=False):
+        for card in Card.objects.filter():
             if card.name in self.existing_cards:
                 raise Exception(f"Multiple cards with the same name found: {card.name}")
             self.existing_cards[card.name] = card
@@ -224,10 +224,10 @@ class Command(BaseCommand):
                     block_to_create.release_date, staged_set.release_date
                 )
 
-        self.process_physical_cards(set_data)
+        self.process_set_cards(set_data)
         self.process_card_links(set_data)
 
-    def process_physical_cards(self, set_data: dict) -> None:
+    def process_set_cards(self, set_data: dict) -> None:
         new_printlangs = []
         for card_data in set_data.get("cards", []):
             staged_card = self.process_card(card_data, False)
@@ -235,6 +235,15 @@ class Command(BaseCommand):
                 staged_card, set_data, card_data
             )
 
+            for printlang in printlangs:
+                if printlang.is_new:
+                    new_printlangs.append(printlang)
+
+        for card_data in set_data.get("tokens", []):
+            staged_card = self.process_card(card_data, True)
+            staged_printing, printlangs = self.process_card_printing(
+                staged_card, set_data, card_data
+            )
             for printlang in printlangs:
                 if printlang.is_new:
                     new_printlangs.append(printlang)
@@ -322,7 +331,10 @@ class Command(BaseCommand):
                     self.rulings_to_delete[staged_card.name].append(existing_ruling)
 
     def process_card_legalities(self, staged_card: StagedCard) -> None:
-        if staged_card.name in self.cards_checked_for_legalities:
+        if (
+            staged_card.name in self.cards_checked_for_legalities
+            or not staged_card.legalities
+        ):
             return
 
         self.cards_checked_for_legalities.add(staged_card.name)
@@ -422,6 +434,7 @@ class Command(BaseCommand):
                 "colour_weight",
                 "colour_sort_key",
                 "cost",
+                "display_name",
                 "is_reserved",
                 "is_token",
                 "layout",
@@ -496,7 +509,7 @@ class Command(BaseCommand):
                 {
                     "language": "English",
                     "multiverseId": staged_card_printing.multiverse_id,
-                    "name": card_data["name"],
+                    "name": staged_card.display_name,
                     "text": card_data.get("text"),
                     "type": card_data.get("type"),
                 },
