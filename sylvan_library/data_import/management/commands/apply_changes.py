@@ -16,6 +16,7 @@ from cards.models import (
     CardPrintingLanguage,
     CardRuling,
     Colour,
+    Format,
     Language,
     PhysicalCard,
     Rarity,
@@ -73,6 +74,10 @@ class Command(BaseCommand):
             self.create_card_printings()
             self.create_printed_languages()
             self.create_physical_cards()
+            self.create_rulings()
+            self.delete_rulings()
+            self.create_legalities()
+            self.delete_legalities()
 
     def create_new_blocks(self) -> None:
         logger.info("Creating new blocks")
@@ -274,3 +279,56 @@ class Command(BaseCommand):
                     card_printing__json_id=printing_uid, language=language
                 )
                 printed_language.physical_cards.add(physical_card)
+
+    def create_rulings(self) -> None:
+        logger.info("Creating rulings")
+        with open(_paths.RULINGS_TO_CREATE, "r", encoding="utf8") as rulings_file:
+            ruling_list = json.load(rulings_file, encoding="utf8")
+
+        for ruling_data in ruling_list:
+            ruling = CardRuling()
+            ruling.card = Card.objects.get(
+                name=ruling_data["card_name"], is_token=False
+            )
+            ruling.text = ruling_data["text"]
+            ruling.date = ruling_data["date"]
+
+            ruling.full_clean()
+            ruling.save()
+
+    def delete_rulings(self):
+        logger.info("Deleting rulings")
+        with open(_paths.RULINGS_TO_DELETE, "r", encoding="utf8") as rulings_file:
+            ruling_list = json.load(rulings_file, encoding="utf8")
+
+        for card_name, rulings in ruling_list.items():
+            card = Card.objects.get(name=card_name)
+            for ruling_text in rulings:
+                CardRuling.objects.get(card=card, text=ruling_text).delete()
+
+    def create_legalities(self) -> None:
+        logger.info("Creating legalities")
+        with open(_paths.LEGALITIES_TO_CREATE, "r", encoding="utf8") as legalities_file:
+            legality_list = json.load(legalities_file, encoding="utf8")
+
+        for legality_data in legality_list:
+            legality = CardLegality()
+            legality.card = Card.objects.get(
+                name=legality_data["card_name"], is_token=False
+            )
+            legality.format = Format.objects.get(name__iexact=legality_data["format"])
+            legality.restriction = legality_data["restriction"]
+
+            legality.full_clean()
+            legality.save()
+
+    def delete_legalities(self):
+        logger.info("Deleting legalities")
+        with open(_paths.LEGALITIES_TO_DELETE, "r", encoding="utf8") as legalities_file:
+            legality_list = json.load(legalities_file, encoding="utf8")
+
+        for card_name, legalities in legality_list.items():
+            card = Card.objects.get(name=card_name)
+            for format_name in legalities:
+                format_obj = Format.objects.get(name__iexact=format_name)
+                CardLegality.objects.get(card=card, format=format_obj).delete()
