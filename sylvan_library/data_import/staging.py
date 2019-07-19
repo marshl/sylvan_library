@@ -103,7 +103,7 @@ class StagedCard:
             self.name = f"{self.name} ({self.scryfall_oracle_id.split('-')[0]})"
 
         self.cost = json_data.get("manaCost")
-        self.cmc = json_data.get("convertedManaCost", 0)
+        self.cmc = float(json_data.get("convertedManaCost", 0.0))
         self.colour_flags = (
             Colour.colour_codes_to_flags(json_data["colors"])
             if "colors" in json_data
