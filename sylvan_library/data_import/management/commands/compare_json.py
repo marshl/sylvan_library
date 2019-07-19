@@ -70,6 +70,8 @@ class Command(BaseCommand):
 
     card_printings_to_create = {}  # type: Dict[str, StagedCardPrinting]
     card_printings_to_update = {}  # type: Dict[str, Dict[str,dict]]
+    card_printings_parsed = set()
+    card_printings_to_delete = set()
 
     printed_languages_to_create = []  # type: List[StagedCardPrintingLanguage]
     physical_cards_to_create = []
@@ -158,6 +160,10 @@ class Command(BaseCommand):
             self.cards_parsed
         )
 
+        self.card_printings_to_delete = set(
+            self.existing_card_printings.keys()
+        ).difference(self.card_printings_parsed)
+
         # print("\nCards to create:")
         # for card_name, staged_card in self.cards_to_create.items():
         #     print(card_name)
@@ -240,7 +246,13 @@ class Command(BaseCommand):
                     new_printlangs.append(printlang)
 
         for card_data in set_data.get("tokens", []):
+            if (
+                card_data["layout"] == "double_faced_token"
+                and card_data.get("side", "") == "b"
+            ):
+                continue
             staged_card = self.process_card(card_data, True)
+
             staged_printing, printlangs = self.process_card_printing(
                 staged_card, set_data, card_data
             )
@@ -522,6 +534,7 @@ class Command(BaseCommand):
                 staged_card_printing, foreign_data, card_data
             )
             printlangs.append(staged_printlang)
+        self.card_printings_parsed.add(staged_card_printing.json_id)
 
         return staged_card_printing, printlangs
 
