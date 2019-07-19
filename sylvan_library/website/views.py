@@ -135,7 +135,11 @@ def ajax_card_printing_image(request, printing_id: int) -> HttpResponse:
 def ajax_search_result_add(request, printing_id: int) -> HttpResponse:
     printing = CardPrinting.objects.get(id=printing_id)
     form = ChangeCardOwnershipForm(printing)
-    return render(request, "website/results/search_result_add.html", {"form": form})
+    return render(
+        request,
+        "website/results/search_result_add.html",
+        {"form": form, "printing": printing},
+    )
 
 
 def ajax_search_result_ownership(request, card_id: int) -> HttpResponse:

@@ -69,7 +69,7 @@ class CardPrinting(models.Model):
         ordering = ["set__release_date", "set__name", "number"]
 
     def __str__(self):
-        return f"{self.card} in {self.set}"
+        return f"{self.card} in {self.set} ({self.number})"
 
     def get_set_keyrune_code(self) -> str:
         """
@@ -136,8 +136,6 @@ class PhysicalCard(models.Model):
             base.language.name
             + " "
             + "//".join(p.card_printing.card.name for p in self.printed_languages.all())
-            + " in "
-            + base.card_printing.set.name
         )
 
     def get_display_for_adding(self) -> str:
