@@ -148,9 +148,16 @@ class Command(BaseCommand):
             card_list = json.load(card_file, encoding="utf8")
 
         for card_name, card_diff in card_list.items():
-            card = Card.objects.get(name=card_name, is_token=False)
+            try:
+                card = Card.objects.get(name=card_name)
+            except Card.DoesNotExist:
+                logger.error(f"Could not find card {card_name}")
+                raise
+
             for field, change in card_diff.items():
                 if field in {
+                    "colour_flags",
+                    "colour_identity_flags",
                     "display_name",
                     "is_reserved",
                     "layout",
