@@ -122,7 +122,7 @@ class Command(BaseCommand):
                             "/" + data["lang"] + "/", "/[language]/"
                         )
                         for card_face in data["card_faces"]
-                        if card_face["name"] == printing.card.name
+                        if card_face["name"] == printing.card.display_name
                         and "image_uris" in card_face
                     )
                 else:
