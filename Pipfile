@@ -17,6 +17,7 @@ psycopg2 = "==2.8.2"
 psycopg2-binary = "==2.8.2"
 black = "==19.3b0"
 pre-commit = "==1.16.1"
+gunicorn = "*"
 
 [dev-packages]
 jupyter_core = "==4.4.0"
