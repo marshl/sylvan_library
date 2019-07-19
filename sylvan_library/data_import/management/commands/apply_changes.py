@@ -324,7 +324,12 @@ class Command(BaseCommand):
             legality.card = Card.objects.get(
                 name=legality_data["card_name"], is_token=False
             )
-            legality.format = Format.objects.get(name__iexact=legality_data["format"])
+            try:
+                legality.format = Format.objects.get(code=legality_data["format"])
+            except Format.DoesNotExist:
+                logger.error(f"Could not find format '{legality_data['format']}'")
+                raise
+
             legality.restriction = legality_data["restriction"]
 
             legality.full_clean()
@@ -337,6 +342,6 @@ class Command(BaseCommand):
 
         for card_name, legalities in legality_list.items():
             card = Card.objects.get(name=card_name)
-            for format_name in legalities:
-                format_obj = Format.objects.get(name__iexact=format_name)
+            for format_code in legalities:
+                format_obj = Format.objects.get(code=format_code)
                 CardLegality.objects.get(card=card, format=format_obj).delete()
