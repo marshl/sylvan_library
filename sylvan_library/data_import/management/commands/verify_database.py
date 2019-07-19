@@ -192,7 +192,8 @@ class Command(BaseCommand):
 
         self.assert_true(
             low_count_two_faced_cards.count() == 0,
-            "Multi-sided physical cards should have multiple printlangs",
+            "Multi-sided physical cards should have multiple printlangs"
+            + str(low_count_two_faced_cards),
         )
 
         high_count_single_face_cards = (
@@ -200,7 +201,7 @@ class Command(BaseCommand):
                 layout__in=("split", "flip", "transform", "meld")
             )
             .annotate(printlang_count=Count("printed_languages"))
-            .exclude(printlang_count=1)
+            .exclude(printlang_count__lte=1)
         )
 
         self.assert_true(
@@ -215,9 +216,9 @@ class Command(BaseCommand):
 
         image_url_map = {}
         for printed_language in (
-            CardPrintingLanguage.objects.prefetch_related("card_printing__card")
-            .prefetch_related("card_printing__set")
-            .prefetch_related("language")
+            CardPrintingLanguage.objects.select_related("card_printing__card")
+            .select_related("card_printing__set")
+            .select_related("language")
             .all()
         ):
             image_path = printed_language.get_image_path()
@@ -236,7 +237,7 @@ class Command(BaseCommand):
             if not any(
                 pl
                 for pl in printed_languages
-                if pl.card_printing.card.layout not in ["flip", "split"]
+                if pl.card_printing.card.layout not in ["flip", "split", "aftermath"]
             ):
                 continue
 
@@ -675,21 +676,14 @@ class Command(BaseCommand):
         self.assert_card_rules_eq("Forest", "({T}: Add {G}.)")
         self.assert_card_rules_eq("Snow-Covered Swamp", "({T}: Add {B}.)")
 
-        self.assert_card_rules_eq(
-            "Air Elemental",
-            "Flying (This creature can't be blocked except by creatures with flying or reach.)",
-        )
+        self.assert_card_rules_eq("Air Elemental", "Flying")
         self.assert_card_rules_eq("Thunder Spirit", "Flying, first strike")
         self.assert_card_rules_eq("Dark Ritual", "Add {B}{B}{B}.")
         self.assert_card_rules_eq("Palladium Myr", "{T}: Add {C}{C}.")
         self.assert_card_rules_eq(
             "Ice Cauldron",
-            "{X}, {T}: Put a charge counter on Ice Cauldron and exile a nonland card from your "
-            "hand. You may cast that card for as long as it remains exiled. Note the type and "
-            "amount of mana spent to pay this activation cost. Activate this ability only if "
-            "there are no charge counters on Ice Cauldron.\n{T}, Remove a charge counter from "
-            "Ice Cauldron: Add Ice Cauldron's last noted type and amount of mana. "
-            "Spend this mana only to cast the last card exiled with Ice Cauldron.",
+            """{X}, {T}: You may exile a nonland card from your hand. You may cast that card for as long as it remains exiled. Put a charge counter on Ice Cauldron and note the type and amount of mana spent to pay this activation cost. Activate this ability only if there are no charge counters on Ice Cauldron.
+{T}, Remove a charge counter from Ice Cauldron: Add Ice Cauldron's last noted type and amount of mana. Spend this mana only to cast the last card exiled with Ice Cauldron.""",
         )
 
     def test_card_layouts(self):
