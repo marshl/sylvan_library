@@ -68,6 +68,7 @@ class Command(BaseCommand):
             self.create_new_blocks()
             self.create_new_sets()
             self.update_sets()
+            self.delete_cards()
             self.create_cards()
             self.update_cards()
             self.create_card_links()
@@ -129,6 +130,15 @@ class Command(BaseCommand):
                     )
             set_obj.full_clean()
             set_obj.save()
+
+    def delete_cards(self) -> None:
+        logger.info("Deleting cards")
+        with open(_paths.CARDS_TO_DELETE, "r", encoding="utf8") as card_file:
+            card_list = json.load(card_file, encoding="utf8")
+
+        for card_name in card_list:
+            card = Card.objects.get(name=card_name)
+            card.delete()
 
     def create_cards(self) -> None:
         logger.info("Creating new cards")
