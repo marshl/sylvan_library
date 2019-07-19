@@ -46,9 +46,11 @@ class Command(BaseCommand):
                         sets[groups["set_code"]] = groups["set_name"]
 
         for card_set in Set.objects.all().order_by("code"):
-            if card_set.keyrune_code not in sets.keys():
+            if card_set.keyrune_code.lower() not in sets.keys():
                 print(f"{card_set.name} ({card_set.code}) doesn't have a set symbol")
 
         for set_code, set_name in sets.items():
-            if not any(s for s in Set.objects.all() if s.keyrune_code == set_code):
+            if not any(
+                s for s in Set.objects.all() if s.keyrune_code.lower() == set_code
+            ):
                 print(f"Keyrune symbol {set_name} ({set_code}) doesn't have a set")
