@@ -139,8 +139,16 @@ class Command(BaseCommand):
 
         for card_name in card_list:
             card = Card.objects.get(name=card_name)
+            if card.printings.filter(
+                printed_languages__physical_cards__ownerships__isnull=False
+            ):
+                if not _query.query_yes_no(
+                    f"Trying to delete card {card} but it has ownerships. Continue?",
+                    "no",
+                ):
+                    return False
             card.delete()
-
+        PhysicalCard.objects.filter(printed_languages__isnull=True).delete()
         return True
 
     def create_cards(self) -> bool:
@@ -274,6 +282,8 @@ class Command(BaseCommand):
                     return False
 
             printing.delete()
+
+        PhysicalCard.objects.filter(printed_languages__isnull=True).delete()
         return True
 
     def create_printed_languages(self) -> bool:
