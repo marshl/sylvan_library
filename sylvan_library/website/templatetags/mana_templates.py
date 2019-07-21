@@ -58,7 +58,7 @@ def replace_loyalty_symbols(text: str, scale: str = None) -> str:
         return '<i class="' + " ".join(classes) + '"></i>'
 
     return re.sub(
-        r"([+" + "\\".join(MINUS_SYMBOLS) + r"]?[\dx]+?)(?=:)", replace_symbol, text
+        r"\[([+" + "\\".join(MINUS_SYMBOLS) + r"]?[\dx]+?)\](?=:)", replace_symbol, text
     )
 
 
