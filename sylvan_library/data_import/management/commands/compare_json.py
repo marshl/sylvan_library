@@ -109,7 +109,7 @@ class Command(BaseCommand):
 
         self.start_time = time.time()
 
-        for card in Card.objects.filter():
+        for card in Card.objects.all():
             if card.name in self.existing_cards:
                 raise Exception(f"Multiple cards with the same name found: {card.name}")
             self.existing_cards[card.name] = card
@@ -164,16 +164,8 @@ class Command(BaseCommand):
             self.existing_card_printings.keys()
         ).difference(self.card_printings_parsed)
 
-        # print("\nCards to create:")
-        # for card_name, staged_card in self.cards_to_create.items():
-        #     print(card_name)
-        #
-        # print("\nCards to update:")
-        # for card_name, differences in self.cards_to_update.items():
-        #     print(f"{card_name}: {differences}")
         self.write_to_file()
-
-        print(time.time() - self.start_time)
+        self.log_stats()
 
     def parse_set_data(self, set_data: dict) -> None:
         staged_set = StagedSet(set_data)
@@ -661,3 +653,25 @@ class Command(BaseCommand):
         self.write_object_to_json(
             _paths.CARD_LINKS_TO_CREATE, self.card_links_to_create
         )
+
+    def log_stats(self) -> None:
+        logger.info(f"{len(self.blocks_to_create)} blocks to create")
+        logger.info(f"{len(self.sets_to_create)} sets to create")
+        logger.info(f"{len(self.sets_to_update)} sets to update")
+        logger.info(f"{len(self.cards_to_create)} cards to create")
+        logger.info(f"{len(self.cards_to_update)} cards to update")
+        logger.info(f"{len(self.cards_to_delete)} cards to delete")
+        logger.info(f"{len(self.card_links_to_create)} card links to create")
+        logger.info(f"{len(self.card_printings_to_create)} card printings to create")
+        logger.info(f"{len(self.card_printings_to_delete)} card printings to delete")
+        logger.info(f"{len(self.card_printings_to_update)} card printings to update")
+        logger.info(
+            f"{len(self.printed_languages_to_create)} card printing languages to create"
+        )
+        logger.info(f"{len(self.physical_cards_to_create)} physical cards to create")
+        logger.info(f"{len(self.rulings_to_create)} rulings to create")
+        logger.info(f"{len(self.rulings_to_delete)} rulings to delete")
+        logger.info(f"{len(self.legalities_to_create)} legalities to create")
+        logger.info(f"{len(self.legalities_to_delete)} legalities to delete")
+        logger.info(f"{len(self.legalities_to_update)} legalities to update")
+        logger.info(f"Completed in {time.time() - self.start_time}")
