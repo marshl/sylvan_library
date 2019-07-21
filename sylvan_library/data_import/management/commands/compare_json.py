@@ -593,7 +593,7 @@ class Command(BaseCommand):
         )
 
         self.write_object_to_json(
-            _paths.CARDS_TO_CREATE,
+            _paths.CARDS_TO_CREATE_PATH,
             {
                 card_name: card_to_create.to_dict()
                 for card_name, card_to_create in self.cards_to_create.items()
@@ -617,6 +617,17 @@ class Command(BaseCommand):
                 for uuid, printing_to_create in self.card_printings_to_create.items()
             },
         )
+
+        printings_to_delete_dict = {}
+        for json_id in self.card_printings_to_delete:
+            printing = CardPrinting.objects.get(json_id=json_id)
+            printings_to_delete_dict[json_id] = {
+                "card_name": printing.card.name,
+                "set": printing.set.code,
+                "number": printing.number,
+            }
+
+        self.write_object_to_json(_paths.PRINTINGS_TO_DELETE, printings_to_delete_dict)
 
         self.write_object_to_json(
             _paths.PRINTLANGS_TO_CREATE,
@@ -648,6 +659,9 @@ class Command(BaseCommand):
 
         self.write_object_to_json(
             _paths.LEGALITIES_TO_DELETE, self.legalities_to_delete
+        )
+        self.write_object_to_json(
+            _paths.LEGALITIES_TO_UPDATE, self.legalities_to_update
         )
 
         self.write_object_to_json(

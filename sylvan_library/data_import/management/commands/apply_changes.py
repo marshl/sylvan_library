@@ -2,8 +2,6 @@
 Module for the update_database command
 """
 import logging
-import time
-from typing import List, Optional, Dict, Tuple
 from django.db import transaction
 from django.core.exceptions import ValidationError
 
@@ -22,14 +20,9 @@ from cards.models import (
     Rarity,
     Set,
 )
-from data_import.importers import JsonImporter
-from data_import.management.data_import_command import DataImportCommand
-
-# from data_import.staging import StagedCard, StagedSet
-import os
+from data_import import _query
 import _paths
 import json
-from datetime import date
 
 logger = logging.getLogger("django")
 
@@ -65,22 +58,27 @@ class Command(BaseCommand):
 
         transaction.atomic()
         with transaction.atomic():
-            self.create_new_blocks()
-            self.create_new_sets()
-            self.update_sets()
-            self.delete_cards()
-            self.create_cards()
-            self.update_cards()
-            self.create_card_links()
-            self.create_card_printings()
-            self.create_printed_languages()
-            self.create_physical_cards()
-            self.create_rulings()
-            self.delete_rulings()
-            self.create_legalities()
-            self.delete_legalities()
+            if (
+                not self.create_new_blocks()
+                or not self.create_new_sets()
+                or not self.update_sets()
+                or not self.delete_cards()
+                or not self.create_cards()
+                or not self.update_cards()
+                or not self.create_card_links()
+                or not self.create_card_printings()
+                or not self.delete_card_printings()
+                or not self.create_printed_languages()
+                or not self.create_physical_cards()
+                or not self.create_rulings()
+                or not self.delete_rulings()
+                or not self.create_legalities()
+                or not self.delete_legalities()
+                or not self.update_legalities()
+            ):
+                raise Exception("Change application aborted")
 
-    def create_new_blocks(self) -> None:
+    def create_new_blocks(self) -> bool:
         logger.info("Creating new blocks")
         with open(_paths.BLOCKS_TO_CREATE_PATH, "r", encoding="utf8") as block_file:
             block_list = json.load(block_file, encoding="utf8")
@@ -91,8 +89,9 @@ class Command(BaseCommand):
             )
             block.full_clean()
             block.save()
+        return True
 
-    def create_new_sets(self) -> None:
+    def create_new_sets(self) -> bool:
         logger.info("Creating new sets")
         with open(_paths.SETS_TO_CREATE_PATH, "r", encoding="utf8") as set_file:
             set_list = json.load(set_file, encoding="utf8")
@@ -111,8 +110,9 @@ class Command(BaseCommand):
             )
             set_obj.full_clean()
             set_obj.save()
+        return True
 
-    def update_sets(self) -> None:
+    def update_sets(self) -> bool:
         logger.info("Updating sets")
         with open(_paths.SETS_TO_UPDATE_PATH, "r", encoding="utf8") as set_file:
             set_list = json.load(set_file, encoding="utf8")
@@ -130,8 +130,9 @@ class Command(BaseCommand):
                     )
             set_obj.full_clean()
             set_obj.save()
+        return True
 
-    def delete_cards(self) -> None:
+    def delete_cards(self) -> bool:
         logger.info("Deleting cards")
         with open(_paths.CARDS_TO_DELETE, "r", encoding="utf8") as card_file:
             card_list = json.load(card_file, encoding="utf8")
@@ -140,9 +141,11 @@ class Command(BaseCommand):
             card = Card.objects.get(name=card_name)
             card.delete()
 
-    def create_cards(self) -> None:
+        return True
+
+    def create_cards(self) -> bool:
         logger.info("Creating new cards")
-        with open(_paths.CARDS_TO_CREATE, "r", encoding="utf8") as card_file:
+        with open(_paths.CARDS_TO_CREATE_PATH, "r", encoding="utf8") as card_file:
             card_list = json.load(card_file, encoding="utf8")
 
         for _, card_data in card_list.items():
@@ -152,7 +155,9 @@ class Command(BaseCommand):
             card.full_clean()
             card.save()
 
-    def update_cards(self) -> None:
+        return True
+
+    def update_cards(self) -> bool:
         logger.info("Updating cards")
         with open(_paths.CARDS_TO_UPDATE, "r", encoding="utf8") as card_file:
             card_list = json.load(card_file, encoding="utf8")
@@ -166,7 +171,9 @@ class Command(BaseCommand):
 
             for field, change in card_diff.items():
                 if field in {
+                    "colour_count",
                     "colour_flags",
+                    "colour_sort_key",
                     "colour_identity_flags",
                     "display_name",
                     "is_reserved",
@@ -178,6 +185,7 @@ class Command(BaseCommand):
                     "power",
                     "rules_text",
                     "scryfall_oracle_id",
+                    "side",
                     "subtype",
                     "toughness",
                     "type",
@@ -189,8 +197,9 @@ class Command(BaseCommand):
                     )
             card.full_clean()
             card.save()
+        return True
 
-    def create_card_links(self) -> None:
+    def create_card_links(self) -> bool:
         logger.info("Creating card links")
         with open(_paths.CARD_LINKS_TO_CREATE, "r", encoding="utf8") as lnks_file:
             link_list = json.load(lnks_file, encoding="utf8")
@@ -200,8 +209,9 @@ class Command(BaseCommand):
             for link in links:
                 card_obj.links.add(Card.objects.get(name=link, is_token=False))
             card_obj.save()
+        return True
 
-    def create_card_printings(self) -> None:
+    def create_card_printings(self) -> bool:
         logger.info("Creating card printings")
         with open(_paths.PRINTINGS_TO_CREATE, "r", encoding="utf8") as printing_file:
             printing_list = json.load(printing_file, encoding="utf8")
@@ -245,8 +255,28 @@ class Command(BaseCommand):
                 )
                 raise
             printing.save()
+        return True
 
-    def create_printed_languages(self) -> None:
+    def delete_card_printings(self) -> bool:
+        logger.info("Deleting card printings")
+        with open(_paths.PRINTINGS_TO_DELETE, "r", encoding="utf8") as printings_file:
+            printing_list = json.load(printings_file, encoding="utf8")
+
+        for json_id, _ in printing_list.items():
+            printing = CardPrinting.objects.get(json_id=json_id)
+            if printing.printed_languages.filter(
+                physical_cards__ownerships__isnull=False
+            ):
+                if not _query.query_yes_no(
+                    f"Trying to delete {printing} but it has ownerships. Continue?",
+                    "no",
+                ):
+                    return False
+
+            printing.delete()
+        return True
+
+    def create_printed_languages(self) -> bool:
         logger.info("Creating card printing languages")
         with open(_paths.PRINTLANGS_TO_CREATE, "r", encoding="utf8") as printlang_file:
             printlang_list = json.load(printlang_file, encoding="utf8")
@@ -277,8 +307,9 @@ class Command(BaseCommand):
                     f"Failed to validate CardPrintingLanguage {printed_language}"
                 )
                 raise
+        return True
 
-    def create_physical_cards(self) -> None:
+    def create_physical_cards(self) -> bool:
         logger.info("Creating physical cards")
         with open(
             _paths.PHYSICAL_CARDS_TO_CREATE, "r", encoding="utf8"
@@ -297,8 +328,9 @@ class Command(BaseCommand):
                     card_printing__json_id=printing_uid, language=language
                 )
                 printed_language.physical_cards.add(physical_card)
+        return True
 
-    def create_rulings(self) -> None:
+    def create_rulings(self) -> bool:
         logger.info("Creating rulings")
         with open(_paths.RULINGS_TO_CREATE, "r", encoding="utf8") as rulings_file:
             ruling_list = json.load(rulings_file, encoding="utf8")
@@ -313,8 +345,9 @@ class Command(BaseCommand):
 
             ruling.full_clean()
             ruling.save()
+        return True
 
-    def delete_rulings(self):
+    def delete_rulings(self) -> bool:
         logger.info("Deleting rulings")
         with open(_paths.RULINGS_TO_DELETE, "r", encoding="utf8") as rulings_file:
             ruling_list = json.load(rulings_file, encoding="utf8")
@@ -324,7 +357,9 @@ class Command(BaseCommand):
             for ruling_text in rulings:
                 CardRuling.objects.get(card=card, text=ruling_text).delete()
 
-    def create_legalities(self) -> None:
+        return True
+
+    def create_legalities(self) -> bool:
         logger.info("Creating legalities")
         with open(_paths.LEGALITIES_TO_CREATE, "r", encoding="utf8") as legalities_file:
             legality_list = json.load(legalities_file, encoding="utf8")
@@ -344,8 +379,9 @@ class Command(BaseCommand):
 
             legality.full_clean()
             legality.save()
+        return True
 
-    def delete_legalities(self):
+    def delete_legalities(self) -> bool:
         logger.info("Deleting legalities")
         with open(_paths.LEGALITIES_TO_DELETE, "r", encoding="utf8") as legalities_file:
             legality_list = json.load(legalities_file, encoding="utf8")
@@ -355,3 +391,22 @@ class Command(BaseCommand):
             for format_code in legalities:
                 format_obj = Format.objects.get(code=format_code)
                 CardLegality.objects.get(card=card, format=format_obj).delete()
+
+        return True
+
+    def update_legalities(self) -> bool:
+        logger.info("Updating legalities")
+        with open(_paths.LEGALITIES_TO_UPDATE, "r", encoding="utf8") as legalities_file:
+            legality_list = json.load(legalities_file, encoding="utf8")
+
+        for card_name, changes in legality_list.items():
+            card = Card.objects.get(name=card_name)
+            for format_name, change in changes.items():
+                legality = CardLegality.objects.get(
+                    card=card, format__code=format_name, restriction=change["from"]
+                )
+                legality.restriction = change["to"]
+                legality.full_clean()
+                legality.save()
+
+        return True
