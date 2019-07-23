@@ -70,7 +70,7 @@ class LoyaltyReplaceTestCase(TestCase):
         """
         Test that a card with a 0 loyalty cost ability is converted correctly
         """
-        rules = "0: Some rules."
+        rules = "[0]: Some rules."
         self.assertEqual(
             '<i class="ms ms-loyalty-0 ms-loyalty-zero"></i>: Some rules.',
             replace_loyalty_symbols(rules),
@@ -80,7 +80,7 @@ class LoyaltyReplaceTestCase(TestCase):
         """
         Test that a card with a positive loyalty cost ability is converted correctly
         """
-        rules = "+5: Some rules."
+        rules = "[+5]: Some rules."
         self.assertEqual(
             '<i class="ms ms-loyalty-5 ms-loyalty-up"></i>: Some rules.',
             replace_loyalty_symbols(rules),
@@ -90,7 +90,7 @@ class LoyaltyReplaceTestCase(TestCase):
         """
         Test that a card with a negative loyalty cost ability is converted correctly
         """
-        rules = "−3: Some rules."
+        rules = "[−3]: Some rules."
         self.assertEqual(
             '<i class="ms ms-loyalty-3 ms-loyalty-down"></i>: Some rules.',
             replace_loyalty_symbols(rules),
