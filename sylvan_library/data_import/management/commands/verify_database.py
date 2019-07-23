@@ -198,7 +198,7 @@ class Command(BaseCommand):
 
         high_count_single_face_cards = (
             PhysicalCard.objects.exclude(
-                layout__in=("split", "flip", "transform", "meld")
+                layout__in=("split", "flip", "transform", "meld", "aftermath")
             )
             .annotate(printlang_count=Count("printed_languages"))
             .exclude(printlang_count__lte=1)
