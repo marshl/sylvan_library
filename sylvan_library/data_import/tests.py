@@ -14,58 +14,64 @@ class StagedCardTestCase(TestCase):
         """
         Tests that a card with multiple types has the correct type string
         """
-        staged_card = StagedCard({"types": ["Legendary", "Creature"]})
-        self.assertEqual(staged_card.get_types(), "Legendary Creature")
+        staged_card = StagedCard({"name": "test", "types": ["Legendary", "Creature"]})
+        self.assertEqual(staged_card.type, "Legendary Creature")
 
     def test_is_reserved(self):
         """
         Tests the reserved status of a card
         """
-        staged_card = StagedCard({"reserved": True})
-        self.assertTrue(staged_card.is_reserved())
+        staged_card = StagedCard({"name": "test", "isReserved": True})
+        self.assertTrue(staged_card.is_reserved)
 
     def test_colour_weight(self):
         """
         Tests the colour weight of a card
         """
-        staged_card = StagedCard({"manaCost": "{1}{G}{G}", "convertedManaCost": 3})
-        self.assertEqual(2, staged_card.get_colour_weight())
+        staged_card = StagedCard(
+            {"name": "test", "manaCost": "{1}{G}{G}", "convertedManaCost": 3}
+        )
+        self.assertEqual(2, staged_card.colour_weight)
 
     def test_colour_weight_colourless(self):
         """
         Tests that a colourless card has the correct colour weight
         """
-        staged_card = StagedCard({"manaCost": "{11}", "convertedManaCost": 11})
-        self.assertEqual(0, staged_card.get_colour_weight())
+        staged_card = StagedCard(
+            {"name": "test", "manaCost": "{11}", "convertedManaCost": 11}
+        )
+        self.assertEqual(0, staged_card.colour_weight)
 
     def test_colour_weight_heavy(self):
         """
         Tests that a card with only coloured mana symbols has the correct colour weight
         """
-        staged_card = StagedCard({"manaCost": "{B}{B}{B}{B}", "convertedManaCost": 4})
-        self.assertEqual(4, staged_card.get_colour_weight())
+        staged_card = StagedCard(
+            {"name": "test", "manaCost": "{B}{B}{B}{B}", "convertedManaCost": 4}
+        )
+        self.assertEqual(4, staged_card.colour_weight)
 
     def test_colour_weight_none(self):
         """
         Tests that a card without any mana cost has zero colour weight
         """
-        staged_card = StagedCard({})
-        self.assertEqual(0, staged_card.get_colour_weight())
+        staged_card = StagedCard({"name": "test"})
+        self.assertEqual(0, staged_card.colour_weight)
 
     def test_token_type(self):
         """
         Tests that a token card has its types parsed correctly
         """
         staged_card = StagedCard(
-            {"type": "Token Legendary Creature — Monkey"}, is_token=True
+            {"name": "test", "type": "Token Legendary Creature — Monkey"}, is_token=True
         )
-        self.assertEqual("Token Legendary Creature", staged_card.get_types())
+        self.assertEqual("Token Legendary Creature", staged_card.type)
 
     def test_token_subtype(self):
         """
         Tests that a token card has its subtypes parsed correctly
         """
         staged_card = StagedCard(
-            {"type": "Token Legendary Creature — Monkey"}, is_token=True
+            {"name": "test", "type": "Token Legendary Creature — Monkey"}, is_token=True
         )
-        self.assertEqual("Monkey", staged_card.get_subtypes())
+        self.assertEqual("Monkey", staged_card.subtype)

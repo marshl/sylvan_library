@@ -95,23 +95,23 @@ def convert_number_field_to_numerical(val: str) -> float:
 
 
 class StagedCard:
-    def __init__(self, json_data: dict, is_token: bool):
+    def __init__(self, card_data: dict, is_token: bool = False):
         self.is_token = is_token
-        self.name = self.display_name = json_data["name"]
-        self.scryfall_oracle_id = json_data.get("scryfallOracleId")
-        if self.is_token:
+        self.name = self.display_name = card_data["name"]
+        self.scryfall_oracle_id = card_data.get("scryfallOracleId")
+        if self.is_token and self.scryfall_oracle_id:
             self.name = f"{self.name} ({self.scryfall_oracle_id.split('-')[0]})"
 
-        self.cost = json_data.get("manaCost")
-        self.cmc = float(json_data.get("convertedManaCost", 0.0))
+        self.cost = card_data.get("manaCost")
+        self.cmc = float(card_data.get("convertedManaCost", 0.0))
         self.colour_flags = (
-            Colour.colour_codes_to_flags(json_data["colors"])
-            if "colors" in json_data
+            Colour.colour_codes_to_flags(card_data["colors"])
+            if "colors" in card_data
             else 0
         )
         self.colour_identity_flags = (
-            Colour.colour_codes_to_flags(json_data["colorIdentity"])
-            if "colorIdentity" in json_data
+            Colour.colour_codes_to_flags(card_data["colorIdentity"])
+            if "colorIdentity" in card_data
             else 0
         )
         self.colour_count = bin(self.colour_flags).count("1")
@@ -125,57 +125,57 @@ class StagedCard:
             else:
                 self.colour_weight = int(self.cmc) - int(generic_mana.group(0))
 
-        self.layout = json_data["layout"]
+        self.layout = card_data.get("layout")
 
-        self.power = json_data.get("power")
+        self.power = card_data.get("power")
         self.num_power = float(
-            convert_number_field_to_numerical(json_data["power"])
-            if "power" in json_data
+            convert_number_field_to_numerical(card_data["power"])
+            if "power" in card_data
             else 0
         )
-        self.toughness = json_data.get("toughness")
+        self.toughness = card_data.get("toughness")
         self.num_toughness = float(
-            convert_number_field_to_numerical(json_data["toughness"])
-            if "toughness" in json_data
+            convert_number_field_to_numerical(card_data["toughness"])
+            if "toughness" in card_data
             else 0
         )
-        self.loyalty = json_data.get("loyalty")
+        self.loyalty = card_data.get("loyalty")
         self.num_loyalty = float(
-            convert_number_field_to_numerical(json_data["loyalty"])
-            if "loyalty" in json_data
+            convert_number_field_to_numerical(card_data["loyalty"])
+            if "loyalty" in card_data
             else 0
         )
 
-        self.rules_text = json_data.get("text")
+        self.rules_text = card_data.get("text")
 
         self.type = None
         if self.is_token:
-            if "type" in json_data:
-                self.type = json_data["type"].split("—")[0].strip()
-        elif "types" in json_data:
+            if "type" in card_data:
+                self.type = card_data["type"].split("—")[0].strip()
+        elif "types" in card_data:
             self.type = " ".join(
-                (json_data.get("supertypes") or []) + (json_data["types"])
+                (card_data.get("supertypes") or []) + (card_data["types"])
             )
 
         self.subtype = None
         if self.is_token:
-            if "type" in json_data:
-                self.subtype = json_data["type"].split("—")[-1].strip()
-        elif "subtypes" in json_data:
-            self.subtype = " ".join(json_data.get("subtypes"))
+            if "type" in card_data:
+                self.subtype = card_data["type"].split("—")[-1].strip()
+        elif "subtypes" in card_data:
+            self.subtype = " ".join(card_data.get("subtypes"))
 
-        self.rulings = json_data.get("rulings", [])
-        self.legalities = json_data.get("legalities", [])
+        self.rulings = card_data.get("rulings", [])
+        self.legalities = card_data.get("legalities", [])
         self.has_other_names = (
-            "names" in json_data and self.layout != "double_faced_token"
+            "names" in card_data and self.layout != "double_faced_token"
         )
         self.other_names = (
-            [n for n in json_data["names"] if n != self.name]
+            [n for n in card_data["names"] if n != self.name]
             if self.has_other_names
             else []
         )
-        self.side = json_data.get("side")
-        self.is_reserved = bool(json_data.get("isReserved", False))
+        self.side = card_data.get("side")
+        self.is_reserved = bool(card_data.get("isReserved", False))
 
     def to_dict(self) -> dict:
         return {
