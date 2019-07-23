@@ -3,9 +3,7 @@ Module for the update_database command
 """
 import logging
 import time
-import datetime
 from typing import List, Optional, Dict, Tuple, Set as SetType
-from django.db import transaction
 
 from django.core.management.base import BaseCommand
 from cards.models import (
@@ -15,23 +13,12 @@ from cards.models import (
     CardPrinting,
     CardPrintingLanguage,
     CardRuling,
-    Colour,
-    Language,
-    PhysicalCard,
-    Rarity,
     Set,
 )
-from data_import.importers import JsonImporter
-from data_import.management.data_import_command import DataImportCommand
-
-# from data_import.staging import StagedCard, StagedSet
 import os
 import _paths
 import json
 from datetime import date
-
-logger = logging.getLogger("django")
-
 from data_import.staging import (
     StagedCard,
     StagedBlock,
@@ -42,6 +29,8 @@ from data_import.staging import (
     StagedCardPrinting,
     StagedRuling,
 )
+
+logger = logging.getLogger("django")
 
 
 class Command(BaseCommand):
@@ -83,14 +72,14 @@ class Command(BaseCommand):
 
     rulings_to_create = []  # type: List[StagedRuling]
     rulings_to_delete = {}  # type: Dict[str, List[str]]
-    cards_checked_For_rulings = set()  # type: Set
+    cards_checked_For_rulings = set()  # type: set
 
-    cards_checked_for_legalities = set()  # type: Set
+    cards_checked_for_legalities = set()  # type: set
     legalities_to_create = []  # type: List[StagedLegality]
     legalities_to_delete = {}  # type: Dict[str, List[str]]
     legalities_to_update = {}  # type: Dict[str, Dict[str, Dict[str, str]]]
 
-    card_links_to_create = {}  # type: Dict[str, List[str]]
+    card_links_to_create = {}  # type: Dict[str, set]
 
     force_update = False
     start_time = None
@@ -260,7 +249,6 @@ class Command(BaseCommand):
 
             uids = []
             if new_printlang.other_names:
-
                 for pl in new_printlangs:
                     if (
                         pl.base_name in new_printlang.other_names
@@ -391,9 +379,9 @@ class Command(BaseCommand):
                     continue
 
                 if staged_card.name not in self.card_links_to_create:
-                    self.card_links_to_create[staged_card.name] = []
+                    self.card_links_to_create[staged_card.name] = set()
 
-                self.card_links_to_create[staged_card.name].append(other_name)
+                self.card_links_to_create[staged_card.name].add(other_name)
 
     def get_object_differences(
         self, old_object, new_object, fields: SetType[str]
