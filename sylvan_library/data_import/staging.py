@@ -345,7 +345,15 @@ class StagedCardPrintingLanguage:
         self.text = foreign_data.get("text")
         self.type = foreign_data.get("type")
 
-        self.other_names = card_data.get("names", [])
+        self.has_other_names = (
+            "names" in card_data and card_data["layout"] != "double_faced_token"
+        )
+        self.other_names = (
+            [n for n in card_data["names"] if n != staged_card_printing.card_name]
+            if self.has_other_names
+            else []
+        )
+
         self.base_name = card_data["name"]
         if self.base_name in self.other_names:
             self.other_names.remove(self.base_name)
