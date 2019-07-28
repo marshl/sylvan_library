@@ -15,7 +15,7 @@
                     {% include 'website/card_image.html' with printing=result.selected_printing %}
                 </span>
             <span class="image-actions">
-                    {% if result.card.layout == 'split' %}
+                    {% if result.can_rotate %}
                         <button class="js-image-split-btn">Rotate</button>
                     {% endif %}
                 {% if result.card.layout == 'flip' %}

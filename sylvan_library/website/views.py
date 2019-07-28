@@ -262,13 +262,14 @@ def ajax_search_result_links(request, card_id: int):
         .last()
     )
     if printlang:
-        links.append(
+        links.insert(
+            0,
             {
                 "name": "View on Gatherer",
                 "url": "https://gatherer.wizards.com/Pages/Card/Details.aspx?{}".format(
                     urllib.parse.urlencode({"multiverseid": printlang.multiverse_id})
                 ),
-            }
+            },
         )
 
     return render(request, "website/results/search_result_links.html", {"links": links})

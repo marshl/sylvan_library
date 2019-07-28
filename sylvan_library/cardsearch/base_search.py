@@ -62,6 +62,13 @@ class SearchResult:
         """
         return self.card.type and "Planeswalker" in self.card.type
 
+    def can_rotate(self) -> bool:
+        """
+        Returns whether or not this card should have be able to rotate its image
+        :return: True if this card can rotate, otherwise False
+        """
+        return self.card.layout in ("split", "aftermath", "planar")
+
 
 def create_colour_param(
     colour_params: List[Bit],
