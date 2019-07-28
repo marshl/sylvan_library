@@ -123,7 +123,7 @@ class Card(models.Model):
         Gets all the names of this card joined together with the given delimiter
         :return: THe names of this card joined together (.e.g Assault / Battery)
         """
-        return delimiter.join(s.name for s in self.get_all_sides(sort=True))
+        return delimiter.join(s.display_name for s in self.get_all_sides(sort=True))
 
     @property
     def is_wide(self):

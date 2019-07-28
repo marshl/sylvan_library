@@ -209,25 +209,27 @@ def ajax_search_result_decks(request, card_id: int):
 
 def ajax_search_result_links(request, card_id: int):
     card = Card.objects.get(pk=card_id)
-    linked_card_name = card.name if card.layout != "split" else card.get_linked_name()
+    linked_card_name = (
+        card.display_name if card.layout != "split" else card.get_linked_name()
+    )
 
     links = [
         {
             "name": "TCGPlayer Decks",
             "url": "https://decks.tcgplayer.com/magic/deck/search?{}".format(
-                urllib.parse.urlencode({"contains": card.name, "page": 1})
+                urllib.parse.urlencode({"contains": card.display_name, "page": 1})
             ),
         },
         {
             "name": "Card Analysis on EDHREC",
             "url": "http://edhrec.com/route/?{}".format(
-                urllib.parse.urlencode({"cc": card.name})
+                urllib.parse.urlencode({"cc": card.display_name})
             ),
         },
         {
             "name": "Search DeckStats for this card",
             "url": "https://deckstats.net/decks/search/?{}".format(
-                urllib.parse.urlencode({"search_cards[]": card.name})
+                urllib.parse.urlencode({"search_cards[]": card.display_name})
             ),
         },
         {
@@ -241,7 +243,13 @@ def ajax_search_result_links(request, card_id: int):
         {
             "name": "View on Starcity Games",
             "url": "http://www.starcitygames.com/results?{}".format(
-                urllib.parse.urlencode({"name": card.name})
+                urllib.parse.urlencode({"name": card.display_name})
+            ),
+        },
+        {
+            "name": "View on Scryfall",
+            "url": "https://scryfall.com/search?q={}".format(
+                urllib.parse.urlencode({"name": card.display_name})
             ),
         },
     ]
