@@ -38,6 +38,8 @@ $(function () {
     $(this).on('mouseenter', '.js-card-link', function (event) {
         let imagePath = $(this).data('image-path');
         let cardName = $(this).data('card-name');
+        let rotation = $(this).data('rotation');
+
         let popupContainer = $('.js-image-popup-container');
         if (!popupContainer.length) {
             popupContainer = $('<div class="js-image-popup-container image-popup-container"><img src="" alt=""/></div>');
@@ -56,8 +58,9 @@ $(function () {
 
         popupContainer.css({
             top: (elemRect.top - bodyRect.top + $(this).height() - popupContainer.height() / 2) + "px",
-            left: (left) + "px"
-        })
+            left: (left) + "px",
+            transform: "rotate(" + (rotation ? rotation : '0') + "deg)"
+        });
     });
 
     $(this).on('mouseleave', '.js-card-link', function () {
