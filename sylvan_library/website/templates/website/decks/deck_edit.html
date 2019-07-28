@@ -130,6 +130,19 @@
                     </div>
                 </div>
 
+                <div class="group-container">
+                    <div class="row">
+                        <div class="field-container" style="flex-direction: row;">
+                            {{ deck_form.is_prototype.label_tag }}
+                            {{ deck_form.is_prototype }}
+                        </div>
+                        <div class="field-container" style="flex-direction: row;">
+                            {{ deck_form.is_private.label_tag }}
+                            {{ deck_form.is_private }}
+                        </div>
+                    </div>
+                </div>
+
                 {% if deck_form.errors %}
                     <div class="group-container">
 

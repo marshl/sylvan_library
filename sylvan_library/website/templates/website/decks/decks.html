@@ -7,9 +7,11 @@
 {% block content %}
     <div class="body-content">
         <div class="main-content">
-            <h1>My Decks</h1>
-            <a href="{% url 'website:create_deck' %}">Create New Deck</a>
-            <a href="{% url 'website:deck_stats' %}">Deck Stats</a>
+            <h1>Your Decks</h1>
+        <div style="margin: 15px;">
+            <a class="action-button" href="{% url 'website:create_deck' %}">Create New Deck</a>
+            <a class="action-button" href="{% url 'website:deck_stats' %}">Deck Stats</a>
+        </div>
             <div class="search-result-list">
                 {% for deck in decks %}
                     <div class="search-result js-deck-result" style="flex-direction: row;" data-deck-id="{{ deck.id }}">
@@ -18,7 +20,13 @@
                         </div>
                         <div>
                             <h2 class="search-result-title">
-                                <a href="{% url 'website:deck_view' deck_id=deck.id %}">{{ deck.name }}</a>
+                                <a href="{% url 'website:deck_view' deck_id=deck.id %}">
+                                    {% if deck.is_prototype %}
+                                        <em>{{ deck.name }} [prototype]</em>
+                                    {% else %}
+                                        {{ deck.name }}
+                                    {% endif %}
+                                </a>
                             </h2>
                             {% if deck.description %}
                                 <h3 class="subtitle">

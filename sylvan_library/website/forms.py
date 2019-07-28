@@ -304,6 +304,8 @@ class DeckForm(forms.ModelForm):
             "format",
             "description",
             "exclude_colours",
+            "is_prototype",
+            "is_private",
         ]
 
     def clean(self) -> dict:

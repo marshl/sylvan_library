@@ -10,8 +10,9 @@
         <div class="main-content" style="color:white;">
             <div class="group-container">
                 <div class="field-container">
-                    <h1>{{ deck.name }}</h1>
-                    <j2>{{ deck.subtitle }}</j2>
+                    <h1>{{ deck.name }} {% if deck.is_prototype %}<em>[prototype]</em>{% endif %}</h1>
+                    <h2>{{ deck.subtitle }}</h2>
+
                 </div>
                 <div class="field-container">
                     {{ deck.description }}

@@ -66,6 +66,8 @@ class Deck(models.Model):
     exclude_colours = models.ManyToManyField(
         Colour, related_name="exclude_from_decks", blank=True
     )
+    is_prototype = models.BooleanField(default=False)
+    is_private = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
