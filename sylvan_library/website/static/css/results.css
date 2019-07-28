@@ -211,20 +211,23 @@
     z-index: 100;
 }
 
-.card-image.clicked.flip {
-    transform: rotate(180deg);
-}
-
 .card-image.clicked.double-faced, .card-image.clicked.meld {
     transform: rotateY(1turn);
 }
 
-.card-image.split {
-    transform: rotate(90deg);
+.card-image.rotated {
     z-index: 100;
 }
 
-.card-image.flip {
+.card-image.layout-split.rotated, .card-image.layout-planar.rotated {
+    transform: rotate(90deg);
+}
+
+.card-image.layout-aftermath.rotated {
+    transform: rotate(-90deg);
+}
+
+.card-image.layout-flip.rotated {
     transform: rotate(180deg);
 }
 

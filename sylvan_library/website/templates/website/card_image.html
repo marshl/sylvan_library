@@ -2,7 +2,7 @@
 {% load staticfiles %}
 
 {% block content %}
-    <img class="card-image js-card-result-image
+    <img class="card-image js-card-result-image layout-{{ result.card.layout }}
             {% if printing.card.is_wide %}wide{% endif %}
             {% if printing.card.layout == 'flip' and printing.card.side == 'b' %}flip{% endif %}"
          src="{% static printing|card_printing_image_url|safe %}" alt="{{ printing.card.name }}"
