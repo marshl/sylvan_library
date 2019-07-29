@@ -15,11 +15,14 @@
                     {% include 'website/card_image.html' with printing=result.selected_printing %}
                 </span>
             <span class="image-actions">
-                    {% if result.can_rotate %}
-                        <button class="js-image-split-btn">Rotate</button>
-                    {% endif %}
+                {% if result.can_rotate %}
+                    <button class="js-image-split-btn">Rotate</button>
+                {% endif %}
                 {% if result.card.layout == 'flip' %}
                     <button class="js-image-flip-btn">Flip</button>
+                {% endif %}
+                {% if result.card.layout == 'transform' or result.card.layout == 'meld'%}
+                    <button class="js-image-transform-btn">Transform</button>
                 {% endif %}
                 </span>
         </div>

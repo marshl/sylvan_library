@@ -186,11 +186,9 @@
     color: green;
 }
 
-
 .card-image {
     border-radius: 6px;
     transition: .3s;
-    position: relative;
 }
 
 .card-image.wide {
@@ -206,17 +204,8 @@
     border-radius: 13px;
 }
 
-.card-image.clicked.split {
-    transform: rotate(90deg);
-    z-index: 100;
-}
-
-.card-image.clicked.double-faced, .card-image.clicked.meld {
-    transform: rotateY(1turn);
-}
-
 .card-image.rotated {
-    z-index: 100;
+    z-index: 10;
 }
 
 .card-image.layout-split.rotated, .card-image.layout-planar.rotated {
@@ -231,12 +220,37 @@
     transform: rotate(180deg);
 }
 
-.card-image.double-faced, .card-image.meld {
-    transform: rotateY(1turn);
+.card-image.side-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.js-card-result-image-container .card-image.flipping {
+    /*transition: transform 1s ease-in-out;*/
+    backface-visibility: hidden;
+    transform: rotateY(0deg);
+}
+
+.js-card-result-image-container.flipped .card-image.flipping.side-front {
+    transform: rotateY(-180deg);
+}
+.js-card-result-image-container .card-image.flipping.side-back{
+    transform: rotateY(180deg);
+}
+
+.js-card-result-image-container.flipped .card-image.flipping.side-back {
+    transform: rotateY(0deg);
+}
+
+.js-card-result-image-container {
+    display: block;
+    position: relative;
+    perspective: 1000px;
 }
 
 .card-image-container {
-    transition: .3s;
+    transition: .3s ease-in-out;
 }
 
 .subtitle.type-line {

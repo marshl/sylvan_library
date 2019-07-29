@@ -183,4 +183,12 @@ $(function () {
             .find('.js-card-result-image')
             .toggleClass('rotated');
     });
+
+
+    $(this).on('click', '.js-image-transform-btn', function () {
+        $(this)
+            .closest('.js-card-result')
+            .find('.js-card-result-image-container')
+            .toggleClass('flipped');
+    });
 });
