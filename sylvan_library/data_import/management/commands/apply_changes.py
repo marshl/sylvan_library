@@ -219,6 +219,7 @@ class Command(BaseCommand):
                     "colour_flags",
                     "colour_sort_key",
                     "colour_identity_flags",
+                    "colour_indicator_flags",
                     "colour_weight",
                     "display_name",
                     "is_reserved",

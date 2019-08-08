@@ -109,15 +109,12 @@ class StagedCard:
 
         self.cost = card_data.get("manaCost")
         self.cmc = float(card_data.get("convertedManaCost", 0.0))
-        self.colour_flags = (
-            Colour.colour_codes_to_flags(card_data["colors"])
-            if "colors" in card_data
-            else 0
+        self.colour_flags = Colour.colour_codes_to_flags(card_data.get("colors", []))
+        self.colour_identity_flags = Colour.colour_codes_to_flags(
+            card_data.get("colorIdentity", [])
         )
-        self.colour_identity_flags = (
-            Colour.colour_codes_to_flags(card_data["colorIdentity"])
-            if "colorIdentity" in card_data
-            else 0
+        self.colour_indicator_flags = Colour.colour_codes_to_flags(
+            card_data.get("colorIndicator", [])
         )
         self.colour_count = bin(self.colour_flags).count("1")
         self.colour_sort_key = COLOUR_TO_SORT_KEY[int(self.colour_flags)]
@@ -212,6 +209,7 @@ class StagedCard:
             "colour_flags": self.colour_flags,
             "colour_count": self.colour_count,
             "colour_identity_flags": self.colour_identity_flags,
+            "colour_indicator_flags": self.colour_indicator_flags,
             "colour_sort_key": self.colour_sort_key,
             "colour_weight": self.colour_weight,
             "cost": self.cost,

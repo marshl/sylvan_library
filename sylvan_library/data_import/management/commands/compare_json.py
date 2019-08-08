@@ -532,6 +532,14 @@ class Command(BaseCommand):
                 "to": staged_card.colour_identity_flags,
             }
 
+        if staged_card.colour_indicator_flags != int(
+            existing_card.colour_indicator_flags
+        ):
+            differences["colour_indicator_flags"] = {
+                "from": int(existing_card.colour_indicator_flags),
+                "to": staged_card.colour_indicator_flags,
+            }
+
         return differences
 
     def get_card_printing_differences(

@@ -49,6 +49,7 @@ class Card(models.Model):
     cmc = models.FloatField()
     colour_flags = BitField(flags=("white", "blue", "black", "red", "green"))
     colour_identity_flags = BitField(flags=("white", "blue", "black", "red", "green"))
+    colour_indicator_flags = BitField(flags=("white", "blue", "black", "red", "green"))
     colour_count = models.IntegerField()
     colour_sort_key = models.IntegerField()
     colour_weight = models.IntegerField()
