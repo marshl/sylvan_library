@@ -20,6 +20,7 @@ pre-commit = "==1.16.1"
 gunicorn = "*"
 
 [dev-packages]
+jupyter = "*"
 jupyter_core = "==4.4.0"
 jupyter-client = "==5.2.3"
 ipython = "==7.4.0"
