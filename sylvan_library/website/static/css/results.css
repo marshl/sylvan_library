@@ -204,10 +204,6 @@
     border-radius: 13px;
 }
 
-.card-image.rotated {
-    z-index: 10;
-}
-
 .card-image.layout-split.rotated, .card-image.layout-planar.rotated {
     transform: rotate(90deg);
 }
@@ -226,8 +222,11 @@
     left: 0;
 }
 
+.js-card-result-image-container {
+    z-index: 10;
+}
+
 .js-card-result-image-container .card-image.flipping {
-    /*transition: transform 1s ease-in-out;*/
     backface-visibility: hidden;
     transform: rotateY(0deg);
 }
@@ -235,7 +234,8 @@
 .js-card-result-image-container.flipped .card-image.flipping.side-front {
     transform: rotateY(-180deg);
 }
-.js-card-result-image-container .card-image.flipping.side-back{
+
+.js-card-result-image-container .card-image.flipping.side-back {
     transform: rotateY(180deg);
 }
 
