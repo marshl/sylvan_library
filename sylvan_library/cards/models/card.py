@@ -126,5 +126,9 @@ class Card(models.Model):
         return delimiter.join(s.display_name for s in self.get_all_sides(sort=True))
 
     @property
-    def is_wide(self):
+    def is_wide(self) -> bool:
+        """
+        Returns whether or not this is an oversized cardd
+        :return: True if this is an oversized card, otherwise False
+        """
         return self.layout == "planar"

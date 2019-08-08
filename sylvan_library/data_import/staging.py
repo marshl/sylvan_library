@@ -4,7 +4,7 @@ Module for staging classes
 import datetime
 import math
 import re
-from typing import Dict, List, Optional
+from typing import List
 
 from cards.models import Card, Colour
 
@@ -94,7 +94,12 @@ def convert_number_field_to_numerical(val: str) -> float:
     return 0.0
 
 
+# pylint: disable=too-many-instance-attributes
 class StagedCard:
+    """
+    Class for staging a card record from json
+    """
+
     def __init__(self, card_data: dict, is_token: bool = False):
         self.is_token = is_token
         self.name = self.display_name = card_data["name"]
@@ -117,34 +122,11 @@ class StagedCard:
         self.colour_count = bin(self.colour_flags).count("1")
         self.colour_sort_key = COLOUR_TO_SORT_KEY[int(self.colour_flags)]
 
-        self.colour_weight = 0
-        if self.cost:
-            generic_mana = re.search(r"(\d+)", self.cost)
-            if not generic_mana:
-                self.colour_weight = int(self.cmc)
-            else:
-                self.colour_weight = int(self.cmc) - int(generic_mana.group(0))
-
         self.layout = card_data.get("layout")
 
         self.power = card_data.get("power")
-        self.num_power = float(
-            convert_number_field_to_numerical(card_data["power"])
-            if "power" in card_data
-            else 0
-        )
         self.toughness = card_data.get("toughness")
-        self.num_toughness = float(
-            convert_number_field_to_numerical(card_data["toughness"])
-            if "toughness" in card_data
-            else 0
-        )
         self.loyalty = card_data.get("loyalty")
-        self.num_loyalty = float(
-            convert_number_field_to_numerical(card_data["loyalty"])
-            if "loyalty" in card_data
-            else 0
-        )
 
         self.rules_text = card_data.get("text")
 
@@ -177,7 +159,54 @@ class StagedCard:
         self.side = card_data.get("side")
         self.is_reserved = bool(card_data.get("isReserved", False))
 
+    @property
+    def colour_weight(self) -> int:
+        """
+        Gets the "colour weight" of the card, the number of coloured mana symbols te card has
+        :return: The card's colour weight
+        """
+        if not self.cost:
+            return 0
+
+        generic_mana = re.search(r"{(\d+)}", self.cost)
+        if not generic_mana:
+            return int(self.cmc)
+        return int(self.cmc) - int(generic_mana.group(1))
+
+    @property
+    def num_power(self) -> float:
+        """
+        Gets the numerical representation of the power of the card
+        :return: The numerical power of this card
+        """
+        return float(convert_number_field_to_numerical(self.power) if self.power else 0)
+
+    @property
+    def num_toughness(self) -> float:
+        """
+        Gets the numerical representation of the toughness of the card
+        :return: The numerical toughness of this card
+        """
+        return float(
+            convert_number_field_to_numerical(self.toughness) if self.toughness else 0
+        )
+
+    @property
+    def num_loyalty(self) -> float:
+        """
+        Gets the numerical representation  of the loyalty of this card
+        :return: THe numerical loyalty of this card
+        """
+        return float(
+            convert_number_field_to_numerical(self.loyalty) if self.loyalty else 0
+        )
+
     def to_dict(self) -> dict:
+        """
+        Returns all the properties of this card as a dictionarry
+        (this can then be stored in the list of cards to create)
+        :return:  All the fields of this object as a dictionary
+        """
         return {
             "cmc": self.cmc,
             "colour_flags": self.colour_flags,
@@ -205,7 +234,12 @@ class StagedCard:
         }
 
 
+# pylint: disable=too-many-instance-attributes, too-few-public-methods
 class StagedSet:
+    """
+    Class for staging a Set record from MTGJSON
+    """
+
     def __init__(self, set_data: dict):
         self.base_set_size = set_data["baseSetSize"]
         self.block = set_data.get("block")
@@ -223,6 +257,11 @@ class StagedSet:
         self.type = set_data["type"]
 
     def to_dict(self) -> dict:
+        """
+        Returns all the properties of this set as a dictionary
+        (this can then be stored in the list of sets to create)
+        :return:  All the fields of this object as a dictionary
+        """
         return {
             "base_set_size": self.base_set_size,
             "block": self.block,
@@ -240,7 +279,12 @@ class StagedSet:
         }
 
 
+# pylint: disable=too-many-instance-attributes
 class StagedCardPrinting:
+    """
+    Class for staging a CardPrinting record from MTGJSON
+    """
+
     def __init__(self, card_name: str, card_data: dict, set_data: dict):
         self.card_name = card_name
 
@@ -270,6 +314,11 @@ class StagedCardPrinting:
         self.is_new = False
 
     def to_dict(self):
+        """
+        Returns all the properties of this printing as a dictionary
+        (this can then be stored in the list of printings to create)
+        :return:  All the fields of this object as a dictionary
+        """
         return {
             "artist": self.artist,
             "border_colour": self.border_colour,
@@ -292,13 +341,23 @@ class StagedCardPrinting:
         }
 
 
+# pylint: disable=too-few-public-methods
 class StagedLegality:
+    """
+    Class for staging a CardLegality record from MTGJSON
+    """
+
     def __init__(self, card_name: str, format_code: str, restriction: str):
         self.card_name = card_name
         self.format_code = format_code
         self.restriction = restriction
 
     def to_dict(self) -> dict:
+        """
+        Returns all the properties of this legality as a dictionary
+        (this can then be stored in the list of legality to create)
+        :return:  All the fields of this object as a dictionary
+        """
         return {
             "card_name": self.card_name,
             "format": self.format_code,
@@ -306,13 +365,23 @@ class StagedLegality:
         }
 
 
+# pylint: disable=too-few-public-methods
 class StagedRuling:
+    """
+    Class for staging a CardRuling record from MTGJSON
+    """
+
     def __init__(self, card_name: str, text: str, ruling_date: str):
         self.card_name = card_name
         self.text = text
         self.ruling_date = ruling_date
 
     def to_dict(self) -> dict:
+        """
+        Returns all the properties of this ruling as a dictionary
+        (this can then be stored in the list of rulings to create)
+        :return:  All the fields of this object as a dictionary
+        """
         return {
             "card_name": self.card_name,
             "text": self.text,
@@ -321,15 +390,29 @@ class StagedRuling:
 
 
 class StagedBlock:
+    """
+    Class for staging a Block record from MTGJSON
+    """
+
     def __init__(self, name: str, release_date: datetime.date):
         self.name = name
         self.release_date = release_date
 
     def to_dict(self) -> dict:
+        """
+        Returns all the properties of this block as a dictionary
+        (this can then be stored in the list of blocks to create)
+        :return:  All the fields of this object as a dictionary
+        """
         return {"name": self.name, "release_date": self.release_date}
 
 
+# pylint: disable=too-few-public-methods
 class StagedCardPrintingLanguage:
+    """
+    Class for staging a CardPrintingLanguage record from MTGJSON
+    """
+
     def __init__(
         self,
         staged_card_printing: StagedCardPrinting,
@@ -364,6 +447,11 @@ class StagedCardPrintingLanguage:
         self.has_physical_card = False
 
     def to_dict(self) -> dict:
+        """
+        Returns all the properties of this printlang as a dictionary
+        (this can then be stored in the list of printlangs to create)
+        :return:  All the fields of this object as a dictionary
+        """
         return {
             "printing_uid": self.printing_uuid,
             "language": self.language,
@@ -376,12 +464,21 @@ class StagedCardPrintingLanguage:
 
 
 class StagedPhysicalCard:
+    """
+    Class for staging a PhysicalCard record from MTGJSON
+    """
+
     def __init__(self, printing_uuids: List[str], language_code: str, layout: str):
         self.printing_uids = printing_uuids
         self.language_code = language_code
         self.layout = layout
 
     def to_dict(self) -> dict:
+        """
+        Returns all the properties of this physical card as a dictionary
+        (this can then be stored in the list of physical cards to create)
+        :return:  All the fields of this object as a dictionary
+        """
         return {
             "printing_uids": self.printing_uids,
             "language": self.language_code,

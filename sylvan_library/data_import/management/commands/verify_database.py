@@ -682,8 +682,12 @@ class Command(BaseCommand):
         self.assert_card_rules_eq("Palladium Myr", "{T}: Add {C}{C}.")
         self.assert_card_rules_eq(
             "Ice Cauldron",
-            """{X}, {T}: You may exile a nonland card from your hand. You may cast that card for as long as it remains exiled. Put a charge counter on Ice Cauldron and note the type and amount of mana spent to pay this activation cost. Activate this ability only if there are no charge counters on Ice Cauldron.
-{T}, Remove a charge counter from Ice Cauldron: Add Ice Cauldron's last noted type and amount of mana. Spend this mana only to cast the last card exiled with Ice Cauldron.""",
+            """{X}, {T}: You may exile a nonland card from your hand. You may cast that card for \
+as long as it remains exiled. Put a charge counter on Ice Cauldron and note the type and amount of \
+mana spent to pay this activation cost. Activate this ability only if there are no charge counters \
+on Ice Cauldron.
+{T}, Remove a charge counter from Ice Cauldron: Add Ice Cauldron's last noted type and amount of \
+mana. Spend this mana only to cast the last card exiled with Ice Cauldron.""",
         )
 
     def test_card_layouts(self):

@@ -3,7 +3,10 @@ Module for the update_database command
 """
 import logging
 import time
-from typing import List, Optional, Dict, Tuple, Set as SetType
+import os
+from datetime import date
+import json
+from typing import List, Optional, Dict, Tuple, Set as SetType, Union
 
 from django.core.management.base import BaseCommand
 from cards.models import (
@@ -15,10 +18,7 @@ from cards.models import (
     CardRuling,
     Set,
 )
-import os
 import _paths
-import json
-from datetime import date
 from data_import.staging import (
     StagedCard,
     StagedBlock,
@@ -144,6 +144,8 @@ class Command(BaseCommand):
 
         for set_data in set_data_list:
             self.parse_set_data(set_data)
+            self.process_set_cards(set_data)
+            self.process_card_links(set_data)
 
         self.cards_to_delete = set(self.existing_cards.keys()).difference(
             self.cards_parsed
@@ -157,48 +159,16 @@ class Command(BaseCommand):
         self.log_stats()
 
     def parse_set_data(self, set_data: dict) -> None:
+        """
+        Parses a set dict and checks for updates/creates/deletes to be done
+        :param set_data: The MTGJSON set dict
+        """
         staged_set = StagedSet(set_data)
         if staged_set.code not in self.existing_sets:
             self.sets_to_create[staged_set.code] = staged_set
         else:
             existing_set = self.existing_sets[staged_set.code]
-            differences = self.get_object_differences(
-                existing_set,
-                staged_set,
-                {
-                    # "base_set_size",
-                    # "is_foil_only",
-                    # "is_online_only",
-                    "keyrune_code",
-                    # "mcm_id",
-                    # "mcm_name",
-                    # "mtgo_code",
-                    "name",
-                    # "tcgplayer_group_id",
-                    # "total_set_size",
-                    "card_count",
-                    "type",
-                },
-            )
-            if (not existing_set.block and staged_set.block) or (
-                existing_set.block and existing_set.block.name != staged_set.block
-            ):
-                differences["block"] = {
-                    "from": existing_set.block.name if existing_set.block else None,
-                    "to": staged_set.block,
-                }
-
-            if (
-                existing_set.release_date.strftime("%Y-%m-%d")
-                != staged_set.release_date
-            ):
-                differences["release_date"] = {
-                    "from": existing_set.release_date.strftime("%Y-%m-%d"),
-                    "to": staged_set.release_date,
-                }
-
-            if differences:
-                self.sets_to_update[staged_set.code] = differences
+            self.compare_sets(existing_set, staged_set)
 
         if staged_set.block and staged_set.block not in self.existing_blocks:
             block_to_create = self.blocks_to_create.get(staged_set.block)
@@ -211,37 +181,93 @@ class Command(BaseCommand):
                     block_to_create.release_date, staged_set.release_date
                 )
 
-        self.process_set_cards(set_data)
-        self.process_card_links(set_data)
+    def compare_sets(self, existing_set: Set, staged_set: StagedSet) -> None:
+        """
+        Compares and existing  Set with a staged one,
+        and stores a list of updates if any are required
+        :param existing_set: THe existing Set object
+        :param staged_set: The StagedSet object
+        """
+        differences = self.get_object_differences(
+            existing_set,
+            staged_set,
+            {
+                # "base_set_size",
+                # "is_foil_only",
+                # "is_online_only",
+                "keyrune_code",
+                # "mcm_id",
+                # "mcm_name",
+                # "mtgo_code",
+                "name",
+                # "tcgplayer_group_id",
+                # "total_set_size",
+                "card_count",
+                "type",
+            },
+        )
+
+        if (not existing_set.block and staged_set.block) or (
+            existing_set.block and existing_set.block.name != staged_set.block
+        ):
+            differences["block"] = {
+                "from": existing_set.block.name if existing_set.block else None,
+                "to": staged_set.block,
+            }
+
+        old_release_date_str = existing_set.release_date.strftime("%Y-%m-%d")
+        if old_release_date_str != staged_set.release_date:
+            differences["release_date"] = {
+                "from": old_release_date_str,
+                "to": staged_set.release_date,
+            }
+
+        if differences:
+            self.sets_to_update[staged_set.code] = differences
 
     def process_set_cards(self, set_data: dict) -> None:
+        """
+        Processes the cards within a set dictionary
+        :param set_data:  The MTGJSON set dictionary
+        """
+        # Store which CardPrintingLanguages are new so PhysicalCards can be created for them
         new_printlangs = []
         for card_data in set_data.get("cards", []):
             staged_card = self.process_card(card_data, False)
-            staged_printing, printlangs = self.process_card_printing(
-                staged_card, set_data, card_data
-            )
+            _, printlangs = self.process_card_printing(staged_card, set_data, card_data)
 
             for printlang in printlangs:
                 if printlang.is_new:
                     new_printlangs.append(printlang)
 
         for card_data in set_data.get("tokens", []):
+            # Double-faced tokens can't be handled with the current way the database is set up
+            # example, there could exist a Knight/Saproling as well as a Saproling/Elemental
+            # They could be connected at the printing level, but they can't be connected at the Card
+            # level or the Knight and the Elemental would also be linked together
             if (
                 card_data["layout"] == "double_faced_token"
                 and card_data.get("side", "") == "b"
             ):
                 continue
             staged_card = self.process_card(card_data, True)
-
-            staged_printing, printlangs = self.process_card_printing(
-                staged_card, set_data, card_data
-            )
+            _, printlangs = self.process_card_printing(staged_card, set_data, card_data)
             for printlang in printlangs:
                 if printlang.is_new:
                     new_printlangs.append(printlang)
+        self.process_physical_cards(new_printlangs)
 
+    def process_physical_cards(
+        self, new_printlangs: List[StagedCardPrintingLanguage]
+    ) -> None:
+        """
+        Finds ne PhysicalCards to be created using a list of new printlangs
+        :param new_printlangs: The StagedCardPrintingLanguages that are going to be made for a set
+        """
         for new_printlang in new_printlangs:
+            # Ignore "C" side meld cards, we don't want a single PhysicalCard for A/B/C
+            # For example, we don't want a Brisela/Gisela/Bruna card,
+            # instead we want a Bruna/Brisela card and a Gisela/Brisela card
             if new_printlang.has_physical_card or (
                 new_printlang.layout == "meld" and new_printlang.side == "c"
             ):
@@ -249,18 +275,18 @@ class Command(BaseCommand):
 
             uids = []
             if new_printlang.other_names:
-                for pl in new_printlangs:
+                for other_printlang in new_printlangs:
                     if (
-                        pl.base_name in new_printlang.other_names
-                        and pl.language == new_printlang.language
+                        other_printlang.base_name in new_printlang.other_names
+                        and other_printlang.language == new_printlang.language
                         and (
                             new_printlang.layout != "meld"
                             or new_printlang.side == "c"
-                            or pl.side == "c"
+                            or other_printlang.side == "c"
                         )
                     ):
-                        pl.has_physical_card = True
-                        uids.append(pl.printing_uuid)
+                        other_printlang.has_physical_card = True
+                        uids.append(other_printlang.printing_uuid)
             uids.append(new_printlang.printing_uuid)
 
             staged_physical_card = StagedPhysicalCard(
@@ -272,6 +298,14 @@ class Command(BaseCommand):
             new_printlang.has_physical_card = True
 
     def process_card(self, card_data: dict, is_token: bool) -> StagedCard:
+        """
+        Parses the given card data dict and returns a new or existing StagedCard
+        :param card_data: THe MTG JSON card data dict
+        :param is_token: True if this card is a token, otherwise False
+        (tokens include emblems, World Championship Bios, checklist cards, etc.)
+        :return: A StagedCard that represents the json card
+        If the card has already been parsed, then the existing StagedCard will be returned
+        """
         staged_card = StagedCard(card_data, is_token=is_token)
         if staged_card.name in self.cards_parsed:
             return staged_card
@@ -291,7 +325,10 @@ class Command(BaseCommand):
         return staged_card
 
     def process_card_rulings(self, staged_card: StagedCard) -> None:
-
+        """
+        Finds CardRulings of the given StagedCard to create or delete
+        :param staged_card: The StagedCard to find rulings for
+        """
         # If this card has already had its rulings parsed, than ignore it
         if staged_card.name in self.cards_checked_For_rulings:
             return
@@ -323,6 +360,10 @@ class Command(BaseCommand):
                     self.rulings_to_delete[staged_card.name].append(existing_ruling)
 
     def process_card_legalities(self, staged_card: StagedCard) -> None:
+        """
+        Find CardLegalities for a card to update, create or delete
+        :param staged_card: The StagedCard to find legalities for
+        """
         if (
             staged_card.name in self.cards_checked_for_legalities
             or not staged_card.legalities
@@ -331,12 +372,15 @@ class Command(BaseCommand):
 
         self.cards_checked_for_legalities.add(staged_card.name)
 
-        for format, restriction in staged_card.legalities.items():
+        # Legalities to create
+        for format_obj, restriction in staged_card.legalities.items():
             if (
                 staged_card.name not in self.existing_legalities
-                or format not in self.existing_legalities[staged_card.name]
+                or format_obj not in self.existing_legalities[staged_card.name]
             ):
-                staged_legality = StagedLegality(staged_card.name, format, restriction)
+                staged_legality = StagedLegality(
+                    staged_card.name, format_obj, restriction
+                )
                 self.legalities_to_create.append(staged_legality)
 
         if staged_card.name in self.existing_legalities:
@@ -349,7 +393,7 @@ class Command(BaseCommand):
                         self.legalities_to_delete[staged_card.name] = []
                     self.legalities_to_delete[staged_card.name].append(old_format)
 
-                # Legalities to change
+                # Legalities to update
                 elif staged_card.legalities[old_format] != old_restriction:
                     if staged_card.name not in self.legalities_to_update:
                         self.legalities_to_update[staged_card.name] = {}
@@ -359,10 +403,19 @@ class Command(BaseCommand):
                         "to": staged_card.legalities[old_format],
                     }
 
-    def process_card_links(self, set_data: dict):
+    def process_card_links(self, set_data: dict) -> None:
+        """
+        Finds potential links between cards in the set
+        Note that tokens are deliberately NOT linked, as they can be linked in different ways
+        depending on the set (this isn't possible iwht normal cards)
+        :param set_data: The JSON set to parse
+        """
         for card in set_data.get("cards", []):
             if "names" not in card or not card["names"]:
                 continue
+            # Don't bother creating links for existing cards
+            # NOTE: This could cause a broken link on cards that are added piecemeal
+            # (such as during a card spoiler season)
             if card["name"] not in self.cards_to_create:
                 continue
 
@@ -383,17 +436,24 @@ class Command(BaseCommand):
 
                 self.card_links_to_create[staged_card.name].add(other_name)
 
-    def get_object_differences(
-        self, old_object, new_object, fields: SetType[str]
-    ) -> dict:
+    @staticmethod
+    def get_object_differences(old_object, new_object, fields: SetType[str]) -> dict:
+        """
+        Gets the differences between the given fields of two objects
+        :param old_object: The old version of the object (stored in the database)
+        :param new_object: The new version of hte object (the Staged* object)
+        :param fields: The fields to compare
+        :return: A dict of "field* => {"old" => "x", "new" => "y"} differences
+        """
         result = {}
         for field in fields:
             old_val = getattr(old_object, field)
             new_val = getattr(new_object, field)
-            if type(old_val) != type(new_val) and type(None) not in [
-                type(old_val),
-                type(new_val),
-            ]:
+            if (
+                not isinstance(old_val, type(new_val))
+                and not isinstance(old_val, type(None))
+                and not isinstance(new_val, type(None))
+            ):
                 raise Exception(
                     f"Type mismatch for '{field}: {old_val} != {new_val} "
                     f"({type(old_val)} != {type(new_val)})"
@@ -407,6 +467,12 @@ class Command(BaseCommand):
     def get_set_differences(
         self, existing_set: Set, staged_set: StagedSet
     ) -> Dict[str, dict]:
+        """
+        Gets the differences between an existing and staged Set object
+        :param existing_set: The existing Set object
+        :param staged_set: The StagedSet object
+        :return: A dict of the differences between the sets
+        """
         return self.get_object_differences(
             existing_set, staged_set, {"keyrune_code", "name", "total_set_size", "type"}
         )
@@ -414,6 +480,12 @@ class Command(BaseCommand):
     def get_card_differences(
         self, existing_card: Card, staged_card: StagedCard
     ) -> Dict[str, dict]:
+        """
+        Returns the differences between an existing Card object and the StagedCard version
+        :param existing_card: The existing database Card object
+        :param staged_card: The json StagedCard object
+        :return: A dict of differences between the two object
+        """
         differences = self.get_object_differences(
             existing_card,
             staged_card,
@@ -445,6 +517,7 @@ class Command(BaseCommand):
             },
         )
 
+        # Colour flags need to be handled slightly explicitly because the database values aren't int
         if staged_card.colour_flags != int(existing_card.colour_flags):
             differences["colour_flags"] = {
                 "from": int(existing_card.colour_flags),
@@ -469,16 +542,25 @@ class Command(BaseCommand):
 
         Most of the time there won't be any differences, but this will be useful for adding in new
         fields that didn't exist before
-        :param existing_printing:
-        :param staged_printing:
-        :return:
+        :param existing_printing: The existing CardPrinting object
+        :param staged_printing: The json StagedCardPrinting object
+        :return: The dict of differences between the two objects
         """
-        result = {}
+        # TODO: Detect, save and apply differences between the printings (maybe border colour?)
+        result = self.get_object_differences(existing_printing, staged_printing, set())
         return result
 
     def process_card_printing(
         self, staged_card: StagedCard, set_data: dict, card_data: dict
     ) -> Tuple[StagedCardPrinting, List[StagedCardPrintingLanguage]]:
+        """
+        Process a Card printed in a given set,
+         returning the printings and printined languages that were found
+        :param staged_card: The already known StagedCard
+        :param set_data: The set data
+        :param card_data: The data of the card
+        :return: A tuple containing the StagedCardPrinting and a list of StagedCardPrintingLanguages
+        """
         staged_card_printing = StagedCardPrinting(staged_card.name, card_data, set_data)
         uuid = staged_card_printing.json_id
         if uuid not in self.existing_card_printings:
@@ -524,6 +606,13 @@ class Command(BaseCommand):
         foreign_data: dict,
         card_data: dict,
     ) -> StagedCardPrintingLanguage:
+        """
+        Processes card data nad returns the StagedCardPritningLanguage that would represent it
+        :param staged_card_printing: The CardPrinting the printlang belongs to
+        :param foreign_data: The dict of firegn data, that may include original text etc.
+        :param card_data: The JSON data dict
+        :return:
+        """
         staged_card_printing_language = StagedCardPrintingLanguage(
             staged_card_printing, foreign_data, card_data
         )
@@ -541,6 +630,13 @@ class Command(BaseCommand):
     def get_existing_printed_language(
         self, uuid: str, language: str
     ) -> Optional[CardPrintingLanguage]:
+        """
+        Tried to find the existing CardPrintingLanguage for the given CardPrinting uuid/language
+        combineation, if it exists (otherwise None)
+        :param uuid: The uuid (json_id) of the CardPrinting
+        :param language: The _name_ of the language ('English', not 'english')
+        :return: The existing CardPrintingLanguage if it exists, otherwise None
+        """
         existing_print = self.existing_card_printings.get(uuid)
         if not existing_print:
             return None
@@ -551,11 +647,20 @@ class Command(BaseCommand):
 
         return None
 
-    def write_object_to_json(self, filename: str, data: object) -> None:
+    @staticmethod
+    def write_object_to_json(filename: str, data: Union[list, dict]) -> None:
+        """
+        Writes out the given object to file as JSON
+        :param filename: The file to write out to
+        :param data: THe data to write to file
+        """
         with open(filename, "w") as output_file:
             json.dump(data, output_file, indent=2)
 
     def write_to_file(self) -> None:
+        """
+        WRites all lists of changes out to their respective files
+        """
         self.write_object_to_json(
             _paths.BLOCKS_TO_CREATE_PATH,
             {
@@ -657,23 +762,27 @@ class Command(BaseCommand):
         )
 
     def log_stats(self) -> None:
-        logger.info(f"{len(self.blocks_to_create)} blocks to create")
-        logger.info(f"{len(self.sets_to_create)} sets to create")
-        logger.info(f"{len(self.sets_to_update)} sets to update")
-        logger.info(f"{len(self.cards_to_create)} cards to create")
-        logger.info(f"{len(self.cards_to_update)} cards to update")
-        logger.info(f"{len(self.cards_to_delete)} cards to delete")
-        logger.info(f"{len(self.card_links_to_create)} card links to create")
-        logger.info(f"{len(self.card_printings_to_create)} card printings to create")
-        logger.info(f"{len(self.card_printings_to_delete)} card printings to delete")
-        logger.info(f"{len(self.card_printings_to_update)} card printings to update")
+        """
+        Logs out the number sof objects to delete/create/update
+        """
+        logger.info("%s blocks to create", len(self.blocks_to_create))
+        logger.info("%s sets to create", len(self.sets_to_create))
+        logger.info("%s sets to update", len(self.sets_to_update))
+        logger.info("%s cards to create", len(self.cards_to_create))
+        logger.info("%s cards to update", len(self.cards_to_update))
+        logger.info("%s cards to delete", len(self.cards_to_delete))
+        logger.info("%s card links to create", len(self.card_links_to_create))
+        logger.info("%s card printings to create", len(self.card_printings_to_create))
+        logger.info("%s card printings to delete", len(self.card_printings_to_delete))
+        logger.info("%s card printings to update", len(self.card_printings_to_update))
         logger.info(
-            f"{len(self.printed_languages_to_create)} card printing languages to create"
+            "%s card printing languages to create",
+            len(self.printed_languages_to_create),
         )
-        logger.info(f"{len(self.physical_cards_to_create)} physical cards to create")
-        logger.info(f"{len(self.rulings_to_create)} rulings to create")
-        logger.info(f"{len(self.rulings_to_delete)} rulings to delete")
-        logger.info(f"{len(self.legalities_to_create)} legalities to create")
-        logger.info(f"{len(self.legalities_to_delete)} legalities to delete")
-        logger.info(f"{len(self.legalities_to_update)} legalities to update")
-        logger.info(f"Completed in {time.time() - self.start_time}")
+        logger.info("%s physical cards to create", len(self.physical_cards_to_create))
+        logger.info("%s rulings to create", len(self.rulings_to_create))
+        logger.info("%s rulings to delete", len(self.rulings_to_delete))
+        logger.info("%s legalities to create", len(self.legalities_to_create))
+        logger.info("%s legalities to delete", len(self.legalities_to_delete))
+        logger.info("%s legalities to update", len(self.legalities_to_update))
+        logger.info("Completed in %ss", time.time() - self.start_time)

@@ -351,7 +351,7 @@ class DeckCard(models.Model):
 
     def get_card_name(self) -> str:
         """
-        Gets the name of the card. For most cards this will be the same as teh name of the card,
+        Gets the name of the card. For most cards this will be the same as the name of the card,
         but split cards combine the names of both halves together
         :return:  The display name of the card
         """

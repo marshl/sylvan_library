@@ -333,7 +333,7 @@ class DeckForm(forms.ModelForm):
 
     def populate_boards(self) -> None:
         """
-        Populates the text values of all teh boards
+        Populates the text values of all the boards
         """
         self.fields["main_board"].initial = ""
         for group_name, cards in self.instance.get_card_groups().items():
