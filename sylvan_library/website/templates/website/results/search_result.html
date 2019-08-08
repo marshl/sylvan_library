@@ -21,7 +21,7 @@
                 {% if result.card.layout == 'flip' %}
                     <button class="js-image-flip-btn">Flip</button>
                 {% endif %}
-                {% if result.card.layout == 'transform' or result.card.layout == 'meld'%}
+                {% if result.card.layout == 'transform' or result.card.layout == 'meld' and result.card.side != 'c' %}
                     <button class="js-image-transform-btn">Transform</button>
                 {% endif %}
                 </span>
