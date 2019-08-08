@@ -171,6 +171,9 @@ class CardPrinting(models.Model):
         Rarity, related_name="card_printings", on_delete=models.CASCADE
     )
 
+    # If the card is in a duel deck product, can be a (left) or b (right).
+    duel_deck_side = models.CharField(max_length=1, blank=True, null=True)
+
     # Set to true if this card was only released as part of a core box set.
     # These are technically part of the core sets and are tournament
     # legal despite not being available in boosters.

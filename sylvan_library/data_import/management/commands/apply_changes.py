@@ -74,6 +74,7 @@ class Command(BaseCommand):
                 or not self.update_cards()
                 or not self.create_card_links()
                 or not self.create_card_printings()
+                or not self.update_card_printings()
                 or not self.create_printed_languages()
                 or not self.create_physical_cards()
                 or not self.create_rulings()
@@ -310,6 +311,33 @@ class Command(BaseCommand):
                     scryfall_id,
                 )
                 raise
+            printing.save()
+        return True
+
+    def update_card_printings(self) -> bool:
+        """
+        Updates existing CardPrintings with any changes
+        returns: True if there were no errors, otherwise False
+        """
+        self.logger.info("Updating card printings")
+        with open(_paths.PRINTINGS_TO_UPDATE, "r", encoding="utf8") as printings_file:
+            printing_list = json.load(printings_file, encoding="utf8")
+
+        for uuid, printing_diff in printing_list.items():
+            try:
+                printing = CardPrinting.objects.get(json_id=uuid)
+            except CardPrinting.DoesNotExist:
+                self.logger.error("Could not find card printing %s", uuid)
+                raise
+
+            for field, change in printing_diff.items():
+                if field in {"duel_deck_side"}:
+                    setattr(printing, field, change["to"])
+                else:
+                    raise NotImplementedError(
+                        f"Cannot update unrecognised field CardPrinting.{field}"
+                    )
+            printing.full_clean()
             printing.save()
         return True
 

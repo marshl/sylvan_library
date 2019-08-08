@@ -554,8 +554,9 @@ class Command(BaseCommand):
         :param staged_printing: The json StagedCardPrinting object
         :return: The dict of differences between the two objects
         """
-        # TODO: Detect, save and apply differences between the printings (maybe border colour?)
-        result = self.get_object_differences(existing_printing, staged_printing, set())
+        result = self.get_object_differences(
+            existing_printing, staged_printing, {"duel_deck_side"}
+        )
         return result
 
     def process_card_printing(
@@ -577,7 +578,7 @@ class Command(BaseCommand):
                 self.card_printings_to_create[uuid] = staged_card_printing
             else:
                 raise Exception(f"Printing already to be update {uuid}")
-        elif uuid not in self.card_printings_to_update:
+        else:
             existing_printing = self.existing_card_printings[uuid]
             differences = self.get_card_printing_differences(
                 existing_printing, staged_card_printing
@@ -717,6 +718,10 @@ class Command(BaseCommand):
                 uuid: printing_to_create.to_dict()
                 for uuid, printing_to_create in self.card_printings_to_create.items()
             },
+        )
+
+        self.write_object_to_json(
+            _paths.PRINTINGS_TO_UPDATE, self.card_printings_to_update
         )
 
         printings_to_delete_dict = {}

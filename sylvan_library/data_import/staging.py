@@ -308,6 +308,7 @@ class StagedCardPrinting:
         self.original_type = card_data.get("originalType")
         self.original_text = card_data.get("originalText")
         self.flavour_text = card_data.get("flavorText")
+        self.duel_deck_side = card_data.get("duelDeck")
 
         self.is_new = False
 
@@ -321,6 +322,7 @@ class StagedCardPrinting:
             "artist": self.artist,
             "border_colour": self.border_colour,
             "card_name": self.card_name,
+            "duel_deck_side": self.duel_deck_side,
             "flavour_text": self.flavour_text,
             "frame_version": self.frame_version,
             "has_non_foil": self.has_non_foil,
@@ -330,8 +332,6 @@ class StagedCardPrinting:
             "json_id": self.json_id,
             "multiverse_id": self.multiverse_id,
             "number": self.number,
-            # "original_text": self.original_text,
-            # "original_type": self.original_type,
             "rarity": self.rarity,
             "scryfall_id": self.scryfall_id,
             "scryfall_illustration_id": self.scryfall_illustration_id,
