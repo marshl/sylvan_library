@@ -223,6 +223,7 @@ class Command(BaseCommand):
                     "colour_indicator_flags",
                     "colour_weight",
                     "display_name",
+                    "face_cmc",
                     "is_reserved",
                     "layout",
                     "loyalty",

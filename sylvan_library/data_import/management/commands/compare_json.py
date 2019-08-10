@@ -499,6 +499,7 @@ class Command(BaseCommand):
                 "colour_sort_key",
                 "cost",
                 "display_name",
+                "face_cmc",
                 "is_reserved",
                 "is_token",
                 "layout",

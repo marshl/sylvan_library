@@ -47,6 +47,7 @@ class Card(models.Model):
 
     cost = models.CharField(max_length=50, blank=True, null=True)
     cmc = models.FloatField()
+    face_cmc = models.FloatField(blank=True, null=True)
     colour_flags = BitField(flags=("white", "blue", "black", "red", "green"))
     colour_identity_flags = BitField(flags=("white", "blue", "black", "red", "green"))
     colour_indicator_flags = BitField(flags=("white", "blue", "black", "red", "green"))
