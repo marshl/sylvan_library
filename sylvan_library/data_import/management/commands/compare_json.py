@@ -557,7 +557,9 @@ class Command(BaseCommand):
         :return: The dict of differences between the two objects
         """
         result = self.get_object_differences(
-            existing_printing, staged_printing, {"duel_deck_side"}
+            existing_printing,
+            staged_printing,
+            {"duel_deck_side", "frame_effect", "frame_version"},
         )
         return result
 

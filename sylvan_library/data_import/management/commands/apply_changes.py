@@ -333,7 +333,7 @@ class Command(BaseCommand):
                 raise
 
             for field, change in printing_diff.items():
-                if field in {"duel_deck_side"}:
+                if field in {"duel_deck_side", "frame_effect", "frame_version"}:
                     setattr(printing, field, change["to"])
                 else:
                     raise NotImplementedError(

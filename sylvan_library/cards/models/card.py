@@ -147,6 +147,20 @@ class CardPrinting(models.Model):
     Model for a certain card printed in a certain set
     """
 
+    FRAME_EFFECT_CHOICES = (
+        ("colorshifted", "colorshifted"),
+        ("compasslanddfc", "compasslanddfc"),
+        ("devoid", "devoid"),
+        ("draft", "draft"),
+        ("legendary", "legendary"),
+        ("miracle", "miracle"),
+        ("mooneldrazidfc", "mooneldrazidfc"),
+        ("nyxtouched", "nyxtouched"),
+        ("originpwdfc", "originpwdfc"),
+        ("sunmoondfc", "sunmoondfc"),
+        ("tombstone", "tombstone"),
+    )
+
     flavour_text = models.CharField(max_length=500, blank=True, null=True)
     artist = models.CharField(max_length=100, blank=True, null=True)
     number = models.CharField(max_length=10, blank=True, null=True)
@@ -163,6 +177,11 @@ class CardPrinting(models.Model):
     # The border colour of the card if it differs from the border colour of the rest of the set
     # (e.g. basic lands in Unglued)
     border_colour = models.CharField(max_length=10, blank=True, null=True)
+
+    frame_effect = models.CharField(
+        max_length=50, blank=True, null=True, choices=FRAME_EFFECT_CHOICES
+    )
+    frame_version = models.CharField(max_length=50, blank=True, null=True)
 
     set = models.ForeignKey(
         Set, related_name="card_printings", on_delete=models.CASCADE

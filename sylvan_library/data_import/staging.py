@@ -294,6 +294,7 @@ class StagedCardPrinting:
 
         self.artist = card_data.get("artist")
         self.border_colour = card_data.get("borderColor")
+        self.frame_effect = card_data.get("frameEffect")
         self.frame_version = card_data.get("frameVersion")
         self.has_foil = card_data.get("hasFoil")
         self.has_non_foil = card_data.get("hasNonFoil")
@@ -330,6 +331,7 @@ class StagedCardPrinting:
             "card_name": self.card_name,
             "duel_deck_side": self.duel_deck_side,
             "flavour_text": self.flavour_text,
+            "frame_effect": self.frame_effect,
             "frame_version": self.frame_version,
             "has_non_foil": self.has_non_foil,
             # "hasfoil": self.has_foil,
