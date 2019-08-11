@@ -76,6 +76,7 @@ class Command(BaseCommand):
                 or not self.create_card_printings()
                 or not self.update_card_printings()
                 or not self.create_printed_languages()
+                or not self.update_printed_languages()
                 or not self.create_physical_cards()
                 or not self.create_rulings()
                 or not self.create_legalities()
@@ -402,6 +403,40 @@ class Command(BaseCommand):
                     "Failed to validate CardPrintingLanguage %s", printed_language
                 )
                 raise
+        return True
+
+    def update_printed_languages(self) -> bool:
+        """
+        Updates existing CardPrintingLanguages with any changes
+        returns: True if there were no errors, otherwise False
+        """
+        self.logger.info("Updating printed languages")
+        with open(_paths.PRINTLANGS_TO_UPDATE, "r", encoding="utf8") as printlangs_file:
+            printlang_list = json.load(printlangs_file, encoding="utf8")
+
+        for printlang_data in printlang_list:
+            uuid = printlang_data["uuid"]
+            language_name = printlang_data["language"]
+
+            try:
+                printlang = CardPrintingLanguage.objects.get(
+                    language__name=language_name, card_printing__json_id=uuid
+                )
+            except CardPrintingLanguage.DoesNotExist:
+                self.logger.error(
+                    "Could not find card printing language for %s $s", uuid
+                )
+                raise
+
+            for field, change in printlang_data["changes"].items():
+                if field in {"text", "flavour_text", "type"}:
+                    setattr(printlang, field, change["to"])
+                else:
+                    raise NotImplementedError(
+                        f"Cannot update unrecognised field CardPrintingLanguage.{field}"
+                    )
+            printlang.full_clean()
+            printlang.save()
         return True
 
     def create_physical_cards(self) -> bool:

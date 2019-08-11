@@ -63,6 +63,7 @@ class Command(BaseCommand):
     card_printings_to_delete = set()
 
     printed_languages_to_create = []  # type: List[StagedCardPrintingLanguage]
+    printed_languages_to_update = []  # type: List[dict]
     physical_cards_to_create = []
 
     sets_to_create = {}  # type: Dict[str, StagedSet]
@@ -596,6 +597,7 @@ class Command(BaseCommand):
                     "name": staged_card.display_name,
                     "text": card_data.get("text"),
                     "type": card_data.get("type"),
+                    "flavorText": card_data.get("flavorText"),
                 },
                 card_data,
             )
@@ -627,13 +629,25 @@ class Command(BaseCommand):
             staged_card_printing, foreign_data, card_data
         )
 
-        existing_print = self.get_existing_printed_language(
+        existing_printlang = self.get_existing_printed_language(
             staged_card_printing.json_id, staged_card_printing_language.language
         )
 
-        if not existing_print:
+        if not existing_printlang:
             staged_card_printing_language.is_new = True
             self.printed_languages_to_create.append(staged_card_printing_language)
+        else:
+            differences = self.get_card_printing_language_differences(
+                existing_printlang, staged_card_printing_language
+            )
+            if differences:
+                self.printed_languages_to_update.append(
+                    {
+                        "uuid": staged_card_printing.json_id,
+                        "language": staged_card_printing_language.language,
+                        "changes": differences,
+                    }
+                )
 
         return staged_card_printing_language
 
@@ -656,6 +670,25 @@ class Command(BaseCommand):
                 return printlang
 
         return None
+
+    def get_card_printing_language_differences(
+        self,
+        existing_printlang: CardPrintingLanguage,
+        staged_printlang: StagedCardPrintingLanguage,
+    ) -> Dict[str, dict]:
+        """
+       Gets the differences between an existing printed language and one from the json
+
+       Most of the time there won't be any differences, but this will be useful for adding in new
+       fields that didn't exist before
+       :param existing_printlang: The existing CardPrintingLanguage object
+       :param staged_printlang: The json StagedCardPrintingLanguage object
+       :return: The dict of differences between the two objects
+       """
+        result = self.get_object_differences(
+            existing_printlang, staged_printlang, {"text", "flavour_text", "type"}
+        )
+        return result
 
     @staticmethod
     def write_object_to_json(filename: str, data: Union[list, dict]) -> None:
@@ -743,6 +776,9 @@ class Command(BaseCommand):
                 for printlang_to_create in self.printed_languages_to_create
             ],
         )
+        self.write_object_to_json(
+            _paths.PRINTLANGS_TO_UPDATE, self.printed_languages_to_update
+        )
 
         self.write_object_to_json(
             _paths.PHYSICAL_CARDS_TO_CREATE,
@@ -792,6 +828,10 @@ class Command(BaseCommand):
         logger.info(
             "%s card printing languages to create",
             len(self.printed_languages_to_create),
+        )
+        logger.info(
+            "%s card printing languages to update",
+            len(self.printed_languages_to_update),
         )
         logger.info("%s physical cards to create", len(self.physical_cards_to_create))
         logger.info("%s rulings to create", len(self.rulings_to_create))

@@ -31,6 +31,7 @@ PRINTINGS_TO_DELETE = path.join(IMPORT_FOLDER, "printings_to_delete.json")
 PRINTINGS_TO_UPDATE = path.join(IMPORT_FOLDER, "printings_to_update.json")
 
 PRINTLANGS_TO_CREATE = path.join(IMPORT_FOLDER, "printlangs_to_create.json")
+PRINTLANGS_TO_UPDATE = path.join(IMPORT_FOLDER, "printlangs_to_update.json")
 
 PHYSICAL_CARDS_TO_CREATE = path.join(IMPORT_FOLDER, "physical_cards_to_create.json")
 

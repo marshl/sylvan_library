@@ -322,6 +322,7 @@ class CardPrintingLanguage(models.Model):
     flavour_text = models.CharField(max_length=500, blank=True, null=True)
     type = models.CharField(max_length=200, blank=True, null=True)
     multiverse_id = models.IntegerField(blank=True, null=True)
+    text = models.CharField(max_length=1000, blank=True, null=True)
 
     card_printing = models.ForeignKey(
         CardPrinting, related_name="printed_languages", on_delete=models.CASCADE

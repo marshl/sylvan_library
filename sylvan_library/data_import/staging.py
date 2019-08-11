@@ -431,6 +431,7 @@ class StagedCardPrintingLanguage:
         self.multiverse_id = foreign_data.get("multiverseId")
         self.text = foreign_data.get("text")
         self.type = foreign_data.get("type")
+        self.flavour_text = foreign_data.get("flavorText")
 
         self.has_other_names = (
             "names" in card_data and card_data["layout"] != "double_faced_token"
