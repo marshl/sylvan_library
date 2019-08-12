@@ -283,7 +283,9 @@ class Command(BaseCommand):
                 elif field in {
                     "artist",
                     "border_colour",
+                    "duel_deck_side",
                     "flavour_text",
+                    "frame_effect",
                     "frame_version",
                     "has_non_foil",
                     "is_starter",
