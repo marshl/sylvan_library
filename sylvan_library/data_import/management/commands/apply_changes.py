@@ -291,6 +291,7 @@ class Command(BaseCommand):
                     "flavour_text",
                     "frame_effect",
                     "frame_version",
+                    "has_foil",
                     "has_non_foil",
                     "is_starter",
                     "is_timeshifted",
@@ -339,7 +340,13 @@ class Command(BaseCommand):
                 raise
 
             for field, change in printing_diff.items():
-                if field in {"duel_deck_side", "frame_effect", "frame_version"}:
+                if field in {
+                    "duel_deck_side",
+                    "frame_effect",
+                    "frame_version",
+                    "has_foil",
+                    "has_non_foil",
+                }:
                     setattr(printing, field, change["to"])
                 else:
                     raise NotImplementedError(

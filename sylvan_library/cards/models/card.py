@@ -207,6 +207,9 @@ class CardPrinting(models.Model):
 
     is_timeshifted = models.BooleanField()
 
+    has_foil = models.BooleanField(default=True)
+    has_non_foil = models.BooleanField(default=True)
+
     class Meta:
         """
         Metaclass for CardPrinting

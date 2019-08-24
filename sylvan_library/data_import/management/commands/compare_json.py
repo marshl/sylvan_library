@@ -563,7 +563,13 @@ class Command(BaseCommand):
         result = self.get_object_differences(
             existing_printing,
             staged_printing,
-            {"duel_deck_side", "frame_effect", "frame_version"},
+            {
+                "duel_deck_side",
+                "frame_effect",
+                "frame_version",
+                "has_foil",
+                "has_non_foil",
+            },
         )
         return result
 

@@ -207,10 +207,18 @@ class StagedCard:
 
     @property
     def num_hand_modifier(self) -> int:
+        """
+        Gets the numerical representation of the handmodifier of this card (for vanguard)
+        :return: THe numerical hand modifier of this card
+        """
         return int(convert_number_field_to_numerical(self.hand_modifier))
 
     @property
     def num_life_modifier(self) -> int:
+        """
+        Gets the numerical representation of the life modifier of this card (for vanguard)
+        :return: THe numerical life modifier of this card
+        """
         return int(convert_number_field_to_numerical(self.life_modifier))
 
     def to_dict(self) -> dict:
@@ -310,8 +318,8 @@ class StagedCardPrinting:
         self.border_colour = card_data.get("borderColor")
         self.frame_effect = card_data.get("frameEffect")
         self.frame_version = card_data.get("frameVersion")
-        self.has_foil = card_data.get("hasFoil")
-        self.has_non_foil = card_data.get("hasNonFoil")
+        self.has_foil = card_data.get("hasFoil", True)
+        self.has_non_foil = card_data.get("hasNonFoil", True)
         self.number = card_data.get("number")
         self.rarity = card_data.get("rarity", "common")
         self.scryfall_id = card_data.get("scryfallId")
@@ -348,7 +356,7 @@ class StagedCardPrinting:
             "frame_effect": self.frame_effect,
             "frame_version": self.frame_version,
             "has_non_foil": self.has_non_foil,
-            # "hasfoil": self.has_foil,
+            "has_foil": self.has_foil,
             "is_starter": self.is_starter,
             "is_timeshifted": self.is_timeshifted,
             "json_id": self.json_id,
