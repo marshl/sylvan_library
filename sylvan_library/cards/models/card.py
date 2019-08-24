@@ -68,6 +68,12 @@ class Card(models.Model):
     rules_text = models.CharField(max_length=1000, blank=True, null=True)
     layout = models.CharField(max_length=50, choices=CARD_LAYOUT_CHOICES)
     side = models.CharField(max_length=1, blank=True, null=True)
+
+    hand_modifier = models.CharField(max_length=10, blank=True, null=True)
+    num_hand_modifier = models.IntegerField()
+    life_modifier = models.CharField(max_length=10, blank=True, null=True)
+    num_life_modifier = models.IntegerField()
+
     is_reserved = models.BooleanField()
     scryfall_oracle_id = models.CharField(max_length=36, blank=True, null=True)
     is_token = models.BooleanField()

@@ -225,9 +225,13 @@ class Command(BaseCommand):
                     "colour_weight",
                     "display_name",
                     "face_cmc",
+                    "hand_modifier",
                     "is_reserved",
                     "layout",
+                    "life_modifier",
                     "loyalty",
+                    "num_hand_modifier",
+                    "num_life_modifier",
                     "num_loyalty",
                     "num_power",
                     "num_toughness",
@@ -400,9 +404,11 @@ class Command(BaseCommand):
             try:
                 printed_language.full_clean()
                 printed_language.save()
-            except ValidationError:
+            except ValidationError as ex:
                 self.logger.error(
-                    "Failed to validate CardPrintingLanguage %s", printed_language
+                    "Failed to validate CardPrintingLanguage %s: %s",
+                    printed_language,
+                    ex,
                 )
                 raise
         return True

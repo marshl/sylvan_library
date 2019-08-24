@@ -84,6 +84,9 @@ def convert_number_field_to_numerical(val: str) -> float:
     :param val: The stringy field value
     :return: The numerical representation of that field
     """
+    if val is None:
+        return 0.0
+
     if val == "\u221e":
         return math.inf
 
@@ -159,6 +162,9 @@ class StagedCard:
             else []
         )
         self.side = card_data.get("side")
+        self.hand_modifier = card_data.get("hand")
+        self.life_modifier = card_data.get("life")
+
         self.is_reserved = bool(card_data.get("isReserved", False))
 
     @property
@@ -181,7 +187,7 @@ class StagedCard:
         Gets the numerical representation of the power of the card
         :return: The numerical power of this card
         """
-        return float(convert_number_field_to_numerical(self.power) if self.power else 0)
+        return convert_number_field_to_numerical(self.power)
 
     @property
     def num_toughness(self) -> float:
@@ -189,9 +195,7 @@ class StagedCard:
         Gets the numerical representation of the toughness of the card
         :return: The numerical toughness of this card
         """
-        return float(
-            convert_number_field_to_numerical(self.toughness) if self.toughness else 0
-        )
+        return convert_number_field_to_numerical(self.toughness)
 
     @property
     def num_loyalty(self) -> float:
@@ -199,9 +203,15 @@ class StagedCard:
         Gets the numerical representation  of the loyalty of this card
         :return: THe numerical loyalty of this card
         """
-        return float(
-            convert_number_field_to_numerical(self.loyalty) if self.loyalty else 0
-        )
+        return convert_number_field_to_numerical(self.loyalty)
+
+    @property
+    def num_hand_modifier(self) -> int:
+        return int(convert_number_field_to_numerical(self.hand_modifier))
+
+    @property
+    def num_life_modifier(self) -> int:
+        return int(convert_number_field_to_numerical(self.life_modifier))
 
     def to_dict(self) -> dict:
         """
@@ -218,14 +228,18 @@ class StagedCard:
             "colour_sort_key": self.colour_sort_key,
             "colour_weight": self.colour_weight,
             "cost": self.cost,
+            "display_name": self.display_name,
             "face_cmc": self.face_cmc,
+            "hand_modifier": self.hand_modifier,
             "is_reserved": self.is_reserved,
             "is_token": self.is_token,
             "layout": self.layout,
+            "life_modifier": self.life_modifier,
             "loyalty": self.loyalty,
             "name": self.name,
-            "display_name": self.display_name,
+            "num_hand_modifier": self.num_hand_modifier,
             "num_loyalty": self.num_loyalty,
+            "num_life_modifier": self.num_life_modifier,
             "num_power": self.num_power,
             "num_toughness": self.num_toughness,
             "power": self.power,
@@ -460,13 +474,14 @@ class StagedCardPrintingLanguage:
         :return:  All the fields of this object as a dictionary
         """
         return {
-            "printing_uid": self.printing_uuid,
-            "language": self.language,
+            "base_name": self.base_name,
             "card_name": self.card_name,
+            "flavour_text": self.flavour_text,
+            "language": self.language,
             "multiverse_id": self.multiverse_id,
+            "printing_uid": self.printing_uuid,
             "text": self.text,
             "type": self.type,
-            "base_name": self.base_name,
         }
 
 
