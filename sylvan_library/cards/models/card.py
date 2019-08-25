@@ -207,9 +207,22 @@ class CardPrinting(models.Model):
 
     is_timeshifted = models.BooleanField()
 
+    # Can the card be found in foil?
     has_foil = models.BooleanField(default=True)
+    # Can the card be found in non-foil?
     has_non_foil = models.BooleanField(default=True)
+
+    # The card has some kind of alternative variation to its printed counterpart.
     is_alternative = models.BooleanField(default=False)
+
+    # Is the card available in Magic: The Gathering Arena?
+    is_arena = models.BooleanField(default=False)
+
+    # Is the card available in Magic: The Gathering Online?
+    is_mtgo = models.BooleanField(default=False)
+
+    # Is the card only available online?
+    is_online_only = models.BooleanField(default=False)
 
     class Meta:
         """

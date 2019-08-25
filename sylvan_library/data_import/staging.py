@@ -316,29 +316,32 @@ class StagedCardPrinting:
 
         self.artist = card_data.get("artist")
         self.border_colour = card_data.get("borderColor")
+        self.duel_deck_side = card_data.get("duelDeck")
+        self.flavour_text = card_data.get("flavorText")
         self.frame_effect = card_data.get("frameEffect")
         self.frame_version = card_data.get("frameVersion")
         self.has_foil = card_data.get("hasFoil", True)
         self.has_non_foil = card_data.get("hasNonFoil", True)
         self.is_alternative = card_data.get("isAlternative", False)
-        self.number = card_data.get("number")
-        self.rarity = card_data.get("rarity", "common")
-        self.scryfall_id = card_data.get("scryfallId")
-        self.scryfall_illustration_id = card_data.get("scryfallIllustrationId")
-        self.json_id = card_data.get("uuid")
-        self.multiverse_id = card_data.get("multiverseId")
-        self.other_languages = card_data.get("foreignData", [])
-        self.names = card_data.get("names", [])
+        self.is_arena = card_data.get("isArena", False)
+        self.is_mtgo = card_data.get("isMtgo", False)
+        self.is_online_only = card_data.get("isOnlineOnly", False)
+        self.is_starter = "starter" in card_data and card_data["starter"]
         self.is_timeshifted = (
             "isTimeshifted" in card_data and card_data["isTimeshifted"]
         )
-        self.is_starter = "starter" in card_data and card_data["starter"]
+        self.json_id = card_data.get("uuid")
+        self.multiverse_id = card_data.get("multiverseId")
+        self.names = card_data.get("names", [])
+        self.number = card_data.get("number")
+        self.original_text = card_data.get("originalText")
+        self.original_type = card_data.get("originalType")
+        self.other_languages = card_data.get("foreignData", [])
+        self.rarity = card_data.get("rarity", "common")
+        self.scryfall_id = card_data.get("scryfallId")
+        self.scryfall_illustration_id = card_data.get("scryfallIllustrationId")
         self.set_code = set_data["code"]
         self.watermark = card_data.get("watermark")
-        self.original_type = card_data.get("originalType")
-        self.original_text = card_data.get("originalText")
-        self.flavour_text = card_data.get("flavorText")
-        self.duel_deck_side = card_data.get("duelDeck")
 
         self.is_new = False
 
@@ -359,6 +362,7 @@ class StagedCardPrinting:
             "has_non_foil": self.has_non_foil,
             "has_foil": self.has_foil,
             "is_alternative": self.is_alternative,
+            "is_arena": self.is_arena,
             "is_starter": self.is_starter,
             "is_timeshifted": self.is_timeshifted,
             "json_id": self.json_id,

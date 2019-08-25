@@ -570,6 +570,9 @@ class Command(BaseCommand):
                 "has_foil",
                 "has_non_foil",
                 "is_alternative",
+                "is_arena",
+                "is_mtgo",
+                "is_online_only",
             },
         )
         return result

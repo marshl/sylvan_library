@@ -294,6 +294,9 @@ class Command(BaseCommand):
                     "has_foil",
                     "has_non_foil",
                     "is_alternative",
+                    "is_arena",
+                    "is_mtgo",
+                    "is_online_only",
                     "is_starter",
                     "is_timeshifted",
                     "json_id",
@@ -348,6 +351,9 @@ class Command(BaseCommand):
                     "has_foil",
                     "has_non_foil",
                     "is_alternative",
+                    "is_arena",
+                    "is_mtgo",
+                    "is_online_only",
                 }:
                     setattr(printing, field, change["to"])
                 else:
