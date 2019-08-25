@@ -209,6 +209,7 @@ class CardPrinting(models.Model):
 
     has_foil = models.BooleanField(default=True)
     has_non_foil = models.BooleanField(default=True)
+    is_alternative = models.BooleanField(default=False)
 
     class Meta:
         """

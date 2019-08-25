@@ -293,6 +293,7 @@ class Command(BaseCommand):
                     "frame_version",
                     "has_foil",
                     "has_non_foil",
+                    "is_alternative",
                     "is_starter",
                     "is_timeshifted",
                     "json_id",
@@ -346,6 +347,7 @@ class Command(BaseCommand):
                     "frame_version",
                     "has_foil",
                     "has_non_foil",
+                    "is_alternative",
                 }:
                     setattr(printing, field, change["to"])
                 else:

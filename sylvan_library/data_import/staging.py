@@ -320,6 +320,7 @@ class StagedCardPrinting:
         self.frame_version = card_data.get("frameVersion")
         self.has_foil = card_data.get("hasFoil", True)
         self.has_non_foil = card_data.get("hasNonFoil", True)
+        self.is_alternative = card_data.get("isAlternative", False)
         self.number = card_data.get("number")
         self.rarity = card_data.get("rarity", "common")
         self.scryfall_id = card_data.get("scryfallId")
@@ -357,6 +358,7 @@ class StagedCardPrinting:
             "frame_version": self.frame_version,
             "has_non_foil": self.has_non_foil,
             "has_foil": self.has_foil,
+            "is_alternative": self.is_alternative,
             "is_starter": self.is_starter,
             "is_timeshifted": self.is_timeshifted,
             "json_id": self.json_id,

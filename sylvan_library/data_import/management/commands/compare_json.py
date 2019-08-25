@@ -569,6 +569,7 @@ class Command(BaseCommand):
                 "frame_version",
                 "has_foil",
                 "has_non_foil",
+                "is_alternative",
             },
         )
         return result
