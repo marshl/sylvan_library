@@ -571,8 +571,11 @@ class Command(BaseCommand):
                 "has_non_foil",
                 "is_alternative",
                 "is_arena",
+                "is_full_art",
                 "is_mtgo",
                 "is_online_only",
+                "is_oversized",
+                "is_textless",
             },
         )
         return result

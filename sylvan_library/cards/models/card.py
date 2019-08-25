@@ -224,6 +224,15 @@ class CardPrinting(models.Model):
     # Is the card only available online?
     is_online_only = models.BooleanField(default=False)
 
+    # Is the card full artwork?
+    is_full_art = models.BooleanField(default=False)
+
+    # Is the card oversized?
+    is_oversized = models.BooleanField(default=False)
+
+    # Does the card normally have a text box, but doesn't on this card?
+    is_textless = models.BooleanField(default=False)
+
     class Meta:
         """
         Metaclass for CardPrinting
