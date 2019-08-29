@@ -59,24 +59,24 @@ class Card(models.Model):
     subtype = models.CharField(max_length=100, blank=True, null=True)
 
     power = models.CharField(max_length=20, blank=True, null=True)
-    num_power = models.FloatField()
+    num_power = models.FloatField(default=0)
     toughness = models.CharField(max_length=20, blank=True, null=True)
-    num_toughness = models.FloatField()
+    num_toughness = models.FloatField(default=0)
     loyalty = models.CharField(max_length=20, blank=True, null=True)
-    num_loyalty = models.FloatField()
+    num_loyalty = models.FloatField(default=0)
 
     rules_text = models.CharField(max_length=1000, blank=True, null=True)
     layout = models.CharField(max_length=50, choices=CARD_LAYOUT_CHOICES)
     side = models.CharField(max_length=1, blank=True, null=True)
 
     hand_modifier = models.CharField(max_length=10, blank=True, null=True)
-    num_hand_modifier = models.IntegerField()
+    num_hand_modifier = models.IntegerField(default=0)
     life_modifier = models.CharField(max_length=10, blank=True, null=True)
-    num_life_modifier = models.IntegerField()
+    num_life_modifier = models.IntegerField(default=0)
 
-    is_reserved = models.BooleanField()
+    is_reserved = models.BooleanField(default=False)
     scryfall_oracle_id = models.CharField(max_length=36, blank=True, null=True)
-    is_token = models.BooleanField()
+    is_token = models.BooleanField(default=False)
     links = models.ManyToManyField("self")
 
     @staticmethod
