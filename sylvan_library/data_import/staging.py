@@ -329,13 +329,21 @@ class StagedCardPrinting:
         self.is_online_only = card_data.get("isOnlineOnly", False)
         self.is_oversized = card_data.get("isOversized", False)
         self.is_paper = card_data.get("isPaper", False)
+        self.is_promo = card_data.get("isPromo", False)
         self.is_reprint = card_data.get("isReprint", False)
         self.is_starter = "starter" in card_data and card_data["starter"]
+        self.is_story_spotlight = card_data.get("isStorySpotlight", False)
         self.is_textless = card_data.get("isTextless", False)
         self.is_timeshifted = (
             "isTimeshifted" in card_data and card_data["isTimeshifted"]
         )
         self.json_id = card_data.get("uuid")
+        self.magic_card_market_id = card_data.get("mcmId")
+        self.magic_card_market_meta_id = card_data.get("mcmMetaId")
+        self.mtg_arena_id = card_data.get("mtgArenaId")
+        self.mtgo_id = card_data.get("mtgoId")
+        self.mtgo_foil_id = card_data.get("mtgoFoilId")
+        self.mtg_stocks_id = card_data.get("mtgStocksId")
         self.multiverse_id = card_data.get("multiverseId")
         self.names = card_data.get("names", [])
         self.number = card_data.get("number")
@@ -346,6 +354,7 @@ class StagedCardPrinting:
         self.scryfall_id = card_data.get("scryfallId")
         self.scryfall_illustration_id = card_data.get("scryfallIllustrationId")
         self.set_code = set_data["code"]
+        self.tcg_player_product_id = set_data.get("tcgPlayerProductId")
         self.watermark = card_data.get("watermark")
 
         self.is_new = False
@@ -368,16 +377,25 @@ class StagedCardPrinting:
             "has_foil": self.has_foil,
             "is_alternative": self.is_alternative,
             "is_arena": self.is_arena,
+            "is_promo": self.is_promo,
             "is_reprint": self.is_reprint,
             "is_starter": self.is_starter,
+            "is_story_spotlight": self.is_story_spotlight,
             "is_timeshifted": self.is_timeshifted,
             "json_id": self.json_id,
+            "magic_card_market_id": self.magic_card_market_id,
+            "magic_card_market_meta_id": self.magic_card_market_meta_id,
+            "mtg_arena_id": self.mtg_arena_id,
+            "mtgo_id": self.mtgo_id,
+            "mtgo_foil_id": self.mtgo_foil_id,
+            "mtg_stocks_id": self.mtg_stocks_id,
             "multiverse_id": self.multiverse_id,
             "number": self.number,
             "rarity": self.rarity,
             "scryfall_id": self.scryfall_id,
             "scryfall_illustration_id": self.scryfall_illustration_id,
             "set_code": self.set_code,
+            "tcg_player_product_id": self.tcg_player_product_id,
         }
 
 

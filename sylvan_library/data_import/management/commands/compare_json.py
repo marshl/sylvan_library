@@ -576,8 +576,18 @@ class Command(BaseCommand):
                 "is_online_only",
                 "is_oversized",
                 "is_paper",
+                "is_promo",
                 "is_reprint",
+                "is_story_spotlight",
                 "is_textless",
+                "magic_card_market_id",
+                "magic_card_market_meta_id",
+                "mtg_arena_id",
+                "mtgo_id",
+                "mtgo_foil_id",
+                "mtg_stocks_id",
+                "scryfall_illustration_id",
+                "tcg_player_product_id",
             },
         )
         return result

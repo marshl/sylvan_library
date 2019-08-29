@@ -170,7 +170,11 @@ class CardPrinting(models.Model):
     flavour_text = models.CharField(max_length=500, blank=True, null=True)
     artist = models.CharField(max_length=100, blank=True, null=True)
     number = models.CharField(max_length=10, blank=True, null=True)
+
+    # Text on the card as originally printed.
     original_text = models.CharField(max_length=1000, blank=True, null=True)
+
+    # Type as originally printed. Includes any supertypes and subtypes.
     original_type = models.CharField(max_length=200, blank=True, null=True)
     watermark = models.CharField(max_length=100, blank=True, null=True)
 
@@ -179,6 +183,8 @@ class CardPrinting(models.Model):
     json_id = models.CharField(max_length=40, unique=True)
 
     scryfall_id = models.CharField(max_length=40, blank=True, null=True)
+
+    scryfall_illustration_id = models.CharField(max_length=36, blank=True, null=True)
 
     # The border colour of the card if it differs from the border colour of the rest of the set
     # (e.g. basic lands in Unglued)
@@ -236,7 +242,35 @@ class CardPrinting(models.Model):
     # Does the card normally have a text box, but doesn't on this card?
     is_textless = models.BooleanField(default=False)
 
+    # Has the card been reprinted?
     is_reprint = models.BooleanField(default=False)
+
+    # Is the card a promotional print?
+    is_promo = models.BooleanField(default=False)
+
+    # Does the card have a story spotlight?
+    is_story_spotlight = models.BooleanField(default=False)
+
+    # The Magic Card Market card ID.
+    magic_card_market_id = models.IntegerField(null=True, blank=True)
+
+    # The Magic Card Market card meta ID.
+    magic_card_market_meta_id = models.IntegerField(null=True, blank=True)
+
+    # The Magic: The Gathering Arena card ID.
+    mtg_arena_id = models.IntegerField(null=True, blank=True)
+
+    # The Magic: The Gathering Online card ID.
+    mtgo_id = models.IntegerField(null=True, blank=True)
+
+    # The Magic: The Gathering Online card foil ID.
+    mtgo_foil_id = models.IntegerField(null=True, blank=True)
+
+    # mtgstocks.com card ID.
+    mtg_stocks_id = models.IntegerField(null=True, blank=True)
+
+    # Numeric identifier for the card for TCGPlayer.
+    tcg_player_product_id = models.IntegerField(null=True, blank=True)
 
     class Meta:
         """
@@ -377,6 +411,8 @@ class CardPrintingLanguage(models.Model):
     card_name = models.CharField(max_length=200)
     flavour_text = models.CharField(max_length=500, blank=True, null=True)
     type = models.CharField(max_length=200, blank=True, null=True)
+
+    # An integer most cards have which Wizards of the Coast uses as a card identifier.
     multiverse_id = models.IntegerField(blank=True, null=True)
     text = models.CharField(max_length=1000, blank=True, null=True)
 
