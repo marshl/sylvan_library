@@ -224,6 +224,9 @@ class CardPrinting(models.Model):
     # Is the card only available online?
     is_online_only = models.BooleanField(default=False)
 
+    # Is the card available in print?
+    is_paper = models.BooleanField(default=True)
+
     # Is the card full artwork?
     is_full_art = models.BooleanField(default=False)
 

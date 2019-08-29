@@ -575,6 +575,7 @@ class Command(BaseCommand):
                 "is_mtgo",
                 "is_online_only",
                 "is_oversized",
+                "is_paper",
                 "is_textless",
             },
         )

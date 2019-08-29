@@ -297,6 +297,7 @@ class Command(BaseCommand):
                     "is_arena",
                     "is_mtgo",
                     "is_online_only",
+                    "is_paper",
                     "is_starter",
                     "is_timeshifted",
                     "json_id",
@@ -356,6 +357,7 @@ class Command(BaseCommand):
                     "is_mtgo",
                     "is_online_only",
                     "is_oversized",
+                    "is_paper",
                     "is_textless",
                 }:
                     setattr(printing, field, change["to"])
@@ -410,7 +412,13 @@ class Command(BaseCommand):
                     )
                 elif field == "language":
                     printed_language.language = Language.objects.get(name=value)
-                elif field in {"card_name", "multiverse_id", "text", "type"}:
+                elif field in {
+                    "card_name",
+                    "multiverse_id",
+                    "text",
+                    "type",
+                    "flavour_text",
+                }:
                     setattr(printed_language, field, value)
                 elif field in {"base_name"}:
                     continue

@@ -328,6 +328,7 @@ class StagedCardPrinting:
         self.is_mtgo = card_data.get("isMtgo", False)
         self.is_online_only = card_data.get("isOnlineOnly", False)
         self.is_oversized = card_data.get("isOversized", False)
+        self.is_paper = card_data.get("isPaper", False)
         self.is_starter = "starter" in card_data and card_data["starter"]
         self.is_textless = card_data.get("isTextless", False)
         self.is_timeshifted = (
