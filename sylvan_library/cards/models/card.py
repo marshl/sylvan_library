@@ -236,6 +236,8 @@ class CardPrinting(models.Model):
     # Does the card normally have a text box, but doesn't on this card?
     is_textless = models.BooleanField(default=False)
 
+    is_reprint = models.BooleanField(default=False)
+
     class Meta:
         """
         Metaclass for CardPrinting

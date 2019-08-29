@@ -576,6 +576,7 @@ class Command(BaseCommand):
                 "is_online_only",
                 "is_oversized",
                 "is_paper",
+                "is_reprint",
                 "is_textless",
             },
         )
