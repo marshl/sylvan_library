@@ -1,9 +1,11 @@
 """
 Module for the fetch_data command
 """
+import json
 import logging
 import os
 import zipfile
+from typing import List
 
 import requests
 
@@ -19,6 +21,14 @@ class Command(BaseCommand):
 
     help = "Downloads the MtG JSON data files"
 
+    @staticmethod
+    def get_json_files() -> List[str]:
+        return [
+            os.path.join(_paths.SET_FOLDER, s)
+            for s in os.listdir(_paths.SET_FOLDER)
+            if s.endswith(".json")
+        ]
+
     def handle(self, *args, **options):
         logging.info("Downloading json file from %s", _paths.JSON_ZIP_DOWNLOAD_URL)
         stream = requests.get(_paths.JSON_ZIP_DOWNLOAD_URL)
@@ -27,11 +37,16 @@ class Command(BaseCommand):
         with open(_paths.JSON_ZIP_PATH, "wb") as output:
             output.write(stream.content)
 
-        for set_file in [
-            os.path.join(_paths.SET_FOLDER, s) for s in os.listdir(_paths.SET_FOLDER)
-        ]:
+        for set_file in self.get_json_files():
             if set_file.endswith(".json"):
                 os.remove(set_file)
 
         json_zip_file = zipfile.ZipFile(_paths.JSON_ZIP_PATH)
         json_zip_file.extractall(_paths.SET_FOLDER)
+
+        for set_file_path in self.get_json_files():
+            with open(set_file_path, "r", encoding="utf8") as set_file:
+                set_data = json.load(set_file, encoding="utf8")
+
+            with open(set_file_path, "w", encoding="utf8") as set_file:
+                json.dump(set_data, set_file, indent=2)
