@@ -547,3 +547,28 @@ class StagedPhysicalCard:
 
     def __str__(self) -> str:
         return f"{'/'.join(self.printing_uids)} in {self.language_code} ({self.layout})"
+
+
+class StagedCardPrice:
+    def __init__(
+        self, printing_uuid: str, date_str: str, price: float, price_type: str
+    ):
+        self.printing_uuid = printing_uuid
+        self.date = date_str
+        self.price = price
+        if price_type == "paperFoil":
+            self.price_type = "paper_foil"
+        elif price_type == "paper":
+            self.price_type = "paper"
+        else:
+            raise Exception(
+                f"Unknown card price price type: {price_type} for {printing_uuid}"
+            )
+
+    def to_dict(self) -> dict:
+        return {
+            "printing_uuid": self.printing_uuid,
+            "date": self.date,
+            "price": self.price,
+            "price_type": self.price_type,
+        }

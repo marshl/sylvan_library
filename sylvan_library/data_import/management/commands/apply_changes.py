@@ -13,6 +13,7 @@ from cards.models import (
     Block,
     Card,
     CardLegality,
+    CardPrice,
     CardPrinting,
     CardPrintingLanguage,
     CardRuling,
@@ -81,6 +82,7 @@ class Command(BaseCommand):
                 or not self.create_rulings()
                 or not self.create_legalities()
                 or not self.update_legalities()
+                or not self.create_prices()
             ):
                 raise Exception("Change application aborted")
 
@@ -608,5 +610,25 @@ class Command(BaseCommand):
                 legality.restriction = change["to"]
                 legality.full_clean()
                 legality.save()
+
+        return True
+
+    def create_prices(self) -> bool:
+        self.logger.info("Creating prices")
+
+        with open(_paths.PRICES_TO_CREATE, "r", encoding="utf8") as prices_file:
+            price_list = json.load(prices_file, encoding="utf8")
+
+        for price in price_list:
+            printing = CardPrinting.objects.get(json_id=price["printing_uuid"])
+
+            price_obj = CardPrice(
+                printing=printing,
+                date=price["date"],
+                price=price["price"],
+                price_type=price["price_type"],
+            )
+            price_obj.full_clean()
+            price_obj.save()
 
         return True

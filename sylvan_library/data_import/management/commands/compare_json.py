@@ -13,6 +13,7 @@ from cards.models import (
     Block,
     Card,
     CardLegality,
+    CardPrice,
     CardPrinting,
     CardPrintingLanguage,
     CardRuling,
@@ -24,6 +25,7 @@ from data_import.staging import (
     StagedBlock,
     StagedSet,
     StagedLegality,
+    StagedCardPrice,
     StagedCardPrintingLanguage,
     StagedPhysicalCard,
     StagedCardPrinting,
@@ -82,6 +84,9 @@ class Command(BaseCommand):
 
     card_links_to_create = {}  # type: Dict[str, set]
 
+    existing_prices = {}  # type: Dict[str, Dict[str, CardPrice]]
+    prices_to_create = []  # type: List[StagedCardPrice]
+
     force_update = False
     start_time = None
 
@@ -99,35 +104,7 @@ class Command(BaseCommand):
 
         self.start_time = time.time()
 
-        for card in Card.objects.all():
-            if card.name in self.existing_cards:
-                raise Exception(f"Multiple cards with the same name found: {card.name}")
-            self.existing_cards[card.name] = card
-
-        self.existing_card_printings = {
-            cp.json_id: cp
-            for cp in CardPrinting.objects.prefetch_related(
-                "printed_languages__language"
-            ).all()
-        }
-
-        self.existing_sets = {s.code: s for s in Set.objects.all()}
-        self.existing_blocks = {b.name: b for b in Block.objects.all()}
-        for ruling in CardRuling.objects.select_related("card"):
-            if ruling.card.name not in self.existing_rulings:
-                self.existing_rulings[ruling.card.name] = {}
-            self.existing_rulings[ruling.card.name][ruling.text] = ruling
-
-        for legality in (
-            CardLegality.objects.prefetch_related("card")
-            .prefetch_related("format")
-            .all()
-        ):
-            if legality.card.name not in self.existing_legalities:
-                self.existing_legalities[legality.card.name] = {}
-            self.existing_legalities[legality.card.name][
-                legality.format.code
-            ] = legality.restriction
+        self.get_existing_data()
 
         set_data_list = []
 
@@ -158,6 +135,44 @@ class Command(BaseCommand):
 
         self.write_to_file()
         self.log_stats()
+
+    def get_existing_data(self) -> None:
+        for card in Card.objects.all():
+            if card.name in self.existing_cards:
+                raise Exception(f"Multiple cards with the same name found: {card.name}")
+            self.existing_cards[card.name] = card
+
+        self.existing_card_printings = {
+            cp.json_id: cp
+            for cp in CardPrinting.objects.prefetch_related(
+                "printed_languages__language", "prices"
+            ).all()
+        }
+
+        self.existing_sets = {s.code: s for s in Set.objects.all()}
+        self.existing_blocks = {b.name: b for b in Block.objects.all()}
+        for ruling in CardRuling.objects.select_related("card"):
+            if ruling.card.name not in self.existing_rulings:
+                self.existing_rulings[ruling.card.name] = {}
+            self.existing_rulings[ruling.card.name][ruling.text] = ruling
+
+        for legality in (
+            CardLegality.objects.prefetch_related("card")
+            .prefetch_related("format")
+            .all()
+        ):
+            if legality.card.name not in self.existing_legalities:
+                self.existing_legalities[legality.card.name] = {}
+            self.existing_legalities[legality.card.name][
+                legality.format.code
+            ] = legality.restriction
+
+        for printing_uuid, existing_print in self.existing_card_printings.items():
+            self.existing_prices[printing_uuid] = {
+                str(price.date): price for price in existing_print.prices.all()
+            }
+
+        pass
 
     def parse_set_data(self, set_data: dict) -> None:
         """
@@ -359,6 +374,25 @@ class Command(BaseCommand):
                         self.rulings_to_delete[staged_card.name] = []
 
                     self.rulings_to_delete[staged_card.name].append(existing_ruling)
+
+    def process_card_prices(
+        self, staged_card_printing: StagedCardPrinting, card_data: dict
+    ) -> None:
+        for price_type, prices in card_data.get("prices", {}).items():
+            for price_date, price_value in prices.items():
+                if (
+                    staged_card_printing.json_id not in self.existing_prices
+                    or price_date
+                    not in self.existing_prices[staged_card_printing.json_id]
+                ):
+                    self.prices_to_create.append(
+                        StagedCardPrice(
+                            staged_card_printing.json_id,
+                            price_date,
+                            price_value,
+                            price_type,
+                        )
+                    )
 
     def process_card_legalities(self, staged_card: StagedCard) -> None:
         """
@@ -641,6 +675,8 @@ class Command(BaseCommand):
             printlangs.append(staged_printlang)
         self.card_printings_parsed.add(staged_card_printing.json_id)
 
+        self.process_card_prices(staged_card_printing, card_data)
+
         return staged_card_printing, printlangs
 
     def process_printed_language(
@@ -842,6 +878,11 @@ class Command(BaseCommand):
             _paths.CARD_LINKS_TO_CREATE, self.card_links_to_create
         )
 
+        self.write_object_to_json(
+            _paths.PRICES_TO_CREATE,
+            [price.to_dict() for price in self.prices_to_create],
+        )
+
     def log_stats(self) -> None:
         """
         Logs out the number sof objects to delete/create/update
@@ -870,4 +911,5 @@ class Command(BaseCommand):
         logger.info("%s legalities to create", len(self.legalities_to_create))
         logger.info("%s legalities to delete", len(self.legalities_to_delete))
         logger.info("%s legalities to update", len(self.legalities_to_update))
+        logger.info("%s prices to create", len(self.prices_to_create))
         logger.info("Completed in %ss", time.time() - self.start_time)

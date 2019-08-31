@@ -18,6 +18,7 @@ from cards.models.sets import Block, Set, Format
 from cards.models.rarity import Rarity
 from cards.models.colour import Colour
 from cards.models.decks import Deck, DeckCard
+from cards.models.card_price import CardPrice
 
 
 CARD_LEGALITY_RESTRICTION_CHOICES = (

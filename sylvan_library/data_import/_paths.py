@@ -43,3 +43,4 @@ LEGALITIES_TO_DELETE = path.join(IMPORT_FOLDER, "legalities_to_delete.json")
 LEGALITIES_TO_UPDATE = path.join(IMPORT_FOLDER, "legalities_to_update.json")
 
 CARD_LINKS_TO_CREATE = path.join(IMPORT_FOLDER, "card_links_to_create.json")
+PRICES_TO_CREATE = path.join(IMPORT_FOLDER, "prices_to_create.json")
