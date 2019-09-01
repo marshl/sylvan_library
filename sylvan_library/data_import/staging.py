@@ -164,8 +164,8 @@ class StagedCard:
         self.side = card_data.get("side")
         self.hand_modifier = card_data.get("hand")
         self.life_modifier = card_data.get("life")
-
         self.is_reserved = bool(card_data.get("isReserved", False))
+        self.edh_rec_rank = card_data.get("edhrecRank", 0)
 
     @property
     def colour_weight(self) -> int:
@@ -237,6 +237,7 @@ class StagedCard:
             "colour_weight": self.colour_weight,
             "cost": self.cost,
             "display_name": self.display_name,
+            "edh_rec_rank": self.edh_rec_rank,
             "face_cmc": self.face_cmc,
             "hand_modifier": self.hand_modifier,
             "is_reserved": self.is_reserved,

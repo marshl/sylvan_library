@@ -76,6 +76,8 @@ class Card(models.Model):
 
     is_reserved = models.BooleanField(default=False)
     scryfall_oracle_id = models.CharField(max_length=36, blank=True, null=True)
+    # Card rank on EDHRec.
+    edh_rec_rank = models.IntegerField(default=0)
     is_token = models.BooleanField(default=False)
     links = models.ManyToManyField("self")
 

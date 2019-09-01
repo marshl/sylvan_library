@@ -534,6 +534,7 @@ class Command(BaseCommand):
                 "colour_sort_key",
                 "cost",
                 "display_name",
+                "edh_rec_rank",
                 "face_cmc",
                 "hand_modifier",
                 "is_reserved",

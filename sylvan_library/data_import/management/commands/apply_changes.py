@@ -226,6 +226,7 @@ class Command(BaseCommand):
                     "colour_indicator_flags",
                     "colour_weight",
                     "display_name",
+                    "edh_rec_rank",
                     "face_cmc",
                     "hand_modifier",
                     "is_reserved",
