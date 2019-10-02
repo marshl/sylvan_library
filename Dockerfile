@@ -19,8 +19,10 @@ WORKDIR /app
 
 # add the app to pythonpath
 RUN echo "export PYTHONPATH=\"/usr/lib/python3.6\"; export PYTHONPATH=\"\${PYTHONPATH}:/app\"" > /etc/profile.d/pypath.sh
-RUN pip3 install pipenv && pipenv lock --requirements > requirements.txt
-RUN pip3 install -r requirements.txt
+
+# install the .venv locally
+ENV PIPENV_VENV_IN_PROJECT 1
+RUN pip3 install pipenv && pipenv install
 
 COPY sylvan_library /app/sylvan_library
 
