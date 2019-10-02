@@ -10,7 +10,8 @@ RUN apk add --update \
     gcc musl-dev postgresql-dev \
   && pip install virtualenv \
   && rm -rf /var/cache/apk/* \
-  && pip3 install --upgrade pip
+  && pip3 install --upgrade pip \
+  && pip3 install gunicorn
 
 COPY Pipfile /app/Pipfile
 COPY Pipfile.lock /app/Pipfile.lock
