@@ -82,7 +82,7 @@ class Command(BaseCommand):
     legalities_to_delete = {}  # type: Dict[str, List[str]]
     legalities_to_update = {}  # type: Dict[str, Dict[str, Dict[str, str]]]
 
-    card_links_to_create = {}  # type: Dict[str, set]
+    card_links_to_create = dict()  # type: Dict[str, set]
 
     existing_prices = {}  # type: Dict[str, Dict[str, CardPrice]]
     prices_to_create = []  # type: List[StagedCardPrice]
@@ -121,6 +121,9 @@ class Command(BaseCommand):
         set_data_list.sort(key=lambda s: s.get("releaseDate") or str(date.max()))
 
         for set_data in set_data_list:
+            logger.info(
+                "Parsing set %s (%s)", set_data.get("code"), set_data.get("name")
+            )
             self.parse_set_data(set_data)
             self.process_set_cards(set_data)
             self.process_card_links(set_data)
@@ -137,11 +140,13 @@ class Command(BaseCommand):
         self.log_stats()
 
     def get_existing_data(self) -> None:
+        logger.info("Getting existing cards")
         for card in Card.objects.all():
             if card.name in self.existing_cards:
                 raise Exception(f"Multiple cards with the same name found: {card.name}")
             self.existing_cards[card.name] = card
 
+        logger.info("Getting existing printings")
         self.existing_card_printings = {
             cp.json_id: cp
             for cp in CardPrinting.objects.prefetch_related(
@@ -149,13 +154,17 @@ class Command(BaseCommand):
             ).all()
         }
 
+        logger.info("Getting existing sets")
         self.existing_sets = {s.code: s for s in Set.objects.all()}
         self.existing_blocks = {b.name: b for b in Block.objects.all()}
+
+        logger.info("Getting existing rulings")
         for ruling in CardRuling.objects.select_related("card"):
             if ruling.card.name not in self.existing_rulings:
                 self.existing_rulings[ruling.card.name] = {}
             self.existing_rulings[ruling.card.name][ruling.text] = ruling
 
+        logger.info("Getting existing legalities")
         for legality in (
             CardLegality.objects.prefetch_related("card")
             .prefetch_related("format")
@@ -167,12 +176,11 @@ class Command(BaseCommand):
                 legality.format.code
             ] = legality.restriction
 
+        logger.info("Getting existing prices")
         for printing_uuid, existing_print in self.existing_card_printings.items():
             self.existing_prices[printing_uuid] = {
                 str(price.date): price for price in existing_print.prices.all()
             }
-
-        pass
 
     def parse_set_data(self, set_data: dict) -> None:
         """
@@ -876,7 +884,11 @@ class Command(BaseCommand):
         )
 
         self.write_object_to_json(
-            _paths.CARD_LINKS_TO_CREATE, self.card_links_to_create
+            _paths.CARD_LINKS_TO_CREATE,
+            {
+                card_name: list(link_names)
+                for card_name, link_names in self.card_links_to_create.items()
+            },
         )
 
         self.write_object_to_json(
