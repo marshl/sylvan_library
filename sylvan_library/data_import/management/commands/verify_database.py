@@ -184,7 +184,7 @@ class Command(BaseCommand):
 
         low_count_two_faced_cards = (
             PhysicalCard.objects.filter(
-                layout__in=("split", "flip", "transform", "meld")
+                layout__in=("split", "flip", "transform", "meld", "adventure")
             )
             .annotate(printlang_count=Count("printed_languages"))
             .exclude(printlang_count__gte=2)
@@ -198,7 +198,14 @@ class Command(BaseCommand):
 
         high_count_single_face_cards = (
             PhysicalCard.objects.exclude(
-                layout__in=("split", "flip", "transform", "meld", "aftermath")
+                layout__in=(
+                    "split",
+                    "flip",
+                    "transform",
+                    "meld",
+                    "aftermath",
+                    "adventure",
+                )
             )
             .annotate(printlang_count=Count("printed_languages"))
             .exclude(printlang_count__lte=1)
@@ -206,7 +213,8 @@ class Command(BaseCommand):
 
         self.assert_true(
             high_count_single_face_cards.count() == 0,
-            "Only two-face cards should have multiple printlangs",
+            "Only two-face cards should have multiple printlangs"
+            + str(high_count_single_face_cards),
         )
 
     def test_unique_images(self):
@@ -237,7 +245,8 @@ class Command(BaseCommand):
             if not any(
                 pl
                 for pl in printed_languages
-                if pl.card_printing.card.layout not in ["flip", "split", "aftermath"]
+                if pl.card_printing.card.layout
+                not in ["flip", "split", "aftermath", "adventure"]
             ):
                 continue
 
