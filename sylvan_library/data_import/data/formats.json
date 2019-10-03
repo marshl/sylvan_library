@@ -50,5 +50,9 @@
   {
     "code": "oldschool",
     "name": "Old School"
+  },
+  {
+    "code": "historic",
+    "name": "Historic"
   }
 ]
