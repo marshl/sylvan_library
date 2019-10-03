@@ -226,7 +226,7 @@ class Command(BaseCommand):
                 "name",
                 # "tcgplayer_group_id",
                 # "total_set_size",
-                "card_count",
+                "total_set_size",
                 "type",
             },
         )

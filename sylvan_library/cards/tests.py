@@ -118,7 +118,7 @@ def create_test_set(name: str, setcode: str, fields: dict) -> Set:
     :param fields: Other fields
     :return: A set object
     """
-    set_obj = Set(name=name, code=setcode, card_count=0)
+    set_obj = Set(name=name, code=setcode, total_set_size=0)
 
     for key, value in fields.items():
         set_obj.__dict__[key] = value

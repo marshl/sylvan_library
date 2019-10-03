@@ -126,7 +126,7 @@ class Command(BaseCommand):
                 release_date=set_data["release_date"],
                 name=set_data["name"],
                 type=set_data["type"],
-                card_count=set_data["card_count"],
+                total_set_size=set_data["total_set_size"],
                 block=Block.objects.get(name=set_data["block"])
                 if set_data["block"]
                 else None,
@@ -148,7 +148,7 @@ class Command(BaseCommand):
         for set_code, set_diff in set_list.items():
             set_obj = Set.objects.get(code=set_code)
             for field, change in set_diff.items():
-                if field in {"keyrune_code", "release_date", "name", "card_count"}:
+                if field in {"keyrune_code", "release_date", "name", "total_set_size"}:
                     setattr(set_obj, field, change["to"])
                 elif field == "block":
                     set_obj.block = Block.objects.get(name=change["to"])

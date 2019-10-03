@@ -280,7 +280,7 @@ class StagedSet:
         self.name = set_data["name"]
         self.release_date = set_data["releaseDate"]
         self.tcg_player_group_id = set_data.get("tcg_player_group_id")
-        self.card_count = set_data["totalSetSize"]
+        self.total_set_size = set_data["totalSetSize"]
         self.type = set_data["type"]
 
     def to_dict(self) -> dict:
@@ -292,7 +292,7 @@ class StagedSet:
         return {
             "base_set_size": self.base_set_size,
             "block": self.block,
-            "card_count": self.card_count,
+            "total_set_size": self.total_set_size,
             "code": self.code,
             "is_foil_only": self.is_foil_only,
             "is_online_only": self.is_online_only,
