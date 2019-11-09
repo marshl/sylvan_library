@@ -60,7 +60,6 @@ class Command(BaseCommand):
             )
             return
 
-        transaction.atomic()
         with transaction.atomic():
             # pylint: disable=too-many-boolean-expressions
             if (
@@ -148,7 +147,13 @@ class Command(BaseCommand):
         for set_code, set_diff in set_list.items():
             set_obj = Set.objects.get(code=set_code)
             for field, change in set_diff.items():
-                if field in {"keyrune_code", "release_date", "name", "total_set_size"}:
+                if field in {
+                    "keyrune_code",
+                    "release_date",
+                    "name",
+                    "total_set_size",
+                    "type",
+                }:
                     setattr(set_obj, field, change["to"])
                 elif field == "block":
                     set_obj.block = Block.objects.get(name=change["to"])
@@ -226,7 +231,7 @@ class Command(BaseCommand):
                     "colour_indicator_flags",
                     "colour_weight",
                     "display_name",
-                    "edh_rec_rank",
+                    # "edh_rec_rank",
                     "face_cmc",
                     "hand_modifier",
                     "is_reserved",

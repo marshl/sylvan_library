@@ -387,6 +387,8 @@ class Command(BaseCommand):
         self, staged_card_printing: StagedCardPrinting, card_data: dict
     ) -> None:
         for price_type, prices in card_data.get("prices", {}).items():
+            if not prices:
+                continue
             for price_date, price_value in prices.items():
                 if (
                     staged_card_printing.json_id not in self.existing_prices
@@ -542,7 +544,7 @@ class Command(BaseCommand):
                 "colour_sort_key",
                 "cost",
                 "display_name",
-                "edh_rec_rank",
+                # "edh_rec_rank",
                 "face_cmc",
                 "hand_modifier",
                 "is_reserved",
@@ -684,7 +686,7 @@ class Command(BaseCommand):
             printlangs.append(staged_printlang)
         self.card_printings_parsed.add(staged_card_printing.json_id)
 
-        self.process_card_prices(staged_card_printing, card_data)
+        # self.process_card_prices(staged_card_printing, card_data)
 
         return staged_card_printing, printlangs
 
