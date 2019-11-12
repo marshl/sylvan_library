@@ -7,7 +7,7 @@ from typing import Dict, List
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-import _query
+from _query import query_yes_no
 from cards.models import CardPrinting
 from data_import.staging import StagedCard, StagedCardPrinting
 from data_import.management.commands import get_all_set_data
@@ -34,11 +34,12 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
 
         parser.add_argument(
-            "--no-transaction",
+            "-y",
+            "--yes",
             action="store_true",
-            dest="no_transaction",
+            dest="yes_to_all",
             default=False,
-            help="Update the database without a transaction (unsafe)",
+            help="Update every UId without prompt",
         )
 
     def handle(self, *args, **options):
@@ -71,16 +72,23 @@ class Command(BaseCommand):
                     ):
                         continue
 
-                    msg = (
-                        f"Card {printing_to_delete} might have had its UID changed "
-                        f"from {printing_json_id} to {printing_to_create.json_id} "
-                        f"({printing_to_create.card_name} in {printing_to_create.set_code})."
-                        f" Change UID?"
-                    )
-                    if _query.query_yes_no(msg, "no"):
-                        printing_to_delete.json_id = printing_to_create.json_id
-                        printing_to_delete.clean()
-                        printing_to_delete.save()
+                    if not options["yes_to_all"]:
+                        query = (
+                            f"Card {printing_to_delete} might have had its UID changed "
+                            f"from {printing_json_id} to {printing_to_create.json_id} "
+                            f"({printing_to_create.card_name} in {printing_to_create.set_code})."
+                            f" Change UID?"
+                        )
+                        if not query_yes_no(query, "no"):
+                            continue
+                    else:
+                        logger.info(
+                            f"Updating {printing_to_delete} from {printing_json_id} "
+                            f"to {printing_to_create.json_id}"
+                        )
+                    printing_to_delete.json_id = printing_to_create.json_id
+                    printing_to_delete.clean()
+                    printing_to_delete.save()
 
     def process_set_cards(self, set_data: dict) -> None:
         for card_data in set_data.get("cards", []):

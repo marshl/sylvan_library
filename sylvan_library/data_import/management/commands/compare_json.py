@@ -90,16 +90,6 @@ class Command(BaseCommand):
     force_update = False
     start_time = None
 
-    def add_arguments(self, parser):
-
-        parser.add_argument(
-            "--no-transaction",
-            action="store_true",
-            dest="no_transaction",
-            default=False,
-            help="Update the database without a transaction (unsafe)",
-        )
-
     def handle(self, *args, **options):
 
         self.start_time = time.time()

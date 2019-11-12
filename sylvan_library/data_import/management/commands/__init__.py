@@ -5,7 +5,7 @@ from typing import Generator
 import _paths
 
 
-def get_all_set_data() -> Generator[dict]:
+def get_all_set_data() -> Generator[dict, None, None]:
     """
     Gets set data from the sets directory and returns each one as a parsed dict
     :return: The set data as a dict
