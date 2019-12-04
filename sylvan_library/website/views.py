@@ -215,6 +215,12 @@ def ajax_search_result_links(request, card_id: int):
 
     links = [
         {
+            "name": "Search on Channel Fireball",
+            "url": "https://store.channelfireball.com/products/search?{}".format(
+                urllib.parse.urlencode({"q": card.display_name})
+            ),
+        },
+        {
             "name": "TCGPlayer Decks",
             "url": "https://decks.tcgplayer.com/magic/deck/search?{}".format(
                 urllib.parse.urlencode({"contains": card.display_name, "page": 1})
@@ -227,13 +233,13 @@ def ajax_search_result_links(request, card_id: int):
             ),
         },
         {
-            "name": "Search DeckStats for this card",
+            "name": "Search on DeckStats",
             "url": "https://deckstats.net/decks/search/?{}".format(
                 urllib.parse.urlencode({"search_cards[]": card.display_name})
             ),
         },
         {
-            "name": "Search MTGTop8 for this card",
+            "name": "MTGTop8 decks",
             "url": "http://mtgtop8.com/search?{}".format(
                 urllib.parse.urlencode(
                     {"MD_check": 1, "SB_check": 1, "cards": linked_card_name}
@@ -241,13 +247,13 @@ def ajax_search_result_links(request, card_id: int):
             ),
         },
         {
-            "name": "View on Starcity Games",
-            "url": "http://www.starcitygames.com/results?{}".format(
-                urllib.parse.urlencode({"name": card.display_name})
+            "name": "Search on Starcity Games",
+            "url": "https://starcitygames.com/search.php?{}".format(
+                urllib.parse.urlencode({"search_query": card.display_name})
             ),
         },
         {
-            "name": "View on Scryfall",
+            "name": "Search on Scryfall",
             "url": "https://scryfall.com/search?q={}".format(
                 urllib.parse.urlencode({"name": card.display_name})
             ),
