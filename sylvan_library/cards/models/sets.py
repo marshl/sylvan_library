@@ -39,7 +39,7 @@ class Set(models.Model):
     type = models.CharField(max_length=50, blank=True, null=True)
     total_set_size = models.IntegerField()
     base_set_size = models.IntegerField(default=0)
-    keyrune_code = models.CharField(max_length=10)
+    keyrune_code = models.CharField(max_length=50)
     is_foreign_only = models.BooleanField(default=False)
     is_foil_only = models.BooleanField(default=False)
     is_online_only = models.BooleanField(default=False)
