@@ -183,7 +183,11 @@
 }
 
 .subtitle.legal {
-    color: green;
+}
+
+.subtitle.restricted {
+    font-weight: 700;
+    color: darkorange;
 }
 
 .card-image {

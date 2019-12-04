@@ -50,10 +50,10 @@
             </span>
                 {% for legality in printing.card.legalities.all %}
                     <div>
-                        <div class="subtitle" style="display:inline-flex;">
-                            {{ legality.format.name }}
-                        </div>
-                        <span class="subtitle legal">: {{ legality.restriction }}</span>
+                        <span class="subtitle">
+                            {{ legality.format.name }}:
+                        </span>
+                        <span class="subtitle {{ legality.restriction|lower }}">{{ legality.restriction }}</span>
                         <br/>
                     </div>
                 {% endfor %}
