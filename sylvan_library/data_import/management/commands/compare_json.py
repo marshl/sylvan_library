@@ -294,6 +294,10 @@ class Command(BaseCommand):
                         other_printlang.base_name in new_printlang.other_names
                         and other_printlang.language == new_printlang.language
                         and (
+                            new_printlang.layout == "meld"
+                            or other_printlang.number == new_printlang.number
+                        )
+                        and (
                             new_printlang.layout != "meld"
                             or new_printlang.side == "c"
                             or other_printlang.side == "c"

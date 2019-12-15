@@ -502,6 +502,7 @@ class StagedCardPrintingLanguage:
             self.other_names.remove(self.base_name)
         self.layout = card_data["layout"]
         self.side = card_data.get("side")
+        self.number = card_data.get("number")
 
         self.is_new = False
         self.has_physical_card = False
