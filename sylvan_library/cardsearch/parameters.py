@@ -1,8 +1,6 @@
 """
 The module for all search parameters
 """
-# pylint: disable=too-few-public-methods
-
 import logging
 from django.db.models.query import Q, F
 from django.db.models.functions import Concat
@@ -15,6 +13,12 @@ from cards.models import Block, Card, Rarity, Set
 logger = logging.getLogger("django")
 
 OPERATOR_MAPPING = {
+    "<": "__lt",
+    "<=": "__lte",
+    ">": "__gt",
+    ">=": "__gte",
+    "=": "",
+    ":": "",
     "LT": "__lt",
     "LTE": "__lte",
     "GT": "__gt",
@@ -35,9 +39,6 @@ class CardSearchParam:
     """
     The base search parameter class
     """
-
-    # def __init__(self):
-    #     self.child_parameters = list()
 
     def query(self) -> Q:
         """
