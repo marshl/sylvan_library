@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from bitfield.types import Bit
 
 from cards.models import Block, Card, Rarity, Set
+from typing import List
 
 logger = logging.getLogger("django")
 
@@ -195,6 +196,25 @@ class CardColourParam(CardSearchParam):
         return Q(colour_flags=self.card_colour)
 
 
+class CardComplexColourParam(CardSearchParam):
+    def __init__(self, colours: int, exclude_unselected: bool = False):
+        assert colours >= 0
+        assert colours <= (
+            Card.colour_flags.white
+            | Card.colour_flags.blue
+            | Card.colour_flags.black
+            | Card.colour_flags.red
+            | Card.colour_flags.green
+        )
+        self.colours = colours
+        self.exclude_unselected = exclude_unselected
+
+    def query(self) -> Q:
+        if self.exclude_unselected:
+            return Q(colour_flags=self.colours) & Q(colour_flags=~self.colours)
+        return Q(colour_flags=self.colours)
+
+
 class CardColourIdentityParam(CardSearchParam):
     """
     The parameter for searching by a card's colour identity
@@ -302,7 +322,8 @@ class CardNumericalParam(CardSearchParam):
         :param field: The card field to compare with
         :return:
         """
-        return {f"{field}{OPERATOR_MAPPING[self.operator]}": self.number}
+        django_op = OPERATOR_MAPPING[self.operator]
+        return {field + django_op: self.number}
 
 
 class CardNumPowerParam(CardNumericalParam):
@@ -347,6 +368,12 @@ class CardCmcParam(CardNumericalParam):
 
     def query(self) -> Q:
         args = self.get_args("cmc")
+        return Q(**args)
+
+
+class CardColourCountParam(CardNumericalParam):
+    def query(self) -> Q:
+        args = self.get_args("num_colours")
         return Q(**args)
 
 

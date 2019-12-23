@@ -127,17 +127,20 @@ class BaseSearch:
         """
         return
 
+    def queryset(self):
+        return Card.objects.filter(self.root_parameter.query()).distinct()
+
     def search(self, page_number: int = 1, page_size: int = 25):
         """
         Runs the search for this search and constructs
         :param page_number: The result page
         :param page_size: The number of items per page
         """
-        queryset = Card.objects.filter(self.root_parameter.query()).distinct()
+        qs = self.queryset()
         self.add_sort_param(CardNameSortParam())
         self.add_sort_param(CardColourSortParam())
         self.add_sort_param(CardPowerSortParam())
-        queryset = queryset.order_by(
+        qs = qs.order_by(
             *[
                 order
                 for sort_param in self.sort_params
@@ -145,7 +148,7 @@ class BaseSearch:
             ]
         )
 
-        self.paginator = Paginator(queryset, page_size)
+        self.paginator = Paginator(qs, page_size)
         try:
             self.page = self.paginator.page(page_number)
         except EmptyPage:
