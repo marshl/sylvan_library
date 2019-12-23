@@ -23,6 +23,7 @@ from cards.models import (
 )
 from cardsearch.fieldsearch import FieldSearch
 from cardsearch.namesearch import NameSearch
+from cardsearch.parse_search import ParseSearch
 
 
 def get_physical_card_key_pair(physical_card: PhysicalCard, printing: CardPrinting):
@@ -99,7 +100,7 @@ class SearchForm(forms.Form):
 
 class NameSearchForm(SearchForm):
     """
-    The search form for searching only bu the card's name
+    The search form for searching only by the card's name
     """
 
     card_name = forms.CharField(required=False)
@@ -112,6 +113,27 @@ class NameSearchForm(SearchForm):
         self.full_clean()
         search = NameSearch()
         search.card_name = self.data.get("card_name")
+        search.build_parameters()
+        search.search(self.get_page_number())
+        return search
+
+
+class QuerySearchForm(SearchForm):
+    """
+    The search form for searching by a query string
+    """
+
+    query_string = forms.CharField(required=False)
+
+    def get_search(self) -> ParseSearch:
+        """
+        Gets the search object using the data from this form
+        :return:
+        """
+        self.full_clean()
+
+        search = ParseSearch()
+        search.query_string = self.data.get("query_string")
         search.build_parameters()
         search.search(self.get_page_number())
         return search

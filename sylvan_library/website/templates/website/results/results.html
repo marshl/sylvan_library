@@ -6,6 +6,11 @@
     <div class="results-page">
         <div class="action-bar">
             <div class="action-bar-row">
+                {% if error_message %}
+                    <div class="result-count-container">
+                        {{ error_message }}
+                    </div>
+                {% endif %}
                 <div class="result-count-container">
                     <div class="results-count">
                         {{ result_count }} results found

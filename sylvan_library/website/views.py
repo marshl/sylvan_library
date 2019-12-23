@@ -31,10 +31,12 @@ from cards.models import (
 )
 from website.forms import (
     FieldSearchForm,
-    NameSearchForm,
+    QuerySearchForm,
     ChangeCardOwnershipForm,
     DeckForm,
 )
+
+from cardsearch.parse_search import ParseSearch
 
 logger = logging.getLogger("django")
 
@@ -55,21 +57,22 @@ def name_search(request) -> HttpResponse:
     :param request: The user's request
     :return: The HTTP Response
     """
-    name_form = NameSearchForm(request.GET)
+    query_form = QuerySearchForm(request.GET)
     search_form = FieldSearchForm()
-    search = name_form.get_search()
+    search = query_form.get_search()
     return render(
         request,
         "website/simple_search.html",
         {
-            "name_form": name_form,
+            "query_form": query_form,
             "form": search_form,
             "results": search.results,
             "result_count": search.paginator.count,
             "page": search.page,
             "page_buttons": get_page_buttons(
-                search.paginator, name_form.get_page_number(), 3
+                search.paginator, query_form.get_page_number(), 3
             ),
+            "error_message": search.error_message,
         },
     )
 

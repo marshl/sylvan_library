@@ -7,9 +7,9 @@
                 <form action="{% url 'website:name_search' %}" method="get">
                     <div class="search-icon"></div>
                     <input type="text" class="search-input js-search-bar-input"
-                           name="card_name"
-                           placeholder="Search card names"
-                           value="{% if name_form %}{{ name_form.card_name.value }}{% endif %}">
+                           name="query_string"
+                           placeholder="Type to search"
+                           value="{% if query_form %}{{ query_form.query_string.value }}{% endif %}">
                     <input type="submit" style="display: none;">
                 </form>
             </div>
