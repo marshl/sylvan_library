@@ -183,6 +183,23 @@ class CardSubtypeParam(CardSearchParam):
         return Q(subtype__icontains=self.card_subtype)
 
 
+class CardGenericTypeParam(CardSearchParam):
+    def __init__(self, card_type: str, operator: str, inverse: bool = False):
+        super().__init__()
+        self.card_type = card_type
+        self.operator = operator
+        self.inverse = inverse
+
+    def query(self) -> Q:
+        if self.operator == "=":
+            result = Q(type__iexact=self.card_type) | Q(subtype__iexact=self.card_type)
+        else:
+            result = Q(type__icontains=self.card_type) | Q(
+                subtype__icontains=self.card_type
+            )
+        return ~result if self.inverse else result
+
+
 class CardColourParam(CardSearchParam):
     """
     The parameter for searching by a card's colour

@@ -1,24 +1,7 @@
-import logging
-import json
 from typing import Union, List, Dict, Optional, Tuple, Any
 
-from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from cards.models import (
-    Block,
-    Card,
-    CardLegality,
-    CardPrice,
-    CardPrinting,
-    CardPrintingLanguage,
-    CardRuling,
-    Colour,
-    Format,
-    Language,
-    PhysicalCard,
-    Rarity,
-    Set,
-)
+from cards.models import Card
 from cardsearch.parameters import (
     CardSearchParam,
     OrParam,
@@ -26,10 +9,10 @@ from cardsearch.parameters import (
     CardNumPowerParam,
     CardNameParam,
     CardNumToughnessParam,
-    CardColourParam,
     CardColourCountParam,
     CardComplexColourParam,
     CardOwnershipCountParam,
+    CardGenericTypeParam,
 )
 
 from cardsearch.parser import Parser, ParseError
@@ -193,6 +176,8 @@ class CardQueryParser(Parser):
             return self.parse_colour_param(modifier, value, inverse, identity=True)
         elif param in ("own", "have"):
             return self.parse_ownership_param(modifier, value, inverse)
+        elif param in ("t", "type"):
+            return self.parse_type_param(modifier, value, inverse)
 
         raise ParseError(self.pos + 1, "Unknown parameter type %s", param)
 
@@ -283,3 +268,8 @@ class CardQueryParser(Parser):
             raise ParseError(self.pos + 1, "Cannot parse number %s", text)
 
         return CardOwnershipCountParam(self.user, operator, count)
+
+    def parse_type_param(
+        self, operator: str, text: str, inverse: bool = False
+    ) -> CardGenericTypeParam:
+        return CardGenericTypeParam(text, operator, inverse)
