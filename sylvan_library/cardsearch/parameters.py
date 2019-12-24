@@ -8,7 +8,7 @@ from django.db.models import Sum, Case, When, IntegerField, Value
 from django.contrib.auth.models import User
 from bitfield.types import Bit
 
-from cards.models import Block, Card, Rarity, Set
+from cards.models import Block, Card, Rarity, Set, Colour
 from typing import List
 
 logger = logging.getLogger("django")
@@ -197,7 +197,13 @@ class CardColourParam(CardSearchParam):
 
 
 class CardComplexColourParam(CardSearchParam):
-    def __init__(self, colours: int, exclude_unselected: bool = False):
+    def __init__(
+        self,
+        colours: int,
+        operator: str = "=",
+        inverse: bool = False,
+        identity: bool = False,
+    ):
         assert colours >= 0
         assert colours <= (
             Card.colour_flags.white
@@ -207,12 +213,54 @@ class CardComplexColourParam(CardSearchParam):
             | Card.colour_flags.green
         )
         self.colours = colours
-        self.exclude_unselected = exclude_unselected
+        self.operator = operator
+        self.inverse = inverse
+        self.identity = identity
 
     def query(self) -> Q:
-        if self.exclude_unselected:
-            return Q(colour_flags=self.colours) & Q(colour_flags=~self.colours)
-        return Q(colour_flags=self.colours)
+        field = "colour_identity_flags" if self.identity else "colour_flags"
+        if (self.operator == ":" and not self.identity) or self.operator == ">=":
+            return Q(**{field: self.colours})
+
+        if self.operator == ">" or self.operator == "=":
+            result = Q(**{field: self.colours})
+            exclude = None
+
+            for c in Colour.objects.exclude(symbol="C"):
+                if not c.bit_value & self.colours:
+                    if not exclude:
+                        exclude = Q(**{field: c.bit_value})
+                    else:
+                        exclude = exclude | Q(**{field: c.bit_value})
+            if exclude:
+                result &= exclude if self.operator == ">" else ~exclude
+            return result
+
+        if (
+            self.operator == "<"
+            or self.operator == "<="
+            or (self.operator == ":" and self.identity)
+        ):
+            include = None
+            exclude = None
+            for c in Colour.objects.exclude(symbol="C"):
+                if c.bit_value & self.colours:
+                    if not include:
+                        include = Q(**{field: c.bit_value})
+                    else:
+                        include |= Q(**{field: c.bit_value})
+                else:
+                    if not exclude:
+                        exclude = ~Q(**{field: c.bit_value})
+                    else:
+                        exclude &= ~Q(**{field: c.bit_value})
+
+            if self.identity:
+                include |= Q(colour_identity_flags=0)
+
+            if self.operator == "<":
+                return include & exclude & ~Q(**{field: self.colours})
+            return include & exclude
 
 
 class CardColourIdentityParam(CardSearchParam):
@@ -372,8 +420,13 @@ class CardCmcParam(CardNumericalParam):
 
 
 class CardColourCountParam(CardNumericalParam):
+    def __init__(self, number: int, operator: str, identity: bool = False):
+        super().__init__(number, operator)
+        self.identity = identity
+
     def query(self) -> Q:
-        args = self.get_args("num_colours")
+        # TODO: Colour identity could
+        args = self.get_args("colour_count")
         return Q(**args)
 
 

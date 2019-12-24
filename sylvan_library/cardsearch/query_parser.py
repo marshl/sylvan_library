@@ -205,7 +205,7 @@ class CardQueryParser(Parser):
     def parameter(self) -> CardSearchParam:
         # acceptable_chars = "0-9A-Za-z \t!$%&()*+./;<=>?^_`|~-"
 
-        acceptable_param_types = "a-zA-Z0-9"
+        acceptable_param_types = "a-zA-Z0-9[-]"
         chars = [self.char(acceptable_param_types)]
 
         while True:
@@ -215,30 +215,31 @@ class CardQueryParser(Parser):
             chars.append(char)
 
         param = "".join(chars).rstrip(" \t")
-        # print("param", param)
         modifier = self.match("modifier")
         if modifier:
-            # rv += modifier
-            # print("param+modifier", modifier)
             if self.maybe_char("\"'"):
                 value = self.quoted_string()
             else:
                 value = self.unquoted()
-            # rv += self.match("quoted_string", "unquoted")
-            # print("param+modifier+rest", value)
-
         else:
             value = param
             param = "name"
 
-        if param == "name":
+        inverse = False
+        if param.startswith("-"):
+            param = param[1:]
+            inverse = True
+
+        if param == "name" or param == "n":
             return CardNameParam(card_name=value)
         elif param == "toughness":
             return CardNumToughnessParam(number=int(value), operator=modifier)
         elif param == "power":
             return CardNumPowerParam(number=int(value), operator=modifier)
         elif param == "color" or param == "c":
-            return self.parse_colour_param(modifier, value)
+            return self.parse_colour_param(modifier, value, inverse)
+        elif param in ("identity", "ci", "id"):
+            return self.parse_colour_param(modifier, value, inverse, identity=True)
 
         raise ParseError(self.pos + 1, "Unknown parameter type %s", param)
 
@@ -287,23 +288,28 @@ class CardQueryParser(Parser):
     def text_to_colours(self, text: str) -> int:
         text = text.lower()
         if text in COLOUR_NAMES:
-            return COLOUR_NAMES[text]
+            return int(COLOUR_NAMES[text])
 
         result = 0
         for char in text:
             if char not in COLOUR_NAMES:
-                raise ParseError(0, "Unknown colour %s", text)
+                raise ParseError(0, "Unknown colour %s at %s", text, self.pos)
 
             result |= COLOUR_NAMES[char]
-        return result
+        return int(result)
 
     def parse_colour_param(
-        self, operator: str, text: str
+        self, operator: str, text: str, inverse: bool = False, identity: bool = False
     ) -> Union[CardComplexColourParam, CardColourCountParam]:
+        if operator not in [">", ">=", "=", ":", "<", "<="]:
+            raise ParseError(self.pos + 1, "Unknown operator %s", operator)
+
         try:
             num = int(text)
-            return CardColourCountParam(num, operator)
+            return CardColourCountParam(num, operator, identity=identity)
         except ValueError:
             pass
 
-        return CardComplexColourParam(self.text_to_colours(text))
+        return CardComplexColourParam(
+            self.text_to_colours(text), operator, inverse, identity=identity
+        )

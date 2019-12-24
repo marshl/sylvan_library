@@ -20,8 +20,21 @@ class ColourContainsTestCase(TestCase):
     """
 
     def setUp(self):
-        self.red_card = create_test_card({"colour": Card.colour_flags.red})
-        self.green_card = create_test_card({"colour": Card.colour_flags.green})
+        self.red_card = create_test_card({"colour_flags": Card.colour_flags.red})
+        self.green_card = create_test_card({"colour_flags": Card.colour_flags.green})
+        self.red_green_card = create_test_card(
+            {"colour_flags": Card.colour_flags.red | Card.colour_flags.green}
+        )
+        self.red_green_black_card = create_test_card(
+            {
+                "colour_flags": Card.colour_flags.red
+                | Card.colour_flags.green
+                | Card.colour_flags.black
+            }
+        )
+        self.blue_red_card = create_test_card(
+            {"colour_flags": Card.colour_flags.blue | Card.colour_flags.red}
+        )
         self.parse_search = ParseSearch()
 
     def tearDown(self):
@@ -32,4 +45,29 @@ class ColourContainsTestCase(TestCase):
         self.parse_search.query_string = "color:rg"
         self.parse_search.build_parameters()
         results = self.parse_search.queryset().all()
+        self.assertNotIn(
+            self.red_card,
+            results,
+            "A red card shouldn't be found in a green/red search",
+        )
+        self.assertNotIn(
+            self.green_card,
+            results,
+            "A green card shouldn't be found in a red/green search",
+        )
+        self.assertIn(
+            self.red_green_card,
+            results,
+            "A red/green card should be found in a red/green search",
+        )
+        self.assertIn(
+            self.red_green_black_card,
+            results,
+            "A red/green/black card should be found in a red/green search",
+        )
+        self.assertNotIn(
+            self.blue_red_card,
+            results,
+            "A blue/red card shouldn't found in a red/green search')",
+        )
         pass

@@ -5,6 +5,8 @@ from django.test import TestCase
 
 from django.contrib.auth.models import User
 
+import uuid
+
 from cards.models import (
     Card,
     CardPrinting,
@@ -23,20 +25,27 @@ def create_test_card(fields: dict) -> Card:
     :return: A card object
     """
     card = Card()
-    card.name = "undefined"
+    card.name = uuid.uuid1()
     card.cmc = 0
     card.num_power = 0
     card.num_toughness = 0
     card.num_loyalty = 0
+    card.colour_flags = 0
+    card.colour_identity_flags = 0
     card.colour_count = 0
     card.colour_sort_key = 0
     card.colour_weight = 0
+    card.layout = "normal"
     card.is_reserved = False
     card.is_token = False
 
     for key, value in fields.items():
-        card.__dict__[key] = value
+        setattr(card, key, value)
 
+    if not card.display_name:
+        card.display_name = card.name
+
+    card.full_clean()
     card.save()
     return card
 

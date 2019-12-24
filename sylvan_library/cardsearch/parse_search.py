@@ -19,4 +19,4 @@ class ParseSearch(BaseSearch):
         try:
             self.root_parameter = query_parser.parse(self.query_string)
         except ParseError as error:
-            self.error_message = error.msg
+            self.error_message = str(error)
