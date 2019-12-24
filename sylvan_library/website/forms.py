@@ -9,6 +9,7 @@ from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
 from django.db.models import Func, Value, F
 from django_select2.forms import Select2MultipleWidget
+from django.contrib.auth.models import User
 
 from cards.models import (
     Card,
@@ -123,6 +124,10 @@ class QuerySearchForm(SearchForm):
     The search form for searching by a query string
     """
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = None
+
     query_string = forms.CharField(required=False)
 
     def get_search(self) -> ParseSearch:
@@ -132,7 +137,7 @@ class QuerySearchForm(SearchForm):
         """
         self.full_clean()
 
-        search = ParseSearch()
+        search = ParseSearch(self.user)
         search.query_string = self.data.get("query_string")
         search.build_parameters()
         search.search(self.get_page_number())

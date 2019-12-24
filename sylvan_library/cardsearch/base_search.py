@@ -137,6 +137,7 @@ class BaseSearch:
         :param page_size: The number of items per page
         """
         qs = self.queryset()
+        print(str(qs.query))
         self.add_sort_param(CardNameSortParam())
         self.add_sort_param(CardColourSortParam())
         self.add_sort_param(CardPowerSortParam())

@@ -3,6 +3,7 @@ import json
 from typing import Union, List, Dict, Optional, Tuple, Any
 
 from django.core.management.base import BaseCommand
+from django.contrib.auth.models import User
 from cards.models import (
     Block,
     Card,
@@ -28,6 +29,7 @@ from cardsearch.parameters import (
     CardColourParam,
     CardColourCountParam,
     CardComplexColourParam,
+    CardOwnershipCountParam,
 )
 
 from cardsearch.parser import Parser, ParseError
@@ -91,6 +93,10 @@ COLOUR_NAMES = {
 
 
 class CardQueryParser(Parser):
+    def __init__(self, user: User):
+        super().__init__()
+        self.user = user
+
     def start(self) -> CardSearchParam:
         return self.expression()
 
@@ -185,6 +191,8 @@ class CardQueryParser(Parser):
             return self.parse_colour_param(modifier, value, inverse)
         elif param in ("identity", "ci", "id"):
             return self.parse_colour_param(modifier, value, inverse, identity=True)
+        elif param in ("own", "have"):
+            return self.parse_ownership_param(modifier, value, inverse)
 
         raise ParseError(self.pos + 1, "Unknown parameter type %s", param)
 
@@ -258,3 +266,20 @@ class CardQueryParser(Parser):
         return CardComplexColourParam(
             self.text_to_colours(text), operator, inverse, identity=identity
         )
+
+    def parse_ownership_param(
+        self, operator: str, text: str, inverse: bool = False
+    ) -> CardOwnershipCountParam:
+
+        if operator == ":" and text == "any":
+            return CardOwnershipCountParam(self.user, ">=", 1)
+
+        if operator == ":" and text == "none":
+            return CardOwnershipCountParam(self.user, "=", 0)
+
+        try:
+            count = int(text)
+        except ValueError:
+            raise ParseError(self.pos + 1, "Cannot parse number %s", text)
+
+        return CardOwnershipCountParam(self.user, operator, count)

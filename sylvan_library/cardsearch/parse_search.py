@@ -1,12 +1,15 @@
 from base_search import BaseSearch
 from query_parser import CardQueryParser, ParseError
 
+from django.contrib.auth.models import User
+
 
 class ParseSearch(BaseSearch):
-    def __init__(self):
+    def __init__(self, user: User):
+        super().__init__()
         self.query_string = None
         self.error_message = None
-        super().__init__()
+        self.user = user
 
     def get_preferred_set(self):
         return None
@@ -15,7 +18,7 @@ class ParseSearch(BaseSearch):
         if not self.query_string:
             return
 
-        query_parser = CardQueryParser()
+        query_parser = CardQueryParser(self.user)
         try:
             self.root_parameter = query_parser.parse(self.query_string)
         except ParseError as error:

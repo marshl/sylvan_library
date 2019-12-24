@@ -58,6 +58,7 @@ def name_search(request) -> HttpResponse:
     :return: The HTTP Response
     """
     query_form = QuerySearchForm(request.GET)
+    query_form.user = request.user
     search_form = FieldSearchForm()
     search = query_form.get_search()
     return render(
