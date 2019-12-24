@@ -70,4 +70,3 @@ class ColourContainsTestCase(TestCase):
             results,
             "A blue/red card shouldn't found in a red/green search')",
         )
-        pass

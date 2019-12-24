@@ -220,7 +220,11 @@ class CardComplexColourParam(CardSearchParam):
     def query(self) -> Q:
         field = "colour_identity_flags" if self.identity else "colour_flags"
         if (self.operator == ":" and not self.identity) or self.operator == ">=":
-            return Q(**{field: self.colours})
+            return (
+                ~Q(**{field: self.colours})
+                if self.inverse
+                else Q(**{field: self.colours})
+            )
 
         if self.operator == ">" or self.operator == "=":
             result = Q(**{field: self.colours})
@@ -234,7 +238,7 @@ class CardComplexColourParam(CardSearchParam):
                         exclude = exclude | Q(**{field: c.bit_value})
             if exclude:
                 result &= exclude if self.operator == ">" else ~exclude
-            return result
+            return ~result if self.inverse else result
 
         if (
             self.operator == "<"
@@ -259,8 +263,10 @@ class CardComplexColourParam(CardSearchParam):
                 include |= Q(colour_identity_flags=0)
 
             if self.operator == "<":
-                return include & exclude & ~Q(**{field: self.colours})
-            return include & exclude
+                result = include & exclude & ~Q(**{field: self.colours})
+                return ~result if self.inverse else result
+            result = include & exclude
+            return ~result if self.inverse else result
 
 
 class CardColourIdentityParam(CardSearchParam):

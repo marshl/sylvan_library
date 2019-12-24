@@ -7,6 +7,7 @@ class ParseError(Exception):
         self.pos = pos
         self.msg = msg
         self.args = args
+        print(str(self))
 
     def __str__(self):
         return "%s at position %s" % (self.msg % self.args, self.pos)
@@ -157,13 +158,13 @@ class Parser:
         except ParseError:
             return None
 
-    def maybe_match(self, *rules: str) -> Optional[str]:
+    def maybe_match(self, *rules: str) -> Optional[Any]:
         try:
             return self.match(*rules)
         except ParseError:
             return None
 
-    def maybe_keyword(self, *keywords: str) -> Optional[str]:
+    def maybe_keyword(self, *keywords: str) -> Optional[Any]:
         try:
             return self.keyword(*keywords)
         except ParseError:

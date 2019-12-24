@@ -95,11 +95,13 @@ class CardQueryParser(Parser):
         return self.expression()
 
     def expression(self) -> CardSearchParam:
+        print("expression")
         rv = self.match("term")
         or_group = None
         while True:
             op = self.maybe_keyword("or")
             if op is None:
+                print("no or, breaking")
                 break
 
             term = self.match("term")
@@ -107,69 +109,34 @@ class CardQueryParser(Parser):
                 or_group = OrParam()
                 or_group.add_parameter(rv)
             or_group.add_parameter(term)
-            pass
-            # if op == "+":
-            #     rv += term
-            # else:
-            #     rv -= term
 
         return or_group or rv
 
     def term(self) -> CardSearchParam:
+        print("term")
         rv = self.match("factor")
         and_group = None
         while True:
-            op = self.maybe_keyword("and")
-            if op is None:
+            self.maybe_keyword("and")
+
+            term = self.maybe_match("factor")
+            if term is None:
+                print("no term, breaking")
                 break
 
-            term = self.match("factor")
             if and_group is None:
                 and_group = AndParam()
                 and_group.add_parameter(rv)
             and_group.add_parameter(term)
-            pass
-            # if op == "*":
-            #     rv *= term
-            # else:
-            #     rv /= term
+
+            # if self.pos == self.len:
+            #     print('end of string, breaking')
+            #     break
 
         return and_group or rv
 
-    #
-    # def expression(self):
-    #     rv = self.match("factor")
-    #     while True:
-    #         op = self.maybe_keyword("and", "or")
-    #         if op is None:
-    #             break
-    #
-    #         term = self.match("parameter")
-    #         print("term", term, "op", op)
-    #
-    #         # if op == "+":
-    #         #     rv += term
-    #         # else:
-    #         #     rv -= term
-    #
-    #     return rv
-
-    # def term(self):
-    #     rv = self.match("factor")
-    #     while True:
-    #         op = self.maybe_keyword("and", "or")
-    #         if op is None:
-    #             break
-    #
-    #         term = self.match("factor")
-    #         # if op == "*":
-    #         #     rv *= term
-    #         # else:
-    #         #     rv /= term
-    #
-    #     return rv
-
     def factor(self) -> CardSearchParam:
+        print("factor")
         if self.maybe_keyword("("):
             rv = self.match("expression")
             self.keyword(")")
@@ -178,34 +145,9 @@ class CardQueryParser(Parser):
 
         return self.match("parameter")
 
-    # def number(self):
-    #     chars = []
-    #
-    #     chars.append(self.char("0-9"))
-    #
-    #     while True:
-    #         char = self.maybe_char("0-9")
-    #         if char is None:
-    #             break
-    #         chars.append(char)
-    #
-    #     if self.maybe_char("."):
-    #         chars.append(".")
-    #         chars.append(self.char("0-9"))
-    #
-    #         while True:
-    #             char = self.maybe_char("0-9")
-    #             if char is None:
-    #                 break
-    #             chars.append(char)
-    #
-    #     rv = float("".join(chars))
-    #     return rv
-
     def parameter(self) -> CardSearchParam:
-        # acceptable_chars = "0-9A-Za-z \t!$%&()*+./;<=>?^_`|~-"
-
-        acceptable_param_types = "a-zA-Z0-9[-]"
+        print("parameter")
+        acceptable_param_types = "a-zA-Z0-9-"
         chars = [self.char(acceptable_param_types)]
 
         while True:
@@ -215,6 +157,9 @@ class CardQueryParser(Parser):
             chars.append(char)
 
         param = "".join(chars).rstrip(" \t")
+        if param in ("or", "and"):
+            raise ParseError(self.pos + 1, "Bad logical operator %s", param)
+
         modifier = self.match("modifier")
         if modifier:
             if self.maybe_char("\"'"):
@@ -256,7 +201,7 @@ class CardQueryParser(Parser):
         return rv
 
     def unquoted(self) -> Union[str, float]:
-        acceptable_chars = "0-9A-Za-z\t!$%&*+./;<=>?^_`|~-"
+        acceptable_chars = "0-9A-Za-z!$%&*+./;<=>?^_`|~-"
         chars = [self.char(acceptable_chars)]
 
         while True:
