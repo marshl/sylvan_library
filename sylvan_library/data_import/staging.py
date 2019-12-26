@@ -125,6 +125,7 @@ class StagedCard:
             card_data.get("colorIndicator", [])
         )
         self.colour_count = bin(self.colour_flags).count("1")
+        self.colour_identity_count = bin(self.colour_identity_flags).count("1")
         self.colour_sort_key = COLOUR_TO_SORT_KEY[int(self.colour_flags)]
 
         self.layout = card_data.get("layout")
@@ -231,6 +232,7 @@ class StagedCard:
             "cmc": self.cmc,
             "colour_flags": self.colour_flags,
             "colour_count": self.colour_count,
+            "colour_identity_count": self.colour_identity_count,
             "colour_identity_flags": self.colour_identity_flags,
             "colour_indicator_flags": self.colour_indicator_flags,
             "colour_sort_key": self.colour_sort_key,

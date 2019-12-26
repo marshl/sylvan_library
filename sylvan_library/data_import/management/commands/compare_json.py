@@ -534,6 +534,7 @@ class Command(BaseCommand):
                 "subtype",
                 "cmc",
                 "colour_count",
+                "colour_identity_count",
                 "colour_weight",
                 "colour_sort_key",
                 "cost",

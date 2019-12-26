@@ -226,9 +226,10 @@ class Command(BaseCommand):
                 if field in {
                     "colour_count",
                     "colour_flags",
-                    "colour_sort_key",
-                    "colour_identity_flags",
                     "colour_indicator_flags",
+                    "colour_identity_count",
+                    "colour_identity_flags",
+                    "colour_sort_key",
                     "colour_weight",
                     "display_name",
                     # "edh_rec_rank",

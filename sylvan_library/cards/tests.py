@@ -33,6 +33,7 @@ def create_test_card(fields: dict) -> Card:
     card.colour_flags = 0
     card.colour_identity_flags = 0
     card.colour_count = 0
+    card.colour_identity_count = 0
     card.colour_sort_key = 0
     card.colour_weight = 0
     card.layout = "normal"

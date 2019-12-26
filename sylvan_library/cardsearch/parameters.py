@@ -448,8 +448,11 @@ class CardColourCountParam(CardNumericalParam):
         self.identity = identity
 
     def query(self) -> Q:
-        # TODO: Colour identity could
-        args = self.get_args("colour_count")
+        args = (
+            self.get_args("colour_identity_count")
+            if self.identity
+            else self.get_args("colour_count")
+        )
         return Q(**args)
 
 
