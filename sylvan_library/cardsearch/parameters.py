@@ -1,6 +1,7 @@
 """
 The module for all search parameters
 """
+from collections import Counter
 import logging
 from django.db.models.query import Q, F
 from django.db.models.functions import Concat
@@ -141,13 +142,23 @@ class CardRulesTextParam(CardSearchParam):
             if self.exact_match:
                 return Q(rules_text__iexact=self.card_rules)
             return Q(rules_text__icontains=self.card_rules)
+
         chunks = [Value(c) for c in self.card_rules.split("~")]
         params = [F("name")] * (len(chunks) * 2 - 1)
         params[0::2] = chunks
-        print("Exact match", self.exact_match)
         if self.exact_match:
-            return Q(rules_text__iexact=Concat(*params))
-        return Q(rules_text__icontains=Concat(*params))
+            query = Q(rules_text__iexact=Concat(*params))
+        else:
+            query = Q(rules_text__icontains=Concat(*params))
+
+        params = [Value("this spell")] * (len(chunks) * 2 - 1)
+        params[0::2] = chunks
+        if self.exact_match:
+            query |= Q(rules_text__iexact=Concat(*params))
+        else:
+            query |= Q(rules_text__icontains=Concat(*params))
+
+        return query
 
 
 class CardFlavourTextParam(CardSearchParam):
@@ -371,6 +382,61 @@ class CardManaCostParam(CardSearchParam):
 
     def query(self) -> Q:
         return Q(cost=self.cost) if self.exact_match else Q(cost__icontains=self.cost)
+
+
+SYMBOL_REMAPPING = {
+    "w/r": "r/w",
+    "u/g": "g/u",
+    "b/w": "w/b",
+    "r/u": "u/r",
+    "g/b": "b/g",
+}
+
+
+class CardManaCostComplexParam(CardSearchParam):
+    def __init__(self, cost: str):
+        super().__init__()
+        self.cost_text = cost.lower()
+
+        self.symbol_counts = Counter()
+        pos = 0
+        current_symbol = ""
+        in_symbol = False
+        while True:
+            if pos >= len(self.cost_text):
+                break
+            char = self.cost_text[pos]
+            if char == "{":
+                if in_symbol:
+                    raise Exception()
+                in_symbol = True
+                current_symbol = ""
+            elif char == "}":
+                if in_symbol:
+                    self.symbol_counts[
+                        SYMBOL_REMAPPING.get(current_symbol, current_symbol)
+                    ] += 1
+
+                    in_symbol = False
+                else:
+                    raise Exception()
+            elif in_symbol:
+                current_symbol += char
+            elif not in_symbol:
+                self.symbol_counts[char] += 1
+
+            pos += 1
+
+        if in_symbol:
+            raise Exception()
+
+    def query(self) -> Q:
+        query = Q()
+
+        for symbol, count in dict(self.symbol_counts).items():
+            query &= Q(cost__icontains=("{" + symbol + "}") * count)
+
+        return query
 
 
 class CardRarityParam(CardSearchParam):

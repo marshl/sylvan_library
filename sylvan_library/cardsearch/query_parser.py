@@ -14,6 +14,8 @@ from cardsearch.parameters import (
     CardOwnershipCountParam,
     CardGenericTypeParam,
     CardRulesTextParam,
+    CardManaCostParam,
+    CardManaCostComplexParam,
 )
 
 from cardsearch.parser import Parser, ParseError
@@ -87,13 +89,11 @@ class CardQueryParser(Parser):
         return self.expression()
 
     def expression(self) -> CardSearchParam:
-        print("expression")
         rv = self.match("term")
         or_group = None
         while True:
             op = self.maybe_keyword("or")
             if op is None:
-                print("no or, breaking")
                 break
 
             term = self.match("term")
@@ -105,7 +105,6 @@ class CardQueryParser(Parser):
         return or_group or rv
 
     def term(self) -> CardSearchParam:
-        print("term")
         rv = self.match("factor")
         and_group = None
         while True:
@@ -113,7 +112,6 @@ class CardQueryParser(Parser):
 
             term = self.maybe_match("factor")
             if term is None:
-                print("no term, breaking")
                 break
 
             if and_group is None:
@@ -121,14 +119,9 @@ class CardQueryParser(Parser):
                 and_group.add_parameter(rv)
             and_group.add_parameter(term)
 
-            # if self.pos == self.len:
-            #     print('end of string, breaking')
-            #     break
-
         return and_group or rv
 
     def factor(self) -> CardSearchParam:
-        print("factor")
         if self.maybe_keyword("("):
             rv = self.match("expression")
             self.keyword(")")
@@ -138,7 +131,6 @@ class CardQueryParser(Parser):
         return self.match("parameter")
 
     def parameter(self) -> CardSearchParam:
-        print("parameter")
         acceptable_param_types = "a-zA-Z0-9-"
         chars = [self.char(acceptable_param_types)]
 
@@ -148,7 +140,7 @@ class CardQueryParser(Parser):
                 break
             chars.append(char)
 
-        param = "".join(chars).rstrip(" \t")
+        param = "".join(chars).rstrip(" \t").lower()
         if param in ("or", "and"):
             raise ParseError(self.pos + 1, "Bad logical operator %s", param)
 
@@ -184,6 +176,8 @@ class CardQueryParser(Parser):
             return self.parse_type_param(modifier, value, inverse)
         elif param in ("o", "oracle", "text"):
             return self.parse_text_param(modifier, value, inverse)
+        elif param in ("m", "mana", "cost"):
+            return self.parse_mana_cost_param(modifier, value, inverse)
 
         raise ParseError(self.pos + 1, "Unknown parameter type %s", param)
 
@@ -200,7 +194,7 @@ class CardQueryParser(Parser):
         return rv
 
     def unquoted(self) -> Union[str, float]:
-        acceptable_chars = "0-9A-Za-z!$%&*+./;<=>?^_`|~-"
+        acceptable_chars = "0-9A-Za-z!$%&*+./;<=>?^_`|~{}/-"
         chars = [self.char(acceptable_chars)]
 
         while True:
@@ -288,3 +282,12 @@ class CardQueryParser(Parser):
                 self.pos + 1, "Unsupported operator for oracle search: '%s'", operator
             )
         return CardRulesTextParam(text, exact=operator == "=")
+
+    def parse_mana_cost_param(
+        self, operator: str, text: str, inverse: bool = False
+    ) -> CardManaCostComplexParam:
+        if operator != ":":
+            raise ParseError(
+                self.pos + 1, "Unsupported operator for mana cost search %s", operator
+            )
+        return CardManaCostComplexParam(text)
