@@ -13,11 +13,14 @@ from cardsearch.parameters import (
     CardComplexColourParam,
     CardOwnershipCountParam,
     CardGenericTypeParam,
+    CardRulesTextParam,
 )
 
 from cardsearch.parser import Parser, ParseError
 
 COLOUR_NAMES = {
+    "colourless": 0,
+    "c": 0,
     "white": Card.colour_flags.white,
     "w": Card.colour_flags.white,
     "blue": Card.colour_flags.blue,
@@ -152,6 +155,7 @@ class CardQueryParser(Parser):
         modifier = self.match("modifier")
         if modifier:
             if self.maybe_char("\"'"):
+                self.pos -= 1
                 value = self.quoted_string()
             else:
                 value = self.unquoted()
@@ -178,6 +182,8 @@ class CardQueryParser(Parser):
             return self.parse_ownership_param(modifier, value, inverse)
         elif param in ("t", "type"):
             return self.parse_type_param(modifier, value, inverse)
+        elif param in ("o", "oracle", "text"):
+            return self.parse_text_param(modifier, value, inverse)
 
         raise ParseError(self.pos + 1, "Unknown parameter type %s", param)
 
@@ -273,3 +279,12 @@ class CardQueryParser(Parser):
         self, operator: str, text: str, inverse: bool = False
     ) -> CardGenericTypeParam:
         return CardGenericTypeParam(text, operator, inverse)
+
+    def parse_text_param(
+        self, operator: str, text: str, inverse: bool = False
+    ) -> CardRulesTextParam:
+        if operator not in (":", "="):
+            raise ParseError(
+                self.pos + 1, "Unsupported operator for oracle search: '%s'", operator
+            )
+        return CardRulesTextParam(text, exact=operator == "=")

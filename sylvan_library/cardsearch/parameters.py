@@ -131,16 +131,22 @@ class CardRulesTextParam(CardSearchParam):
     The parameter for searching by a card's rules text
     """
 
-    def __init__(self, card_rules):
+    def __init__(self, card_rules, exact: bool = False):
         super().__init__()
         self.card_rules = card_rules
+        self.exact_match = exact
 
     def query(self) -> Q:
         if "~" not in self.card_rules:
+            if self.exact_match:
+                return Q(rules_text__iexact=self.card_rules)
             return Q(rules_text__icontains=self.card_rules)
         chunks = [Value(c) for c in self.card_rules.split("~")]
         params = [F("name")] * (len(chunks) * 2 - 1)
         params[0::2] = chunks
+        print("Exact match", self.exact_match)
+        if self.exact_match:
+            return Q(rules_text__iexact=Concat(*params))
         return Q(rules_text__icontains=Concat(*params))
 
 
@@ -277,7 +283,11 @@ class CardComplexColourParam(CardSearchParam):
                         exclude &= ~Q(**{field: c.bit_value})
 
             if self.identity:
-                include |= Q(colour_identity_flags=0)
+                include = (
+                    include | Q(colour_identity_flags=0)
+                    if include
+                    else Q(colour_identity_flags=0)
+                )
 
             if self.operator == "<":
                 result = include & exclude & ~Q(**{field: self.colours})
