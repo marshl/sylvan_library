@@ -478,14 +478,9 @@ class CardNumPowerParam(CardNumericalParam):
     The parameter for searching by a card's numerical power
     """
 
-    # def __init__(self, num_power: int, comparison: str):
-    #     super().__init__(num_power, comparison)
-    #     self.num_power = num_power
-    #     self.comparison = comparison
-
     def query(self) -> Q:
         args = self.get_args("num_power")
-        return Q(**args)
+        return Q(**args) & Q(power__isnull=False)
 
 
 class CardNumToughnessParam(CardNumericalParam):
@@ -495,7 +490,7 @@ class CardNumToughnessParam(CardNumericalParam):
 
     def query(self) -> Q:
         args = self.get_args("num_toughness")
-        return Q(**args)
+        return Q(**args) & Q(toughness__isnull=False)
 
 
 class CardNumLoyaltyParam(CardNumericalParam):

@@ -162,10 +162,10 @@ class CardQueryParser(Parser):
 
         if param == "name" or param == "n":
             return CardNameParam(card_name=value)
-        elif param == "toughness":
-            return CardNumToughnessParam(number=int(value), operator=modifier)
-        elif param == "power":
-            return CardNumPowerParam(number=int(value), operator=modifier)
+        elif param in ("p", "power", "pow"):
+            return self.parse_power_param(modifier, value, inverse)
+        elif param in ("toughness", "tough", "tou"):
+            return self.parse_toughness_param(modifier, value, inverse)
         elif param == "color" or param == "c":
             return self.parse_colour_param(modifier, value, inverse)
         elif param in ("identity", "ci", "id"):
@@ -291,3 +291,31 @@ class CardQueryParser(Parser):
                 self.pos + 1, "Unsupported operator for mana cost search %s", operator
             )
         return CardManaCostComplexParam(text)
+
+    def parse_power_param(
+        self, operator: str, text: str, inverse: bool = False
+    ) -> CardNumPowerParam:
+        if operator not in (":", "=", "<=", "<", ">=", ">"):
+            raise ParseError(
+                self.pos + 1, "Unsupported operator for power search %s", operator
+            )
+        try:
+            power: int = int(text)
+        except ValueError:
+            raise ParseError(self.pos + 1, "Could not convert %s to number", text)
+
+        return CardNumPowerParam(power, operator)
+
+    def parse_toughness_param(
+        self, operator: str, text: str, inverse: bool = False
+    ) -> CardNumToughnessParam:
+        if operator not in (":", "=", "<=", "<", ">=", ">"):
+            raise ParseError(
+                self.pos + 1, "Unsupported operator for toughness search %s", operator
+            )
+        try:
+            toughness: int = int(text)
+        except ValueError:
+            raise ParseError(self.pos + 1, "Could not convert %s to number", text)
+
+        return CardNumToughnessParam(toughness, operator)
