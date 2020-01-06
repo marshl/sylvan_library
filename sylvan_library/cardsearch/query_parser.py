@@ -2,7 +2,7 @@ from typing import Union, List, Dict, Optional, Tuple, Any
 
 from django.contrib.auth.models import User
 from django.db.models import Func, Value, F
-from cards.models import Card
+from cards.models import Card, Set
 from cardsearch.parameters import (
     CardSearchParam,
     OrParam,
@@ -15,7 +15,7 @@ from cardsearch.parameters import (
     CardOwnershipCountParam,
     CardGenericTypeParam,
     CardRulesTextParam,
-    CardManaCostParam,
+    CardSetParam,
     CardManaCostComplexParam,
 )
 
@@ -179,6 +179,8 @@ class CardQueryParser(Parser):
             return self.parse_text_param(modifier, value, inverse)
         elif param in ("m", "mana", "cost"):
             return self.parse_mana_cost_param(modifier, value, inverse)
+        elif param in ("s", "set"):
+            return self.parse_set_param(modifier, value, inverse)
 
         raise ParseError(self.pos + 1, "Unknown parameter type %s", param)
 
@@ -287,11 +289,24 @@ class CardQueryParser(Parser):
     def parse_mana_cost_param(
         self, operator: str, text: str, inverse: bool = False
     ) -> CardManaCostComplexParam:
-        if operator != ":":
+        if operator not in ("<", "<=", ":", "=", ">", ">="):
             raise ParseError(
                 self.pos + 1, "Unsupported operator for mana cost search %s", operator
             )
-        return CardManaCostComplexParam(text)
+        return CardManaCostComplexParam(text, operator)
+
+    def parse_set_param(self, operator: str, text: str, inverse: bool = False):
+        if operator not in ("<", "<=", ":", "=", ">", ">="):
+            raise ParseError(
+                self.pos + 1, "Unsupported operator for set parameter %s", operator
+            )
+
+        try:
+            card_set = Set.objects.get(code__iexact=text)
+        except Set.DoesNotExist:
+            raise ParseError(self.pos + 1, "Unknown set %s", text)
+
+        return CardSetParam(card_set)
 
     def parse_power_param(
         self, operator: str, text: str, inverse: bool = False
