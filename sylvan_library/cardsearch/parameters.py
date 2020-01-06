@@ -397,9 +397,10 @@ SYMBOL_REMAPPING = {
 
 
 class CardManaCostComplexParam(CardSearchParam):
-    def __init__(self, cost: str):
+    def __init__(self, cost: str, operator: str):
         super().__init__()
         self.cost_text = cost.lower()
+        self.operator = operator
 
         self.symbol_counts = Counter()
         pos = 0
@@ -437,7 +438,18 @@ class CardManaCostComplexParam(CardSearchParam):
         query = Q()
 
         for symbol, count in dict(self.symbol_counts).items():
-            query &= Q(cost__icontains=("{" + symbol + "}") * count)
+            num = None
+            try:
+                num = int(symbol)
+            except TypeError:
+                pass
+
+            if num is not None:
+                pass
+            else:
+                query &= Q(cost__icontains=("{" + symbol + "}") * count)
+                if self.operator == "=":
+                    query &= ~Q(cost__icontains=("{" + symbol + "}") * (count + 1))
 
         return query
 
