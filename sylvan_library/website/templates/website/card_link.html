@@ -17,7 +17,7 @@
             data-rotation="0"
         {% endif %}
     >
-    <a href="{% url 'website:name_search' %}?card_name={{ card.name }}">{% if card_name %}{{ card_name }}{% else %}
+    <a href="{% url 'website:name_search' %}?query_string={{ card.name }}">{% if card_name %}{{ card_name }}{% else %}
         {{ card.name }}{% endif %}</a>
     </span>
 {% endblock %}
