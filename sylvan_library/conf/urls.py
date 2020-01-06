@@ -22,6 +22,7 @@ urlpatterns = [
     path("", RedirectView.as_view(url="/website/")),
     path("website/", include("website.urls")),
     path("admin/", admin.site.urls),
+    path("tinymce/", include("tinymce.urls")),
 ]
 
 if settings.DEBUG_TOOLBAR:

@@ -9,7 +9,8 @@ from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
 from django.db.models import Func, Value, F
 from django_select2.forms import Select2MultipleWidget
-from django.contrib.auth.models import User
+
+from tinymce.widgets import TinyMCE
 
 from cards.models import (
     Card,
@@ -323,14 +324,17 @@ class DeckForm(forms.ModelForm):
     class Meta:
         model = Deck
 
-        widgets = {"exclude_colours": Select2MultipleWidget}
+        widgets = {
+            "exclude_colours": Select2MultipleWidget,
+            "description": TinyMCE(mce_attrs={"theme": "advanced"}),
+        }
         fields = [
             "date_created",
             "name",
             "subtitle",
             "format",
-            "description",
             "exclude_colours",
+            "description",
             "is_prototype",
             "is_private",
         ]
