@@ -1,6 +1,7 @@
 from typing import Union, List, Dict, Optional, Tuple, Any
 
 from django.contrib.auth.models import User
+from django.db.models import Func, Value, F
 from cards.models import Card
 from cardsearch.parameters import (
     CardSearchParam,
@@ -299,10 +300,13 @@ class CardQueryParser(Parser):
             raise ParseError(
                 self.pos + 1, "Unsupported operator for power search %s", operator
             )
-        try:
-            power: int = int(text)
-        except ValueError:
-            raise ParseError(self.pos + 1, "Could not convert %s to number", text)
+        if text in ("toughness", "tou"):
+            power: F = F("num_toughness")
+        else:
+            try:
+                power: int = int(text)
+            except ValueError:
+                raise ParseError(self.pos + 1, "Could not convert %s to number", text)
 
         return CardNumPowerParam(power, operator)
 
@@ -313,6 +317,7 @@ class CardQueryParser(Parser):
             raise ParseError(
                 self.pos + 1, "Unsupported operator for toughness search %s", operator
             )
+
         try:
             toughness: int = int(text)
         except ValueError:

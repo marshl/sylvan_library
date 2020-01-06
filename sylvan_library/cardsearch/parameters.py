@@ -1,6 +1,7 @@
 """
 The module for all search parameters
 """
+from abc import ABC
 from collections import Counter
 import logging
 from django.db.models.query import Q, F
@@ -10,6 +11,8 @@ from django.contrib.auth.models import User
 from bitfield.types import Bit
 
 from cards.models import Block, Card, Rarity, Set, Colour
+from django.db.models import F
+from typing import Union
 from typing import List
 
 logger = logging.getLogger("django")
@@ -452,13 +455,12 @@ class CardRarityParam(CardSearchParam):
         return Q(id__in=Card.objects.filter(printings__rarity=self.rarity))
 
 
-# pylint: disable=abstract-method
-class CardNumericalParam(CardSearchParam):
+class CardNumericalParam(CardSearchParam, ABC):
     """
     The base parameter for searching by some numerical value
     """
 
-    def __init__(self, number: int, operator: str):
+    def __init__(self, number: Union[int, F], operator: str):
         super().__init__()
         self.number = number
         self.operator = operator
