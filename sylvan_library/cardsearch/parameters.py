@@ -160,10 +160,11 @@ class CardRulesTextParam(CardSearchParam):
     The parameter for searching by a card's rules text
     """
 
-    def __init__(self, card_rules, exact: bool = False):
+    def __init__(self, card_rules, exact: bool = False, inverse: bool = False):
         super().__init__()
         self.card_rules = card_rules
         self.exact_match = exact
+        self.inverse = inverse
 
     def query(self) -> Q:
         if "~" not in self.card_rules:
@@ -186,9 +187,11 @@ class CardRulesTextParam(CardSearchParam):
         else:
             query |= Q(rules_text__icontains=Concat(*params))
 
-        return query
+        return ~query if self.inverse else query
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
+        if self.inverse:
+            return f"rules text {'is not' if self.exact_match else 'does nto contain'} \"{self.card_rules}\""
         return f"rules text {'is' if self.exact_match else 'contains'} \"{self.card_rules}\""
 
 

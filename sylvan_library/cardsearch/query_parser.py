@@ -302,7 +302,7 @@ class CardQueryParser(Parser):
             raise ParseError(
                 self.pos + 1, "Unsupported operator for oracle search: '%s'", operator
             )
-        return CardRulesTextParam(text, exact=operator == "=")
+        return CardRulesTextParam(text, exact=operator == "=", inverse=inverse)
 
     def parse_mana_cost_param(
         self, operator: str, text: str, inverse: bool = False
