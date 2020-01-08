@@ -10,6 +10,7 @@ from cardsearch.parameters import (
     CardNumPowerParam,
     CardNameParam,
     CardNumToughnessParam,
+    CardCmcParam,
     CardColourCountParam,
     CardComplexColourParam,
     CardOwnershipCountParam,
@@ -167,6 +168,8 @@ class CardQueryParser(Parser):
             return self.parse_power_param(modifier, value, inverse)
         elif param in ("toughness", "tough", "tou"):
             return self.parse_toughness_param(modifier, value, inverse)
+        elif param in ("cmc",):
+            return self.parse_cmc_param(modifier, value, inverse)
         elif param == "color" or param == "c":
             return self.parse_colour_param(modifier, value, inverse)
         elif param in ("identity", "ci", "id"):
@@ -311,31 +314,42 @@ class CardQueryParser(Parser):
     def parse_power_param(
         self, operator: str, text: str, inverse: bool = False
     ) -> CardNumPowerParam:
-        if operator not in (":", "=", "<=", "<", ">=", ">"):
-            raise ParseError(
-                self.pos + 1, "Unsupported operator for power search %s", operator
-            )
-        if text in ("toughness", "tou"):
-            power: F = F("num_toughness")
-        else:
-            try:
-                power: int = int(text)
-            except ValueError:
-                raise ParseError(self.pos + 1, "Could not convert %s to number", text)
-
+        power = self.parse_numeric_parameter("power", operator, text)
         return CardNumPowerParam(power, operator)
 
     def parse_toughness_param(
         self, operator: str, text: str, inverse: bool = False
     ) -> CardNumToughnessParam:
+        toughness = self.parse_numeric_parameter("toughness", operator, text)
+        return CardNumToughnessParam(toughness, operator)
+
+    def parse_cmc_param(
+        self, operator: str, text: str, inverse: bool = False
+    ) -> CardCmcParam:
+        cmc = self.parse_numeric_parameter("converted mana cost", operator, text)
+        return CardCmcParam(cmc, operator)
+
+    def parse_numeric_parameter(
+        self, param_name: str, operator: str, text: str
+    ) -> Union[int, F]:
         if operator not in (":", "=", "<=", "<", ">=", ">"):
             raise ParseError(
-                self.pos + 1, "Unsupported operator for toughness search %s", operator
+                self.pos + 1,
+                "Unsupported operator for %s search %s",
+                param_name,
+                operator,
             )
 
+        if text in ("toughness", "tough", "tou"):
+            return F("num_toughness")
+        elif text in ("power", "pow"):
+            return F("num_power")
+        elif text in ("loyalty", "loy"):
+            return F("num_loyalty")
+        elif text in ("cmc",):
+            return F("cmc")
+
         try:
-            toughness: int = int(text)
+            return int(text)
         except ValueError:
             raise ParseError(self.pos + 1, "Could not convert %s to number", text)
-
-        return CardNumToughnessParam(toughness, operator)

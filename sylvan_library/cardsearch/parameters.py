@@ -559,7 +559,10 @@ class CardCmcParam(CardNumericalParam):
 
     def query(self) -> Q:
         args = self.get_args("cmc")
-        return Q(**args)
+        q = Q()
+        if isinstance(self.number, F):
+            q &= Q(**{"toughness__isnull": False})
+        return q & Q(**args)
 
 
 class CardColourCountParam(CardNumericalParam):
