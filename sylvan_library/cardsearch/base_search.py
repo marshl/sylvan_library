@@ -5,7 +5,7 @@ from typing import List, Optional
 from bitfield.types import Bit
 
 from django.core.paginator import Paginator, EmptyPage
-from django.db.models import prefetch_related_objects
+from django.db.models import prefetch_related_objects, QuerySet
 
 from cardsearch.parameters import (
     CardSortParam,
@@ -127,8 +127,25 @@ class BaseSearch:
         """
         return
 
-    def queryset(self):
-        return Card.objects.filter(self.root_parameter.query()).distinct()
+    def get_queryset(self) -> QuerySet:
+        """
+        Gets the queryset of the search
+        :return: The search queryset
+        """
+        queryset = Card.objects.filter(self.root_parameter.query()).distinct()
+
+        # Add some default sort params to ensure stable ordering
+        self.add_sort_param(CardNameSortParam())
+        self.add_sort_param(CardColourSortParam())
+        self.add_sort_param(CardPowerSortParam())
+        queryset = queryset.order_by(
+            *[
+                order
+                for sort_param in self.sort_params
+                for order in sort_param.get_sort_list()
+            ]
+        )
+        return queryset
 
     def search(self, page_number: int = 1, page_size: int = 25):
         """
@@ -136,20 +153,8 @@ class BaseSearch:
         :param page_number: The result page
         :param page_size: The number of items per page
         """
-        qs = self.queryset()
-        print(str(qs.query))
-        self.add_sort_param(CardNameSortParam())
-        self.add_sort_param(CardColourSortParam())
-        self.add_sort_param(CardPowerSortParam())
-        qs = qs.order_by(
-            *[
-                order
-                for sort_param in self.sort_params
-                for order in sort_param.get_sort_list()
-            ]
-        )
-
-        self.paginator = Paginator(qs, page_size)
+        queryset = self.get_queryset()
+        self.paginator = Paginator(queryset, page_size)
         try:
             self.page = self.paginator.page(page_number)
         except EmptyPage:
@@ -183,4 +188,8 @@ class BaseSearch:
         self.sort_params.append(sort_param)
 
     def get_pretty_str(self) -> str:
+        """
+        Gets the human readable version of the search query
+        :return: The human readable string
+        """
         return self.root_parameter.get_pretty_str()

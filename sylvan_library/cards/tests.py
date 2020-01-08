@@ -1,11 +1,10 @@
 """
 Unit tests for the cards module
 """
-from django.test import TestCase
-
-from django.contrib.auth.models import User
-
 import uuid
+
+from django.test import TestCase
+from django.contrib.auth.models import User
 
 from cards.models import (
     Card,

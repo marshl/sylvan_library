@@ -1,9 +1,15 @@
+"""
+Models fo card pricing
+"""
 from django.db import models
 
-from cards.models import CardPrinting
+from cards.models.card import CardPrinting
 
 
 class CardPrice(models.Model):
+    """
+    A card price recorded at a certain dae for a certain printing
+    """
 
     PRICE_TYPE_CHOICES = (
         ("paper", "Paper"),

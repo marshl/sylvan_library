@@ -44,7 +44,7 @@ class ColourContainsTestCase(TestCase):
     def test_name_match(self):
         self.parse_search.query_string = "color:rg"
         self.parse_search.build_parameters()
-        results = self.parse_search.queryset().all()
+        results = self.parse_search.get_queryset().all()
         self.assertNotIn(
             self.red_card,
             results,
