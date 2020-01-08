@@ -36,8 +36,6 @@ from website.forms import (
     DeckForm,
 )
 
-from cardsearch.parse_search import ParseSearch
-
 logger = logging.getLogger("django")
 
 
@@ -73,6 +71,7 @@ def name_search(request) -> HttpResponse:
             "page_buttons": get_page_buttons(
                 search.paginator, query_form.get_page_number(), 3
             ),
+            "pretty_query_message": search.get_pretty_str(),
             "error_message": search.error_message,
         },
     )

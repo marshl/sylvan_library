@@ -1,31 +1,8 @@
 import logging
-import json
-from typing import Union, List, Dict, Optional, Tuple, Any
 
 from django.core.management.base import BaseCommand
-from cards.models import (
-    Block,
-    Card,
-    CardLegality,
-    CardPrice,
-    CardPrinting,
-    CardPrintingLanguage,
-    CardRuling,
-    Colour,
-    Format,
-    Language,
-    PhysicalCard,
-    Rarity,
-    Set,
-)
-from cardsearch.parameters import (
-    CardSearchParam,
-    OrParam,
-    AndParam,
-    CardNumPowerParam,
-    CardNameParam,
-    CardNumToughnessParam,
-)
+from cards.models import Card
+
 from cardsearch.query_parser import CardQueryParser
 
 

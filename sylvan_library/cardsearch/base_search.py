@@ -181,3 +181,6 @@ class BaseSearch:
         :return:
         """
         self.sort_params.append(sort_param)
+
+    def get_pretty_str(self) -> str:
+        return self.root_parameter.get_pretty_str()

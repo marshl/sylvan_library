@@ -82,9 +82,9 @@ COLOUR_NAMES = {
 
 
 class CardQueryParser(Parser):
-    def __init__(self, user: User):
+    def __init__(self, user: User = None):
         super().__init__()
-        self.user = user
+        self.user: User = user
 
     def start(self) -> CardSearchParam:
         return self.expression()

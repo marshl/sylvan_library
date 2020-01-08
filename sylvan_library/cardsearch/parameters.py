@@ -52,6 +52,9 @@ class CardSearchParam:
         """
         raise NotImplementedError("Please implement this method")
 
+    def get_pretty_str(self, within_or_block: bool = False) -> str:
+        raise NotImplementedError("PLease implemented this method")
+
 
 # pylint: disable=abstract-method
 class BranchParam(CardSearchParam):
@@ -61,7 +64,7 @@ class BranchParam(CardSearchParam):
 
     def __init__(self):
         super().__init__()
-        self.child_parameters = list()
+        self.child_parameters: List[CardSearchParam] = list()
 
     def add_parameter(self, param: CardSearchParam):
         """
@@ -95,6 +98,15 @@ class AndParam(BranchParam):
             return ~query
         return query
 
+    def get_pretty_str(self, within_or_block: bool = False) -> str:
+        if len(self.child_parameters) == 1:
+            return self.child_parameters[0].get_pretty_str()
+        result = " and ".join(param.get_pretty_str() for param in self.child_parameters)
+        if within_or_block:
+            return "(" + result + ")"
+
+        return result
+
 
 class OrParam(BranchParam):
     """
@@ -116,6 +128,14 @@ class OrParam(BranchParam):
 
         return ~query if self.inverse else query
 
+    def get_pretty_str(self, within_or_block: bool = False) -> str:
+        if len(self.child_parameters) == 1:
+            return self.child_parameters[0].get_pretty_str()
+        return " or ".join(
+            param.get_pretty_str(within_or_block=True)
+            for param in self.child_parameters
+        )
+
 
 class CardNameParam(CardSearchParam):
     """
@@ -128,6 +148,9 @@ class CardNameParam(CardSearchParam):
 
     def query(self) -> Q:
         return Q(name__icontains=self.card_name)
+
+    def get_pretty_str(self, within_or_block: bool = False) -> str:
+        return f"the name contains {self.card_name}"
 
 
 class CardRulesTextParam(CardSearchParam):
@@ -162,6 +185,9 @@ class CardRulesTextParam(CardSearchParam):
             query |= Q(rules_text__icontains=Concat(*params))
 
         return query
+
+    def get_pretty_str(self, within_or_block: bool = False) -> str:
+        return f"rules text {'is' if self.exact_match else 'contains'} \"{self.card_rules}\""
 
 
 class CardFlavourTextParam(CardSearchParam):
@@ -308,6 +334,9 @@ class CardComplexColourParam(CardSearchParam):
                 return ~result if self.inverse else result
             result = include & exclude
             return ~result if self.inverse else result
+
+    def get_pretty_str(self, within_or_block: bool = False) -> str:
+        return f"the colour {self.operator} {self.colours}"
 
 
 class CardColourIdentityParam(CardSearchParam):
@@ -496,6 +525,9 @@ class CardNumPowerParam(CardNumericalParam):
         args = self.get_args("num_power")
         return Q(**args) & Q(power__isnull=False)
 
+    def get_pretty_str(self, within_or_block: bool = False) -> str:
+        return f"the power {self.operator} {self.number}"
+
 
 class CardNumToughnessParam(CardNumericalParam):
     """
@@ -505,6 +537,9 @@ class CardNumToughnessParam(CardNumericalParam):
     def query(self) -> Q:
         args = self.get_args("num_toughness")
         return Q(**args) & Q(toughness__isnull=False)
+
+    def get_pretty_str(self, within_or_block: bool = False) -> str:
+        return f"the toughness {self.operator} {self.number}"
 
 
 class CardNumLoyaltyParam(CardNumericalParam):
