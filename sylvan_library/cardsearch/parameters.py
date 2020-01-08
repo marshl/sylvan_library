@@ -53,7 +53,9 @@ class CardSearchParam:
         raise NotImplementedError("Please implement this method")
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
-        raise NotImplementedError("PLease implemented this method")
+        raise NotImplementedError(
+            "Please implement get_pretty_str on " + type(self).__name__
+        )
 
 
 # pylint: disable=abstract-method
@@ -245,6 +247,9 @@ class CardGenericTypeParam(CardSearchParam):
             )
         return ~result if self.inverse else result
 
+    def get_pretty_str(self, within_or_block: bool = False) -> str:
+        return f'the card types include "{self.card_type}"'
+
 
 class CardColourParam(CardSearchParam):
     """
@@ -276,13 +281,16 @@ class CardComplexColourParam(CardSearchParam):
             | Card.colour_flags.green
         )
         self.colours = colours
-        self.operator = operator
+        if operator == ":":
+            self.operator = "<=" if identity else ">="
+        else:
+            self.operator = operator
         self.inverse = inverse
         self.identity = identity
 
     def query(self) -> Q:
         field = "colour_identity_flags" if self.identity else "colour_flags"
-        if (self.operator == ":" and not self.identity) or self.operator == ">=":
+        if self.operator == ">=":
             return (
                 ~Q(**{field: self.colours})
                 if self.inverse
@@ -291,43 +299,26 @@ class CardComplexColourParam(CardSearchParam):
 
         if self.operator == ">" or self.operator == "=":
             result = Q(**{field: self.colours})
-            exclude = None
+            exclude = Q()
 
             for c in Colour.objects.exclude(symbol="C"):
                 if not c.bit_value & self.colours:
-                    if not exclude:
-                        exclude = Q(**{field: c.bit_value})
-                    else:
-                        exclude = exclude | Q(**{field: c.bit_value})
+                    exclude |= Q(**{field: c.bit_value})
             if exclude:
                 result &= exclude if self.operator == ">" else ~exclude
             return ~result if self.inverse else result
 
-        if (
-            self.operator == "<"
-            or self.operator == "<="
-            or (self.operator == ":" and self.identity)
-        ):
-            include = None
-            exclude = None
+        if self.operator == "<" or self.operator == "<=":
+            include = Q()
+            exclude = Q()
             for c in Colour.objects.exclude(symbol="C"):
                 if c.bit_value & self.colours:
-                    if not include:
-                        include = Q(**{field: c.bit_value})
-                    else:
-                        include |= Q(**{field: c.bit_value})
+                    include |= Q(**{field: c.bit_value})
                 else:
-                    if not exclude:
-                        exclude = ~Q(**{field: c.bit_value})
-                    else:
-                        exclude &= ~Q(**{field: c.bit_value})
+                    exclude &= ~Q(**{field: c.bit_value})
 
             if self.identity:
-                include = (
-                    include | Q(colour_identity_flags=0)
-                    if include
-                    else Q(colour_identity_flags=0)
-                )
+                include |= Q(colour_identity_flags=0)
 
             if self.operator == "<":
                 result = include & exclude & ~Q(**{field: self.colours})
@@ -336,7 +327,20 @@ class CardComplexColourParam(CardSearchParam):
             return ~result if self.inverse else result
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
-        return f"the colour {self.operator} {self.colours}"
+        if self.colours == 0:
+            return (
+                "is cards have colourless identity"
+                if self.identity
+                else "the cards are colourless"
+            )
+
+        colour_names = ""
+        for c in Colour.objects.all():
+            if c.bit_value & self.colours:
+                colour_names += c.symbol
+
+        param_type = "colour identity" if self.identity else "colours"
+        return f"the {param_type} {self.operator} {colour_names}"
 
 
 class CardColourIdentityParam(CardSearchParam):
