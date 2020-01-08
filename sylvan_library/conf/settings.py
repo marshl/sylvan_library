@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "website",
     "widget_tweaks",
     "django_select2",
+    "tinymce",
 ]
 
 if DEBUG_TOOLBAR:
