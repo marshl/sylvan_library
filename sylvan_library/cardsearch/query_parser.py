@@ -88,51 +88,51 @@ class CardQueryParser(Parser):
         self.user: User = user
 
     def start(self) -> CardSearchParam:
-        return self.expression()
+        return self.or_group()
 
-    def expression(self) -> CardSearchParam:
-        rv = self.match("term")
+    def or_group(self) -> CardSearchParam:
+        rv = self.match("and_group")
         or_group = None
         while True:
             op = self.maybe_keyword("or")
             if op is None:
                 break
 
-            term = self.match("term")
+            param_group = self.match("and_group")
             if or_group is None:
                 or_group = OrParam()
                 or_group.add_parameter(rv)
-            or_group.add_parameter(term)
+            or_group.add_parameter(param_group)
 
         return or_group or rv
 
-    def term(self) -> CardSearchParam:
-        rv = self.match("factor")
+    def and_group(self) -> CardSearchParam:
+        rv = self.match("parameter_group")
         and_group = None
         while True:
             self.maybe_keyword("and")
 
-            term = self.maybe_match("factor")
-            if term is None:
+            param_group = self.maybe_match("parameter_group")
+            if param_group is None:
                 break
 
             if and_group is None:
                 and_group = AndParam()
                 and_group.add_parameter(rv)
-            and_group.add_parameter(term)
+            and_group.add_parameter(param_group)
 
         return and_group or rv
 
-    def factor(self) -> CardSearchParam:
+    def parameter_group(self) -> CardSearchParam:
         if self.maybe_keyword("("):
-            rv = self.match("expression")
+            rv = self.match("or_group")
             self.keyword(")")
 
             return rv
 
         return self.match("parameter")
 
-    def parameter(self) -> CardSearchParam:
+    def param_type(self) -> str:
         acceptable_param_types = "a-zA-Z0-9-"
         chars = [self.char(acceptable_param_types)]
 
@@ -142,56 +142,67 @@ class CardQueryParser(Parser):
                 break
             chars.append(char)
 
-        param = "".join(chars).rstrip(" \t").lower()
-        if param in ("or", "and"):
-            raise ParseError(self.pos + 1, "Bad logical operator %s", param)
+        return "".join(chars).rstrip(" \t").lower()
 
-        modifier = self.match("modifier")
-        if modifier:
-            if self.maybe_char("\"'"):
-                self.pos -= 1
-                value = self.quoted_string()
-            else:
-                value = self.unquoted()
+    def parameter(self) -> CardSearchParam:
+        inverted = False
+        if self.maybe_keyword("-"):
+            inverted = True
+
+        operator = ":"
+        parameter_value = self.maybe_match("quoted_string")
+        if parameter_value:
+            parameter_type = "name"
         else:
-            value = param
-            param = "name"
+            parameter_type = self.maybe_match("param_type")
+            if not parameter_type:
+                parameter_value = self.match("unquoted")
+                parameter_type = "name"
+            else:
+                if parameter_type in ("or", "and"):
+                    raise ParseError(
+                        self.pos + 1, "Bad logical operator %s", parameter_type
+                    )
 
-        inverse = False
-        if param.startswith("-"):
-            param = param[1:]
-            inverse = True
+                operator = self.maybe_match("operator")
+                if not operator:
+                    parameter_value = parameter_type
+                    parameter_type = "name"
+                else:
+                    parameter_value = self.match("quoted_string", "unquoted")
 
-        if param == "name" or param == "n":
-            return CardNameParam(card_name=value)
-        elif param in ("p", "power", "pow"):
-            return self.parse_power_param(modifier, value, inverse)
-        elif param in ("toughness", "tough", "tou"):
-            return self.parse_toughness_param(modifier, value, inverse)
-        elif param in ("cmc",):
-            return self.parse_cmc_param(modifier, value, inverse)
-        elif param == "color" or param == "c":
-            return self.parse_colour_param(modifier, value, inverse)
-        elif param in ("identity", "ci", "id"):
-            return self.parse_colour_param(modifier, value, inverse, identity=True)
-        elif param in ("own", "have"):
-            return self.parse_ownership_param(modifier, value, inverse)
-        elif param in ("t", "type"):
-            return self.parse_type_param(modifier, value, inverse)
-        elif param in ("o", "oracle", "text"):
-            return self.parse_text_param(modifier, value, inverse)
-        elif param in ("m", "mana", "cost"):
-            return self.parse_mana_cost_param(modifier, value, inverse)
-        elif param in ("s", "set"):
-            return self.parse_set_param(modifier, value, inverse)
+        if parameter_type == "name" or parameter_type == "n":
+            return CardNameParam(card_name=parameter_value)
+        elif parameter_type in ("p", "power", "pow"):
+            return self.parse_power_param(operator, parameter_value, inverted)
+        elif parameter_type in ("toughness", "tough", "tou"):
+            return self.parse_toughness_param(operator, parameter_value, inverted)
+        elif parameter_type in ("cmc",):
+            return self.parse_cmc_param(operator, parameter_value, inverted)
+        elif parameter_type == "color" or parameter_type == "c":
+            return self.parse_colour_param(operator, parameter_value, inverted)
+        elif parameter_type in ("identity", "ci", "id"):
+            return self.parse_colour_param(
+                operator, parameter_value, inverted, identity=True
+            )
+        elif parameter_type in ("own", "have"):
+            return self.parse_ownership_param(operator, parameter_value, inverted)
+        elif parameter_type in ("t", "type"):
+            return self.parse_type_param(operator, parameter_value, inverted)
+        elif parameter_type in ("o", "oracle", "text"):
+            return self.parse_text_param(operator, parameter_value, inverted)
+        elif parameter_type in ("m", "mana", "cost"):
+            return self.parse_mana_cost_param(operator, parameter_value, inverted)
+        elif parameter_type in ("s", "set"):
+            return self.parse_set_param(operator, parameter_value, inverted)
 
-        raise ParseError(self.pos + 1, "Unknown parameter type %s", param)
+        raise ParseError(self.pos + 1, "Unknown parameter type %s", parameter_type)
 
-    def modifier(self):
-        chars = []
-        acceptable_modifiers = ":<>="
+    def operator(self):
+        acceptable_operators = ":<>="
+        chars = [self.char(acceptable_operators)]
         while True:
-            char = self.maybe_char(acceptable_modifiers)
+            char = self.maybe_char(acceptable_operators)
             if char is None:
                 break
             chars.append(char)
@@ -200,6 +211,7 @@ class CardQueryParser(Parser):
         return rv
 
     def unquoted(self) -> Union[str, float]:
+        print("unquoted", self.pos)
         acceptable_chars = "0-9A-Za-z!$%&*+./;<=>?^_`|~{}/-"
         chars = [self.char(acceptable_chars)]
 
@@ -210,9 +222,11 @@ class CardQueryParser(Parser):
             chars.append(char)
 
         rv = "".join(chars).rstrip(" \t")
+        print("returning " + rv)
         return rv
 
     def quoted_string(self) -> str:
+        print("quoted", self.pos)
         quote = self.char("\"'")
         chars = []
 
@@ -227,6 +241,7 @@ class CardQueryParser(Parser):
             else:
                 chars.append(char)
 
+        print("return" + "".join(chars))
         return "".join(chars)
 
     def text_to_colours(self, text: str) -> int:

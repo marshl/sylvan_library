@@ -152,7 +152,7 @@ class CardNameParam(CardSearchParam):
         return Q(name__icontains=self.card_name)
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
-        return f"the name contains {self.card_name}"
+        return f'the name contains "{self.card_name}"'
 
 
 class CardRulesTextParam(CardSearchParam):
