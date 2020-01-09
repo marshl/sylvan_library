@@ -1,7 +1,7 @@
 {% load card_ownership %}
 {% load card_image %}
 {% load staticfiles %}
-<p style="text-align:center;max-height:200px;overflow-y:scroll;">
+<p style="text-align:center;max-height:200px;overflow-y:auto;">
     {% for printing in card.printings.all %}
         <i class="js-card-result-set-symbol
                     setIcon ss ss-2x
