@@ -172,7 +172,7 @@ class CardQueryParser(Parser):
                     parameter_value = self.match("quoted_string", "unquoted")
 
         if parameter_type == "name" or parameter_type == "n":
-            return CardNameParam(card_name=parameter_value)
+            return self.parse_name_param(operator, parameter_value, inverted)
         elif parameter_type in ("p", "power", "pow"):
             return self.parse_power_param(operator, parameter_value, inverted)
         elif parameter_type in ("toughness", "tough", "tou"):
@@ -211,7 +211,6 @@ class CardQueryParser(Parser):
         return rv
 
     def unquoted(self) -> Union[str, float]:
-        print("unquoted", self.pos)
         acceptable_chars = "0-9A-Za-z!$%&*+./;<=>?^_`|~{}/-"
         chars = [self.char(acceptable_chars)]
 
@@ -222,11 +221,9 @@ class CardQueryParser(Parser):
             chars.append(char)
 
         rv = "".join(chars).rstrip(" \t")
-        print("returning " + rv)
         return rv
 
     def quoted_string(self) -> str:
-        print("quoted", self.pos)
         quote = self.char("\"'")
         chars = []
 
@@ -241,7 +238,6 @@ class CardQueryParser(Parser):
             else:
                 chars.append(char)
 
-        print("return" + "".join(chars))
         return "".join(chars)
 
     def text_to_colours(self, text: str) -> int:
@@ -256,6 +252,20 @@ class CardQueryParser(Parser):
 
             result |= COLOUR_NAMES[char]
         return int(result)
+
+    def parse_name_param(
+        self, operator: str, text: str, inverse: bool = False
+    ) -> CardNameParam:
+        if operator not in ("=", ":"):
+            raise ParseError(
+                self.pos, "Unsupported operator for name parameter %s", operator
+            )
+
+        match_exact = operator == "="
+        if text.startswith("!"):
+            match_exact = True
+            text = text[1:]
+        return CardNameParam(card_name=text, match_exact=match_exact, inverse=inverse)
 
     def parse_colour_param(
         self, operator: str, text: str, inverse: bool = False, identity: bool = False

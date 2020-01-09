@@ -144,14 +144,23 @@ class CardNameParam(CardSearchParam):
     The parameter for searching by a card's name
     """
 
-    def __init__(self, card_name):
+    def __init__(self, card_name, match_exact: bool = False, inverse: bool = False):
         super().__init__()
         self.card_name = card_name
+        self.inverse = inverse
+        self.match_exact = match_exact
 
     def query(self) -> Q:
-        return Q(name__icontains=self.card_name)
+        if self.match_exact:
+            q = Q(name__iexact=self.card_name)
+        else:
+            q = Q(name__icontains=self.card_name)
+
+        return ~q if self.inverse else q
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
+        if self.inverse:
+            return f'the name does not contain "{self.card_name}"'
         return f'the name contains "{self.card_name}"'
 
 

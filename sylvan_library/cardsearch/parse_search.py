@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 
 class ParseSearch(BaseSearch):
-    def __init__(self, user: User):
+    def __init__(self, user: User = None):
         super().__init__()
         self.query_string = None
         self.error_message = None
