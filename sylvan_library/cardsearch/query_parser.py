@@ -168,6 +168,7 @@ class CardQueryParser(Parser):
                 if not operator:
                     parameter_value = parameter_type
                     parameter_type = "name"
+                    operator = ":"
                 else:
                     parameter_value = self.match("quoted_string", "unquoted")
 
