@@ -100,12 +100,12 @@ class Deck(models.Model):
         )
         instants = board_cards.filter(card__type__contains="Instant")
         sorceries = board_cards.filter(card__type__contains="Sorcery")
-        enchantments = board_cards.exclude(id__in=lands | creatures).filter(
-            card__type__contains="Enchantment"
-        )
-        artifacts = board_cards.exclude(id__in=lands | creatures | enchantments).filter(
-            card__type__contains="Artifact"
-        )
+        enchantments = board_cards.exclude(
+            id__in=lands | creatures | commanders
+        ).filter(card__type__contains="Enchantment")
+        artifacts = board_cards.exclude(
+            id__in=lands | creatures | enchantments | commanders
+        ).filter(card__type__contains="Artifact")
         planeswalkers = board_cards.filter(card__type__contains="Planeswalker").exclude(
             id__in=commanders
         )
