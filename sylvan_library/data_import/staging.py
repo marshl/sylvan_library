@@ -385,6 +385,7 @@ class StagedCardPrinting:
             "has_foil": self.has_foil,
             "is_alternative": self.is_alternative,
             "is_arena": self.is_arena,
+            "is_full_art": self.is_full_art,
             "is_promo": self.is_promo,
             "is_reprint": self.is_reprint,
             "is_starter": self.is_starter,
