@@ -1,4 +1,4 @@
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Dict
 
 
 # https://www.booleanworld.com/building-recursive-descent-parsers-definitive-guide/
@@ -7,26 +7,25 @@ class ParseError(Exception):
         self.pos = pos
         self.msg = msg
         self.args = args
-        print(str(self))
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "%s at position %s" % (self.msg % self.args, self.pos)
 
 
 class Parser:
     def __init__(self):
-        self.cache = {}
-        self.text = ""
-        self.pos = -1
-        self.len = 0
+        self.cache: Dict[str, List[str]] = {}
+        self.text: str = ""
+        self.pos: int = -1
+        self.len: int = 0
 
     def parse(self, text: str) -> Any:
         self.text = text
         self.pos = -1
         self.len = len(text) - 1
-        rv = self.start()
+        result = self.start()
         self.assert_end()
-        return rv
+        return result
 
     def start(self) -> Any:
         pass
@@ -49,21 +48,21 @@ class Parser:
         except KeyError:
             pass
 
-        rv = []
-        index = 0
-        length = len(chars)
+        result: List[str] = []
+        index: int = 0
+        length: int = len(chars)
 
         while index < length:
             if index + 2 < length and chars[index + 1] == "-":
                 if chars[index] >= chars[index + 2]:
                     raise ValueError("Bad character range")
-                rv.append(chars[index : index + 3])
+                result.append(chars[index : index + 3])
                 index += 3
             else:
-                rv.append(chars[index])
+                result.append(chars[index])
                 index += 1
-        self.cache[chars] = rv
-        return rv
+        self.cache[chars] = result
+        return result
 
     def char(self, chars: Optional[str] = None) -> str:
         if self.pos >= self.len:
@@ -117,14 +116,11 @@ class Parser:
             self.text[self.pos + 1],
         )
 
-    # def item(self) -> Union[str, int]:
-    #     return self.match("number", "word")
-
-    def match(self, *rules):
+    def match(self, *rules) -> Any:
         self.eat_whitespace()
-        last_error_pos = -1
-        last_exception = None
-        last_error_rules = []
+        last_error_pos: int = -1
+        last_exception: Optional[Exception] = None
+        last_error_rules: List[str] = []
 
         for rule in rules:
             initial_pos = self.pos

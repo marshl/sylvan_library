@@ -21,7 +21,7 @@ class CalcParser(Parser):
         return rv
 
     def term(self) -> float:
-        rv = self.match("factor")
+        result = self.match("factor")
         while True:
             op = self.maybe_keyword("*", "/")
             if op is None:
@@ -29,18 +29,18 @@ class CalcParser(Parser):
 
             term = self.match("factor")
             if op == "*":
-                rv *= term
+                result *= term
             else:
-                rv /= term
+                result /= term
 
-        return rv
+        return result
 
     def factor(self) -> float:
         if self.maybe_keyword("("):
-            rv = self.match("expression")
+            result = self.match("expression")
             self.keyword(")")
 
-            return rv
+            return result
 
         return self.match("number")
 
