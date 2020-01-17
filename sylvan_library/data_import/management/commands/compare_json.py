@@ -9,6 +9,8 @@ import json
 from typing import List, Optional, Dict, Tuple, Set as SetType, Union
 
 from django.core.management.base import BaseCommand
+
+from data_import.management.commands import get_all_set_data
 from cards.models import (
     Block,
     Card,
@@ -84,8 +86,8 @@ class Command(BaseCommand):
 
     card_links_to_create = dict()  # type: Dict[str, set]
 
-    existing_prices = {}  # type: Dict[str, Dict[str, CardPrice]]
-    prices_to_create = []  # type: List[StagedCardPrice]
+    # existing_prices = {}  # type: Dict[str, Dict[str, CardPrice]]
+    # prices_to_create = []  # type: List[StagedCardPrice]
 
     force_update = False
     start_time = None
@@ -96,21 +98,7 @@ class Command(BaseCommand):
 
         self.get_existing_data()
 
-        set_data_list = []
-
-        for set_file_path in [
-            os.path.join(_paths.SET_FOLDER, s) for s in os.listdir(_paths.SET_FOLDER)
-        ]:
-            if not set_file_path.endswith(".json"):
-                continue
-
-            with open(set_file_path, "r", encoding="utf8") as set_file:
-                set_data = json.load(set_file, encoding="utf8")
-                set_data_list.append(set_data)
-
-        set_data_list.sort(key=lambda s: s.get("releaseDate") or str(date.max()))
-
-        for set_data in set_data_list:
+        for set_data in get_all_set_data():
             logger.info(
                 "Parsing set %s (%s)", set_data.get("code"), set_data.get("name")
             )
@@ -140,7 +128,7 @@ class Command(BaseCommand):
         self.existing_card_printings = {
             cp.json_id: cp
             for cp in CardPrinting.objects.prefetch_related(
-                "printed_languages__language", "prices"
+                "printed_languages__language"
             ).all()
         }
 
@@ -166,11 +154,11 @@ class Command(BaseCommand):
                 legality.format.code
             ] = legality.restriction
 
-        logger.info("Getting existing prices")
-        for printing_uuid, existing_print in self.existing_card_printings.items():
-            self.existing_prices[printing_uuid] = {
-                str(price.date): price for price in existing_print.prices.all()
-            }
+        # logger.info("Getting existing prices")
+        # for printing_uuid, existing_print in self.existing_card_printings.items():
+        #     self.existing_prices[printing_uuid] = {
+        #         str(price.date): price for price in existing_print.prices.all()
+        #     }
 
     def parse_set_data(self, set_data: dict) -> None:
         """
@@ -287,24 +275,31 @@ class Command(BaseCommand):
             ):
                 continue
 
-            uids = []
+            uids: List[str] = []
             if new_printlang.other_names:
                 for other_printlang in new_printlangs:
+                    if other_printlang.base_name not in new_printlang.other_names:
+                        continue
+
+                    if other_printlang.language != new_printlang.language:
+                        continue
+
                     if (
-                        other_printlang.base_name in new_printlang.other_names
-                        and other_printlang.language == new_printlang.language
-                        and (
-                            new_printlang.layout == "meld"
-                            or other_printlang.number == new_printlang.number
-                        )
-                        and (
-                            new_printlang.layout != "meld"
-                            or new_printlang.side == "c"
-                            or other_printlang.side == "c"
-                        )
+                        new_printlang.layout != "meld"
+                        and other_printlang.number != new_printlang.number
                     ):
-                        other_printlang.has_physical_card = True
-                        uids.append(other_printlang.printing_uuid)
+                        continue
+
+                    if (
+                        new_printlang.layout == "meld"
+                        and new_printlang.side != "c"
+                        and other_printlang.side != "c"
+                    ):
+                        continue
+
+                    other_printlang.has_physical_card = True
+                    uids.append(other_printlang.printing_uuid)
+
             uids.append(new_printlang.printing_uuid)
 
             staged_physical_card = StagedPhysicalCard(
@@ -888,10 +883,10 @@ class Command(BaseCommand):
             },
         )
 
-        self.write_object_to_json(
-            _paths.PRICES_TO_CREATE,
-            [price.to_dict() for price in self.prices_to_create],
-        )
+        # self.write_object_to_json(
+        #     _paths.PRICES_TO_CREATE,
+        #     [price.to_dict() for price in self.prices_to_create],
+        # )
 
     def log_stats(self) -> None:
         """
@@ -921,5 +916,5 @@ class Command(BaseCommand):
         logger.info("%s legalities to create", len(self.legalities_to_create))
         logger.info("%s legalities to delete", len(self.legalities_to_delete))
         logger.info("%s legalities to update", len(self.legalities_to_update))
-        logger.info("%s prices to create", len(self.prices_to_create))
+        # logger.info("%s prices to create", len(self.prices_to_create))
         logger.info("Completed in %ss", time.time() - self.start_time)

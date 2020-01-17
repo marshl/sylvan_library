@@ -1,3 +1,4 @@
+from datetime import date
 import os
 import json
 from typing import Generator
@@ -11,6 +12,8 @@ def get_all_set_data() -> Generator[dict, None, None]:
     :return: The set data as a dict
     """
 
+    set_list = []
+
     for set_file_path in [
         os.path.join(_paths.SET_FOLDER, s) for s in os.listdir(_paths.SET_FOLDER)
     ]:
@@ -19,4 +22,15 @@ def get_all_set_data() -> Generator[dict, None, None]:
 
         with open(set_file_path, "r", encoding="utf8") as set_file:
             set_data = json.load(set_file, encoding="utf8")
-            yield set_data
+
+        if set_data.get("isPreview"):
+            continue
+        set_list.append(
+            {"path": set_file_path, "date": set_data.get("releaseDate", str(date.max))}
+        )
+
+    set_list.sort(key=lambda s: s["date"])
+    for card_set in set_list:
+        with open(card_set["path"], "r", encoding="utf8") as set_file:
+            set_data = json.load(set_file, encoding="utf8")
+        yield set_data
