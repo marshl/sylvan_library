@@ -167,6 +167,7 @@ class CardPrinting(models.Model):
         ("legendary", "legendary"),
         ("miracle", "miracle"),
         ("mooneldrazidfc", "mooneldrazidfc"),
+        ("nyxborn", "nyxborn"),
         ("nyxtouched", "nyxtouched"),
         ("originpwdfc", "originpwdfc"),
         ("showcase", "showcase"),
