@@ -4,7 +4,7 @@ Module for staging classes
 import datetime
 import math
 import re
-from typing import List
+from typing import List, Optional, Dict
 
 from cards.models import Card, Colour
 
@@ -101,42 +101,47 @@ def convert_number_field_to_numerical(val: str) -> float:
 class StagedCard:
     """
     Class for staging a card record from json
+
+    See data structure reference here: https://mtgjson.com/files/all-cards/#data-structure
     """
 
     def __init__(self, card_data: dict, is_token: bool = False):
-        self.is_token = is_token
-        self.name = self.display_name = card_data["name"]
-        self.scryfall_oracle_id = card_data.get("scryfallOracleId")
+        self.is_token: bool = is_token
+        self.scryfall_oracle_id: str = card_data.get("scryfallOracleId")
+        self.display_name: str = card_data["name"]
+        self.name: str = self.display_name
         if self.is_token and self.scryfall_oracle_id:
             self.name = f"{self.name} ({self.scryfall_oracle_id.split('-')[0]})"
 
-        self.cost = card_data.get("manaCost")
-        self.cmc = float(card_data.get("convertedManaCost", 0.0))
-        self.face_cmc = (
+        self.cost: str = card_data.get("manaCost")
+        self.cmc: float = float(card_data.get("convertedManaCost", 0.0))
+        self.face_cmc: float = (
             float(card_data.get("faceConvertedManaCost"))
             if "faceConvertedManaCost" in card_data
             else None
         )
-        self.colour_flags = Colour.colour_codes_to_flags(card_data.get("colors", []))
-        self.colour_identity_flags = Colour.colour_codes_to_flags(
+        self.colour_flags: int = Colour.colour_codes_to_flags(
+            card_data.get("colors", [])
+        )
+        self.colour_identity_flags: int = Colour.colour_codes_to_flags(
             card_data.get("colorIdentity", [])
         )
-        self.colour_indicator_flags = Colour.colour_codes_to_flags(
+        self.colour_indicator_flags: int = Colour.colour_codes_to_flags(
             card_data.get("colorIndicator", [])
         )
-        self.colour_count = bin(self.colour_flags).count("1")
-        self.colour_identity_count = bin(self.colour_identity_flags).count("1")
-        self.colour_sort_key = COLOUR_TO_SORT_KEY[int(self.colour_flags)]
+        self.colour_count: int = bin(self.colour_flags).count("1")
+        self.colour_identity_count: int = bin(self.colour_identity_flags).count("1")
+        self.colour_sort_key: int = COLOUR_TO_SORT_KEY[int(self.colour_flags)]
 
-        self.layout = card_data.get("layout")
+        self.layout: str = card_data.get("layout", "normal")
 
-        self.power = card_data.get("power")
-        self.toughness = card_data.get("toughness")
-        self.loyalty = card_data.get("loyalty")
+        self.power: Optional[str] = card_data.get("power")
+        self.toughness: Optional[str] = card_data.get("toughness")
+        self.loyalty: Optional[str] = card_data.get("loyalty")
 
-        self.rules_text = card_data.get("text")
+        self.rules_text: Optional[str] = card_data.get("text")
 
-        self.type = None
+        self.type: Optional[str] = None
         if self.is_token:
             if "type" in card_data:
                 self.type = card_data["type"].split("—")[0].strip()
@@ -145,16 +150,16 @@ class StagedCard:
                 (card_data.get("supertypes") or []) + (card_data["types"])
             )
 
-        self.subtype = None
+        self.subtype: Optional[str] = None
         if self.is_token:
             if "type" in card_data:
                 self.subtype = card_data["type"].split("—")[-1].strip()
         elif "subtypes" in card_data:
             self.subtype = " ".join(card_data.get("subtypes"))
 
-        self.rulings = card_data.get("rulings", [])
-        self.legalities = card_data.get("legalities", [])
-        self.has_other_names = (
+        self.rulings: List[Dict[str, str]] = card_data.get("rulings", [])
+        self.legalities: Dict[str, str] = card_data.get("legalities", [])
+        self.has_other_names: bool = (
             "names" in card_data and self.layout != "double_faced_token"
         )
         self.other_names = (
@@ -163,9 +168,9 @@ class StagedCard:
             else []
         )
         self.side = card_data.get("side")
-        self.hand_modifier = card_data.get("hand")
-        self.life_modifier = card_data.get("life")
-        self.is_reserved = bool(card_data.get("isReserved", False))
+        self.hand_modifier: str = card_data.get("hand")
+        self.life_modifier: str = card_data.get("life")
+        self.is_reserved: bool = bool(card_data.get("isReserved", False))
         # self.edh_rec_rank = card_data.get("edhrecRank", 0)
 
     @property
@@ -340,7 +345,7 @@ class StagedCardPrinting:
         self.is_timeshifted = (
             "isTimeshifted" in card_data and card_data["isTimeshifted"]
         )
-        self.json_id = card_data.get("uuid")
+        self.json_id: str = card_data.get("uuid")
         self.magic_card_market_id = card_data.get("mcmId")
         self.magic_card_market_meta_id = card_data.get("mcmMetaId")
         self.mtg_arena_id = card_data.get("mtgArenaId")
