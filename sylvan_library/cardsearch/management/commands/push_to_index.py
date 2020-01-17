@@ -1,27 +1,9 @@
 import logging
-import json
-from typing import Union
 
 from django.core.management.base import BaseCommand
-from cards.models import (
-    Block,
-    Card,
-    CardLegality,
-    CardPrice,
-    CardPrinting,
-    CardPrintingLanguage,
-    CardRuling,
-    Colour,
-    Format,
-    Language,
-    PhysicalCard,
-    Rarity,
-    Set,
-)
+from cards.models import Card
 
-from elasticsearch_dsl.connections import connections
-from elasticsearch_dsl import Document, Text, Date, Integer, Float
-from elasticsearch.helpers import bulk
+from elasticsearch_dsl import Document, Text, Float
 from elasticsearch import Elasticsearch
 
 
