@@ -91,6 +91,11 @@ class Command(BaseCommand):
                     printing_to_delete.save()
 
     def process_set_cards(self, set_data: dict) -> None:
+        """
+        Processes all the cards within a set,
+        creating Cards, CardPrintings and CardPrintingLanguages
+        :param set_data: The JSON set data dict
+        """
         for card_data in set_data.get("cards", []):
             staged_card = self.process_card(card_data, False)
             self.process_card_printing(staged_card, set_data, card_data)
@@ -100,6 +105,12 @@ class Command(BaseCommand):
             self.process_card_printing(staged_card, set_data, card_data)
 
     def process_card(self, card_data: dict, is_token: bool) -> StagedCard:
+        """
+        Processes a single Card
+        :param card_data: The JSON data for a card
+        :param is_token: whether or not this is a token
+        :return: The new or existing StagedCard
+        """
         staged_card = StagedCard(card_data, is_token=is_token)
         if staged_card.name in self.cards_parsed:
             return staged_card

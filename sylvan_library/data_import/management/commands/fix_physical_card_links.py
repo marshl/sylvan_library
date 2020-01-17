@@ -1,18 +1,13 @@
 """
-Module for the update_printing_uids command
+Module for the fix_physical_card_links command
 """
 import logging
-from typing import Dict, List
+from collections import defaultdict
 
 from django.core.management.base import BaseCommand
-from django.db import transaction
 from django.db.models import Count
 
-from _query import query_yes_no
-from cards.models import CardPrinting, PhysicalCard
-from data_import.staging import StagedCard, StagedCardPrinting
-from data_import.management.commands import get_all_set_data
-from collections import defaultdict
+from cards.models import PhysicalCard
 
 from _query import query_yes_no
 
@@ -20,10 +15,14 @@ logger = logging.getLogger("django")
 
 
 class Command(BaseCommand):
-    help = ()
+    """
+    Finds two faced cards that have accidentally been linked to three different cards due
+    to there now being sets like ELdraine where there are multiple printings of the
+    same two-faced card in the same set, which can then get linked linked back to the
+    first printing in that set, instead of being linked to their later version
+    """
 
-    def add_arguments(self, parser):
-        pass
+    help = "Finds ahd fixes erroneous triply linked two-faced cards"
 
     def handle(self, *args, **options):
         triple_cards = list(

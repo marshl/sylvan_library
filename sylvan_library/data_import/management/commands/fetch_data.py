@@ -23,6 +23,10 @@ class Command(BaseCommand):
 
     @staticmethod
     def get_json_files() -> List[str]:
+        """
+        Gets all json  files in the set data directory
+        :return: The list of set file full paths
+        """
         return [
             os.path.join(_paths.SET_FOLDER, s)
             for s in os.listdir(_paths.SET_FOLDER)
@@ -44,6 +48,7 @@ class Command(BaseCommand):
         json_zip_file = zipfile.ZipFile(_paths.JSON_ZIP_PATH)
         json_zip_file.extractall(_paths.SET_FOLDER)
 
+        # Prettify the json files
         for set_file_path in self.get_json_files():
             with open(set_file_path, "r", encoding="utf8") as set_file:
                 set_data = json.load(set_file, encoding="utf8")
