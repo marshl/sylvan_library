@@ -622,6 +622,9 @@ class CardOwnershipCountParam(CardNumericalParam):
         query = Q(**kwargs)
         return Q(id__in=annotated_result.filter(query))
 
+    def get_pretty_str(selFixedf, within_or_block: bool = False) -> str:
+        return f"you own {self.operator} {self.number}"
+
 
 class CardSortParam:
     """
