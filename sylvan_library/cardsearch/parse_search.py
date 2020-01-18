@@ -21,5 +21,6 @@ class ParseSearch(BaseSearch):
         query_parser = CardQueryParser(self.user)
         try:
             self.root_parameter = query_parser.parse(self.query_string)
+            print(self.root_parameter.query())
         except ParseError as error:
             self.error_message = str(error)

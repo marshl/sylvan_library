@@ -14,6 +14,7 @@ from cardsearch.parameters import (
     CardPowerSortParam,
     AndParam,
     OrParam,
+    BranchParam,
 )
 
 from cards.models import Card, CardPrinting, Set
@@ -113,7 +114,7 @@ class BaseSearch:
     """
 
     def __init__(self):
-        self.root_parameter = AndParam()
+        self.root_parameter: BranchParam = AndParam()
         self.sort_params = list()
         self.paginator = None
         self.results = []

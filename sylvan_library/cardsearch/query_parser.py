@@ -110,11 +110,12 @@ class CardQueryParser(Parser):
         rv = self.match("parameter_group")
         and_group = None
         while True:
-            self.maybe_keyword("and")
-
-            param_group = self.maybe_match("parameter_group")
-            if param_group is None:
+            if not self.maybe_keyword("and"):
                 break
+
+            param_group = self.match("parameter_group")
+            # if param_group is None:
+            #     break
 
             if and_group is None:
                 and_group = AndParam()
@@ -127,7 +128,6 @@ class CardQueryParser(Parser):
         if self.maybe_keyword("("):
             rv = self.match("or_group")
             self.keyword(")")
-
             return rv
 
         return self.match("parameter")
@@ -149,29 +149,32 @@ class CardQueryParser(Parser):
         if self.maybe_keyword("-"):
             inverted = True
 
-        operator = ":"
         parameter_value = self.maybe_match("quoted_string")
         if parameter_value:
-            parameter_type = "name"
-        else:
-            parameter_type = self.maybe_match("param_type")
-            if not parameter_type:
-                parameter_value = self.match("unquoted")
-                parameter_type = "name"
-            else:
-                if parameter_type in ("or", "and"):
-                    raise ParseError(
-                        self.pos + 1, "Bad logical operator %s", parameter_type
-                    )
+            return self.parse_param("name", ":", parameter_value, inverted)
 
-                operator = self.maybe_match("operator")
-                if not operator:
-                    parameter_value = parameter_type
-                    parameter_type = "name"
-                    operator = ":"
-                else:
-                    parameter_value = self.match("quoted_string", "unquoted")
+        parameter_type = self.maybe_match("param_type")
+        if not parameter_type:
+            parameter_value = self.match("unquoted")
+            return self.parse_param("name", ":", parameter_value, inverted)
 
+        if parameter_type in ("or", "and"):
+            raise ParseError(
+                self.pos + 1,
+                'Expected a parameter but got "%s" instead',
+                parameter_type,
+            )
+
+        operator = self.maybe_match("operator")
+        if not operator:
+            return self.parse_param("name", ":", parameter_type, inverted)
+
+        parameter_value = self.match("quoted_string", "unquoted")
+        return self.parse_param(parameter_type, operator, parameter_value, inverted)
+
+    def parse_param(
+        self, parameter_type: str, operator: str, parameter_value: str, inverted: bool
+    ):
         if parameter_type == "name" or parameter_type == "n":
             return self.parse_name_param(operator, parameter_value, inverted)
         elif parameter_type in ("p", "power", "pow"):
