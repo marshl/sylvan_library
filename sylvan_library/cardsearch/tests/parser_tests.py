@@ -1,14 +1,13 @@
 from django.test import TestCase
 
-from cards.models import Card, Set
-from cards.tests import create_test_card, create_test_card_printing, create_test_set
+from cards.models import Card
+from cards.tests import create_test_card
 
 from cardsearch.parameters import (
     AndParam,
     CardNameParam,
-    CardRulesTextParam,
-    CardSetParam,
-    CardColourParam,
+    CardComplexColourParam,
+    CardGenericTypeParam,
 )
 
 from cardsearch.parse_search import ParseSearch
@@ -28,10 +27,12 @@ class ParserTests(TestCase):
         root_param = self.parser.parse("foo bar")
         self.assertIsInstance(root_param, AndParam)
         self.assertEquals(len(root_param.child_parameters), 2)
-        self.assertIsInstance(root_param.child_parameters[0], CardNameParam)
-        self.assertIsInstance(root_param.child_parameters[1], CardNameParam)
-        self.assertEquals(root_param.child_parameters[0].card_name, "foo")
-        self.assertEquals(root_param.child_parameters[1].card_name, "bar")
+        first_param = root_param.child_parameters[0]
+        second_param = root_param.child_parameters[1]
+        self.assertIsInstance(first_param, CardNameParam)
+        self.assertIsInstance(second_param, CardNameParam)
+        self.assertEquals(first_param.card_name, "foo")
+        self.assertEquals(second_param.card_name, "bar")
 
     def test_negated_param(self):
         root_param = self.parser.parse("-foo")
@@ -44,6 +45,50 @@ class ParserTests(TestCase):
         self.assertIsInstance(root_param, CardNameParam)
         self.assertEquals(root_param.card_name, "foo")
         self.assertTrue(root_param.negated)
+
+    def test_color_rg_param(self):
+        root_param = self.parser.parse("color:rg")
+        self.assertIsInstance(root_param, CardComplexColourParam)
+        self.assertEquals(
+            root_param.colours, Card.colour_flags.red | Card.colour_flags.green
+        )
+        self.assertEquals(root_param.operator, ">=")
+
+    def test_multiple_colour_params(self):
+        root_param = self.parser.parse("color>=uw -c:red")
+        self.assertIsInstance(root_param, AndParam)
+        self.assertEquals(len(root_param.child_parameters), 2)
+        white_blue_param, not_red_param = root_param.child_parameters
+        self.assertIsInstance(white_blue_param, CardComplexColourParam)
+        self.assertIsInstance(not_red_param, CardComplexColourParam)
+
+        self.assertEquals(
+            white_blue_param.colours, Card.colour_flags.white | Card.colour_flags.blue
+        )
+        self.assertEquals(white_blue_param.operator, ">=")
+        self.assertEquals(white_blue_param.negated, False)
+
+        self.assertEquals(not_red_param.colours, Card.colour_flags.red)
+        self.assertEquals(not_red_param.operator, ">=")
+        self.assertEquals(not_red_param.negated, True)
+
+    def test_less_than_colour_identity(self):
+        root_param = self.parser.parse("id<=esper t:instant")
+        self.assertIsInstance(root_param, AndParam)
+        self.assertEquals(len(root_param.child_parameters), 2)
+        esper_param, instant_param = root_param.child_parameters
+
+        self.assertIsInstance(esper_param, CardComplexColourParam)
+        self.assertEquals(
+            esper_param.colours,
+            Card.colour_flags.white | Card.colour_flags.blue | Card.colour_flags.black,
+        )
+        self.assertEquals(esper_param.operator, "<=")
+        self.assertFalse(esper_param.negated)
+
+        self.assertIsInstance(instant_param, CardGenericTypeParam)
+        self.assertEquals(instant_param.card_type, "instant")
+        self.assertFalse(instant_param.negated)
 
 
 class ColourContainsTestCase(TestCase):
