@@ -288,6 +288,11 @@ class CardQueryParser(Parser):
         self, operator: str, text: str, inverse: bool = False
     ) -> CardOwnershipCountParam:
 
+        if self.user.is_anonymous:
+            raise ParseError(
+                self.pos + 1, "Cannot search by ownership if you aren't logged in"
+            )
+
         if operator == ":" and text == "any":
             return CardOwnershipCountParam(self.user, ">=", 1)
 
