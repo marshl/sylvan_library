@@ -262,7 +262,17 @@ class CardGenericTypeParam(CardSearchParam):
         return ~result if self.inverse else result
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
-        return f'the card types include "{self.card_type}"'
+        if self.inverse:
+            if self.operator == "=":
+                include = "don't match"
+            else:
+                include = "doesn't include"
+        else:
+            if self.operator == "=":
+                include = "match"
+            else:
+                include = "include"
+        return f'the card types {include} "{self.card_type}"'
 
 
 class CardColourParam(CardSearchParam):
