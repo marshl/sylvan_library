@@ -1,5 +1,5 @@
 from base_search import BaseSearch
-from query_parser import CardQueryParser, ParseError
+from cardsearch.parser import CardQueryParser, ParseError
 
 from django.contrib.auth.models import User
 

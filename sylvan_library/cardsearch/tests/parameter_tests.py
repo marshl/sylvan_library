@@ -41,7 +41,8 @@ class CardNameParamTestCase(TestCase):
         Tests that a card name exact match is found
         """
         card = create_test_card({"name": "foo"})
-        param = CardNameParam("foo", match_exact=True, inverse=True)
+        param = CardNameParam("foo", match_exact=True)
+        param.negated = True
         self.assertNotIn(card, Card.objects.filter(param.query()))
 
     def test_name_contains(self):
@@ -64,7 +65,8 @@ class CardNameParamTestCase(TestCase):
         """
         Tests that
         """
-        root_param = AndParam(True)
+        root_param = AndParam()
+        root_param.negated = True
         card = create_test_card({"name": "foo"})
         param = CardNameParam("bar")
         root_param.add_parameter(param)

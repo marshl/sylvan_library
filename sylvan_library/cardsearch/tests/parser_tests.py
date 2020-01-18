@@ -12,6 +12,38 @@ from cardsearch.parameters import (
 )
 
 from cardsearch.parse_search import ParseSearch
+from cardsearch.parser import CardQueryParser
+
+
+class ParserTests(TestCase):
+    def setUp(self):
+        self.parser = CardQueryParser()
+
+    def test_single_unquoted_param(self):
+        root_param = self.parser.parse("foo")
+        self.assertIsInstance(root_param, CardNameParam)
+        self.assertEquals(root_param.card_name, "foo")
+
+    def test_double_unquoted_param(self):
+        root_param = self.parser.parse("foo bar")
+        self.assertIsInstance(root_param, AndParam)
+        self.assertEquals(len(root_param.child_parameters), 2)
+        self.assertIsInstance(root_param.child_parameters[0], CardNameParam)
+        self.assertIsInstance(root_param.child_parameters[1], CardNameParam)
+        self.assertEquals(root_param.child_parameters[0].card_name, "foo")
+        self.assertEquals(root_param.child_parameters[1].card_name, "bar")
+
+    def test_negated_param(self):
+        root_param = self.parser.parse("-foo")
+        self.assertIsInstance(root_param, CardNameParam)
+        self.assertEquals(root_param.card_name, "foo")
+        self.assertTrue(root_param.negated)
+
+    def test_negated_bracketed_param(self):
+        root_param = self.parser.parse("-(name:foo)")
+        self.assertIsInstance(root_param, CardNameParam)
+        self.assertEquals(root_param.card_name, "foo")
+        self.assertTrue(root_param.negated)
 
 
 class ColourContainsTestCase(TestCase):

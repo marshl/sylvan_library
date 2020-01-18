@@ -20,7 +20,7 @@ from cardsearch.parameters import (
     CardManaCostComplexParam,
 )
 
-from cardsearch.parser import Parser, ParseError
+from .base_parser import Parser, ParseError
 
 COLOUR_NAMES = {
     "colourless": 0,
@@ -91,7 +91,7 @@ class CardQueryParser(Parser):
         return self.or_group()
 
     def or_group(self) -> CardSearchParam:
-        rv = self.match("and_group")
+        subgroup = self.match("and_group")
         or_group = None
         while True:
             op = self.maybe_keyword("or")
@@ -101,21 +101,19 @@ class CardQueryParser(Parser):
             param_group = self.match("and_group")
             if or_group is None:
                 or_group = OrParam()
-                or_group.add_parameter(rv)
+                or_group.add_parameter(subgroup)
             or_group.add_parameter(param_group)
 
-        return or_group or rv
+        return or_group or subgroup
 
     def and_group(self) -> CardSearchParam:
         rv = self.match("parameter_group")
         and_group = None
         while True:
-            if not self.maybe_keyword("and"):
+            self.maybe_keyword("and")
+            param_group = self.maybe_match("parameter_group")
+            if not param_group:
                 break
-
-            param_group = self.match("parameter_group")
-            # if param_group is None:
-            #     break
 
             if and_group is None:
                 and_group = AndParam()
@@ -125,15 +123,24 @@ class CardQueryParser(Parser):
         return and_group or rv
 
     def parameter_group(self) -> CardSearchParam:
+        print("parameter group")
+        is_negated = self.maybe_char("-") is not None
         if self.maybe_keyword("("):
-            rv = self.match("or_group")
+            or_group = self.match("or_group")
             self.keyword(")")
-            return rv
+            or_group.negated = is_negated
+            return or_group
 
-        return self.match("parameter")
+        parameter = self.match(
+            "quoted_name_parameter", "normal_parameter", "unquoted_name_parameter"
+        )
+        parameter.negated = is_negated
+        print("parameter group param:", parameter)
+        return parameter
 
     def param_type(self) -> str:
-        acceptable_param_types = "a-zA-Z0-9-"
+        print("param type")
+        acceptable_param_types = "a-zA-Z0-9"
         chars = [self.char(acceptable_param_types)]
 
         while True:
@@ -144,20 +151,9 @@ class CardQueryParser(Parser):
 
         return "".join(chars).rstrip(" \t").lower()
 
-    def parameter(self) -> CardSearchParam:
-        inverted = False
-        if self.maybe_keyword("-"):
-            inverted = True
-
-        parameter_value = self.maybe_match("quoted_string")
-        if parameter_value:
-            return self.parse_param("name", ":", parameter_value, inverted)
-
-        parameter_type = self.maybe_match("param_type")
-        if not parameter_type:
-            parameter_value = self.match("unquoted")
-            return self.parse_param("name", ":", parameter_value, inverted)
-
+    def normal_parameter(self) -> CardSearchParam:
+        print("normal parameter")
+        parameter_type = self.match("param_type")
         if parameter_type in ("or", "and"):
             raise ParseError(
                 self.pos + 1,
@@ -165,40 +161,41 @@ class CardQueryParser(Parser):
                 parameter_type,
             )
 
-        operator = self.maybe_match("operator")
-        if not operator:
-            return self.parse_param("name", ":", parameter_type, inverted)
-
+        operator = self.match("operator")
         parameter_value = self.match("quoted_string", "unquoted")
-        return self.parse_param(parameter_type, operator, parameter_value, inverted)
+        return self.parse_param(parameter_type, operator, parameter_value)
 
-    def parse_param(
-        self, parameter_type: str, operator: str, parameter_value: str, inverted: bool
-    ):
+    def quoted_name_parameter(self) -> CardSearchParam:
+        parameter_value = self.match("quoted_string")
+        return self.parse_param("name", ":", parameter_value)
+
+    def unquoted_name_parameter(self) -> CardSearchParam:
+        parameter_value = self.match("unquoted")
+        return self.parse_param("name", ":", parameter_value)
+
+    def parse_param(self, parameter_type: str, operator: str, parameter_value: str):
         if parameter_type == "name" or parameter_type == "n":
-            return self.parse_name_param(operator, parameter_value, inverted)
+            return self.parse_name_param(operator, parameter_value)
         elif parameter_type in ("p", "power", "pow"):
-            return self.parse_power_param(operator, parameter_value, inverted)
+            return self.parse_power_param(operator, parameter_value)
         elif parameter_type in ("toughness", "tough", "tou"):
-            return self.parse_toughness_param(operator, parameter_value, inverted)
+            return self.parse_toughness_param(operator, parameter_value)
         elif parameter_type in ("cmc",):
-            return self.parse_cmc_param(operator, parameter_value, inverted)
+            return self.parse_cmc_param(operator, parameter_value)
         elif parameter_type == "color" or parameter_type == "c":
-            return self.parse_colour_param(operator, parameter_value, inverted)
+            return self.parse_colour_param(operator, parameter_value)
         elif parameter_type in ("identity", "ci", "id"):
-            return self.parse_colour_param(
-                operator, parameter_value, inverted, identity=True
-            )
+            return self.parse_colour_param(operator, parameter_value, identity=True)
         elif parameter_type in ("own", "have"):
-            return self.parse_ownership_param(operator, parameter_value, inverted)
+            return self.parse_ownership_param(operator, parameter_value)
         elif parameter_type in ("t", "type"):
-            return self.parse_type_param(operator, parameter_value, inverted)
+            return self.parse_type_param(operator, parameter_value)
         elif parameter_type in ("o", "oracle", "text"):
-            return self.parse_text_param(operator, parameter_value, inverted)
+            return self.parse_text_param(operator, parameter_value)
         elif parameter_type in ("m", "mana", "cost"):
-            return self.parse_mana_cost_param(operator, parameter_value, inverted)
+            return self.parse_mana_cost_param(operator, parameter_value)
         elif parameter_type in ("s", "set"):
-            return self.parse_set_param(operator, parameter_value, inverted)
+            return self.parse_set_param(operator, parameter_value)
 
         raise ParseError(self.pos + 1, "Unknown parameter type %s", parameter_type)
 
@@ -269,10 +266,10 @@ class CardQueryParser(Parser):
         if text.startswith("!"):
             match_exact = True
             text = text[1:]
-        return CardNameParam(card_name=text, match_exact=match_exact, inverse=inverse)
+        return CardNameParam(card_name=text, match_exact=match_exact)
 
     def parse_colour_param(
-        self, operator: str, text: str, inverse: bool = False, identity: bool = False
+        self, operator: str, text: str, identity: bool = False
     ) -> Union[CardComplexColourParam, CardColourCountParam]:
         if operator not in [">", ">=", "=", ":", "<", "<="]:
             raise ParseError(self.pos + 1, "Unknown operator %s", operator)
@@ -284,7 +281,7 @@ class CardQueryParser(Parser):
             pass
 
         return CardComplexColourParam(
-            self.text_to_colours(text), operator, inverse, identity=identity
+            self.text_to_colours(text), operator, identity=identity
         )
 
     def parse_ownership_param(
@@ -309,22 +306,18 @@ class CardQueryParser(Parser):
 
         return CardOwnershipCountParam(self.user, operator, count)
 
-    def parse_type_param(
-        self, operator: str, text: str, inverse: bool = False
-    ) -> CardGenericTypeParam:
-        return CardGenericTypeParam(text, operator, inverse)
+    def parse_type_param(self, operator: str, text: str) -> CardGenericTypeParam:
+        return CardGenericTypeParam(text, operator)
 
-    def parse_text_param(
-        self, operator: str, text: str, inverse: bool = False
-    ) -> CardRulesTextParam:
+    def parse_text_param(self, operator: str, text: str) -> CardRulesTextParam:
         if operator not in (":", "="):
             raise ParseError(
                 self.pos + 1, "Unsupported operator for oracle search: '%s'", operator
             )
-        return CardRulesTextParam(text, exact=operator == "=", inverse=inverse)
+        return CardRulesTextParam(text, exact=operator == "=")
 
     def parse_mana_cost_param(
-        self, operator: str, text: str, inverse: bool = False
+        self, operator: str, text: str
     ) -> CardManaCostComplexParam:
         if operator not in ("<", "<=", ":", "=", ">", ">="):
             raise ParseError(
@@ -332,7 +325,7 @@ class CardQueryParser(Parser):
             )
         return CardManaCostComplexParam(text, operator)
 
-    def parse_set_param(self, operator: str, text: str, inverse: bool = False):
+    def parse_set_param(self, operator: str, text: str):
         if operator not in ("<", "<=", ":", "=", ">", ">="):
             raise ParseError(
                 self.pos + 1, "Unsupported operator for set parameter %s", operator
@@ -345,21 +338,15 @@ class CardQueryParser(Parser):
 
         return CardSetParam(card_set)
 
-    def parse_power_param(
-        self, operator: str, text: str, inverse: bool = False
-    ) -> CardNumPowerParam:
+    def parse_power_param(self, operator: str, text: str) -> CardNumPowerParam:
         power = self.parse_numeric_parameter("power", operator, text)
         return CardNumPowerParam(power, operator)
 
-    def parse_toughness_param(
-        self, operator: str, text: str, inverse: bool = False
-    ) -> CardNumToughnessParam:
+    def parse_toughness_param(self, operator: str, text: str) -> CardNumToughnessParam:
         toughness = self.parse_numeric_parameter("toughness", operator, text)
         return CardNumToughnessParam(toughness, operator)
 
-    def parse_cmc_param(
-        self, operator: str, text: str, inverse: bool = False
-    ) -> CardCmcParam:
+    def parse_cmc_param(self, operator: str, text: str) -> CardCmcParam:
         cmc = self.parse_numeric_parameter("converted mana cost", operator, text)
         return CardCmcParam(cmc, operator)
 

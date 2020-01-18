@@ -45,6 +45,9 @@ class CardSearchParam:
     The base search parameter class
     """
 
+    def __init__(self):
+        self.negated: bool = False
+
     def query(self) -> Q:
         """
         Returns the query of this parameter and all child parameters
@@ -83,10 +86,6 @@ class AndParam(BranchParam):
     The class for combining two or more sub-parameters with an "AND" clause
     """
 
-    def __init__(self, inverse: bool = False):
-        self.inverse = inverse
-        super().__init__()
-
     def query(self) -> Q:
         if not self.child_parameters:
             logger.info("No child parameters found, returning empty set")
@@ -96,7 +95,7 @@ class AndParam(BranchParam):
         for child in self.child_parameters:
             query.add(child.query(), Q.AND)
 
-        if self.inverse:
+        if self.negated:
             return ~query
         return query
 
@@ -115,10 +114,6 @@ class OrParam(BranchParam):
     The class for combining two or more sub-parameters with an "OR" clause
     """
 
-    def __init__(self, inverse: bool = False):
-        self.inverse = inverse
-        super().__init__()
-
     def query(self) -> Q:
         if not self.child_parameters:
             logger.info("No child parameters found,returning empty set")
@@ -128,7 +123,7 @@ class OrParam(BranchParam):
         for child in self.child_parameters:
             query.add(child.query(), Q.OR)
 
-        return ~query if self.inverse else query
+        return ~query if self.negated else query
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
         if len(self.child_parameters) == 1:
@@ -144,10 +139,9 @@ class CardNameParam(CardSearchParam):
     The parameter for searching by a card's name
     """
 
-    def __init__(self, card_name, match_exact: bool = False, inverse: bool = False):
+    def __init__(self, card_name, match_exact: bool = False):
         super().__init__()
         self.card_name = card_name
-        self.inverse = inverse
         self.match_exact = match_exact
 
     def query(self) -> Q:
@@ -156,10 +150,10 @@ class CardNameParam(CardSearchParam):
         else:
             q = Q(name__icontains=self.card_name)
 
-        return ~q if self.inverse else q
+        return ~q if self.negated else q
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
-        if self.inverse:
+        if self.negated:
             return f'the name does not contain "{self.card_name}"'
         return f'the name contains "{self.card_name}"'
 
@@ -169,11 +163,10 @@ class CardRulesTextParam(CardSearchParam):
     The parameter for searching by a card's rules text
     """
 
-    def __init__(self, card_rules, exact: bool = False, inverse: bool = False):
+    def __init__(self, card_rules, exact: bool = False):
         super().__init__()
         self.card_rules = card_rules
         self.exact_match = exact
-        self.inverse = inverse
 
     def query(self) -> Q:
         if "~" not in self.card_rules:
@@ -181,7 +174,7 @@ class CardRulesTextParam(CardSearchParam):
                 query = Q(rules_text__iexact=self.card_rules)
             else:
                 query = Q(rules_text__icontains=self.card_rules)
-            return ~query if self.inverse else query
+            return ~query if self.negated else query
 
         chunks = [Value(c) for c in self.card_rules.split("~")]
         params = [F("name")] * (len(chunks) * 2 - 1)
@@ -198,10 +191,10 @@ class CardRulesTextParam(CardSearchParam):
         else:
             query |= Q(rules_text__icontains=Concat(*params))
 
-        return ~query if self.inverse else query
+        return ~query if self.negated else query
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
-        if self.inverse:
+        if self.negated:
             return f"rules text {'is not' if self.exact_match else 'does not contain'} \"{self.card_rules}\""
         return f"rules text {'is' if self.exact_match else 'contains'} \"{self.card_rules}\""
 
@@ -246,11 +239,10 @@ class CardSubtypeParam(CardSearchParam):
 
 
 class CardGenericTypeParam(CardSearchParam):
-    def __init__(self, card_type: str, operator: str, inverse: bool = False):
+    def __init__(self, card_type: str, operator: str):
         super().__init__()
         self.card_type = card_type
         self.operator = operator
-        self.inverse = inverse
 
     def query(self) -> Q:
         if self.operator == "=":
@@ -259,10 +251,10 @@ class CardGenericTypeParam(CardSearchParam):
             result = Q(type__icontains=self.card_type) | Q(
                 subtype__icontains=self.card_type
             )
-        return ~result if self.inverse else result
+        return ~result if self.negated else result
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
-        if self.inverse:
+        if self.negated:
             if self.operator == "=":
                 include = "don't match"
             else:
@@ -289,13 +281,7 @@ class CardColourParam(CardSearchParam):
 
 
 class CardComplexColourParam(CardSearchParam):
-    def __init__(
-        self,
-        colours: int,
-        operator: str = "=",
-        inverse: bool = False,
-        identity: bool = False,
-    ):
+    def __init__(self, colours: int, operator: str = "=", identity: bool = False):
         assert colours >= 0
         assert colours <= (
             Card.colour_flags.white
@@ -309,7 +295,6 @@ class CardComplexColourParam(CardSearchParam):
             self.operator = "<=" if identity else ">="
         else:
             self.operator = operator
-        self.inverse = inverse
         self.identity = identity
 
     def query(self) -> Q:
@@ -317,7 +302,7 @@ class CardComplexColourParam(CardSearchParam):
         if self.operator == ">=":
             return (
                 ~Q(**{field: self.colours})
-                if self.inverse
+                if self.negated
                 else Q(**{field: self.colours})
             )
 
@@ -330,7 +315,7 @@ class CardComplexColourParam(CardSearchParam):
                     exclude |= Q(**{field: c.bit_value})
             if exclude:
                 result &= exclude if self.operator == ">" else ~exclude
-            return ~result if self.inverse else result
+            return ~result if self.negated else result
 
         if self.operator == "<" or self.operator == "<=":
             include = Q()
@@ -346,9 +331,9 @@ class CardComplexColourParam(CardSearchParam):
 
             if self.operator == "<":
                 result = include & exclude & ~Q(**{field: self.colours})
-                return ~result if self.inverse else result
+                return ~result if self.negated else result
             result = include & exclude
-            return ~result if self.inverse else result
+            return ~result if self.negated else result
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
         if self.colours == 0:
@@ -551,10 +536,11 @@ class CardNumPowerParam(CardNumericalParam):
 
     def query(self) -> Q:
         args = self.get_args("num_power")
-        return Q(**args) & Q(power__isnull=False)
+        query = Q(**args) & Q(power__isnull=False)
+        return ~query if self.negated else query
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
-        return f"the power {self.operator} {self.number}"
+        return f"the power {'is not ' if self.negated else ''}{self.operator} {self.number}"
 
 
 class CardNumToughnessParam(CardNumericalParam):
@@ -634,7 +620,7 @@ class CardOwnershipCountParam(CardNumericalParam):
         query = Q(**kwargs)
         return Q(id__in=annotated_result.filter(query))
 
-    def get_pretty_str(selFixedf, within_or_block: bool = False) -> str:
+    def get_pretty_str(selF, within_or_block: bool = False) -> str:
         return f"you own {self.operator} {self.number}"
 
 
