@@ -178,8 +178,10 @@ class CardRulesTextParam(CardSearchParam):
     def query(self) -> Q:
         if "~" not in self.card_rules:
             if self.exact_match:
-                return Q(rules_text__iexact=self.card_rules)
-            return Q(rules_text__icontains=self.card_rules)
+                query = Q(rules_text__iexact=self.card_rules)
+            else:
+                query = Q(rules_text__icontains=self.card_rules)
+            return ~query if self.inverse else query
 
         chunks = [Value(c) for c in self.card_rules.split("~")]
         params = [F("name")] * (len(chunks) * 2 - 1)
@@ -200,7 +202,7 @@ class CardRulesTextParam(CardSearchParam):
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
         if self.inverse:
-            return f"rules text {'is not' if self.exact_match else 'does nto contain'} \"{self.card_rules}\""
+            return f"rules text {'is not' if self.exact_match else 'does not contain'} \"{self.card_rules}\""
         return f"rules text {'is' if self.exact_match else 'contains'} \"{self.card_rules}\""
 
 
