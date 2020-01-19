@@ -10,6 +10,7 @@ from cardsearch.parameters import (
     CardComplexColourParam,
     CardGenericTypeParam,
     CardRulesTextParam,
+    CardManaCostComplexParam,
 )
 
 from cardsearch.parse_search import ParseSearch
@@ -173,6 +174,14 @@ class ParserTests(TestCase):
         self.assertIsInstance(root_param, CardRulesTextParam)
         self.assertFalse(root_param.exact_match)
         self.assertEquals(root_param.card_rules, "~ enters the battlefield tapped")
+
+    def test_mana_gu_param(self):
+        root_param = self.parser.parse("mana:{G}{U}")
+        self.assertIsInstance(root_param, CardManaCostComplexParam)
+        self.assertFalse(root_param.negated)
+        self.assertEquals(root_param.symbol_counts["g"], 1)
+        self.assertEquals(root_param.symbol_counts["u"], 1)
+        self.assertEquals(root_param.symbol_counts["b"], 0)
 
 
 class ColourContainsTestCase(TestCase):

@@ -464,7 +464,9 @@ class CardManaCostComplexParam(CardSearchParam):
             char = self.cost_text[pos]
             if char == "{":
                 if in_symbol:
-                    raise Exception()
+                    raise ValueError(
+                        f"Could not parse {self.cost_text}: unexpected '{{'"
+                    )
                 in_symbol = True
                 current_symbol = ""
             elif char == "}":
@@ -475,7 +477,9 @@ class CardManaCostComplexParam(CardSearchParam):
 
                     in_symbol = False
                 else:
-                    raise Exception()
+                    raise ValueError(
+                        f"Could not parse {self.cost_text}: unexpected '{{'"
+                    )
             elif in_symbol:
                 current_symbol += char
             elif not in_symbol:
@@ -484,7 +488,7 @@ class CardManaCostComplexParam(CardSearchParam):
             pos += 1
 
         if in_symbol:
-            raise Exception()
+            raise ValueError(f"Could not parse {self.cost_text}: expected '}}'")
 
     def query(self) -> Q:
         query = Q()
@@ -493,7 +497,7 @@ class CardManaCostComplexParam(CardSearchParam):
             num = None
             try:
                 num = int(symbol)
-            except TypeError:
+            except (TypeError, ValueError):
                 pass
 
             if num is not None:
@@ -504,6 +508,9 @@ class CardManaCostComplexParam(CardSearchParam):
                     query &= ~Q(cost__icontains=("{" + symbol + "}") * (count + 1))
 
         return query
+
+    def get_pretty_str(self, within_or_block: bool = False) -> str:
+        return f"mana cost {'does not contain' if self.negated else 'contains'} {self.cost_text}"
 
 
 class CardRarityParam(CardSearchParam):
@@ -630,7 +637,7 @@ class CardOwnershipCountParam(CardNumericalParam):
         query = Q(**kwargs)
         return Q(id__in=annotated_result.filter(query))
 
-    def get_pretty_str(selF, within_or_block: bool = False) -> str:
+    def get_pretty_str(self, within_or_block: bool = False) -> str:
         return f"you own {self.operator} {self.number}"
 
 

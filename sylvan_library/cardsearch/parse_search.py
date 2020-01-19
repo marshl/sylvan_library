@@ -22,5 +22,5 @@ class ParseSearch(BaseSearch):
         try:
             self.root_parameter = query_parser.parse(self.query_string)
             print(self.root_parameter.query())
-        except ParseError as error:
+        except (ParseError, ValueError) as error:
             self.error_message = str(error)
