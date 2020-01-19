@@ -123,7 +123,6 @@ class CardQueryParser(Parser):
         return and_group or rv
 
     def parameter_group(self) -> CardSearchParam:
-        print("parameter group")
         is_negated = self.maybe_char("-") is not None
         if self.maybe_keyword("("):
             or_group = self.match("or_group")
@@ -135,11 +134,9 @@ class CardQueryParser(Parser):
             "quoted_name_parameter", "normal_parameter", "unquoted_name_parameter"
         )
         parameter.negated = is_negated
-        print("parameter group param:", parameter)
         return parameter
 
     def param_type(self) -> str:
-        print("param type")
         acceptable_param_types = "a-zA-Z0-9"
         chars = [self.char(acceptable_param_types)]
 
@@ -152,15 +149,7 @@ class CardQueryParser(Parser):
         return "".join(chars).rstrip(" \t").lower()
 
     def normal_parameter(self) -> CardSearchParam:
-        print("normal parameter")
         parameter_type = self.match("param_type")
-        if parameter_type in ("or", "and"):
-            raise ParseError(
-                self.pos + 1,
-                'Expected a parameter but got "%s" instead',
-                parameter_type,
-            )
-
         operator = self.match("operator")
         parameter_value = self.match("quoted_string", "unquoted")
         return self.parse_param(parameter_type, operator, parameter_value)
@@ -171,6 +160,12 @@ class CardQueryParser(Parser):
 
     def unquoted_name_parameter(self) -> CardSearchParam:
         parameter_value = self.match("unquoted")
+        if parameter_value in ("or", "and"):
+            raise ParseError(
+                self.pos + 1,
+                'Expected a parameter but got "%s" instead',
+                parameter_value,
+            )
         return self.parse_param("name", ":", parameter_value)
 
     def parse_param(self, parameter_type: str, operator: str, parameter_value: str):

@@ -5,9 +5,11 @@ from cards.tests import create_test_card
 
 from cardsearch.parameters import (
     AndParam,
+    OrParam,
     CardNameParam,
     CardComplexColourParam,
     CardGenericTypeParam,
+    CardRulesTextParam,
 )
 
 from cardsearch.parse_search import ParseSearch
@@ -22,6 +24,26 @@ class ParserTests(TestCase):
         root_param = self.parser.parse("foo")
         self.assertIsInstance(root_param, CardNameParam)
         self.assertEquals(root_param.card_name, "foo")
+
+    def test_and_param(self):
+        root_param = self.parser.parse("foo and bar")
+        self.assertIsInstance(root_param, AndParam)
+        self.assertEquals(len(root_param.child_parameters), 2)
+        foo_param, bar_param = root_param.child_parameters
+        self.assertIsInstance(foo_param, CardNameParam)
+        self.assertIsInstance(bar_param, CardNameParam)
+        self.assertEquals(foo_param.card_name, "foo")
+        self.assertEquals(bar_param.card_name, "bar")
+
+    def test_or_param(self):
+        root_param = self.parser.parse("foo or bar")
+        self.assertIsInstance(root_param, OrParam)
+        self.assertEquals(len(root_param.child_parameters), 2)
+        foo_param, bar_param = root_param.child_parameters
+        self.assertIsInstance(foo_param, CardNameParam)
+        self.assertIsInstance(bar_param, CardNameParam)
+        self.assertEquals(foo_param.card_name, "foo")
+        self.assertEquals(bar_param.card_name, "bar")
 
     def test_double_unquoted_param(self):
         root_param = self.parser.parse("foo bar")
@@ -89,6 +111,68 @@ class ParserTests(TestCase):
         self.assertIsInstance(instant_param, CardGenericTypeParam)
         self.assertEquals(instant_param.card_type, "instant")
         self.assertFalse(instant_param.negated)
+
+    def test_no_colour_id_and_type_param(self):
+        root_param = self.parser.parse("id:c t:land")
+        self.assertIsInstance(root_param, AndParam)
+        self.assertEquals(len(root_param.child_parameters), 2)
+        id_param, type_param = root_param.child_parameters
+        self.assertIsInstance(id_param, CardComplexColourParam)
+        self.assertIsInstance(type_param, CardGenericTypeParam)
+        self.assertEquals(id_param.colours, 0)
+        self.assertEquals(id_param.operator, "<=")
+
+        self.assertEquals(type_param.operator, ":")
+        self.assertEquals(type_param.card_type, "land")
+
+    def test_legendary_merfolk_param(self):
+        root_param = self.parser.parse("t:legend t:merfolk")
+        self.assertIsInstance(root_param, AndParam)
+        self.assertEquals(len(root_param.child_parameters), 2)
+        legend_param, merfolk_param = root_param.child_parameters
+        self.assertIsInstance(legend_param, CardGenericTypeParam)
+        self.assertIsInstance(merfolk_param, CardGenericTypeParam)
+
+        self.assertEquals(legend_param.operator, ":")
+        self.assertEquals(legend_param.card_type, "legend")
+
+        self.assertEquals(merfolk_param.operator, ":")
+        self.assertEquals(merfolk_param.card_type, "merfolk")
+
+    def test_noncreature_goblins_param(self):
+        root_param = self.parser.parse("t:goblin -t:creature")
+        self.assertIsInstance(root_param, AndParam)
+        self.assertEquals(len(root_param.child_parameters), 2)
+        goblin_param, noncreature_param = root_param.child_parameters
+        self.assertIsInstance(goblin_param, CardGenericTypeParam)
+        self.assertIsInstance(noncreature_param, CardGenericTypeParam)
+
+        self.assertEquals(goblin_param.operator, ":")
+        self.assertEquals(goblin_param.card_type, "goblin")
+
+        self.assertEquals(noncreature_param.operator, ":")
+        self.assertEquals(noncreature_param.card_type, "creature")
+        self.assertTrue(noncreature_param.negated)
+
+    def test_creature_draw_param(self):
+        root_param = self.parser.parse("t:creature o:draw")
+        self.assertIsInstance(root_param, AndParam)
+        self.assertEquals(len(root_param.child_parameters), 2)
+        creature_param, draw_param = root_param.child_parameters
+        self.assertIsInstance(creature_param, CardGenericTypeParam)
+        self.assertIsInstance(draw_param, CardRulesTextParam)
+
+        self.assertEquals(creature_param.operator, ":")
+        self.assertEquals(creature_param.card_type, "creature")
+
+        self.assertFalse(draw_param.exact_match)
+        self.assertEquals(draw_param.card_rules, "draw")
+
+    def test_card_name_enters_param(self):
+        root_param = self.parser.parse('o:"~ enters the battlefield tapped"')
+        self.assertIsInstance(root_param, CardRulesTextParam)
+        self.assertFalse(root_param.exact_match)
+        self.assertEquals(root_param.card_rules, "~ enters the battlefield tapped")
 
 
 class ColourContainsTestCase(TestCase):

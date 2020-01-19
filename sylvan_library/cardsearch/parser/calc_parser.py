@@ -1,4 +1,4 @@
-from cardsearch.parser import Parser
+from cardsearch.parser.base_parser import Parser
 
 
 class CalcParser(Parser):

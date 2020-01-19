@@ -117,7 +117,6 @@ class Parser:
         )
 
     def match(self, *rules) -> Any:
-        print("matching ", rules)
         self.eat_whitespace()
         last_error_pos: int = -1
         last_exception: Optional[Exception] = None
@@ -130,7 +129,6 @@ class Parser:
                 self.eat_whitespace()
                 return rv
             except ParseError as e:
-                print("failed to parse", rule, e)
                 self.pos = initial_pos
                 if e.pos > last_error_pos:
                     last_exception = e
@@ -141,10 +139,8 @@ class Parser:
                     last_error_rules.append(rule)
 
         if len(last_error_rules) == 1:
-            print("raising last exception")
             raise last_exception
 
-        print("end of the line")
         raise ParseError(
             last_error_pos,
             "Expected %s but got %s",
