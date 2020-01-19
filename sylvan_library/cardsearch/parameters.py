@@ -167,10 +167,16 @@ class CardRulesTextParam(CardSearchParam):
         super().__init__()
         self.card_rules = card_rules
         self.exact_match = exact
+        self.regex_match = False
+        if self.card_rules.startswith("/") and self.card_rules.endswith("/"):
+            self.regex_match = True
+            self.card_rules = "(?m)" + self.card_rules.strip("/")
 
     def query(self) -> Q:
         if "~" not in self.card_rules:
-            if self.exact_match:
+            if self.regex_match:
+                query = Q(rules_text__iregex=self.card_rules)
+            elif self.exact_match:
                 query = Q(rules_text__iexact=self.card_rules)
             else:
                 query = Q(rules_text__icontains=self.card_rules)
@@ -179,14 +185,18 @@ class CardRulesTextParam(CardSearchParam):
         chunks = [Value(c) for c in self.card_rules.split("~")]
         params = [F("name")] * (len(chunks) * 2 - 1)
         params[0::2] = chunks
-        if self.exact_match:
+        if self.regex_match:
+            query = Q(rules_text__iregex=Concat(*params))
+        elif self.exact_match:
             query = Q(rules_text__iexact=Concat(*params))
         else:
             query = Q(rules_text__icontains=Concat(*params))
 
         params = [Value("this spell")] * (len(chunks) * 2 - 1)
         params[0::2] = chunks
-        if self.exact_match:
+        if self.regex_match:
+            query |= Q(rules_text__iregex=Concat(*params))
+        elif self.exact_match:
             query |= Q(rules_text__iexact=Concat(*params))
         else:
             query |= Q(rules_text__icontains=Concat(*params))

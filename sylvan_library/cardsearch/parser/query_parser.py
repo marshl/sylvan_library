@@ -207,7 +207,7 @@ class CardQueryParser(Parser):
         return rv
 
     def unquoted(self) -> Union[str, float]:
-        acceptable_chars = "0-9A-Za-z!$%&*+./;<=>?^_`|~{}/-"
+        acceptable_chars = "0-9A-Za-z!$%&*+./;<=>?^_`|~{}/-:"
         chars = [self.char(acceptable_chars)]
 
         while True:
