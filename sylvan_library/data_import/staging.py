@@ -2,6 +2,7 @@
 Module for staging classes
 """
 import datetime
+import dateutil
 import math
 import re
 from typing import List, Optional, Dict
@@ -227,45 +228,8 @@ class StagedCard:
         """
         return int(convert_number_field_to_numerical(self.life_modifier))
 
-    def to_dict(self) -> dict:
-        """
-        Returns all the properties of this card as a dictionarry
-        (this can then be stored in the list of cards to create)
-        :return:  All the fields of this object as a dictionary
-        """
-        return {
-            "cmc": self.cmc,
-            "colour_flags": self.colour_flags,
-            "colour_count": self.colour_count,
-            "colour_identity_count": self.colour_identity_count,
-            "colour_identity_flags": self.colour_identity_flags,
-            "colour_indicator_flags": self.colour_indicator_flags,
-            "colour_sort_key": self.colour_sort_key,
-            "colour_weight": self.colour_weight,
-            "cost": self.cost,
-            "display_name": self.display_name,
-            # "edh_rec_rank": self.edh_rec_rank,
-            "face_cmc": self.face_cmc,
-            "hand_modifier": self.hand_modifier,
-            "is_reserved": self.is_reserved,
-            "is_token": self.is_token,
-            "layout": self.layout,
-            "life_modifier": self.life_modifier,
-            "loyalty": self.loyalty,
-            "name": self.name,
-            "num_hand_modifier": self.num_hand_modifier,
-            "num_loyalty": self.num_loyalty,
-            "num_life_modifier": self.num_life_modifier,
-            "num_power": self.num_power,
-            "num_toughness": self.num_toughness,
-            "power": self.power,
-            "rules_text": self.rules_text,
-            "scryfall_oracle_id": self.scryfall_oracle_id,
-            "side": self.side,
-            "subtype": self.subtype,
-            "toughness": self.toughness,
-            "type": self.type,
-        }
+    def extra_attrs(self) -> dict:
+        return {}
 
 
 # pylint: disable=too-many-instance-attributes, too-few-public-methods
@@ -275,42 +239,25 @@ class StagedSet:
     """
 
     def __init__(self, set_data: dict):
-        self.base_set_size = set_data["baseSetSize"]
-        self.block = set_data.get("block")
-        self.code = set_data["code"]
-        self.is_foil_only = set_data["isFoilOnly"]
-        self.is_online_only = set_data["isOnlineOnly"]
-        self.keyrune_code = set_data["keyruneCode"]
-        self.mcm_id = set_data.get("mcmId")
-        self.mcm_name = set_data.get("mcmName")
-        self.mtg_code = set_data.get("mtgoCode")
-        self.name = set_data["name"]
-        self.release_date = set_data["releaseDate"]
-        self.tcg_player_group_id = set_data.get("tcg_player_group_id")
-        self.total_set_size = set_data["totalSetSize"]
-        self.type = set_data["type"]
-
-    def to_dict(self) -> dict:
-        """
-        Returns all the properties of this set as a dictionary
-        (this can then be stored in the list of sets to create)
-        :return:  All the fields of this object as a dictionary
-        """
-        return {
-            "base_set_size": self.base_set_size,
-            "block": self.block,
-            "total_set_size": self.total_set_size,
-            "code": self.code,
-            "is_foil_only": self.is_foil_only,
-            "is_online_only": self.is_online_only,
-            "keyrune_code": self.keyrune_code,
-            "mcm_id": self.mcm_id,
-            "mcm_name": self.mcm_name,
-            "name": self.name,
-            "release_date": self.release_date,
-            "tcg_player_group_id": self.tcg_player_group_id,
-            "type": self.type,
-        }
+        self.base_set_size: int = set_data["baseSetSize"]
+        self.block: str = set_data.get("block")
+        self.code: str = set_data["code"]
+        self.is_foil_only: bool = set_data["isFoilOnly"]
+        self.is_foreign_only: bool = set_data.get("isForeignOnly", False)
+        self.is_online_only: bool = set_data["isOnlineOnly"]
+        self.is_partial_preview: bool = set_data.get("isPartialPreview", False)
+        self.keyrune_code: str = set_data["keyruneCode"]
+        self.magic_card_market_name: str = set_data.get("mcmName")
+        self.magic_card_market_id: str = set_data.get("mcmId")
+        self.mtgo_code: str = set_data.get("mtgoCode")
+        self.name: str = set_data["name"]
+        self.release_date: datetime.date = dateutil.parser.parse(
+            set_data["releaseDate"]
+        ).date()
+        self.tcg_player_group_id: str = set_data.get("tcg_player_group_id")
+        self.total_set_size: int = set_data["totalSetSize"]
+        self.type: str = set_data["type"]
+        self.parent_set_code = set_data.get("parentCode")
 
 
 # pylint: disable=too-many-instance-attributes
@@ -367,46 +314,6 @@ class StagedCardPrinting:
 
         self.is_new = False
 
-    def to_dict(self):
-        """
-        Returns all the properties of this printing as a dictionary
-        (this can then be stored in the list of printings to create)
-        :return:  All the fields of this object as a dictionary
-        """
-        return {
-            "artist": self.artist,
-            "border_colour": self.border_colour,
-            "card_name": self.card_name,
-            "duel_deck_side": self.duel_deck_side,
-            "flavour_text": self.flavour_text,
-            "frame_effect": self.frame_effect,
-            "frame_version": self.frame_version,
-            "has_non_foil": self.has_non_foil,
-            "has_foil": self.has_foil,
-            "is_alternative": self.is_alternative,
-            "is_arena": self.is_arena,
-            "is_full_art": self.is_full_art,
-            "is_promo": self.is_promo,
-            "is_reprint": self.is_reprint,
-            "is_starter": self.is_starter,
-            "is_story_spotlight": self.is_story_spotlight,
-            "is_timeshifted": self.is_timeshifted,
-            "json_id": self.json_id,
-            "magic_card_market_id": self.magic_card_market_id,
-            "magic_card_market_meta_id": self.magic_card_market_meta_id,
-            "mtg_arena_id": self.mtg_arena_id,
-            "mtgo_id": self.mtgo_id,
-            "mtgo_foil_id": self.mtgo_foil_id,
-            "mtg_stocks_id": self.mtg_stocks_id,
-            "multiverse_id": self.multiverse_id,
-            "number": self.number,
-            "rarity": self.rarity,
-            "scryfall_id": self.scryfall_id,
-            "scryfall_illustration_id": self.scryfall_illustration_id,
-            "set_code": self.set_code,
-            "tcg_player_product_id": self.tcg_player_product_id,
-        }
-
 
 # pylint: disable=too-few-public-methods
 class StagedLegality:
@@ -419,18 +326,6 @@ class StagedLegality:
         self.format_code = format_code
         self.restriction = restriction
 
-    def to_dict(self) -> dict:
-        """
-        Returns all the properties of this legality as a dictionary
-        (this can then be stored in the list of legality to create)
-        :return:  All the fields of this object as a dictionary
-        """
-        return {
-            "card_name": self.card_name,
-            "format": self.format_code,
-            "restriction": self.restriction,
-        }
-
 
 # pylint: disable=too-few-public-methods
 class StagedRuling:
@@ -441,19 +336,7 @@ class StagedRuling:
     def __init__(self, card_name: str, text: str, ruling_date: str):
         self.card_name = card_name
         self.text = text
-        self.ruling_date = ruling_date
-
-    def to_dict(self) -> dict:
-        """
-        Returns all the properties of this ruling as a dictionary
-        (this can then be stored in the list of rulings to create)
-        :return:  All the fields of this object as a dictionary
-        """
-        return {
-            "card_name": self.card_name,
-            "text": self.text,
-            "date": self.ruling_date,
-        }
+        self.date = ruling_date
 
 
 class StagedBlock:
@@ -464,14 +347,6 @@ class StagedBlock:
     def __init__(self, name: str, release_date: datetime.date):
         self.name = name
         self.release_date = release_date
-
-    def to_dict(self) -> dict:
-        """
-        Returns all the properties of this block as a dictionary
-        (this can then be stored in the list of blocks to create)
-        :return:  All the fields of this object as a dictionary
-        """
-        return {"name": self.name, "release_date": self.release_date}
 
 
 # pylint: disable=too-few-public-methods
@@ -515,23 +390,6 @@ class StagedCardPrintingLanguage:
         self.is_new = False
         self.has_physical_card = False
 
-    def to_dict(self) -> dict:
-        """
-        Returns all the properties of this printlang as a dictionary
-        (this can then be stored in the list of printlangs to create)
-        :return:  All the fields of this object as a dictionary
-        """
-        return {
-            "base_name": self.base_name,
-            "card_name": self.card_name,
-            "flavour_text": self.flavour_text,
-            "language": self.language,
-            "multiverse_id": self.multiverse_id,
-            "printing_uid": self.printing_uuid,
-            "text": self.text,
-            "type": self.type,
-        }
-
 
 class StagedPhysicalCard:
     """
@@ -540,23 +398,11 @@ class StagedPhysicalCard:
 
     def __init__(self, printing_uuids: List[str], language_code: str, layout: str):
         self.printing_uids = printing_uuids
-        self.language_code = language_code
+        self.language = language_code
         self.layout = layout
 
-    def to_dict(self) -> dict:
-        """
-        Returns all the properties of this physical card as a dictionary
-        (this can then be stored in the list of physical cards to create)
-        :return:  All the fields of this object as a dictionary
-        """
-        return {
-            "printing_uids": self.printing_uids,
-            "language": self.language_code,
-            "layout": self.layout,
-        }
-
     def __str__(self) -> str:
-        return f"{'/'.join(self.printing_uids)} in {self.language_code} ({self.layout})"
+        return f"{'/'.join(self.printing_uids)} in {self.language} ({self.layout})"
 
 
 class StagedCardPrice:
@@ -578,11 +424,3 @@ class StagedCardPrice:
             raise Exception(
                 f"Unknown card price price type: {price_type} for {printing_uuid}"
             )
-
-    def to_dict(self) -> dict:
-        return {
-            "printing_uuid": self.printing_uuid,
-            "date": self.date,
-            "price": self.price,
-            "price_type": self.price_type,
-        }

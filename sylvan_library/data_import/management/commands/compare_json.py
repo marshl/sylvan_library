@@ -68,7 +68,7 @@ class Command(BaseCommand):
 
     printed_languages_to_create = []  # type: List[StagedCardPrintingLanguage]
     printed_languages_to_update = []  # type: List[dict]
-    physical_cards_to_create = []
+    physical_cards_to_create = []  # type: List[StagedPhysicalCard]
 
     sets_to_create = {}  # type: Dict[str, StagedSet]
     sets_to_update = {}  # type: Dict[str, Dict[str, Dict[str]]]
@@ -193,20 +193,7 @@ class Command(BaseCommand):
         differences = self.get_object_differences(
             existing_set,
             staged_set,
-            {
-                # "base_set_size",
-                # "is_foil_only",
-                # "is_online_only",
-                "keyrune_code",
-                # "mcm_id",
-                # "mcm_name",
-                # "mtgo_code",
-                "name",
-                # "tcgplayer_group_id",
-                # "total_set_size",
-                "total_set_size",
-                "type",
-            },
+            {"id", "release_date", "parent_set_id", "block_id"},
         )
 
         if (not existing_set.block and staged_set.block) or (
@@ -217,11 +204,10 @@ class Command(BaseCommand):
                 "to": staged_set.block,
             }
 
-        old_release_date_str = existing_set.release_date.strftime("%Y-%m-%d")
-        if old_release_date_str != staged_set.release_date:
+        if existing_set.release_date != staged_set.release_date:
             differences["release_date"] = {
-                "from": old_release_date_str,
-                "to": staged_set.release_date,
+                "from": existing_set.release_date.strftime("%Y-%m-%d"),
+                "to": staged_set.release_date.strftime("%Y-%m-%d"),
             }
 
         if differences:
@@ -372,26 +358,26 @@ class Command(BaseCommand):
 
                     self.rulings_to_delete[staged_card.name].append(existing_ruling)
 
-    def process_card_prices(
-        self, staged_card_printing: StagedCardPrinting, card_data: dict
-    ) -> None:
-        for price_type, prices in card_data.get("prices", {}).items():
-            if not prices:
-                continue
-            for price_date, price_value in prices.items():
-                if (
-                    staged_card_printing.json_id not in self.existing_prices
-                    or price_date
-                    not in self.existing_prices[staged_card_printing.json_id]
-                ):
-                    self.prices_to_create.append(
-                        StagedCardPrice(
-                            staged_card_printing.json_id,
-                            price_date,
-                            price_value,
-                            price_type,
-                        )
-                    )
+    # def process_card_prices(
+    #     self, staged_card_printing: StagedCardPrinting, card_data: dict
+    # ) -> None:
+    #     for price_type, prices in card_data.get("prices", {}).items():
+    #         if not prices:
+    #             continue
+    #         for price_date, price_value in prices.items():
+    #             if (
+    #                 staged_card_printing.json_id not in self.existing_prices
+    #                 or price_date
+    #                 not in self.existing_prices[staged_card_printing.json_id]
+    #             ):
+    #                 self.prices_to_create.append(
+    #                     StagedCardPrice(
+    #                         staged_card_printing.json_id,
+    #                         price_date,
+    #                         price_value,
+    #                         price_type,
+    #                     )
+    #                 )
 
     def process_card_legalities(self, staged_card: StagedCard) -> None:
         """
@@ -471,7 +457,7 @@ class Command(BaseCommand):
                 self.card_links_to_create[staged_card.name].add(other_name)
 
     @staticmethod
-    def get_object_differences(old_object, new_object, fields: SetType[str]) -> dict:
+    def get_object_differences(old_object, new_object, fields_to_ignore: set) -> dict:
         """
         Gets the differences between the given fields of two objects
         :param old_object: The old version of the object (stored in the database)
@@ -479,8 +465,18 @@ class Command(BaseCommand):
         :param fields: The fields to compare
         :return: A dict of "field* => {"old" => "x", "new" => "y"} differences
         """
+        fields_to_ignore.update(["_state", "_prefetched_objects_cache"])
+
         result = {}
-        for field in fields:
+        for field in old_object.__dict__.keys():
+            if field in fields_to_ignore:
+                continue
+
+            if not hasattr(new_object, field):
+                raise Exception(
+                    f"Could not find equivalent of {old_object.__class__.__name__}.{field} on {new_object.__class__.__name__}"
+                )
+
             old_val = getattr(old_object, field)
             new_val = getattr(new_object, field)
             if (
@@ -498,19 +494,6 @@ class Command(BaseCommand):
 
         return result
 
-    def get_set_differences(
-        self, existing_set: Set, staged_set: StagedSet
-    ) -> Dict[str, dict]:
-        """
-        Gets the differences between an existing and staged Set object
-        :param existing_set: The existing Set object
-        :param staged_set: The StagedSet object
-        :return: A dict of the differences between the sets
-        """
-        return self.get_object_differences(
-            existing_set, staged_set, {"keyrune_code", "name", "total_set_size", "type"}
-        )
-
     def get_card_differences(
         self, existing_card: Card, staged_card: StagedCard
     ) -> Dict[str, dict]:
@@ -524,37 +507,11 @@ class Command(BaseCommand):
             existing_card,
             staged_card,
             {
-                "rules_text",
-                "type",
-                "subtype",
-                "cmc",
-                "colour_count",
-                "colour_identity_count",
-                "colour_weight",
-                "colour_sort_key",
-                "cost",
-                "display_name",
-                # "edh_rec_rank",
-                "face_cmc",
-                "hand_modifier",
-                "is_reserved",
-                "is_token",
-                "layout",
-                "loyalty",
-                "life_modifier",
-                "name",
-                "num_hand_modifier",
-                "num_loyalty",
-                "num_life_modifier",
-                "num_power",
-                "num_toughness",
-                "power",
-                "rules_text",
-                "scryfall_oracle_id",
-                "side",
-                "subtype",
-                "toughness",
-                "type",
+                "id",
+                "edh_rec_rank",
+                "colour_flags",
+                "colour_identity_flags",
+                "colour_indicator_flags",
             },
         )
 
@@ -596,34 +553,7 @@ class Command(BaseCommand):
         :return: The dict of differences between the two objects
         """
         result = self.get_object_differences(
-            existing_printing,
-            staged_printing,
-            {
-                "duel_deck_side",
-                "frame_effect",
-                "frame_version",
-                "has_foil",
-                "has_non_foil",
-                "is_alternative",
-                "is_arena",
-                "is_full_art",
-                "is_mtgo",
-                "is_online_only",
-                "is_oversized",
-                "is_paper",
-                "is_promo",
-                "is_reprint",
-                "is_story_spotlight",
-                "is_textless",
-                "magic_card_market_id",
-                "magic_card_market_meta_id",
-                "mtg_arena_id",
-                "mtgo_id",
-                "mtgo_foil_id",
-                "mtg_stocks_id",
-                "scryfall_illustration_id",
-                "tcg_player_product_id",
-            },
+            existing_printing, staged_printing, {"id", "set_id", "rarity_id", "card_id"}
         )
         return result
 
@@ -754,7 +684,9 @@ class Command(BaseCommand):
        :return: The dict of differences between the two objects
        """
         result = self.get_object_differences(
-            existing_printlang, staged_printlang, {"text", "flavour_text", "type"}
+            existing_printlang,
+            staged_printlang,
+            {"id", "language_id", "card_printing_id"},
         )
         return result
 
@@ -775,7 +707,7 @@ class Command(BaseCommand):
         self.write_object_to_json(
             _paths.BLOCKS_TO_CREATE_PATH,
             {
-                block_name: staged_block.to_dict()
+                block_name: staged_block.__dict__
                 for block_name, staged_block in self.blocks_to_create.items()
             },
         )
@@ -783,7 +715,7 @@ class Command(BaseCommand):
         self.write_object_to_json(
             _paths.SETS_TO_CREATE_PATH,
             {
-                set_code: set_to_create.to_dict()
+                set_code: set_to_create.__dict__
                 for set_code, set_to_create in self.sets_to_create.items()
             },
         )
@@ -799,7 +731,7 @@ class Command(BaseCommand):
         self.write_object_to_json(
             _paths.CARDS_TO_CREATE_PATH,
             {
-                card_name: card_to_create.to_dict()
+                card_name: card_to_create.__dict__
                 for card_name, card_to_create in self.cards_to_create.items()
             },
         )
@@ -817,7 +749,7 @@ class Command(BaseCommand):
         self.write_object_to_json(
             _paths.PRINTINGS_TO_CREATE,
             {
-                uuid: printing_to_create.to_dict()
+                uuid: printing_to_create.__dict__
                 for uuid, printing_to_create in self.card_printings_to_create.items()
             },
         )
@@ -840,7 +772,7 @@ class Command(BaseCommand):
         self.write_object_to_json(
             _paths.PRINTLANGS_TO_CREATE,
             [
-                printlang_to_create.to_dict()
+                printlang_to_create.__dict__
                 for printlang_to_create in self.printed_languages_to_create
             ],
         )
@@ -851,21 +783,21 @@ class Command(BaseCommand):
         self.write_object_to_json(
             _paths.PHYSICAL_CARDS_TO_CREATE,
             [
-                physical_card_to_create.to_dict()
+                physical_card_to_create.__dict__
                 for physical_card_to_create in self.physical_cards_to_create
             ],
         )
 
         self.write_object_to_json(
             _paths.RULINGS_TO_CREATE,
-            [ruling.to_dict() for ruling in self.rulings_to_create],
+            [ruling.__dict__ for ruling in self.rulings_to_create],
         )
 
         self.write_object_to_json(_paths.RULINGS_TO_DELETE, self.rulings_to_delete)
 
         self.write_object_to_json(
             _paths.LEGALITIES_TO_CREATE,
-            [legality.to_dict() for legality in self.legalities_to_create],
+            [legality.__dict__ for legality in self.legalities_to_create],
         )
 
         self.write_object_to_json(

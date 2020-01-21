@@ -147,16 +147,10 @@ class Command(BaseCommand):
         for set_code, set_diff in set_list.items():
             set_obj = Set.objects.get(code=set_code)
             for field, change in set_diff.items():
-                if field in {
-                    "keyrune_code",
-                    "release_date",
-                    "name",
-                    "total_set_size",
-                    "type",
-                }:
-                    setattr(set_obj, field, change["to"])
-                elif field == "block":
+                if field == "block":
                     set_obj.block = Block.objects.get(name=change["to"])
+                elif hasattr(set_obj, field):
+                    setattr(set_obj, field, change["to"])
                 else:
                     raise NotImplementedError(
                         f"Cannot update unrecognised field Set.{field}"
@@ -293,43 +287,10 @@ class Command(BaseCommand):
             for field, value in printing_data.items():
                 if field in {"card_name", "set_code"}:
                     continue
-                elif field in {
-                    "artist",
-                    "border_colour",
-                    "duel_deck_side",
-                    "flavour_text",
-                    "frame_effect",
-                    "frame_version",
-                    "has_foil",
-                    "has_non_foil",
-                    "is_alternative",
-                    "is_arena",
-                    "is_mtgo",
-                    "is_online_only",
-                    "is_reprint",
-                    "is_paper",
-                    "is_promo",
-                    "is_starter",
-                    "is_story_spotlight",
-                    "is_timeshifted",
-                    "json_id",
-                    "magic_card_market_id",
-                    "magic_card_market_meta_id",
-                    "mtg_arena_id",
-                    "mtgo_id",
-                    "mtgo_foil_id",
-                    "mtg_stocks_id",
-                    "multiverse_id",
-                    "number",
-                    "original_text",
-                    "original_ty[e",
-                    "scryfall_id",
-                    "scryfall_illustration_id",
-                    "tcg_player_product_id",
-                }:
-                    setattr(printing, field, value)
                 elif field == "rarity":
                     printing.rarity = Rarity.objects.get(name__iexact=value)
+                elif hasattr(card, field):
+                    setattr(printing, field, value)
                 else:
                     raise NotImplementedError(
                         f"Cannot update unrecognised field CardPrinting.{field}"
@@ -364,32 +325,7 @@ class Command(BaseCommand):
                 raise
 
             for field, change in printing_diff.items():
-                if field in {
-                    "duel_deck_side",
-                    "frame_effect",
-                    "frame_version",
-                    "has_foil",
-                    "has_non_foil",
-                    "is_alternative",
-                    "is_arena",
-                    "is_full_art",
-                    "is_mtgo",
-                    "is_online_only",
-                    "is_oversized",
-                    "is_paper",
-                    "is_promo",
-                    "is_reprint",
-                    "is_story_spotlight",
-                    "is_textless",
-                    "magic_card_market_id",
-                    "magic_card_market_meta_id",
-                    "mtg_arena_id",
-                    "mtgo_id",
-                    "mtgo_foil_id",
-                    "mtg_stocks_id",
-                    "scryfall_illustration_id",
-                    "tcg_player_product_id",
-                }:
+                if hasattr(printing, field):
                     setattr(printing, field, change["to"])
                 else:
                     raise NotImplementedError(
@@ -442,16 +378,10 @@ class Command(BaseCommand):
                     )
                 elif field == "language":
                     printed_language.language = Language.objects.get(name=value)
-                elif field in {
-                    "card_name",
-                    "multiverse_id",
-                    "text",
-                    "type",
-                    "flavour_text",
-                }:
-                    setattr(printed_language, field, value)
                 elif field in {"base_name"}:
                     continue
+                elif hasattr(printed_language, field):
+                    setattr(printed_language, field, value)
                 else:
                     raise NotImplementedError(
                         f"Cannot update unrecognised field CardPrintingLanguage.{field}"
@@ -493,7 +423,7 @@ class Command(BaseCommand):
                 raise
 
             for field, change in printlang_data["changes"].items():
-                if field in {"text", "flavour_text", "type"}:
+                if hasattr(printlang, field):
                     setattr(printlang, field, change["to"])
                 else:
                     raise NotImplementedError(
