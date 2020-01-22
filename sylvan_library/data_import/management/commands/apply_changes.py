@@ -12,6 +12,7 @@ from django.core.management.base import BaseCommand
 from cards.models import (
     Block,
     Card,
+    CardImage,
     CardLegality,
     CardPrice,
     CardPrinting,
@@ -194,7 +195,12 @@ class Command(BaseCommand):
         for _, card_data in card_list.items():
             card = Card()
             for field, value in card_data.items():
-                setattr(card, field, value)
+                if hasattr(card, field):
+                    setattr(card, field, value)
+                else:
+                    raise NotImplementedError(
+                        f"Cannot set unrecognised field Card.{field}"
+                    )
             card.full_clean()
             card.save()
 
@@ -217,35 +223,7 @@ class Command(BaseCommand):
                 raise
 
             for field, change in card_diff.items():
-                if field in {
-                    "colour_count",
-                    "colour_flags",
-                    "colour_indicator_flags",
-                    "colour_identity_count",
-                    "colour_identity_flags",
-                    "colour_sort_key",
-                    "colour_weight",
-                    "display_name",
-                    # "edh_rec_rank",
-                    "face_cmc",
-                    "hand_modifier",
-                    "is_reserved",
-                    "layout",
-                    "life_modifier",
-                    "loyalty",
-                    "num_hand_modifier",
-                    "num_life_modifier",
-                    "num_loyalty",
-                    "num_power",
-                    "num_toughness",
-                    "power",
-                    "rules_text",
-                    "scryfall_oracle_id",
-                    "side",
-                    "subtype",
-                    "toughness",
-                    "type",
-                }:
+                if hasattr(card, field):
                     setattr(card, field, change["to"])
                 else:
                     raise NotImplementedError(
@@ -289,7 +267,7 @@ class Command(BaseCommand):
                     continue
                 elif field == "rarity":
                     printing.rarity = Rarity.objects.get(name__iexact=value)
-                elif hasattr(card, field):
+                elif hasattr(printing, field):
                     setattr(printing, field, value)
                 else:
                     raise NotImplementedError(
@@ -327,6 +305,10 @@ class Command(BaseCommand):
             for field, change in printing_diff.items():
                 if hasattr(printing, field):
                     setattr(printing, field, change["to"])
+                    if field == "number":
+                        CardImage.objects.filter(
+                            printed_language__card_printing=printing
+                        ).delete()
                 else:
                     raise NotImplementedError(
                         f"Cannot update unrecognised field CardPrinting.{field}"
@@ -378,7 +360,14 @@ class Command(BaseCommand):
                     )
                 elif field == "language":
                     printed_language.language = Language.objects.get(name=value)
-                elif field in {"base_name"}:
+                elif field in {
+                    "base_name",
+                    "has_physical_card",
+                    "layout",
+                    "number",
+                    "other_names",
+                    "side",
+                }:
                     continue
                 elif hasattr(printed_language, field):
                     setattr(printed_language, field, value)
@@ -510,9 +499,11 @@ class Command(BaseCommand):
                 name=legality_data["card_name"], is_token=False
             )
             try:
-                legality.format = Format.objects.get(code=legality_data["format"])
+                legality.format = Format.objects.get(code=legality_data["format_code"])
             except Format.DoesNotExist:
-                self.logger.error("Could not find format '%s'", legality_data["format"])
+                self.logger.error(
+                    "Could not find format '%s'", legality_data["format_code"]
+                )
                 raise
 
             legality.restriction = legality_data["restriction"]

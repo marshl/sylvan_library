@@ -228,8 +228,14 @@ class StagedCard:
         """
         return int(convert_number_field_to_numerical(self.life_modifier))
 
-    def extra_attrs(self) -> dict:
-        return {}
+    def to_dict(self) -> dict:
+        return {
+            key: getattr(self, key)
+            for key in dir(self)
+            if key not in {"has_other_names", "legalities", "other_names", "rulings"}
+            and not key.startswith("_")
+            and not callable(getattr(self, key))
+        }
 
 
 # pylint: disable=too-many-instance-attributes, too-few-public-methods
@@ -361,7 +367,7 @@ class StagedCardPrintingLanguage:
         foreign_data: dict,
         card_data: dict,
     ):
-        self.printing_uuid = staged_card_printing.json_id
+        self.printing_uid = staged_card_printing.json_id
 
         self.language = foreign_data["language"]
         self.card_name = foreign_data["name"]

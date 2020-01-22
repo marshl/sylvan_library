@@ -37,6 +37,16 @@ from data_import.staging import (
 logger = logging.getLogger("django")
 
 
+def staging_object_to_dict(obj: object, fields_to_ignore: set) -> dict:
+    return {
+        key: getattr(obj, key)
+        for key in dir(obj)
+        if key not in fields_to_ignore
+        and not key.startswith("_")
+        and not callable(getattr(obj, key))
+    }
+
+
 class Command(BaseCommand):
     """
     The command for updating hte database
@@ -155,8 +165,8 @@ class Command(BaseCommand):
             ] = legality.restriction
 
         # logger.info("Getting existing prices")
-        # for printing_uuid, existing_print in self.existing_card_printings.items():
-        #     self.existing_prices[printing_uuid] = {
+        # for printing_uid, existing_print in self.existing_card_printings.items():
+        #     self.existing_prices[printing_uid] = {
         #         str(price.date): price for price in existing_print.prices.all()
         #     }
 
@@ -284,9 +294,9 @@ class Command(BaseCommand):
                         continue
 
                     other_printlang.has_physical_card = True
-                    uids.append(other_printlang.printing_uuid)
+                    uids.append(other_printlang.printing_uid)
 
-            uids.append(new_printlang.printing_uuid)
+            uids.append(new_printlang.printing_uid)
 
             staged_physical_card = StagedPhysicalCard(
                 printing_uuids=uids,
@@ -731,7 +741,10 @@ class Command(BaseCommand):
         self.write_object_to_json(
             _paths.CARDS_TO_CREATE_PATH,
             {
-                card_name: card_to_create.__dict__
+                card_name: staging_object_to_dict(
+                    card_to_create,
+                    {"has_other_names", "legalities", "other_names", "rulings"},
+                )
                 for card_name, card_to_create in self.cards_to_create.items()
             },
         )
@@ -749,7 +762,10 @@ class Command(BaseCommand):
         self.write_object_to_json(
             _paths.PRINTINGS_TO_CREATE,
             {
-                uuid: printing_to_create.__dict__
+                uuid: staging_object_to_dict(
+                    printing_to_create,
+                    {"multiverse_id", "is_new", "names", "other_languages"},
+                )
                 for uuid, printing_to_create in self.card_printings_to_create.items()
             },
         )
@@ -772,7 +788,9 @@ class Command(BaseCommand):
         self.write_object_to_json(
             _paths.PRINTLANGS_TO_CREATE,
             [
-                printlang_to_create.__dict__
+                staging_object_to_dict(
+                    printlang_to_create, {"has_other_names", "is_new"}
+                )
                 for printlang_to_create in self.printed_languages_to_create
             ],
         )
