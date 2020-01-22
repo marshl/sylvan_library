@@ -32,12 +32,17 @@ class Command(BaseCommand):
                 + database["USER"]
                 + " -d "
                 + database["NAME"]
+                + " --host "
+                + database["HOST"]
+                + " --port "
+                + str(database["PORT"])
                 + "| 7z a "
                 + output_file
                 + ".7z -si"
                 + filename
                 + ".sql"
             )
+            logger.info(cmd)
             process = subprocess.Popen(
                 cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
             )
