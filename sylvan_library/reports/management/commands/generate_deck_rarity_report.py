@@ -36,7 +36,7 @@ class Command(BaseCommand):
             action="store_true",
             dest="exclude_lands",
             default=False,
-            help='Eclude all cards with the "land" type from the result',
+            help='Exclude all cards with the "land" type from the result',
         )
 
     def handle(self, *args, **options):

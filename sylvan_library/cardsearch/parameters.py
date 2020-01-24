@@ -6,14 +6,12 @@ from collections import Counter
 import logging
 from django.db.models.query import Q, F
 from django.db.models.functions import Concat
-from django.db.models import Sum, Case, When, IntegerField, Value
+from django.db.models import F, Sum, Case, When, IntegerField, Value
 from django.contrib.auth.models import User
 from bitfield.types import Bit
 
 from cards.models import Block, Card, Rarity, Set, Colour
-from django.db.models import F
-from typing import Union
-from typing import List
+from typing import List, Union
 
 logger = logging.getLogger("django")
 
@@ -146,11 +144,11 @@ class CardNameParam(CardSearchParam):
 
     def query(self) -> Q:
         if self.match_exact:
-            q = Q(name__iexact=self.card_name)
+            query = Q(name__iexact=self.card_name)
         else:
-            q = Q(name__icontains=self.card_name)
+            query = Q(name__icontains=self.card_name)
 
-        return ~q if self.negated else q
+        return ~query if self.negated else query
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
         if self.negated:
@@ -163,14 +161,17 @@ class CardRulesTextParam(CardSearchParam):
     The parameter for searching by a card's rules text
     """
 
-    def __init__(self, card_rules, exact: bool = False):
+    def __init__(self, card_rules: str, exact: bool = False):
         super().__init__()
-        self.card_rules = card_rules
-        self.exact_match = exact
-        self.regex_match = False
+        self.card_rules: str = card_rules
+        self.exact_match: bool = exact
         if self.card_rules.startswith("/") and self.card_rules.endswith("/"):
-            self.regex_match = True
+            self.regex_match: bool = True
             self.card_rules = "(?m)" + self.card_rules.strip("/")
+            if self.exact_match:
+                self.card_rules = "^" + self.card_rules + "$"
+        else:
+            self.regex_match: bool = False
 
     def query(self) -> Q:
         if "~" not in self.card_rules:
@@ -205,8 +206,10 @@ class CardRulesTextParam(CardSearchParam):
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
         if self.negated:
-            return f"rules text {'is not' if self.exact_match else 'does not contain'} \"{self.card_rules}\""
-        return f"rules text {'is' if self.exact_match else 'contains'} \"{self.card_rules}\""
+            modifier = "is not" if self.exact_match else "does not contain"
+        else:
+            modifier = "is" if self.exact_match else "contains"
+        return f'rules text {modifier} "{self.card_rules}"'
 
 
 class CardFlavourTextParam(CardSearchParam):
