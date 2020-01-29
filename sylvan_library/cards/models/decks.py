@@ -78,7 +78,7 @@ class Deck(models.Model):
         :param board: The board to get the cards for
         :return: The cards in that board
         """
-        return self.cards.filter(board=board).order_by("card__name")
+        return self.cards.filter(board=board)
 
     def get_sideboard(self) -> List["DeckCard"]:
         """
@@ -92,7 +92,7 @@ class Deck(models.Model):
         Gets the cards in this deck divided into type groups
         :return: A dict of the names of the groups to the groups of cards
         """
-        board_cards = self.cards.filter(board="main").order_by("card__name")
+        board_cards = self.cards.filter(board="main")
         commanders = board_cards.filter(is_commander=True)
         lands = board_cards.filter(card__type__contains="Land")
         creatures = board_cards.exclude(id__in=lands | commanders).filter(
@@ -348,6 +348,13 @@ class DeckCard(models.Model):
 
     def __str__(self):
         return f"{self.card} in {self.deck}"
+
+    class Meta:
+        """
+        Metaclass for DeckCard
+        """
+
+        ordering = ["card__cmc", "card__colour_sort_key", "card__name"]
 
     def get_card_name(self) -> str:
         """
