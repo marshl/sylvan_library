@@ -5,19 +5,21 @@
             {% if preferred_printing %}
           data-image-path="{% static preferred_printing|card_printing_image_url|safe %}"
             {% else %}
-                data-image-path="{% static card|card_image_url|safe %}"
+          data-image-path="{% static card|card_image_url|safe %}"
             {% endif %}
-            data-layout="{{ card.layout }}"
+          data-layout="{{ card.layout }}"
           data-side="{{ card.side }}"
-        {% if card.layout == 'aftermath' and card.side == 'b' %}
-              data-rotation="-90"
-        {% elif card.layout == 'flip' and card.side == 'b' %}
-            data-rotation="180"
-        {% else %}
-            data-rotation="0"
-        {% endif %}
+            {% if card.layout == 'aftermath' and card.side == 'b' %}
+          data-rotation="-90"
+            {% elif card.layout == 'flip' and card.side == 'b' %}
+          data-rotation="180"
+            {% else %}
+          data-rotation="0"
+            {% endif %}
     >
-    <a href="{% url 'website:name_search' %}?query_string={{ card.name }}">{% if card_name %}{{ card_name }}{% else %}
+    <a href="{% url 'website:name_search' %}?query_string={{ card.name }}"
+       {% if newtab %}target="_blank"{% endif %}
+    >{% if card_name %}{{ card_name }}{% else %}
         {{ card.name }}{% endif %}</a>
     </span>
 {% endblock %}
