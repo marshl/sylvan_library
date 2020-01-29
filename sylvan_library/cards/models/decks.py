@@ -355,7 +355,7 @@ class DeckCard(models.Model):
         but split cards combine the names of both halves together
         :return:  The display name of the card
         """
-        if self.card.layout == "split":
+        if self.card.layout in ("split", "aftermath"):
             return " // ".join(c.name for c in self.card.get_all_sides())
         return self.card.name
 
