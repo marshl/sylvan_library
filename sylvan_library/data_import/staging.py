@@ -228,15 +228,6 @@ class StagedCard:
         """
         return int(convert_number_field_to_numerical(self.life_modifier))
 
-    def to_dict(self) -> dict:
-        return {
-            key: getattr(self, key)
-            for key in dir(self)
-            if key not in {"has_other_names", "legalities", "other_names", "rulings"}
-            and not key.startswith("_")
-            and not callable(getattr(self, key))
-        }
-
 
 # pylint: disable=too-many-instance-attributes, too-few-public-methods
 class StagedSet:
@@ -392,6 +383,7 @@ class StagedCardPrintingLanguage:
         self.layout = card_data["layout"]
         self.side = card_data.get("side")
         self.number = card_data.get("number")
+        self.set_code = staged_card_printing.set_code
 
         self.is_new = False
         self.has_physical_card = False

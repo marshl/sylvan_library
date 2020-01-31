@@ -38,13 +38,22 @@ logger = logging.getLogger("django")
 
 
 def staging_object_to_dict(obj: object, fields_to_ignore: set) -> dict:
-    return {
-        key: getattr(obj, key)
-        for key in dir(obj)
-        if key not in fields_to_ignore
-        and not key.startswith("_")
-        and not callable(getattr(obj, key))
-    }
+    result = {}
+    for key in dir(obj):
+        if key in fields_to_ignore:
+            continue
+        if key.startswith("_"):
+            continue
+        attr = getattr(obj, key)
+        if callable(attr):
+            continue
+
+        if isinstance(attr, date):
+            result[key] = attr.strftime("%Y-%m-%d")
+            continue
+
+        result[key] = attr
+    return result
 
 
 class Command(BaseCommand):
@@ -717,7 +726,7 @@ class Command(BaseCommand):
         self.write_object_to_json(
             _paths.BLOCKS_TO_CREATE_PATH,
             {
-                block_name: staged_block.__dict__
+                block_name: staging_object_to_dict(staged_block, set())
                 for block_name, staged_block in self.blocks_to_create.items()
             },
         )
@@ -725,7 +734,7 @@ class Command(BaseCommand):
         self.write_object_to_json(
             _paths.SETS_TO_CREATE_PATH,
             {
-                set_code: set_to_create.__dict__
+                set_code: staging_object_to_dict(set_to_create, set())
                 for set_code, set_to_create in self.sets_to_create.items()
             },
         )
@@ -801,21 +810,27 @@ class Command(BaseCommand):
         self.write_object_to_json(
             _paths.PHYSICAL_CARDS_TO_CREATE,
             [
-                physical_card_to_create.__dict__
+                staging_object_to_dict(physical_card_to_create, set())
                 for physical_card_to_create in self.physical_cards_to_create
             ],
         )
 
         self.write_object_to_json(
             _paths.RULINGS_TO_CREATE,
-            [ruling.__dict__ for ruling in self.rulings_to_create],
+            [
+                staging_object_to_dict(ruling, set())
+                for ruling in self.rulings_to_create
+            ],
         )
 
         self.write_object_to_json(_paths.RULINGS_TO_DELETE, self.rulings_to_delete)
 
         self.write_object_to_json(
             _paths.LEGALITIES_TO_CREATE,
-            [legality.__dict__ for legality in self.legalities_to_create],
+            [
+                staging_object_to_dict(legality, set())
+                for legality in self.legalities_to_create
+            ],
         )
 
         self.write_object_to_json(
