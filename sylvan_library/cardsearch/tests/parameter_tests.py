@@ -20,7 +20,7 @@ class CardNameParamTestCase(TestCase):
     Tests for the card name parameter
     """
 
-    def test_name_match(self):
+    def test_name_match(self) -> None:
         """
         Tests that a card name exact match is found
         """
@@ -28,7 +28,7 @@ class CardNameParamTestCase(TestCase):
         param = CardNameParam("foo", match_exact=True)
         self.assertIn(card, Card.objects.filter(param.query()))
 
-    def test_name_contains_no_match(self):
+    def test_name_contains_no_match(self) -> None:
         """
         Tests that a card name exact match is found
         """
@@ -36,7 +36,7 @@ class CardNameParamTestCase(TestCase):
         param = CardNameParam("foo", match_exact=True)
         self.assertNotIn(card, Card.objects.filter(param.query()))
 
-    def test_name_match_inverse(self):
+    def test_name_match_inverse(self) -> None:
         """
         Tests that a card name exact match is found
         """
@@ -45,7 +45,7 @@ class CardNameParamTestCase(TestCase):
         param.negated = True
         self.assertNotIn(card, Card.objects.filter(param.query()))
 
-    def test_name_contains(self):
+    def test_name_contains(self) -> None:
         """
         Tests that a card name containing is found
         """
@@ -53,7 +53,7 @@ class CardNameParamTestCase(TestCase):
         param = CardNameParam("foo", match_exact=False)
         self.assertIn(card, Card.objects.filter(param.query()))
 
-    def test_name_not_contains(self):
+    def test_name_not_contains(self) -> None:
         """
         Test that a card name that doesn't match isn't found
         """
@@ -61,7 +61,7 @@ class CardNameParamTestCase(TestCase):
         param = CardNameParam("bar", match_exact=False)
         self.assertNotIn(card, Card.objects.filter(param.query()))
 
-    def test_name_match_invert(self):
+    def test_name_match_invert(self) -> None:
         """
         Tests that
         """
@@ -78,7 +78,7 @@ class CardRulesParamTestCase(TestCase):
     Tests for the card rules parameter
     """
 
-    def test_rules_match(self):
+    def test_rules_match(self) -> None:
         """
         Tests that the rules param will match cards that have the exact text
         :return:
@@ -87,7 +87,7 @@ class CardRulesParamTestCase(TestCase):
         param = CardRulesTextParam("Flying")
         self.assertIn(card, Card.objects.filter(param.query()))
 
-    def test_rules_contains(self):
+    def test_rules_contains(self) -> None:
         """
         Tests that the rules param will match cards that contain the text
         """
@@ -95,7 +95,7 @@ class CardRulesParamTestCase(TestCase):
         param = CardRulesTextParam("strike")
         self.assertIn(card, Card.objects.filter(param.query()))
 
-    def test_rules_blank(self):
+    def test_rules_blank(self) -> None:
         """
         Tests that a card without text won't be found by a param with content
         """
@@ -109,7 +109,7 @@ class CardSetParamTestCase(TestCase):
     Tests for card set parameter
     """
 
-    def test_set_match(self):
+    def test_set_match(self) -> None:
         """
         Tests that a card in a set can be found with this param
         """

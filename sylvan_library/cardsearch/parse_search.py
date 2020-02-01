@@ -1,20 +1,48 @@
-from base_search import BaseSearch
-from cardsearch.parser import CardQueryParser, ParseError
+"""
+Module for the ParseSearch
+"""
+from typing import Optional
 
 from django.contrib.auth.models import User
 
+from base_search import BaseSearch
+from cardsearch.parser import CardQueryParser, ParseError
+from cards.models import Set
+from parameters import CardSetParam, BranchParam
+
 
 class ParseSearch(BaseSearch):
+    """
+    Search that consumes a query string
+    """
+
     def __init__(self, user: User = None):
         super().__init__()
         self.query_string = None
         self.error_message = None
         self.user = user
 
-    def get_preferred_set(self):
+    def get_preferred_set(self) -> Optional[Set]:
+        """
+        Gets the preferred set of this search
+        :return:
+        """
+        if not self.root_parameter:
+            return None
+
+        if isinstance(self.root_parameter, CardSetParam):
+            return self.root_parameter.set_obj
+
+        if isinstance(self.root_parameter, BranchParam):
+            for child in self.root_parameter.child_parameters:
+                if isinstance(child, CardSetParam):
+                    return child.set_obj
         return None
 
-    def build_parameters(self):
+    def build_parameters(self) -> None:
+        """
+        Builds the root parameter object using the query string
+        """
         if not self.query_string:
             return
 

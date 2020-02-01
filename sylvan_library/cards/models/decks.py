@@ -283,7 +283,7 @@ class Deck(models.Model):
         if validate_type:
             if commanders.exclude(card__type__contains=validate_type).exists():
                 raise ValidationError(
-                    f"A command deck should have a legend as the commander"
+                    f"A commander deck should have a legend as the commander"
                 )
 
     def validate_size(self, minimum_count: int) -> None:

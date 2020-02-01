@@ -1,9 +1,19 @@
+"""
+Module for the base recursive descent parser
+"""
+
+from abc import ABC
 from typing import List, Optional, Any, Dict
 
 
 # https://www.booleanworld.com/building-recursive-descent-parsers-definitive-guide/
 class ParseError(Exception):
+    """
+    Class for an that occurs during parsing
+    """
+
     def __init__(self, pos: int, msg: str, *args):
+        super().__init__()
         self.pos = pos
         self.msg = msg
         self.args = args
@@ -12,7 +22,11 @@ class ParseError(Exception):
         return "%s at position %s" % (self.msg % self.args, self.pos)
 
 
-class Parser:
+class Parser(ABC):
+    """
+    Generic recursive descent parser
+    """
+
     def __init__(self):
         self.cache: Dict[str, List[str]] = {}
         self.text: str = ""
@@ -20,6 +34,11 @@ class Parser:
         self.len: int = 0
 
     def parse(self, text: str) -> Any:
+        """
+        Parses the given text
+        :param text:
+        :return:
+        """
         self.text = text
         self.pos = -1
         self.len = len(text) - 1
@@ -28,9 +47,16 @@ class Parser:
         return result
 
     def start(self) -> Any:
-        pass
+        """
+        How the parse should start parsing the query string
+        :return: The parse result
+        """
+        raise NotImplementedError(f"Please implement {type(self).__name__}.start")
 
     def assert_end(self) -> None:
+        """
+        Ensures that the parser has completed parsing the text
+        """
         if self.pos < self.len:
             raise ParseError(
                 self.pos + 1,
@@ -39,10 +65,18 @@ class Parser:
             )
 
     def eat_whitespace(self) -> None:
+        """
+        Consumes whitespace without parsing any of them
+        """
         while self.pos < self.len and self.text[self.pos + 1] in " \f\v\r\t\n":
             self.pos += 1
 
     def split_char_ranges(self, chars: str) -> List[str]:
+        """
+        Takes in a string and expands any char ranges (e.g. a-z becomes abcdef..)
+        :param chars: The chars the expand
+        :return: The string with any char ranges expanded
+        """
         try:
             return self.cache[chars]
         except KeyError:
@@ -65,6 +99,11 @@ class Parser:
         return result
 
     def char(self, chars: Optional[str] = None) -> str:
+        """
+        Attempts to parse a single char
+        :param chars: The list of potential characters to parse
+        :return: The character that was parsed
+        """
         if self.pos >= self.len:
             raise ParseError(
                 self.pos,
@@ -94,6 +133,11 @@ class Parser:
         )
 
     def keyword(self, *keywords: str) -> str:
+        """
+        Attempts to parse a single keyword from the given list
+        :param keywords: The list of keywords to attempt
+        :return: The parsed keyword if successful
+        """
         self.eat_whitespace()
         if self.pos >= self.len:
             raise ParseError(
@@ -116,7 +160,12 @@ class Parser:
             self.text[self.pos + 1],
         )
 
-    def match(self, *rules) -> Any:
+    def match(self, *rules: str) -> Any:
+        """
+        Attempts to parse any of the given rules in roder
+        :param rules: Methods names on this object that should be attempted (in order)
+        :return: The parse result
+        """
         self.eat_whitespace()
         last_error_pos: int = -1
         last_exception: Optional[Exception] = None
@@ -125,17 +174,17 @@ class Parser:
         for rule in rules:
             initial_pos = self.pos
             try:
-                rv = getattr(self, rule)()
+                result = getattr(self, rule)()
                 self.eat_whitespace()
-                return rv
-            except ParseError as e:
+                return result
+            except ParseError as ex:
                 self.pos = initial_pos
-                if e.pos > last_error_pos:
-                    last_exception = e
-                    last_error_pos = e.pos
+                if ex.pos > last_error_pos:
+                    last_exception = ex
+                    last_error_pos = ex.pos
                     last_error_rules.clear()
                     last_error_rules.append(rule)
-                elif e.pos == last_error_pos:
+                elif ex.pos == last_error_pos:
                     last_error_rules.append(rule)
 
         if len(last_error_rules) == 1:
@@ -149,18 +198,33 @@ class Parser:
         )
 
     def maybe_char(self, chars: Optional[str] = None) -> Optional[str]:
+        """
+        Tries to get a single character from the given list of characters
+        :param chars: The allowable characters
+        :return: The character if it matched
+        """
         try:
             return self.char(chars)
         except ParseError:
             return None
 
     def maybe_match(self, *rules: str) -> Optional[Any]:
+        """
+        Attempts to match any of the given parser methods (in order)
+        :param rules: The method rule names to try
+        :return: The parse result if successful, otherwise None
+        """
         try:
             return self.match(*rules)
         except ParseError:
             return None
 
     def maybe_keyword(self, *keywords: str) -> Optional[Any]:
+        """
+        Attempts to match any of the given keywords
+        :param keywords: The keywords to try
+        :return: The parse result if successful, otherwise None
+        """
         try:
             return self.keyword(*keywords)
         except ParseError:

@@ -22,6 +22,7 @@ from cardsearch.parameters import (
     CardNumToughnessParam,
     CardRarityParam,
     CardSetParam,
+    BranchParam,
 )
 from cardsearch.base_search import BaseSearch, create_colour_param
 
@@ -128,13 +129,13 @@ class FieldSearch(BaseSearch):
             )
 
         if self.rarities:
-            rarity_node = AndParam() if self.match_rarities_exactly else OrParam()
+            rarity_node: BranchParam = AndParam() if self.match_rarities_exactly else OrParam()
             self.root_parameter.add_parameter(rarity_node)
             for rarity in self.rarities:
                 rarity_node.add_parameter(CardRarityParam(rarity))
 
         if self.sets:
-            set_node = AndParam() if self.match_sets_exactly else OrParam()
+            set_node: BranchParam = AndParam() if self.match_sets_exactly else OrParam()
             self.root_parameter.add_parameter(set_node)
             for set_obj in self.sets:
                 set_node.add_parameter(CardSetParam(set_obj))

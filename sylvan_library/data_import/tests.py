@@ -10,21 +10,21 @@ class StagedCardTestCase(TestCase):
     The tests cases for StagedCard
     """
 
-    def test_get_type(self):
+    def test_get_type(self) -> None:
         """
         Tests that a card with multiple types has the correct type string
         """
         staged_card = StagedCard({"name": "test", "types": ["Legendary", "Creature"]})
         self.assertEqual(staged_card.type, "Legendary Creature")
 
-    def test_is_reserved(self):
+    def test_is_reserved(self) -> None:
         """
         Tests the reserved status of a card
         """
         staged_card = StagedCard({"name": "test", "isReserved": True})
         self.assertTrue(staged_card.is_reserved)
 
-    def test_colour_weight(self):
+    def test_colour_weight(self) -> None:
         """
         Tests the colour weight of a card
         """
@@ -33,7 +33,7 @@ class StagedCardTestCase(TestCase):
         )
         self.assertEqual(2, staged_card.colour_weight)
 
-    def test_colour_weight_colourless(self):
+    def test_colour_weight_colourless(self) -> None:
         """
         Tests that a colourless card has the correct colour weight
         """
@@ -42,7 +42,7 @@ class StagedCardTestCase(TestCase):
         )
         self.assertEqual(0, staged_card.colour_weight)
 
-    def test_colour_weight_heavy(self):
+    def test_colour_weight_heavy(self) -> None:
         """
         Tests that a card with only coloured mana symbols has the correct colour weight
         """
@@ -51,14 +51,14 @@ class StagedCardTestCase(TestCase):
         )
         self.assertEqual(4, staged_card.colour_weight)
 
-    def test_colour_weight_none(self):
+    def test_colour_weight_none(self) -> None:
         """
         Tests that a card without any mana cost has zero colour weight
         """
         staged_card = StagedCard({"name": "test"})
         self.assertEqual(0, staged_card.colour_weight)
 
-    def test_token_type(self):
+    def test_token_type(self) -> None:
         """
         Tests that a token card has its types parsed correctly
         """
@@ -67,7 +67,7 @@ class StagedCardTestCase(TestCase):
         )
         self.assertEqual("Token Legendary Creature", staged_card.type)
 
-    def test_token_subtype(self):
+    def test_token_subtype(self) -> None:
         """
         Tests that a token card has its subtypes parsed correctly
         """

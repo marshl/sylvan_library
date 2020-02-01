@@ -1,20 +1,20 @@
 """
 Module for the update_database command
 """
-import logging
 import json
+import logging
 from typing import Union
 
-from django.db import transaction
 from django.core.exceptions import ValidationError
-
 from django.core.management.base import BaseCommand
+from django.db import transaction
+
+import _paths
 from cards.models import (
     Block,
     Card,
     CardImage,
     CardLegality,
-    CardPrice,
     CardPrinting,
     CardPrintingLanguage,
     CardRuling,
@@ -26,10 +26,10 @@ from cards.models import (
     Set,
 )
 from data_import import _query
-import _paths
 
 
 class Command(BaseCommand):
+    # pylint: disable=too-many-public-methods
     """
     The command for updating hte database
     """
@@ -82,7 +82,6 @@ class Command(BaseCommand):
                 or not self.create_rulings()
                 or not self.create_legalities()
                 or not self.update_legalities()
-                or not self.create_prices()
             ):
                 raise Exception("Change application aborted")
 
@@ -265,7 +264,8 @@ class Command(BaseCommand):
             for field, value in printing_data.items():
                 if field in {"card_name", "set_code"}:
                     continue
-                elif field == "rarity":
+
+                if field == "rarity":
                     printing.rarity = Rarity.objects.get(name__iexact=value)
                 elif hasattr(printing, field):
                     setattr(printing, field, value)
@@ -547,25 +547,5 @@ class Command(BaseCommand):
                 legality.restriction = change["to"]
                 legality.full_clean()
                 legality.save()
-
-        return True
-
-    def create_prices(self) -> bool:
-        self.logger.info("Creating prices")
-
-        with open(_paths.PRICES_TO_CREATE, "r", encoding="utf8") as prices_file:
-            price_list = json.load(prices_file, encoding="utf8")
-
-        for price in price_list:
-            printing = CardPrinting.objects.get(json_id=price["printing_uuid"])
-
-            price_obj = CardPrice(
-                printing=printing,
-                date=price["date"],
-                price=price["price"],
-                price_type=price["price_type"],
-            )
-            price_obj.full_clean()
-            price_obj.save()
 
         return True

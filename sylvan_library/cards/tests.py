@@ -178,7 +178,7 @@ class CardOwnershipTestCase(TestCase):
         printlang = create_test_card_printing_language(printing, lang)
         self.physical_card = create_test_physical_card(printlang)
 
-    def test_add_card(self):
+    def test_add_card(self) -> None:
         """
         Tests that adding a card works
         """
@@ -186,7 +186,7 @@ class CardOwnershipTestCase(TestCase):
         ownership = self.physical_card.ownerships.get(owner=self.user)
         self.assertEqual(ownership.count, 5)
 
-    def test_subtract_card(self):
+    def test_subtract_card(self) -> None:
         """
         Tests that adding a card and then subtracting from it works
         """
@@ -197,7 +197,7 @@ class CardOwnershipTestCase(TestCase):
         ownership = self.physical_card.ownerships.get(owner=self.user)
         self.assertEqual(ownership.count, 1)
 
-    def test_remove_card(self):
+    def test_remove_card(self) -> None:
         """
         Tests that a card is removed if it is added and then subtracted from entirely
         """
@@ -207,7 +207,7 @@ class CardOwnershipTestCase(TestCase):
         self.physical_card.apply_user_change(-3, self.user)
         self.assertFalse(self.physical_card.ownerships.filter(owner=self.user).exists())
 
-    def test_overremove_card(self):
+    def test_overremove_card(self) -> None:
         """
         Tests that a card is removed correctly if is added and then has a subtraction greater
         than the number that was added

@@ -2,7 +2,7 @@
 Forms for the website module
 """
 import re
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Tuple
 
 from django import forms
 from django.core.validators import MinValueValidator
@@ -28,7 +28,9 @@ from cardsearch.namesearch import NameSearch
 from cardsearch.parse_search import ParseSearch
 
 
-def get_physical_card_key_pair(physical_card: PhysicalCard, printing: CardPrinting):
+def get_physical_card_key_pair(
+    physical_card: PhysicalCard, printing: CardPrinting
+) -> Tuple[int, str]:
     """
     Gets the ID and display name of th given PhysicalCard for the given CardPrinting
     :param physical_card: The physical card the user can select from

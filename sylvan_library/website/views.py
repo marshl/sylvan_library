@@ -6,14 +6,15 @@ import logging
 import random
 import urllib.parse
 import urllib.request
+from typing import Dict, Any
 
+from django.core.exceptions import ValidationError
+from django.core.handlers.wsgi import WSGIRequest
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Sum, Count
-from django.core.exceptions import ValidationError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
-from django.core.paginator import Paginator
-from pagination import get_page_buttons
 
 from cards.models import (
     Card,
@@ -29,6 +30,7 @@ from cards.models import (
     UserOwnedCard,
     UserProps,
 )
+from pagination import get_page_buttons
 from website.forms import (
     FieldSearchForm,
     QuerySearchForm,
@@ -39,7 +41,7 @@ from website.forms import (
 logger = logging.getLogger("django")
 
 
-def index(request) -> HttpResponse:
+def index(request: WSGIRequest) -> HttpResponse:
     """
     The index page of this site
     :param request: The
@@ -49,7 +51,7 @@ def index(request) -> HttpResponse:
     return render(request, "website/index.html", context)
 
 
-def name_search(request) -> HttpResponse:
+def name_search(request: WSGIRequest) -> HttpResponse:
     """
     The view for when a user searches by card name
     :param request: The user's request
@@ -77,7 +79,7 @@ def name_search(request) -> HttpResponse:
     )
 
 
-def simple_search(request) -> HttpResponse:
+def simple_search(request: WSGIRequest) -> HttpResponse:
     """
     The simple search form
     :param request: The user's request
@@ -102,40 +104,42 @@ def simple_search(request) -> HttpResponse:
 
 
 # pylint: disable=unused-argument, missing-docstring
-def advanced_search(request):
+def advanced_search(request: WSGIRequest):
     return "advanced search"
 
 
 # pylint: disable=unused-argument, missing-docstring
-def search_results(request):
+def search_results(request: WSGIRequest):
     return "search results"
 
 
-def ajax_search_result_details(request, printing_id: int) -> HttpResponse:
+def ajax_search_result_details(request: WSGIRequest, printing_id: int) -> HttpResponse:
     printing = CardPrinting.objects.get(id=printing_id)
     return render(
         request, "website/results/search_result_details.html", {"printing": printing}
     )
 
 
-def ajax_search_result_rulings(request, card_id: int) -> HttpResponse:
+def ajax_search_result_rulings(request: WSGIRequest, card_id: int) -> HttpResponse:
     card = Card.objects.get(id=card_id)
     return render(request, "website/results/search_result_rulings.html", {"card": card})
 
 
-def ajax_search_result_languages(request, printing_id: int) -> HttpResponse:
+def ajax_search_result_languages(
+    request: WSGIRequest, printing_id: int
+) -> HttpResponse:
     printing = CardPrinting.objects.get(id=printing_id)
     return render(
         request, "website/results/search_result_languages.html", {"printing": printing}
     )
 
 
-def ajax_card_printing_image(request, printing_id: int) -> HttpResponse:
+def ajax_card_printing_image(request: WSGIRequest, printing_id: int) -> HttpResponse:
     printing = CardPrinting.objects.get(id=printing_id)
     return render(request, "website/card_image.html", {"printing": printing})
 
 
-def ajax_search_result_add(request, printing_id: int) -> HttpResponse:
+def ajax_search_result_add(request: WSGIRequest, printing_id: int) -> HttpResponse:
     printing = CardPrinting.objects.get(id=printing_id)
     form = ChangeCardOwnershipForm(printing)
     return render(
@@ -145,7 +149,7 @@ def ajax_search_result_add(request, printing_id: int) -> HttpResponse:
     )
 
 
-def ajax_search_result_ownership(request, card_id: int) -> HttpResponse:
+def ajax_search_result_ownership(request: WSGIRequest, card_id: int) -> HttpResponse:
     card = Card.objects.get(id=card_id)
     ownerships = (
         UserOwnedCard.objects.filter(owner_id=request.user.id)
@@ -164,7 +168,7 @@ def ajax_search_result_ownership(request, card_id: int) -> HttpResponse:
     )
 
 
-def ajax_change_card_ownership(request):
+def ajax_change_card_ownership(request: WSGIRequest) -> HttpResponse:
     if not request.POST.get("count"):
         return JsonResponse({"result": False, "error": "Invalid count"})
 
@@ -179,12 +183,14 @@ def ajax_change_card_ownership(request):
         return JsonResponse({"result": False, "error": str(ex)})
 
 
-def ajax_ownership_summary(request, card_id: int):
+def ajax_ownership_summary(request: WSGIRequest, card_id: int) -> HttpResponse:
     card = Card.objects.get(id=card_id)
     return render(request, "website/results/ownership_summary.html", {"card": card})
 
 
-def ajax_search_result_set_summary(request, printing_id: int):
+def ajax_search_result_set_summary(
+    request: WSGIRequest, printing_id: int
+) -> HttpResponse:
     printing = CardPrinting.objects.get(id=printing_id)
     return render(
         request,
@@ -193,7 +199,7 @@ def ajax_search_result_set_summary(request, printing_id: int):
     )
 
 
-def ajax_search_result_decks(request, card_id: int):
+def ajax_search_result_decks(request: WSGIRequest, card_id: int) -> HttpResponse:
     card = Card.objects.get(pk=card_id)
     deck_cards = (
         DeckCard.objects.filter(deck__owner=request.user)
@@ -210,7 +216,7 @@ def ajax_search_result_decks(request, card_id: int):
     )
 
 
-def ajax_search_result_links(request, card_id: int):
+def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse:
     card = Card.objects.get(pk=card_id)
     linked_card_name = (
         card.display_name if card.layout != "split" else card.get_linked_name()
@@ -284,14 +290,14 @@ def ajax_search_result_links(request, card_id: int):
     return render(request, "website/results/search_result_links.html", {"links": links})
 
 
-def get_page_number(request):
+def get_page_number(request: WSGIRequest) -> int:
     try:
         return int(request.GET.get("page"))
     except (TypeError, ValueError):
         return 1
 
 
-def deck_stats(request) -> HttpResponse:
+def deck_stats(request: WSGIRequest) -> HttpResponse:
     if not request.user.is_authenticated:
         return redirect("website:index")
 
@@ -327,11 +333,11 @@ def deck_stats(request) -> HttpResponse:
     deck_count = Deck.objects.filter(owner=request.user).count()
 
     deck_warnings = []
-    # for deck in Deck.objects.filter(owner=request.user):
-    #     try:
-    #         deck.validate_format()
-    #     except ValidationError as error:
-    #         deck_warnings.append({"deck": deck, "msg": error.message})
+    for deck in Deck.objects.filter(owner=request.user, is_prototype=False):
+        try:
+            deck.validate_format()
+        except ValidationError as error:
+            deck_warnings.append({"deck": deck, "msg": error.message})
 
     return render(
         request,
@@ -344,7 +350,7 @@ def deck_stats(request) -> HttpResponse:
     )
 
 
-def change_unused_decks(request):
+def change_unused_decks(request: WSGIRequest) -> HttpResponse:
     if not hasattr(request.user, "userprops"):
         UserProps.add_to_user(request.user)
 
@@ -357,7 +363,7 @@ def change_unused_decks(request):
     return redirect("website:deck_stats")
 
 
-def deck_list(request) -> HttpResponse:
+def deck_list(request: WSGIRequest) -> HttpResponse:
     """
     Shows the list of all decks the user owns
     :param request: The HttpRequest
@@ -377,7 +383,7 @@ def deck_list(request) -> HttpResponse:
     )
 
 
-def deck_view(request, deck_id: int) -> HttpResponse:
+def deck_view(request: WSGIRequest, deck_id: int) -> HttpResponse:
     try:
         deck = Deck.objects.get(id=deck_id, owner=request.user)
     except Deck.DoesNotExist:
@@ -385,7 +391,7 @@ def deck_view(request, deck_id: int) -> HttpResponse:
     return render(request, "website/decks/deck_view.html", {"deck": deck})
 
 
-def deck_edit(request, deck_id: int) -> HttpResponse:
+def deck_edit(request: WSGIRequest, deck_id: int) -> HttpResponse:
     deck = Deck.objects.get(pk=deck_id)
     if deck.owner != request.user:
         return redirect("website:decks")
@@ -423,7 +429,7 @@ def deck_edit(request, deck_id: int) -> HttpResponse:
     return render(request, "website/decks/deck_edit.html", {"deck_form": deck_form})
 
 
-def deck_create(request):
+def deck_create(request: WSGIRequest) -> HttpResponse:
     if request.method == "POST":
         deck_form = DeckForm(request.POST)
 
@@ -454,11 +460,10 @@ def deck_create(request):
         deck.date_created = datetime.date.today()
         deck_form = DeckForm(instance=deck)
 
-    #    deck_form.populate_boards()
     return render(request, "website/decks/deck_edit.html", {"deck_form": deck_form})
 
 
-def deck_card_search(request) -> JsonResponse:
+def deck_card_search(request: WSGIRequest) -> JsonResponse:
     """
     Returns a list of cards that can used in a deck
     :param request: The Http Request
@@ -480,7 +485,7 @@ def deck_card_search(request) -> JsonResponse:
     return JsonResponse({"cards": result})
 
 
-def deck_colour_weights(request, deck_id: int) -> JsonResponse:
+def deck_colour_weights(request: WSGIRequest, deck_id: int) -> JsonResponse:
     try:
         deck = Deck.objects.get(pk=deck_id)
     except Deck.DoesNotExist:
@@ -499,7 +504,7 @@ def deck_colour_weights(request, deck_id: int) -> JsonResponse:
     return JsonResponse({"land_symbols": land_symbols, "mana_symbols": mana_symbols})
 
 
-def get_colour_info() -> dict:
+def get_colour_info() -> Dict[int, Dict[str, Any]]:
     return {
         colour.symbol: {
             "name": colour.name,

@@ -82,5 +82,5 @@ class Colour(models.Model):
 
         return flags
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name

@@ -1,8 +1,10 @@
+"""
+Tests for the parser (search parameter tests are elsewhere)
+"""
 from django.test import TestCase
 
 from cards.models import Card
 from cards.tests import create_test_card
-
 from cardsearch.parameters import (
     AndParam,
     OrParam,
@@ -12,21 +14,30 @@ from cardsearch.parameters import (
     CardRulesTextParam,
     CardManaCostComplexParam,
 )
-
 from cardsearch.parse_search import ParseSearch
 from cardsearch.parser import CardQueryParser
 
 
 class ParserTests(TestCase):
+    """
+    Tests for teh CardQueryParser
+    """
+
     def setUp(self):
         self.parser = CardQueryParser()
 
-    def test_single_unquoted_param(self):
+    def test_single_unquoted_param(self) -> None:
+        """
+        Tests that a single unquoted word is converted to a parameter
+        """
         root_param = self.parser.parse("foo")
         self.assertIsInstance(root_param, CardNameParam)
         self.assertEqual(root_param.card_name, "foo")
 
-    def test_and_param(self):
+    def test_and_param(self) -> None:
+        """
+        Tests that the and keyword in a query string is converted to a parameter group
+        """
         root_param = self.parser.parse("foo and bar")
         self.assertIsInstance(root_param, AndParam)
         self.assertEqual(len(root_param.child_parameters), 2)
@@ -36,7 +47,10 @@ class ParserTests(TestCase):
         self.assertEqual(foo_param.card_name, "foo")
         self.assertEqual(bar_param.card_name, "bar")
 
-    def test_or_param(self):
+    def test_or_param(self) -> None:
+        """
+        Tests that the or keyword is converted to a parameter group
+        """
         root_param = self.parser.parse("foo or bar")
         self.assertIsInstance(root_param, OrParam)
         self.assertEqual(len(root_param.child_parameters), 2)
@@ -46,7 +60,12 @@ class ParserTests(TestCase):
         self.assertEqual(foo_param.card_name, "foo")
         self.assertEqual(bar_param.card_name, "bar")
 
-    def test_double_unquoted_param(self):
+    def test_double_unquoted_param(self) -> None:
+        """
+        Tests that multiple unquoted words in a query string are converted to two
+        "and" grouped name parameters
+        :return:
+        """
         root_param = self.parser.parse("foo bar")
         self.assertIsInstance(root_param, AndParam)
         self.assertEqual(len(root_param.child_parameters), 2)
@@ -57,19 +76,28 @@ class ParserTests(TestCase):
         self.assertEqual(first_param.card_name, "foo")
         self.assertEqual(second_param.card_name, "bar")
 
-    def test_negated_param(self):
+    def test_negated_param(self) -> None:
+        """
+        Tests that a negated query string is converted to the correct parameters
+        """
         root_param = self.parser.parse("-foo")
         self.assertIsInstance(root_param, CardNameParam)
         self.assertEqual(root_param.card_name, "foo")
         self.assertTrue(root_param.negated)
 
-    def test_negated_bracketed_param(self):
+    def test_negated_bracketed_param(self) -> None:
+        """
+        Tests that a negated grouped query string is converted to the correct parameters
+        """
         root_param = self.parser.parse("-(name:foo)")
         self.assertIsInstance(root_param, CardNameParam)
         self.assertEqual(root_param.card_name, "foo")
         self.assertTrue(root_param.negated)
 
-    def test_color_rg_param(self):
+    def test_color_rg_param(self) -> None:
+        """
+        Tests that a multiple colour query is converted to the correct parametes
+        """
         root_param = self.parser.parse("color:rg")
         self.assertIsInstance(root_param, CardComplexColourParam)
         self.assertEqual(
@@ -77,7 +105,10 @@ class ParserTests(TestCase):
         )
         self.assertEqual(root_param.operator, ">=")
 
-    def test_multiple_colour_params(self):
+    def test_multiple_colour_params(self) -> None:
+        """
+        Tests that a colour query string is converted to parameters
+        """
         root_param = self.parser.parse("color>=uw -c:red")
         self.assertIsInstance(root_param, AndParam)
         self.assertEqual(len(root_param.child_parameters), 2)
@@ -95,7 +126,10 @@ class ParserTests(TestCase):
         self.assertEqual(not_red_param.operator, ">=")
         self.assertEqual(not_red_param.negated, True)
 
-    def test_less_than_colour_identity(self):
+    def test_less_than_colour_identity(self) -> None:
+        """
+        Tests that a colour identity string is converted to parameters
+        """
         root_param = self.parser.parse("id<=esper t:instant")
         self.assertIsInstance(root_param, AndParam)
         self.assertEqual(len(root_param.child_parameters), 2)
@@ -113,7 +147,10 @@ class ParserTests(TestCase):
         self.assertEqual(instant_param.card_type, "instant")
         self.assertFalse(instant_param.negated)
 
-    def test_no_colour_id_and_type_param(self):
+    def test_no_colour_id_and_type_param(self) -> None:
+        """
+        Tests that a colour identity plus a type parameter parse ok
+        """
         root_param = self.parser.parse("id:c t:land")
         self.assertIsInstance(root_param, AndParam)
         self.assertEqual(len(root_param.child_parameters), 2)
@@ -126,7 +163,10 @@ class ParserTests(TestCase):
         self.assertEqual(type_param.operator, ":")
         self.assertEqual(type_param.card_type, "land")
 
-    def test_legendary_merfolk_param(self):
+    def test_legendary_merfolk_param(self) -> None:
+        """
+        Tests that a multi-part type parameter parses correctly
+        """
         root_param = self.parser.parse("t:legend t:merfolk")
         self.assertIsInstance(root_param, AndParam)
         self.assertEqual(len(root_param.child_parameters), 2)
@@ -140,7 +180,10 @@ class ParserTests(TestCase):
         self.assertEqual(merfolk_param.operator, ":")
         self.assertEqual(merfolk_param.card_type, "merfolk")
 
-    def test_noncreature_goblins_param(self):
+    def test_noncreature_goblins_param(self) -> None:
+        """
+        Tests that a type param plus an inverted type param parse correctly
+        """
         root_param = self.parser.parse("t:goblin -t:creature")
         self.assertIsInstance(root_param, AndParam)
         self.assertEqual(len(root_param.child_parameters), 2)
@@ -155,7 +198,10 @@ class ParserTests(TestCase):
         self.assertEqual(noncreature_param.card_type, "creature")
         self.assertTrue(noncreature_param.negated)
 
-    def test_creature_draw_param(self):
+    def test_creature_draw_param(self) -> None:
+        """
+        Tests that a type and text parameter work in conjunction
+        """
         root_param = self.parser.parse("t:creature o:draw")
         self.assertIsInstance(root_param, AndParam)
         self.assertEqual(len(root_param.child_parameters), 2)
@@ -169,13 +215,20 @@ class ParserTests(TestCase):
         self.assertFalse(draw_param.exact_match)
         self.assertEqual(draw_param.card_rules, "draw")
 
-    def test_card_name_enters_param(self):
+    def test_card_name_enters_param(self) -> None:
+        """
+        Tests that a quoted string contain tilde (name substitution) is converted to a parameter
+        :return:
+        """
         root_param = self.parser.parse('o:"~ enters the battlefield tapped"')
         self.assertIsInstance(root_param, CardRulesTextParam)
         self.assertFalse(root_param.exact_match)
         self.assertEqual(root_param.card_rules, "~ enters the battlefield tapped")
 
-    def test_mana_gu_param(self):
+    def test_mana_gu_param(self) -> None:
+        """
+        Tests a mana cost query is converted to a parameter ok
+        """
         root_param = self.parser.parse("mana:{G}{U}")
         self.assertIsInstance(root_param, CardManaCostComplexParam)
         self.assertFalse(root_param.negated)
@@ -189,7 +242,7 @@ class ColourContainsTestCase(TestCase):
     Tests for the card name parameter
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.red_card = create_test_card({"colour_flags": Card.colour_flags.red})
         self.green_card = create_test_card({"colour_flags": Card.colour_flags.green})
         self.red_green_card = create_test_card(
@@ -211,7 +264,10 @@ class ColourContainsTestCase(TestCase):
         self.red_card.delete()
         self.green_card.delete()
 
-    def test_name_match(self):
+    def test_name_match(self) -> None:
+        """
+        Tests that a colour name parameter matches
+        """
         self.parse_search.query_string = "color:rg"
         self.parse_search.build_parameters()
         results = self.parse_search.get_queryset().all()

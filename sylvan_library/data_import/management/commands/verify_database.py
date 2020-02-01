@@ -67,7 +67,7 @@ class Command(BaseCommand):
         for error in self.error_messages:
             print(error["message"])
 
-    def test_blocks(self):
+    def test_blocks(self) -> None:
         """
         Tests the properties of various blocks
         """
@@ -104,7 +104,7 @@ class Command(BaseCommand):
             "Amonkhet blockshould have 5 sets",
         )
 
-    def test_sets(self):
+    def test_sets(self) -> None:
         """
         Tests the properties of various sets
         """
@@ -121,7 +121,7 @@ class Command(BaseCommand):
             "Coldsnap should be in the Ice Age block",
         )
 
-    def test_rarities(self):
+    def test_rarities(self) -> None:
         """
         Tests the properties of various rarities
         """
@@ -135,7 +135,7 @@ class Command(BaseCommand):
             "Common rarity should be displayed before uncommon rarity",
         )
 
-    def test_card_printings(self):
+    def test_card_printings(self) -> None:
         """
         Tests that every card should have a printing
         """
@@ -147,7 +147,7 @@ class Command(BaseCommand):
             f"There should be at least one printing for every card: {query.all()}",
         )
 
-    def test_minimum_printed_languages(self):
+    def test_minimum_printed_languages(self) -> None:
         """
         Tests that every card has a printed language
         """
@@ -159,7 +159,7 @@ class Command(BaseCommand):
             "There should be at least one printed language for each printing",
         )
 
-    def test_minimum_physical_cards(self):
+    def test_minimum_physical_cards(self) -> None:
         """
         Tests that every physical card has at least one printed language
         """
@@ -217,7 +217,7 @@ class Command(BaseCommand):
             + str(high_count_single_face_cards),
         )
 
-    def test_unique_images(self):
+    def test_unique_images(self) -> None:
         """
         Tests that every printed language has a unique image path
         """
@@ -256,7 +256,7 @@ class Command(BaseCommand):
                 + f"{printed_languages}: {image_path}",
             )
 
-    def test_card_name(self):
+    def test_card_name(self) -> None:
         """
         Test that cards of various names exist
         """
@@ -284,7 +284,7 @@ class Command(BaseCommand):
         # Negative tests
         self.assert_card_not_exists("Æther Charge")
 
-    def test_card_cost(self):
+    def test_card_cost(self) -> None:
         """
         Tests tje cost of various Card objects
         :return:
@@ -322,7 +322,7 @@ class Command(BaseCommand):
         # Phyrexian mana card
         self.assert_card_cost_eq("Birthing Pod", "{3}{G/P}")
 
-    def test_card_cmc(self):
+    def test_card_cmc(self) -> None:
         """
         Tests the converted mana costs of various cards
         :return:
@@ -375,7 +375,7 @@ class Command(BaseCommand):
         # Flip card
         self.assert_card_cmc_eq("Homura's Essence", 6)
 
-    def test_card_colour(self):
+    def test_card_colour(self) -> None:
         """
         Tests the colour of various Card objects
         """
@@ -425,7 +425,7 @@ class Command(BaseCommand):
 
         # Normal cards
 
-    def test_card_colour_identity(self):
+    def test_card_colour_identity(self) -> None:
         """
         Tests the colour identity of various Cards
         :return:
@@ -479,7 +479,7 @@ class Command(BaseCommand):
             "Brisela, Voice of Nightmares", Card.colour_flags.white
         )
 
-    def test_card_colour_count(self):
+    def test_card_colour_count(self) -> None:
         """
         Tests the colour count of various cards
         """
@@ -499,7 +499,7 @@ class Command(BaseCommand):
         # Non-playable cards
         self.assert_card_colour_count_eq("Dance, Pathetic Marionette", 0)
 
-    def test_card_type(self):
+    def test_card_type(self) -> None:
         """
         Test the type of various cards
         """
@@ -516,7 +516,7 @@ class Command(BaseCommand):
         self.assert_card_type_eq("My Crushing Masterstroke", "Scheme")
         self.assert_card_type_eq("Nameless Race", "Creature")
 
-    def test_card_subype(self):
+    def test_card_subype(self) -> None:
         """
         Tests the subtype of various cards
         """
@@ -534,7 +534,7 @@ class Command(BaseCommand):
         self.assert_card_subtype_eq("Nameless Race", "")
         self.assert_card_subtype_eq("Spellbook", "")
 
-    def test_card_power(self):
+    def test_card_power(self) -> None:
         """
         Test the stringy power of various cards
         """
@@ -564,7 +564,7 @@ class Command(BaseCommand):
         self.assert_card_power_eq("Krosa", None)
         self.assert_card_power_eq("Gratuitous Violence", None)
 
-    def test_card_num_power(self):
+    def test_card_num_power(self) -> None:
         """
         Tests the numerical power of various cards
         """
@@ -592,7 +592,7 @@ class Command(BaseCommand):
         self.assert_card_num_power_eq("Tarmogoyf", 0)
         self.assert_card_num_power_eq("Haunting Apparition", 1)
 
-    def test_card_toughness(self):
+    def test_card_toughness(self) -> None:
         """
         Test the stringy toughness of various cards
         """
@@ -621,7 +621,7 @@ class Command(BaseCommand):
         self.assert_card_toughness_eq("Ancestral Recall", None)
         self.assert_card_toughness_eq("Krosa", None)
 
-    def test_card_num_toughness(self):
+    def test_card_num_toughness(self) -> None:
         """
         Test the numerical toughness of various cards
         """
@@ -644,7 +644,7 @@ class Command(BaseCommand):
         self.assert_card_num_toughness_eq("Angry Mob", 2)
         self.assert_card_num_toughness_eq("S.N.O.T.", 0)
 
-    def test_loyalty(self):
+    def test_loyalty(self) -> None:
         """
         Test the loyalty of various cards
         """
@@ -660,7 +660,7 @@ class Command(BaseCommand):
         self.assert_card_loyalty_eq("Megatog", None)
         self.assert_card_loyalty_eq("Urza", None)
 
-    def test_card_num_loyalty(self):
+    def test_card_num_loyalty(self) -> None:
         """
         Tests the numerical loyalty of various cards
         """
@@ -676,7 +676,7 @@ class Command(BaseCommand):
         self.assert_card_num_loyalty_eq("Megatog", 0)
         self.assert_card_num_loyalty_eq("Urza", 0)
 
-    def test_card_rules_text(self):
+    def test_card_rules_text(self) -> None:
         """
         Tests the rules texts
         """
@@ -699,7 +699,7 @@ on Ice Cauldron.
 mana. Spend this mana only to cast the last card exiled with Ice Cauldron.""",
         )
 
-    def test_card_layouts(self):
+    def test_card_layouts(self) -> None:
         """
         Tests the layouts of various Card objects
         """
@@ -723,7 +723,7 @@ mana. Spend this mana only to cast the last card exiled with Ice Cauldron.""",
         self.assert_card_layout_eq("Bruna, the Fading Light", "meld")
         self.assert_card_layout_eq("Brisela, Voice of Nightmares", "meld")
 
-    def test_cardprinting_flavour(self):
+    def test_cardprinting_flavour(self) -> None:
         """
         Tests the flavour texts of various CardPrintings
         """
@@ -752,7 +752,7 @@ mana. Spend this mana only to cast the last card exiled with Ice Cauldron.""",
 
         self.assert_cardprinting_flavour_eq("Magma Mine", "VIS", "BOOM!")
 
-    def test_cardprinting_artist(self):
+    def test_cardprinting_artist(self) -> None:
         """
         Tests the properties of CardPrinting artists
         """
@@ -774,7 +774,7 @@ mana. Spend this mana only to cast the last card exiled with Ice Cauldron.""",
         )
         self.assert_cardprinting_artist_eq("Atinlay Igpay", "UNH", "Evkay Alkerway")
 
-    def test_cardprinting_collectornum(self):
+    def test_cardprinting_collectornum(self) -> None:
         """
         Tests the properties of CardPrinting collector numbers
         """
@@ -803,7 +803,7 @@ mana. Spend this mana only to cast the last card exiled with Ice Cauldron.""",
             "The collector numbers for Initiates of the Ebon Hand are incorrect",
         )
 
-    def test_physical_cards(self):
+    def test_physical_cards(self) -> None:
         """
         Tests the properties of PhysicalCard objects
         """

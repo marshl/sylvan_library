@@ -1,6 +1,9 @@
-from datetime import date
-import os
+"""
+Django sell commands for data_import
+"""
 import json
+import os
+from datetime import date
 from typing import Generator
 
 import _paths

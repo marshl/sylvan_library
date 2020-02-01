@@ -2,10 +2,11 @@
 Module for staging classes
 """
 import datetime
-import dateutil
 import math
 import re
 from typing import List, Optional, Dict
+
+import dateutil
 
 from cards.models import Card, Colour
 
@@ -404,6 +405,10 @@ class StagedPhysicalCard:
 
 
 class StagedCardPrice:
+    """
+    The staging record for a CardPrice
+    """
+
     def __init__(
         self, printing_uuid: str, date_str: str, price: float, price_type: str
     ):

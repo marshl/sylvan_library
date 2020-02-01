@@ -1,33 +1,30 @@
 """
 Module for the update_database command
 """
+import json
 import logging
 import time
-import os
 from datetime import date
-import json
-from typing import List, Optional, Dict, Tuple, Set as SetType, Union
+from typing import List, Optional, Dict, Tuple, Union
 
 from django.core.management.base import BaseCommand
 
-from data_import.management.commands import get_all_set_data
+import _paths
 from cards.models import (
     Block,
     Card,
     CardLegality,
-    CardPrice,
     CardPrinting,
     CardPrintingLanguage,
     CardRuling,
     Set,
 )
-import _paths
+from data_import.management.commands import get_all_set_data
 from data_import.staging import (
     StagedCard,
     StagedBlock,
     StagedSet,
     StagedLegality,
-    StagedCardPrice,
     StagedCardPrintingLanguage,
     StagedPhysicalCard,
     StagedCardPrinting,
@@ -38,6 +35,12 @@ logger = logging.getLogger("django")
 
 
 def staging_object_to_dict(obj: object, fields_to_ignore: set) -> dict:
+    """
+    Converts any kind of staging object to a dictionary to save out to json
+    :param obj: The staging object
+    :param fields_to_ignore:  Fields that shouldn't be serialized out
+    :return: The staged object as a dictionary
+    """
     result = {}
     for key in dir(obj):
         if key in fields_to_ignore:
@@ -67,46 +70,46 @@ class Command(BaseCommand):
         "Use the update_rulings command to update rulings"
     )
 
-    existing_cards = {}  # type: Dict[str, Card]
-    existing_card_printings = {}  # type: Dict[str, CardPrinting]
-    existing_sets = {}  # type: Dict[str, Set]
-    existing_blocks = {}  # type: Dict[str, Block]
-    existing_rulings = {}  # type: Dict[str, Dict[str, str]]
-    existing_legalities = {}  # type: Dict[str, Dict[str, str]]
+    existing_cards: Dict[str, Card] = {}
+    existing_card_printings: Dict[str, CardPrinting] = {}
+    existing_sets: Dict[str, Set] = {}
+    existing_blocks: Dict[str, Block] = {}
+    existing_rulings: Dict[str, Dict[str, str]] = {}
+    existing_legalities: Dict[str, Dict[str, str]] = {}
 
-    cards_to_create = {}  # type: Dict[str, StagedCard]
-    cards_to_update = {}  # type: Dict[str, Dict[str, Dict[str]]]
+    cards_to_create: Dict[str, StagedCard] = {}
+    cards_to_update: Dict[str, Dict[str, Dict[str]]] = {}
     cards_to_delete = set()
 
     cards_parsed = set()
 
-    card_printings_to_create = {}  # type: Dict[str, StagedCardPrinting]
-    card_printings_to_update = {}  # type: Dict[str, Dict[str,dict]]
+    card_printings_to_create: Dict[str, StagedCardPrinting] = {}
+    card_printings_to_update: Dict[str, Dict[str, dict]] = {}
     card_printings_parsed = set()
     card_printings_to_delete = set()
 
-    printed_languages_to_create = []  # type: List[StagedCardPrintingLanguage]
-    printed_languages_to_update = []  # type: List[dict]
-    physical_cards_to_create = []  # type: List[StagedPhysicalCard]
+    printed_languages_to_create: List[StagedCardPrintingLanguage] = []
+    printed_languages_to_update: List[dict] = []
+    physical_cards_to_create: List[StagedPhysicalCard] = []
 
-    sets_to_create = {}  # type: Dict[str, StagedSet]
-    sets_to_update = {}  # type: Dict[str, Dict[str, Dict[str]]]
+    sets_to_create: Dict[str, StagedSet] = {}
+    sets_to_update: Dict[str, Dict[str, Dict[str]]] = {}
 
-    blocks_to_create = {}  # type: Dict[str, StagedBlock]
+    blocks_to_create: Dict[str, StagedBlock] = {}
 
-    rulings_to_create = []  # type: List[StagedRuling]
-    rulings_to_delete = {}  # type: Dict[str, List[str]]
-    cards_checked_For_rulings = set()  # type: set
+    rulings_to_create: List[StagedRuling] = []
+    rulings_to_delete: Dict[str, List[str]] = {}
+    cards_checked_For_rulings: set = set()
 
-    cards_checked_for_legalities = set()  # type: set
-    legalities_to_create = []  # type: List[StagedLegality]
-    legalities_to_delete = {}  # type: Dict[str, List[str]]
-    legalities_to_update = {}  # type: Dict[str, Dict[str, Dict[str, str]]]
+    cards_checked_for_legalities: set = set()
+    legalities_to_create: List[StagedLegality] = []
+    legalities_to_delete: Dict[str, List[str]] = {}
+    legalities_to_update: Dict[str, Dict[str, Dict[str, str]]] = {}
 
-    card_links_to_create = dict()  # type: Dict[str, set]
+    card_links_to_create: Dict[str, set] = dict()
 
-    # existing_prices = {}  # type: Dict[str, Dict[str, CardPrice]]
-    # prices_to_create = []  # type: List[StagedCardPrice]
+    # existing_prices: Dict[str, Dict[str, CardPrice]] = {}
+    # prices_to_create: List[StagedCardPrice] = []
 
     force_update = False
     start_time = None
@@ -137,6 +140,11 @@ class Command(BaseCommand):
         self.log_stats()
 
     def get_existing_data(self) -> None:
+        """
+        Caches all existing data from the database
+        Obviously this uses more and more memory as time goes on,
+        but hopefully it shouldn't outgrow Moore's law
+        """
         logger.info("Getting existing cards")
         for card in Card.objects.all():
             if card.name in self.existing_cards:
@@ -172,12 +180,6 @@ class Command(BaseCommand):
             self.existing_legalities[legality.card.name][
                 legality.format.code
             ] = legality.restriction
-
-        # logger.info("Getting existing prices")
-        # for printing_uid, existing_print in self.existing_card_printings.items():
-        #     self.existing_prices[printing_uid] = {
-        #         str(price.date): price for price in existing_print.prices.all()
-        #     }
 
     def parse_set_data(self, set_data: dict) -> None:
         """
@@ -481,7 +483,7 @@ class Command(BaseCommand):
         Gets the differences between the given fields of two objects
         :param old_object: The old version of the object (stored in the database)
         :param new_object: The new version of hte object (the Staged* object)
-        :param fields: The fields to compare
+        :param fields_to_ignore: The fields to ignore from comparison
         :return: A dict of "field* => {"old" => "x", "new" => "y"} differences
         """
         fields_to_ignore.update(["_state", "_prefetched_objects_cache"])
@@ -493,7 +495,8 @@ class Command(BaseCommand):
 
             if not hasattr(new_object, field):
                 raise Exception(
-                    f"Could not find equivalent of {old_object.__class__.__name__}.{field} on {new_object.__class__.__name__}"
+                    f"Could not find equivalent of {old_object.__class__.__name__}.{field} "
+                    f"on {new_object.__class__.__name__}"
                 )
 
             old_val = getattr(old_object, field)
@@ -739,13 +742,7 @@ class Command(BaseCommand):
             },
         )
 
-        self.write_object_to_json(
-            _paths.SETS_TO_UPDATE_PATH,
-            {
-                set_code: set_to_update
-                for set_code, set_to_update in self.sets_to_update.items()
-            },
-        )
+        self.write_object_to_json(_paths.SETS_TO_UPDATE_PATH, self.sets_to_update)
 
         self.write_object_to_json(
             _paths.CARDS_TO_CREATE_PATH,
@@ -758,13 +755,7 @@ class Command(BaseCommand):
             },
         )
 
-        self.write_object_to_json(
-            _paths.CARDS_TO_UPDATE,
-            {
-                card_name: card_to_update
-                for card_name, card_to_update in self.cards_to_update.items()
-            },
-        )
+        self.write_object_to_json(_paths.CARDS_TO_UPDATE, self.cards_to_update)
 
         self.write_object_to_json(_paths.CARDS_TO_DELETE, list(self.cards_to_delete))
 

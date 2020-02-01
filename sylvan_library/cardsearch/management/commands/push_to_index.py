@@ -1,10 +1,16 @@
+# pylint: skip-file
 import logging
 
 from django.core.management.base import BaseCommand
+from elasticsearch import Elasticsearch
+from elasticsearch_dsl import Document, Text, Float
+
 from cards.models import Card
 
 from elasticsearch_dsl import Document, Text, Float
-from elasticsearch import Elasticsearch
+from cards.models import Card
+
+from elasticsearch.helpers import bulk
 
 
 class CardDocument(Document):
@@ -29,16 +35,16 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
-        # CardDocument.init()
-        # es = Elasticsearch()
-        # bulk(
-        #     client=es,
-        #     actions=(self.index_card(c) for c in Card.objects.all().iterator()),
-        # )
+        CardDocument.init()
         es = Elasticsearch()
-        # res = es.search(
-        #     index=CardDocument.Index.name, body={"query": {"match": {"power": 5}}}
-        # )
+        bulk(
+            client=es,
+            actions=(self.index_card(c) for c in Card.objects.all().iterator()),
+        )
+        es = Elasticsearch()
+        res = es.search(
+            index=CardDocument.Index.name, body={"query": {"match": {"power": 5}}}
+        )
         res = es.search(
             index=CardDocument.Index.name,
             body={
@@ -61,9 +67,13 @@ class Command(BaseCommand):
 
             scroll_id = res["_scroll_id"]
             res = es.scroll(scroll="10m", scroll_id=scroll_id)
-            pass
 
     def index_card(self, card: Card):
+        """
+        Dumps a card into the elastic index
+        :param card: The card to index
+        :return:
+        """
         doc = CardDocument(meta={"id": card.id})
         doc.name = card.name
 

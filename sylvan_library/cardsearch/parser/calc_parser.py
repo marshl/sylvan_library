@@ -1,34 +1,53 @@
+"""
+Module for the numeric calculator parser
+"""
 from cardsearch.parser.base_parser import Parser
 
 
 class CalcParser(Parser):
+    """
+    Example recursive descent parser for numerical calculation
+    """
+
     def start(self) -> float:
+        """
+        Starts parsing the query
+        :return:
+        """
         return self.expression()
 
     def expression(self) -> float:
-        rv = self.match("term")
+        """
+        Parses a +/- expression
+        :return: The result value
+        """
+        result = self.match("term")
         while True:
-            op = self.maybe_keyword("+", "-")
-            if op is None:
+            operator = self.maybe_keyword("+", "-")
+            if operator is None:
                 break
 
             term = self.match("term")
-            if op == "+":
-                rv += term
+            if operator == "+":
+                result += term
             else:
-                rv -= term
+                result -= term
 
-        return rv
+        return result
 
     def term(self) -> float:
+        """
+        Matches a group of multiplied or divided values (tighter binding than "expressions"
+        :return: The numerical result
+        """
         result = self.match("factor")
         while True:
-            op = self.maybe_keyword("*", "/")
-            if op is None:
+            operator = self.maybe_keyword("*", "/")
+            if operator is None:
                 break
 
             term = self.match("factor")
-            if op == "*":
+            if operator == "*":
                 result *= term
             else:
                 result /= term
@@ -36,6 +55,10 @@ class CalcParser(Parser):
         return result
 
     def factor(self) -> float:
+        """
+        Attempts to parse either a grouped/parenthesised expression or a single number
+        :return: The parsed value
+        """
         if self.maybe_keyword("("):
             result = self.match("expression")
             self.keyword(")")
@@ -45,6 +68,10 @@ class CalcParser(Parser):
         return self.match("number")
 
     def number(self) -> float:
+        """
+        Attempts to parse a decimal or floating point number
+        :return: The parsed number
+        """
         chars = []
 
         sign = self.maybe_keyword("+", "-")
@@ -69,5 +96,4 @@ class CalcParser(Parser):
                     break
                 chars.append(char)
 
-        rv = float("".join(chars))
-        return rv
+        return float("".join(chars))

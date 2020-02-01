@@ -16,23 +16,30 @@ logger = logging.getLogger("django")
 
 
 class Command(BaseCommand):
+    """
+    Command for updating the UIDs of card printings that changed in the json
+    """
+
     help = (
         "Finds printings that may have had their UID (printing.json_id) changed, "
         "and the prompts the user to fix them."
     )
 
-    existing_card_printings = {}  # type: Dict[str, CardPrinting]
+    existing_card_printings: Dict[str, CardPrinting] = {}
 
     cards_parsed = set()
 
-    card_printings_to_create = {}  # type: Dict[str, List[StagedCardPrinting]]
+    card_printings_to_create: Dict[str, List[StagedCardPrinting]] = {}
     card_printings_parsed = set()
     card_printings_to_delete = set()
 
     force_update = False
 
-    def add_arguments(self, parser):
-
+    def add_arguments(self, parser) -> None:
+        """
+        Add command line arguments
+        :param parser: The argument parser
+        """
         parser.add_argument(
             "-y",
             "--yes",
@@ -42,7 +49,13 @@ class Command(BaseCommand):
             help="Update every UId without prompt",
         )
 
-    def handle(self, *args, **options):
+    def handle(self, *args, **options) -> None:
+        """
+        Fixes printing UIDs of cards that might have been broken by having multiple printings
+        of the same multiple faced cards in teh same set
+        :param args: Command arguments
+        :param options: Command keyword arguments
+        """
         logger.info("Getting existing printings")
         self.existing_card_printings = {
             cp.json_id: cp for cp in CardPrinting.objects.all()
@@ -83,8 +96,10 @@ class Command(BaseCommand):
                             continue
                     else:
                         logger.info(
-                            f"Updating {printing_to_delete} from {printing_json_id} "
-                            f"to {printing_to_create.json_id}"
+                            "Updating %s from %s to %s",
+                            printing_to_delete,
+                            printing_json_id,
+                            printing_to_create.json_id,
                         )
                     printing_to_delete.json_id = printing_to_create.json_id
                     printing_to_delete.clean()
@@ -121,6 +136,12 @@ class Command(BaseCommand):
     def process_card_printing(
         self, staged_card: StagedCard, set_data: dict, card_data: dict
     ) -> None:
+        """
+        Process a card printing
+        :param staged_card: The staged card
+        :param set_data: The set data dict
+        :param card_data: The card data dict
+        """
         staged_card_printing = StagedCardPrinting(staged_card.name, card_data, set_data)
         uuid = staged_card_printing.json_id
 

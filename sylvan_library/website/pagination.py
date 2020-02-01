@@ -40,7 +40,7 @@ def get_page_buttons(
     :return: A list of page buttons. Some of them can disabled padding buttons, and there will
     be a next and previous button at the start and end too
     """
-    page_buttons = [
+    page_buttons: List[PageButton] = [
         PageButton(page_number, True, is_active=page_number == current_page)
         for page_number in paginator.page_range
         if abs(page_number - current_page) <= page_span

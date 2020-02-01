@@ -1,17 +1,18 @@
 """
 The module for all search parameters
 """
+import logging
 from abc import ABC
 from collections import Counter
-import logging
-from django.db.models.query import Q, F
-from django.db.models.functions import Concat
-from django.db.models import F, Sum, Case, When, IntegerField, Value
-from django.contrib.auth.models import User
+from typing import List, Union
+
 from bitfield.types import Bit
+from django.contrib.auth.models import User
+from django.db.models import F, Sum, Case, When, IntegerField, Value
+from django.db.models.functions import Concat
+from django.db.models.query import Q
 
 from cards.models import Block, Card, Rarity, Set, Colour
-from typing import List, Union
 
 logger = logging.getLogger("django")
 
@@ -54,6 +55,12 @@ class CardSearchParam:
         raise NotImplementedError("Please implement this method")
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
+        """
+        Returns a human readable version of this parameter
+        (and all sub parameters for those with children)
+        :param within_or_block: Whether this it being output inside an OR block
+        :return: The pretty version of this parameter
+        """
         raise NotImplementedError(
             "Please implement get_pretty_str on " + type(self).__name__
         )
@@ -98,6 +105,12 @@ class AndParam(BranchParam):
         return query
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
+        """
+        Returns a human readable version of this parameter
+        (and all sub parameters for those with children)
+        :param within_or_block: Whether this it being output inside an OR block
+        :return: The pretty version of this parameter
+        """
         if len(self.child_parameters) == 1:
             return self.child_parameters[0].get_pretty_str()
         result = " and ".join(param.get_pretty_str() for param in self.child_parameters)
@@ -124,6 +137,12 @@ class OrParam(BranchParam):
         return ~query if self.negated else query
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
+        """
+        Returns a human readable version of this parameter
+        (and all sub parameters for those with children)
+        :param within_or_block: Whether this it being output inside an OR block
+        :return: The pretty version of this parameter
+        """
         if len(self.child_parameters) == 1:
             return self.child_parameters[0].get_pretty_str()
         return " or ".join(
@@ -151,6 +170,12 @@ class CardNameParam(CardSearchParam):
         return ~query if self.negated else query
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
+        """
+        Returns a human readable version of this parameter
+        (and all sub parameters for those with children)
+        :param within_or_block: Whether this it being output inside an OR block
+        :return: The pretty version of this parameter
+        """
         if self.negated:
             return f'the name does not contain "{self.card_name}"'
         return f'the name contains "{self.card_name}"'
@@ -205,6 +230,12 @@ class CardRulesTextParam(CardSearchParam):
         return ~query if self.negated else query
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
+        """
+        Returns a human readable version of this parameter
+        (and all sub parameters for those with children)
+        :param within_or_block: Whether this it being output inside an OR block
+        :return: The pretty version of this parameter
+        """
         if self.negated:
             modifier = "is not" if self.exact_match else "does not contain"
         else:
@@ -252,12 +283,20 @@ class CardSubtypeParam(CardSearchParam):
 
 
 class CardGenericTypeParam(CardSearchParam):
+    """
+    Parameter for searching btoh types and subtypes
+    """
+
     def __init__(self, card_type: str, operator: str):
         super().__init__()
         self.card_type = card_type
         self.operator = operator
 
     def query(self) -> Q:
+        """
+        Gets the query object
+        :return: The search Q object
+        """
         if self.operator == "=":
             result = Q(type__iexact=self.card_type) | Q(subtype__iexact=self.card_type)
         else:
@@ -267,6 +306,12 @@ class CardGenericTypeParam(CardSearchParam):
         return ~result if self.negated else result
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
+        """
+        Returns a human readable version of this parameter
+        (and all sub parameters for those with children)
+        :param within_or_block: Whether this it being output inside an OR block
+        :return: The pretty version of this parameter
+        """
         if self.negated:
             if self.operator == "=":
                 include = "don't match"
@@ -294,7 +339,12 @@ class CardColourParam(CardSearchParam):
 
 
 class CardComplexColourParam(CardSearchParam):
+    """
+    Parameter for complex card parameters, including subset superset and colour identity handling
+    """
+
     def __init__(self, colours: int, operator: str = "=", identity: bool = False):
+        super().__init__()
         assert colours >= 0
         assert colours <= (
             Card.colour_flags.white
@@ -311,6 +361,10 @@ class CardComplexColourParam(CardSearchParam):
         self.identity = identity
 
     def query(self) -> Q:
+        """
+        Gets the Q query object
+        :return: The Q query object
+        """
         field = "colour_identity_flags" if self.identity else "colour_flags"
         if self.operator == ">=":
             return (
@@ -323,9 +377,9 @@ class CardComplexColourParam(CardSearchParam):
             result = Q(**{field: self.colours})
             exclude = Q()
 
-            for c in Colour.objects.exclude(symbol="C"):
-                if not c.bit_value & self.colours:
-                    exclude |= Q(**{field: c.bit_value})
+            for colour in Colour.objects.exclude(symbol="C"):
+                if not colour.bit_value & self.colours:
+                    exclude |= Q(**{field: colour.bit_value})
             if exclude:
                 result &= exclude if self.operator == ">" else ~exclude
             return ~result if self.negated else result
@@ -333,11 +387,11 @@ class CardComplexColourParam(CardSearchParam):
         if self.operator == "<" or self.operator == "<=":
             include = Q()
             exclude = Q()
-            for c in Colour.objects.exclude(symbol="C"):
-                if c.bit_value & self.colours:
-                    include |= Q(**{field: c.bit_value})
+            for colour in Colour.objects.exclude(symbol="C"):
+                if colour.bit_value & self.colours:
+                    include |= Q(**{field: colour.bit_value})
                 else:
-                    exclude &= ~Q(**{field: c.bit_value})
+                    exclude &= ~Q(**{field: colour.bit_value})
 
             if self.identity:
                 include |= Q(colour_identity_flags=0)
@@ -347,8 +401,15 @@ class CardComplexColourParam(CardSearchParam):
                 return ~result if self.negated else result
             result = include & exclude
             return ~result if self.negated else result
+        raise ValueError(f"Unsupported operator {self.operator}")
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
+        """
+        Returns a human readable version of this parameter
+        (and all sub parameters for those with children)
+        :param within_or_block: Whether this it being output inside an OR block
+        :return: The pretty version of this parameter
+        """
         if self.colours == 0:
             return (
                 "is cards have colourless identity"
@@ -357,9 +418,9 @@ class CardComplexColourParam(CardSearchParam):
             )
 
         colour_names = ""
-        for c in Colour.objects.all():
-            if c.bit_value & self.colours:
-                colour_names += c.symbol
+        for colour in Colour.objects.all():
+            if colour.bit_value & self.colours:
+                colour_names += colour.symbol
 
         param_type = "colour identity" if self.identity else "colours"
         return f"the {param_type} {self.operator} {colour_names}"
@@ -394,10 +455,13 @@ class CardSetParam(CardSearchParam):
 
     def __init__(self, set_obj: Set):
         super().__init__()
-        self.set_obj = set_obj
+        self.set_obj: Set = set_obj
 
     def query(self) -> Q:
         return Q(printings__set=self.set_obj)
+
+    def get_pretty_str(self, within_or_block: bool = False) -> str:
+        return "set " + ("isn't" if self.negated else "is") + f" {self.set_obj.name}"
 
 
 class CardBlockParam(CardSearchParam):
@@ -452,19 +516,23 @@ SYMBOL_REMAPPING = {
 
 
 class CardManaCostComplexParam(CardSearchParam):
+    """
+    Parameter for complex mana cost checking
+    """
+
     def __init__(self, cost: str, operator: str):
         super().__init__()
         self.cost_text = cost.lower()
         self.operator = operator
 
         self.symbol_counts = Counter()
-        pos = 0
-        current_symbol = ""
-        in_symbol = False
+        pos: int = 0
+        current_symbol: str = ""
+        in_symbol: bool = False
         while True:
             if pos >= len(self.cost_text):
                 break
-            char = self.cost_text[pos]
+            char: str = self.cost_text[pos]
             if char == "{":
                 if in_symbol:
                     raise ValueError(
@@ -513,6 +581,12 @@ class CardManaCostComplexParam(CardSearchParam):
         return query
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
+        """
+        Returns a human readable version of this parameter
+        (and all sub parameters for those with children)
+        :param within_or_block: Whether this it being output inside an OR block
+        :return: The pretty version of this parameter
+        """
         return f"mana cost {'does not contain' if self.negated else 'contains'} {self.cost_text}"
 
 
@@ -560,6 +634,12 @@ class CardNumPowerParam(CardNumericalParam):
         return ~query if self.negated else query
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
+        """
+        Returns a human readable version of this parameter
+        (and all sub parameters for those with children)
+        :param within_or_block: Whether this it being output inside an OR block
+        :return: The pretty version of this parameter
+        """
         return f"the power {'is not ' if self.negated else ''}{self.operator} {self.number}"
 
 
@@ -593,24 +673,52 @@ class CardCmcParam(CardNumericalParam):
 
     def query(self) -> Q:
         args = self.get_args("cmc")
-        q = Q()
+        query = Q()
         if isinstance(self.number, F):
-            q &= Q(**{"toughness__isnull": False})
-        return q & Q(**args)
+            query &= Q(**{"toughness__isnull": False})
+        return query & Q(**args)
+
+    def get_pretty_str(self, within_or_block: bool = False) -> str:
+        return (
+            "cmd "
+            + ("isn't " if self.negated else "")
+            + f"{self.operator} {self.number}"
+        )
 
 
 class CardColourCountParam(CardNumericalParam):
+    """
+    Parameter for the number of colours a card has
+    """
+
     def __init__(self, number: int, operator: str, identity: bool = False):
         super().__init__(number, operator)
         self.identity = identity
 
     def query(self) -> Q:
+        """
+        Gets the Q query object
+        :return: The Q query object
+        """
         args = (
             self.get_args("colour_identity_count")
             if self.identity
             else self.get_args("colour_count")
         )
         return Q(**args)
+
+    def get_pretty_str(self, within_or_block: bool = False) -> str:
+        """
+        Returns a human readable version of this parameter
+        (and all sub parameters for those with children)
+        :param within_or_block: Whether this it being output inside an OR block
+        :return: The pretty version of this parameter
+        """
+        return (
+            "card "
+            + ("doesn't have" if self.negated else "has")
+            + f" {self.operator} {self.number} colours"
+        )
 
 
 class CardOwnershipCountParam(CardNumericalParam):
@@ -623,6 +731,10 @@ class CardOwnershipCountParam(CardNumericalParam):
         self.user = user
 
     def query(self) -> Q:
+        """
+        Gets teh Q query object
+        :return: The Q object
+        """
         annotated_result = Card.objects.annotate(
             ownership_count=Sum(
                 Case(
@@ -641,6 +753,12 @@ class CardOwnershipCountParam(CardNumericalParam):
         return Q(id__in=annotated_result.filter(query))
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
+        """
+        Returns a human readable version of this parameter
+        (and all sub parameters for those with children)
+        :param within_or_block: Whether this it being output inside an OR block
+        :return: The pretty version of this parameter
+        """
         return f"you own {self.operator} {self.number}"
 
 

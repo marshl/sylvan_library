@@ -42,7 +42,7 @@ class ManaReplaceTestCase(TestCase):
             '<i class="ms ms-p ms-w ms-cost"></i>', replace_mana_symbols(mana_cost)
         )
 
-    def test_hybrid_replace(self):
+    def test_hybrid_replace(self) -> None:
         """
         Test that a hybrid mana cost if replaced correctly
         """
