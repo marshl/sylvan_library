@@ -107,3 +107,4 @@ AllSetFiles.*
 backup/
 *.bat
 node_modules/
+.mypy_cache/

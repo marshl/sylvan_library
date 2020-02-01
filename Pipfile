@@ -30,6 +30,7 @@ notebook = "==6.0.2"
 pre-commit = "==1.21.0"
 pylint = "==2.4.4"
 pylint-django = "==2.0.13"
+mypy = "*"
 
 [requires]
 python_version = "3.7"
