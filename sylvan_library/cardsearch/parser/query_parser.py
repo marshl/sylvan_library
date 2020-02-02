@@ -24,6 +24,7 @@ from cardsearch.parameters import (
     CardRulesTextParam,
     CardSetParam,
     CardManaCostComplexParam,
+    CardNumLoyaltyParam,
 )
 from .base_parser import Parser, ParseError
 
@@ -167,7 +168,7 @@ def parse_cmc_param(param_args: ParameterArgs) -> CardCmcParam:
 
 
 @param_parser(
-    name="power",
+    name="toughness",
     keywords=["tou", "toughness", "tough", "tuff"],
     operators=["<", "<=", ":", "=", ">", ">="],
 )
@@ -194,6 +195,21 @@ def parse_power_param(param_args: ParameterArgs) -> CardNumPowerParam:
     """
     power = parse_numeric_parameter("power", param_args.operator, param_args.text)
     return CardNumPowerParam(power, param_args.operator)
+
+
+@param_parser(
+    name="loyalty",
+    keywords=["l", "loy", "loyalty"],
+    operators=["<", "<=", ":", "=", ">", ">="],
+)
+def parse_loyalty(param_args: ParameterArgs) -> CardNumLoyaltyParam:
+    """
+    Parses a card numerical loyalty parameter
+    :param param_args: The parameter arguments
+    :return: Te toughness parameter
+    """
+    toughness = parse_numeric_parameter("loyalty", param_args.operator, param_args.text)
+    return CardNumLoyaltyParam(toughness, param_args.operator)
 
 
 @param_parser(
