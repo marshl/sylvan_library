@@ -5,7 +5,7 @@ import json
 import logging
 import time
 from datetime import date
-from typing import List, Optional, Dict, Tuple, Union
+from typing import List, Optional, Dict, Tuple, Union, Any
 
 from django.core.management.base import BaseCommand
 
@@ -78,7 +78,7 @@ class Command(BaseCommand):
     existing_legalities: Dict[str, Dict[str, str]] = {}
 
     cards_to_create: Dict[str, StagedCard] = {}
-    cards_to_update: Dict[str, Dict[str, Dict[str]]] = {}
+    cards_to_update: Dict[str, Dict[str, Dict[str, Any]]] = {}
     cards_to_delete = set()
 
     cards_parsed = set()
@@ -93,7 +93,7 @@ class Command(BaseCommand):
     physical_cards_to_create: List[StagedPhysicalCard] = []
 
     sets_to_create: Dict[str, StagedSet] = {}
-    sets_to_update: Dict[str, Dict[str, Dict[str]]] = {}
+    sets_to_update: Dict[str, Dict[str, Dict[str, Any]]] = {}
 
     blocks_to_create: Dict[str, StagedBlock] = {}
 

@@ -354,6 +354,9 @@ class Command(BaseCommand):
         for printlang_data in printlang_list:
             printed_language = CardPrintingLanguage()
             for field, value in printlang_data.items():
+                if field in ("set_code",):
+                    continue
+
                 if field == "printing_uid":
                     printed_language.card_printing = CardPrinting.objects.get(
                         json_id=value
