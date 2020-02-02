@@ -1,7 +1,9 @@
 """
 Module for the card query recursive descent parser
 """
-from typing import Union, Optional
+import inspect
+import sys
+from typing import Union, Optional, Dict, Callable, List
 
 from django.contrib.auth.models import User
 from django.db.models import F
@@ -85,6 +87,19 @@ COLOUR_NAMES_TO_FLAGS = {
 }
 
 
+class ParameterArgs:
+    # pylint: disable=too-few-public-methods
+    """
+    Argument container for all parameter parser functions
+    """
+
+    def __init__(self, keyword: str, operator: str, text: str, context_user: User):
+        self.keyword = keyword
+        self.operator = operator
+        self.text = text
+        self.context_user = context_user
+
+
 def parse_numeric_parameter(param_name: str, operator: str, text: str) -> Union[int, F]:
     """
     Parses a numeric parameter and returns the value that should be used for an operator
@@ -114,99 +129,130 @@ def parse_numeric_parameter(param_name: str, operator: str, text: str) -> Union[
         raise ValueError(f"Could not convert {text} to number")
 
 
-def parse_cmc_param(operator: str, text: str) -> CardCmcParam:
+def param_parser(name: str, keywords: List[str], operators: List[str]):
+    """
+    Decorator for parameter parsing functions
+    Only functions with this decorator can be used to parse parameters
+    :param name: The friendly name of the operator for warning messages
+    :param keywords: The keywords that can be used for the parameter (e.g. oracle, o)
+    :param operators: The operators that are allowed for the parameter
+    :return:
+    """
+
+    def decorator(function):
+        function.is_param_parser = True
+        function.param_name = name
+        function.param_keywords = keywords
+        function.param_operators = operators
+        return function
+
+    return decorator
+
+
+@param_parser(
+    name="converted mana cost",
+    keywords=["cmc"],
+    operators=["<", "<=", ":", "=", ">", ">="],
+)
+def parse_cmc_param(param_args: ParameterArgs) -> CardCmcParam:
     """
     Parses a converted mana cost parameter
-    :param operator: The parameter operator
-    :param text: The mana cost text
+    :param param_args: The parameter arguments
     :return: The converted mana cost parameter
     """
-    cmc = parse_numeric_parameter("converted mana cost", operator, text)
-    return CardCmcParam(cmc, operator)
+    cmc = parse_numeric_parameter(
+        "converted mana cost", param_args.operator, param_args.text
+    )
+    return CardCmcParam(cmc, param_args.operator)
 
 
-def parse_toughness_param(operator: str, text: str) -> CardNumToughnessParam:
+@param_parser(
+    name="power",
+    keywords=["tou", "toughness", "tough", "tuff"],
+    operators=["<", "<=", ":", "=", ">", ">="],
+)
+def parse_toughness_param(param_args: ParameterArgs) -> CardNumToughnessParam:
     """
     Parses a card numerical toughness parameter
-    :param operator: The parameter operator
-    :param text: The parameter text
+    :param param_args: The parameter arguments
     :return: Te toughness parameter
     """
-    toughness = parse_numeric_parameter("toughness", operator, text)
-    return CardNumToughnessParam(toughness, operator)
+    toughness = parse_numeric_parameter(
+        "toughness", param_args.operator, param_args.text
+    )
+    return CardNumToughnessParam(toughness, param_args.operator)
 
 
-def parse_power_param(operator: str, text: str) -> CardNumPowerParam:
+@param_parser(
+    name="power", keywords=["pow", "power"], operators=["<", "<=", ":", "=", ">", ">="]
+)
+def parse_power_param(param_args: ParameterArgs) -> CardNumPowerParam:
     """
     Parses a card power parameter
-    :param operator: The parameter operator
-    :param text: The power text
+    :param param_args: The parameter arguments
     :return: The card power parameter
     """
-    power = parse_numeric_parameter("power", operator, text)
-    return CardNumPowerParam(power, operator)
+    power = parse_numeric_parameter("power", param_args.operator, param_args.text)
+    return CardNumPowerParam(power, param_args.operator)
 
 
-def parse_text_param(operator: str, text: str) -> CardRulesTextParam:
+@param_parser(
+    name="rules text", keywords=["o", "oracle", "rules", "text"], operators=[":", "="]
+)
+def parse_text_param(param_args: ParameterArgs) -> CardRulesTextParam:
     """
     Parses and returns a text parameter
-    :param operator: The parameter operator
-    :param text: The parameter text
+    :param param_args: The parameter arguments
     :return: The rules parameter
     """
-    if operator not in (":", "="):
-        raise ValueError(f'Unsupported operator for oracle search: "{operator}"')
-    return CardRulesTextParam(text, exact=operator == "=")
+    return CardRulesTextParam(param_args.text, exact=param_args.operator == "=")
 
 
-def parse_type_param(operator: str, text: str) -> CardGenericTypeParam:
+@param_parser(name="type", keywords=["t", "type"], operators=[":", "="])
+def parse_type_param(param_args: ParameterArgs) -> CardGenericTypeParam:
     """
     Parses a card type parameter
-    :param operator: The parameter operator
-    :param text: The type text
+    :param param_args: The parameter arguments
     :return: The card type parameter
     """
-    return CardGenericTypeParam(text, operator)
+    return CardGenericTypeParam(param_args.text, param_args.operator)
 
 
-def parse_set_param(operator: str, text: str):
+@param_parser(name="set", keywords=["s", "set"], operators=[":", "="])
+def parse_set_param(param_args: ParameterArgs):
     """
     Creates a card set parameter from the given operator and text
-    :param operator: The operator
-    :param text: The parameter text
+    :param param_args: The parameter arguments
     :return: The set parameter
     """
-    if operator not in ("<", "<=", ":", "=", ">", ">="):
-        raise ValueError(f"Unsupported operator for set parameter {operator}")
-
     card_set: Optional[Set] = None
     try:
-        card_set = Set.objects.get(code__iexact=text)
+        card_set = Set.objects.get(code__iexact=param_args.text)
     except Set.DoesNotExist:
         pass
     if card_set:
         return CardSetParam(card_set)
 
     try:
-        card_set = Set.objects.get(name__icontains=text)
+        card_set = Set.objects.get(name__icontains=param_args.text)
     except Set.DoesNotExist:
-        raise ValueError(f'Unknown set "{text}"')
+        raise ValueError(f'Unknown set "{param_args.text}"')
     except Set.MultipleObjectsReturned:
-        raise ValueError(f'Multiple sets match "{text}"')
+        raise ValueError(f'Multiple sets match "{param_args.text}"')
 
     return CardSetParam(card_set)
 
 
-def parse_mana_cost_param(operator: str, text: str) -> CardManaCostComplexParam:
+@param_parser(
+    name="mana cost", keywords=["m", "mana"], operators=[":", "=", "<", "<=", ">", ">="]
+)
+def parse_mana_cost_param(param_args: ParameterArgs) -> CardManaCostComplexParam:
     """
     Creates a mana cost parameter from the given operator and text
-    :param operator: The parameter operator
-    :param text: The mana cost text
+    :param param_args: The parameter arguments
     :return: The created mana cost parameter
     """
-    if operator not in ("<", "<=", ":", "=", ">", ">="):
-        raise ValueError(f"Unsupported operator for mana cost search {operator}")
-    return CardManaCostComplexParam(text, operator)
+    return CardManaCostComplexParam(param_args.text, param_args.operator)
 
 
 def text_to_colours(text: str) -> int:
@@ -229,43 +275,96 @@ def text_to_colours(text: str) -> int:
     return int(result)
 
 
-def parse_name_param(operator: str, text: str) -> CardNameParam:
+@param_parser(name="name", keywords=["n", "name"], operators=[":", "="])
+def parse_name_param(param_args: ParameterArgs) -> CardNameParam:
     """
     Parses a card name parameter
-    :param operator: The parameter operator
-    :param text: The name text
+    :param param_args: The parameter arguments
     :return: The name parameter
     """
-    if operator not in ("=", ":"):
-        raise ValueError(f"Unsupported operator for name parameter {operator}")
-
-    match_exact = operator == "="
-    if text.startswith("!"):
+    match_exact = param_args.operator == "="
+    if param_args.text.startswith("!"):
         match_exact = True
-        text = text[1:]
+        text = param_args.text[1:]
+    else:
+        text = param_args.text
     return CardNameParam(card_name=text, match_exact=match_exact)
 
 
+@param_parser(
+    name="colour",
+    keywords=["c", "color", "colour"],
+    operators=[":", "=", "<", "<=", ">", ">="],
+)
 def parse_colour_param(
-    operator: str, text: str, identity: bool = False
+    param_args: ParameterArgs
 ) -> Union[CardComplexColourParam, CardColourCountParam]:
     """
     Parses a card colour parameter
-    :param operator: The parameter operator
-    :param text: The colour text
-    :param identity: Whether this is for a colour identity search or not
+    :param param_args: The parameter arguments
     :return:
     """
-    if operator not in [">", ">=", "=", ":", "<", "<="]:
-        raise ValueError(f"Unknown operator {operator}")
-
     try:
-        num = int(text)
-        return CardColourCountParam(num, operator, identity=identity)
+        num = int(param_args.text)
+        return CardColourCountParam(num, param_args.operator, identity=False)
     except ValueError:
         pass
 
-    return CardComplexColourParam(text_to_colours(text), operator, identity=identity)
+    return CardComplexColourParam(
+        text_to_colours(param_args.text), param_args.operator, identity=False
+    )
+
+
+@param_parser(
+    name="colour identity",
+    keywords=["id", "identity"],
+    operators=[":", "=", "<", "<=", ">", ">="],
+)
+def parse_colour_identity_param(
+    param_args: ParameterArgs
+) -> Union[CardComplexColourParam, CardColourCountParam]:
+    """
+    Parses a card colour identity parameter
+    :param param_args: The parameter arguments
+    :return:
+    """
+    try:
+        num = int(param_args.text)
+        return CardColourCountParam(num, param_args.operator, identity=True)
+    except ValueError:
+        pass
+
+    return CardComplexColourParam(
+        text_to_colours(param_args.text), param_args.operator, identity=True
+    )
+
+
+@param_parser(
+    name="ownership",
+    keywords=["have", "own"],
+    operators=[":", "=", "<", "<=", ">", ">="],
+)
+def parse_ownership_param(param_args: ParameterArgs) -> CardOwnershipCountParam:
+    """
+    Creates an ownership parameter from the given operator and text
+    :param param_args: The parameter arguments
+    :return: The colour parameter
+    """
+    if param_args.context_user.is_anonymous:
+        raise ValueError("Cannot search by ownership if you aren't logged in")
+
+    if param_args.operator == ":" and param_args.text == "any":
+        return CardOwnershipCountParam(param_args.context_user, ">=", 1)
+
+    if param_args.operator == ":" and param_args.text == "none":
+        return CardOwnershipCountParam(param_args.context_user, "=", 0)
+
+    try:
+        count = int(param_args.text)
+    except (ValueError, TypeError):
+        raise ValueError(f'Cannot parse number "{param_args.text}"')
+
+    return CardOwnershipCountParam(param_args.context_user, param_args.operator, count)
 
 
 class CardQueryParser(Parser):
@@ -276,6 +375,15 @@ class CardQueryParser(Parser):
     def __init__(self, user: User = None):
         super().__init__()
         self.user: User = user
+        all_functions = inspect.getmembers(sys.modules[__name__], inspect.isfunction)
+        self.parser_dict: Dict[str, Callable] = {}
+        for _, func in all_functions:
+            if not hasattr(func, "is_param_parser") or not func.is_param_parser:
+                continue
+
+            for param_keyword in func.param_keywords:
+                assert param_keyword not in self.parser_dict
+                self.parser_dict[param_keyword] = func
 
     def start(self) -> CardSearchParam:
         """
@@ -400,30 +508,24 @@ class CardQueryParser(Parser):
         :param parameter_value: The parameter alue
         :return: The parsed parameter
         """
-        if parameter_type in ("name", "n"):
-            return parse_name_param(operator, parameter_value)
-        if parameter_type in ("p", "power", "pow"):
-            return parse_power_param(operator, parameter_value)
-        if parameter_type in ("toughness", "tough", "tou"):
-            return parse_toughness_param(operator, parameter_value)
-        if parameter_type in ("cmc",):
-            return parse_cmc_param(operator, parameter_value)
-        if parameter_type in ("color", "colour", "c"):
-            return parse_colour_param(operator, parameter_value)
-        if parameter_type in ("identity", "ci", "id"):
-            return parse_colour_param(operator, parameter_value, identity=True)
-        if parameter_type in ("own", "have"):
-            return self.parse_ownership_param(operator, parameter_value)
-        if parameter_type in ("t", "type"):
-            return parse_type_param(operator, parameter_value)
-        if parameter_type in ("o", "oracle", "text"):
-            return parse_text_param(operator, parameter_value)
-        if parameter_type in ("m", "mana", "cost"):
-            return parse_mana_cost_param(operator, parameter_value)
-        if parameter_type in ("s", "set"):
-            return parse_set_param(operator, parameter_value)
+        if parameter_type not in self.parser_dict:
+            raise ValueError(f"Unknown parameter type {parameter_type}")
 
-        raise ParseError(self.pos + 1, "Unknown parameter type %s", parameter_type)
+        parser_func = self.parser_dict[parameter_type]
+
+        if operator not in parser_func.param_operators:
+            raise ValueError(
+                f"Cannot use {operator} operator for {parser_func.param_name} search"
+            )
+
+        param_args = ParameterArgs(
+            keyword=parameter_type,
+            operator=operator,
+            text=parameter_value,
+            context_user=self.user,
+        )
+
+        return self.parser_dict[parameter_type](param_args)
 
     def operator(self):
         """
@@ -478,28 +580,3 @@ class CardQueryParser(Parser):
                 chars.append(char)
 
         return "".join(chars)
-
-    def parse_ownership_param(
-        self, operator: str, text: str
-    ) -> CardOwnershipCountParam:
-        """
-        Creates an ownership parameter from the given operator and text
-        :param operator: The parameter operator to use
-        :param text: The colour text
-        :return: The colour parameter
-        """
-        if self.user.is_anonymous:
-            raise ValueError("Cannot search by ownership if you aren't logged in")
-
-        if operator == ":" and text == "any":
-            return CardOwnershipCountParam(self.user, ">=", 1)
-
-        if operator == ":" and text == "none":
-            return CardOwnershipCountParam(self.user, "=", 0)
-
-        try:
-            count = int(text)
-        except (ValueError, TypeError):
-            raise ValueError(f'Cannot parse number "{text}"')
-
-        return CardOwnershipCountParam(self.user, operator, count)
