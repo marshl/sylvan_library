@@ -225,6 +225,11 @@ class StagedCard:
 
     @property
     def generic_mana_count(self) -> int:
+        """
+        Gets the number for the generic mana symbol in this cards cost
+        (if there is one, otherwise 0)
+        :return: The amount of generic mana required to cast this card
+        """
         if not self.cost:
             return 0
 

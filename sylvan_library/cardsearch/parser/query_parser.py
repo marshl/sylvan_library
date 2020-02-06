@@ -26,6 +26,9 @@ from cardsearch.parameters import (
     CardManaCostComplexParam,
     CardNumLoyaltyParam,
     CardRarityParam,
+    CardHasColourIndicatorParam,
+    CardHasWatermarkParam,
+    CardIsReprintParam,
 )
 from .base_parser import Parser, ParseError
 
@@ -272,6 +275,27 @@ def parse_mana_cost_param(param_args: ParameterArgs) -> CardManaCostComplexParam
     return CardManaCostComplexParam(param_args.text, param_args.operator)
 
 
+@param_parser(name="is", keywords=["is", "has", "not"], operators=[":"])
+def parse_is_param(param_args: ParameterArgs) -> CardSearchParam:
+    """
+    Creates various simple boolean parameters based on the text
+    :param param_args: The parameter arguments
+    :return: The created parameter (various types)
+    """
+    if param_args.text == "reprint":
+        param = CardIsReprintParam()
+    elif param_args.text == "indicator":
+        param = CardHasColourIndicatorParam()
+    elif param_args.text == "watermark":
+        param = CardHasWatermarkParam()
+    else:
+        raise ValueError(f'Unknown parameter "{param_args.keyword}:{param_args.text}"')
+
+    if param_args.keyword == "not":
+        param.negated = True
+    return param
+
+
 def text_to_colours(text: str) -> int:
     """
     Converts text to a list of colour flag
@@ -478,7 +502,8 @@ class CardQueryParser(Parser):
         parameter = self.match(
             "quoted_name_parameter", "normal_parameter", "unquoted_name_parameter"
         )
-        parameter.negated = is_negated
+        if is_negated:
+            parameter.negated = not parameter.negated
         return parameter
 
     def param_type(self) -> str:
