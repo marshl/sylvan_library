@@ -606,7 +606,10 @@ class CardRarityParam(CardSearchParam):
         self.rarity = rarity
 
     def query(self) -> Q:
-        return Q(id__in=Card.objects.filter(printings__rarity=self.rarity))
+        return Q(rarity=self.rarity)
+
+    def get_pretty_str(self, within_or_block: bool = False) -> str:
+        return "rarity " + ("isn't" if self.negated else "is") + " " + self.rarity.name
 
 
 class CardNumericalParam(CardSearchParam, ABC):

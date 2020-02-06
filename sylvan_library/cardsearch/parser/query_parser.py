@@ -6,9 +6,9 @@ import sys
 from typing import Union, Optional, Dict, Callable, List
 
 from django.contrib.auth.models import User
-from django.db.models import F
+from django.db.models import F, Q
 
-from cards.models import Card, Set
+from cards.models import Card, Set, Rarity
 from cardsearch.parameters import (
     CardSearchParam,
     OrParam,
@@ -25,6 +25,7 @@ from cardsearch.parameters import (
     CardSetParam,
     CardManaCostComplexParam,
     CardNumLoyaltyParam,
+    CardRarityParam,
 )
 from .base_parser import Parser, ParseError
 
@@ -381,6 +382,19 @@ def parse_ownership_param(param_args: ParameterArgs) -> CardOwnershipCountParam:
         raise ValueError(f'Cannot parse number "{param_args.text}"')
 
     return CardOwnershipCountParam(param_args.context_user, param_args.operator, count)
+
+
+@param_parser(name="rarity", keywords=["r", "rarity"], operators=[":", "="])
+def parse_rarity_param(param_args: ParameterArgs) -> CardRarityParam:
+    """
+    Creates a rarity parameter from the given operator and text
+    :param param_args: The parameter arguments
+    :return: The created mana cost parameter
+    """
+    rarity = Rarity.objects.get(
+        Q(symbol__iexact=param_args.text) | Q(name__iexact=param_args.text)
+    )
+    return CardRarityParam(rarity)
 
 
 class CardQueryParser(Parser):
