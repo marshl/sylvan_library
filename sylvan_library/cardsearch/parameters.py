@@ -576,7 +576,7 @@ class CardManaCostComplexParam(CardSearchParam):
                 pass
 
             if num is not None:
-                pass
+                query &= Q(card__generic_mana_count__gte=num)
             else:
                 query &= Q(card__cost__icontains=("{" + symbol + "}") * count)
                 if self.operator == "=":

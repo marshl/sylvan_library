@@ -181,13 +181,7 @@ class StagedCard:
         Gets the "colour weight" of the card, the number of coloured mana symbols te card has
         :return: The card's colour weight
         """
-        if not self.cost:
-            return 0
-
-        generic_mana = re.search(r"{(\d+)}", self.cost)
-        if not generic_mana:
-            return int(self.cmc)
-        return int(self.cmc) - int(generic_mana.group(1))
+        return int(self.cmc) - self.generic_mana_count
 
     @property
     def num_power(self) -> float:
@@ -228,6 +222,16 @@ class StagedCard:
         :return: THe numerical life modifier of this card
         """
         return int(convert_number_field_to_numerical(self.life_modifier))
+
+    @property
+    def generic_mana_count(self) -> int:
+        if not self.cost:
+            return 0
+
+        generic_mana = re.search(r"{(\d+)}", self.cost)
+        if generic_mana:
+            return int(generic_mana.group(1))
+        return 0
 
 
 # pylint: disable=too-many-instance-attributes, too-few-public-methods
