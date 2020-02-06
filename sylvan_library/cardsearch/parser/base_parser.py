@@ -3,7 +3,7 @@ Module for the base recursive descent parser
 """
 
 from abc import ABC
-from typing import List, Optional, Any, Dict
+from typing import List, Optional, Any, Dict, Tuple
 
 
 # https://www.booleanworld.com/building-recursive-descent-parsers-definitive-guide/
@@ -12,14 +12,14 @@ class ParseError(Exception):
     Class for an that occurs during parsing
     """
 
-    def __init__(self, pos: int, msg: str, *args):
+    def __init__(self, pos: int, msg: str, *args: Any):
         super().__init__()
-        self.pos = pos
-        self.msg = msg
-        self.args = args
+        self.pos: int = pos
+        self.msg: str = msg
+        self.args: Tuple[Any] = args
 
     def __str__(self) -> str:
-        return "%s at position %s" % (self.msg % self.args, self.pos)
+        return f"{self.msg % self.args} at position {self.pos}"
 
 
 class Parser(ABC):

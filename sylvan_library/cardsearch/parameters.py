@@ -67,7 +67,7 @@ class CardSearchParam:
 
 
 # pylint: disable=abstract-method
-class BranchParam(CardSearchParam):
+class BranchParam(CardSearchParam, ABC):
     """
     The base branching parameter class (subclassed to "and" and "or" parameters)
     """
@@ -163,9 +163,9 @@ class CardNameParam(CardSearchParam):
 
     def query(self) -> Q:
         if self.match_exact:
-            query = Q(name__iexact=self.card_name)
+            query = Q(card__name__iexact=self.card_name)
         else:
-            query = Q(name__icontains=self.card_name)
+            query = Q(card__name__icontains=self.card_name)
 
         return ~query if self.negated else query
 
@@ -201,31 +201,31 @@ class CardRulesTextParam(CardSearchParam):
     def query(self) -> Q:
         if "~" not in self.card_rules:
             if self.regex_match:
-                query = Q(rules_text__iregex=self.card_rules)
+                query = Q(card__rules_text__iregex=self.card_rules)
             elif self.exact_match:
-                query = Q(rules_text__iexact=self.card_rules)
+                query = Q(card__rules_text__iexact=self.card_rules)
             else:
-                query = Q(rules_text__icontains=self.card_rules)
+                query = Q(card__rules_text__icontains=self.card_rules)
             return ~query if self.negated else query
 
         chunks = [Value(c) for c in self.card_rules.split("~")]
         params = [F("name")] * (len(chunks) * 2 - 1)
         params[0::2] = chunks
         if self.regex_match:
-            query = Q(rules_text__iregex=Concat(*params))
+            query = Q(card__rules_text__iregex=Concat(*params))
         elif self.exact_match:
-            query = Q(rules_text__iexact=Concat(*params))
+            query = Q(card__rules_text__iexact=Concat(*params))
         else:
-            query = Q(rules_text__icontains=Concat(*params))
+            query = Q(card__rules_text__icontains=Concat(*params))
 
         params = [Value("this spell")] * (len(chunks) * 2 - 1)
         params[0::2] = chunks
         if self.regex_match:
-            query |= Q(rules_text__iregex=Concat(*params))
+            query |= Q(card__rules_text__iregex=Concat(*params))
         elif self.exact_match:
-            query |= Q(rules_text__iexact=Concat(*params))
+            query |= Q(card__rules_text__iexact=Concat(*params))
         else:
-            query |= Q(rules_text__icontains=Concat(*params))
+            query |= Q(card__rules_text__icontains=Concat(*params))
 
         return ~query if self.negated else query
 
@@ -253,7 +253,7 @@ class CardFlavourTextParam(CardSearchParam):
         self.flavour_text = flavour_text
 
     def query(self) -> Q:
-        return Q(printings__flavour_text__icontains=self.flavour_text)
+        return Q(flavour_text__icontains=self.flavour_text)
 
 
 class CardTypeParam(CardSearchParam):
@@ -266,7 +266,7 @@ class CardTypeParam(CardSearchParam):
         self.card_type = card_type
 
     def query(self) -> Q:
-        return Q(type__icontains=self.card_type)
+        return Q(card__type__icontains=self.card_type)
 
 
 class CardSubtypeParam(CardSearchParam):
@@ -279,7 +279,7 @@ class CardSubtypeParam(CardSearchParam):
         self.card_subtype = card_subtype
 
     def query(self) -> Q:
-        return Q(subtype__icontains=self.card_subtype)
+        return Q(card__subtype__icontains=self.card_subtype)
 
 
 class CardGenericTypeParam(CardSearchParam):
@@ -298,10 +298,12 @@ class CardGenericTypeParam(CardSearchParam):
         :return: The search Q object
         """
         if self.operator == "=":
-            result = Q(type__iexact=self.card_type) | Q(subtype__iexact=self.card_type)
+            result = Q(card__type__iexact=self.card_type) | Q(
+                card__subtype__iexact=self.card_type
+            )
         else:
-            result = Q(type__icontains=self.card_type) | Q(
-                subtype__icontains=self.card_type
+            result = Q(card__type__icontains=self.card_type) | Q(
+                card__subtype__icontains=self.card_type
             )
         return ~result if self.negated else result
 
@@ -335,7 +337,7 @@ class CardColourParam(CardSearchParam):
         self.card_colour = card_colour
 
     def query(self) -> Q:
-        return Q(colour_flags=self.card_colour)
+        return Q(card__colour_flags=self.card_colour)
 
 
 class CardComplexColourParam(CardSearchParam):
@@ -365,7 +367,7 @@ class CardComplexColourParam(CardSearchParam):
         Gets the Q query object
         :return: The Q query object
         """
-        field = "colour_identity_flags" if self.identity else "colour_flags"
+        field = "card__colour_identity_flags" if self.identity else "card__colour_flags"
         if self.operator == ">=":
             return (
                 ~Q(**{field: self.colours})
@@ -394,7 +396,7 @@ class CardComplexColourParam(CardSearchParam):
                     exclude &= ~Q(**{field: colour.bit_value})
 
             if self.identity:
-                include |= Q(colour_identity_flags=0)
+                include |= Q(card__colour_identity_flags=0)
 
             if self.operator == "<":
                 result = include & exclude & ~Q(**{field: self.colours})
@@ -436,7 +438,7 @@ class CardColourIdentityParam(CardSearchParam):
         self.colour_identity = colour_identity
 
     def query(self) -> Q:
-        return Q(colour_identity_flags=self.colour_identity)
+        return Q(card__colour_identity_flags=self.colour_identity)
 
 
 class CardMulticolouredOnlyParam(CardSearchParam):
@@ -445,7 +447,7 @@ class CardMulticolouredOnlyParam(CardSearchParam):
     """
 
     def query(self) -> Q:
-        return Q(colour_count__gt=1)
+        return Q(card__colour_count__gt=1)
 
 
 class CardSetParam(CardSearchParam):
@@ -458,7 +460,7 @@ class CardSetParam(CardSearchParam):
         self.set_obj: Set = set_obj
 
     def query(self) -> Q:
-        return Q(printings__set=self.set_obj)
+        return Q(set=self.set_obj)
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
         return "set " + ("isn't" if self.negated else "is") + f" {self.set_obj.name}"
@@ -474,7 +476,7 @@ class CardBlockParam(CardSearchParam):
         self.block_obj = block_obj
 
     def query(self) -> Q:
-        return Q(printings__set__block=self.block_obj)
+        return Q(set__block=self.block_obj)
 
 
 class CardOwnerParam(CardSearchParam):
@@ -487,9 +489,7 @@ class CardOwnerParam(CardSearchParam):
         self.user = user
 
     def query(self) -> Q:
-        return Q(
-            printings__printed_languages__physical_cards__ownerships__owner=self.user
-        )
+        return Q(printed_languages__physical_cards__ownerships__owner=self.user)
 
 
 class CardManaCostParam(CardSearchParam):
@@ -503,7 +503,11 @@ class CardManaCostParam(CardSearchParam):
         self.exact_match = exact_match
 
     def query(self) -> Q:
-        return Q(cost=self.cost) if self.exact_match else Q(cost__icontains=self.cost)
+        return (
+            Q(card__cost=self.cost)
+            if self.exact_match
+            else Q(card__cost__icontains=self.cost)
+        )
 
 
 SYMBOL_REMAPPING = {
@@ -574,9 +578,11 @@ class CardManaCostComplexParam(CardSearchParam):
             if num is not None:
                 pass
             else:
-                query &= Q(cost__icontains=("{" + symbol + "}") * count)
+                query &= Q(card__cost__icontains=("{" + symbol + "}") * count)
                 if self.operator == "=":
-                    query &= ~Q(cost__icontains=("{" + symbol + "}") * (count + 1))
+                    query &= ~Q(
+                        card__cost__icontains=("{" + symbol + "}") * (count + 1)
+                    )
 
         return query
 
@@ -629,7 +635,7 @@ class CardNumPowerParam(CardNumericalParam):
     """
 
     def query(self) -> Q:
-        args = self.get_args("num_power")
+        args = self.get_args("card__num_power")
         query = Q(**args) & Q(power__isnull=False)
         return ~query if self.negated else query
 
@@ -643,7 +649,7 @@ class CardNumToughnessParam(CardNumericalParam):
     """
 
     def query(self) -> Q:
-        args = self.get_args("num_toughness")
+        args = self.get_args("card__num_toughness")
         return Q(**args) & Q(toughness__isnull=False)
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
@@ -656,7 +662,7 @@ class CardNumLoyaltyParam(CardNumericalParam):
     """
 
     def query(self) -> Q:
-        args = self.get_args("num_loyalty")
+        args = self.get_args("card__num_loyalty")
         return Q(**args)
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
@@ -669,7 +675,7 @@ class CardCmcParam(CardNumericalParam):
     """
 
     def query(self) -> Q:
-        args = self.get_args("cmc")
+        args = self.get_args("card__cmc")
         query = Q()
         if isinstance(self.number, F):
             query &= Q(**{"toughness__isnull": False})
@@ -698,9 +704,9 @@ class CardColourCountParam(CardNumericalParam):
         :return: The Q query object
         """
         args = (
-            self.get_args("colour_identity_count")
+            self.get_args("card__colour_identity_count")
             if self.identity
-            else self.get_args("colour_count")
+            else self.get_args("card__colour_count")
         )
         return Q(**args)
 
@@ -747,7 +753,7 @@ class CardOwnershipCountParam(CardNumericalParam):
 
         kwargs = {f"ownership_count{OPERATOR_MAPPING[self.operator]}": self.number}
         query = Q(**kwargs)
-        return Q(id__in=annotated_result.filter(query))
+        return Q(card_id__in=annotated_result.filter(query))
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
         """

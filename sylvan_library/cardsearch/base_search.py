@@ -134,8 +134,9 @@ class BaseSearch:
         Gets the queryset of the search
         :return: The search queryset
         """
-        queryset = Card.objects.filter(self.root_parameter.query()).distinct()
-
+        queryset = CardPrinting.objects.filter(self.root_parameter.query()).distinct()
+        # TODO: Need to handle printing and card searches separately somehow
+        queryset = Card.objects.filter(printings__in=queryset).distinct()
         # Add some default sort params to ensure stable ordering
         self.add_sort_param(CardNameSortParam())
         self.add_sort_param(CardColourSortParam())
