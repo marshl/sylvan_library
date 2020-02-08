@@ -29,9 +29,9 @@ from .card_power_toughness_parameters import (
 from .card_rarity_parameter import CardRarityParam
 from .card_set_parameters import CardSetParam, CardBlockParam
 from .card_type_parameters import CardGenericTypeParam, CardSubtypeParam, CardTypeParam
-from .flavour_text_parameter import CardFlavourTextParam
-from .name_parameters import CardNameParam
-from .rules_text_parameter import CardRulesTextParam, CardProducesManaParam
+from .card_flavour_text_parameter import CardFlavourTextParam
+from .card_name_parameters import CardNameParam
+from .card_rules_text_parameter import CardRulesTextParam, CardProducesManaParam
 
 
 class CardSortParam:

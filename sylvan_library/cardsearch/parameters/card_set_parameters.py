@@ -9,7 +9,7 @@ from .base_parameters import CardSearchParam
 
 class CardSetParam(CardSearchParam):
     """
-    The parameer for searching by a card's set
+    The parameter for searching by a card's set
     """
 
     def __init__(self, set_obj: Set):
