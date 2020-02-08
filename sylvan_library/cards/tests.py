@@ -64,6 +64,7 @@ def create_test_card_printing(card: Card, set_obj: Set, fields: dict) -> CardPri
     printing.rarity = create_test_rarity("Common", "C")
     printing.is_starter = False
     printing.is_timeshifted = fields.get("is_timeshifted", False)
+    printing.json_id = uuid.uuid4()
 
     for key, value in fields.items():
         printing.__dict__[key] = value
@@ -127,7 +128,9 @@ def create_test_set(name: str, setcode: str, fields: dict) -> Set:
     :param fields: Other fields
     :return: A set object
     """
-    set_obj = Set(name=name, code=setcode, total_set_size=0)
+    set_obj, created = Set.objects.get_or_create(
+        name=name, code=setcode, total_set_size=0
+    )
 
     for key, value in fields.items():
         set_obj.__dict__[key] = value
@@ -144,10 +147,9 @@ def create_test_rarity(name: str, symbol: str) -> Rarity:
     :param symbol: The rarity symbl
     :return: The dummy rarity object
     """
-    rarity = Rarity(name=str, symbol=symbol)
-    rarity.name = name
-    rarity.display_order = 1
-    rarity.save()
+    rarity, created = Rarity.objects.get_or_create(
+        name=name, symbol=symbol, display_order=1
+    )
     return rarity
 
 

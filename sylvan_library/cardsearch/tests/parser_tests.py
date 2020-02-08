@@ -4,7 +4,7 @@ Tests for the parser (search parameter tests are elsewhere)
 from django.test import TestCase
 
 from cards.models import Card
-from cards.tests import create_test_card
+from cards.tests import create_test_card, create_test_set, create_test_card_printing
 from cardsearch.parameters import (
     AndParam,
     OrParam,
@@ -236,6 +236,35 @@ class ParserTests(TestCase):
         self.assertEqual(root_param.symbol_counts["u"], 1)
         self.assertEqual(root_param.symbol_counts["b"], 0)
 
+    def test_mana_2ww_param(self) -> None:
+        """
+        Tests a mana cost query is converted to the right parameters
+        """
+        root_param = self.parser.parse("m:2WW")
+        self.assertIsInstance(root_param, CardManaCostComplexParam)
+        self.assertFalse(root_param.negated)
+        self.assertEqual(root_param.symbol_counts["2"], 1)
+        self.assertEqual(root_param.symbol_counts["w"], 2)
+        self.assertEqual(root_param.symbol_counts["u"], 0)
+        self.assertEqual(root_param.symbol_counts["b"], 0)
+        self.assertEqual(root_param.symbol_counts["r"], 0)
+        self.assertEqual(root_param.symbol_counts["g"], 0)
+
+    def test_mana_3wu_param(self) -> None:
+        """
+        Tests a mana cost query is converted to the right parameters
+        """
+        root_param = self.parser.parse("mana>3wu")
+        self.assertIsInstance(root_param, CardManaCostComplexParam)
+        self.assertFalse(root_param.negated)
+        self.assertEquals(root_param.operator, ">")
+        self.assertEqual(root_param.symbol_counts["3"], 1)
+        self.assertEqual(root_param.symbol_counts["w"], 1)
+        self.assertEqual(root_param.symbol_counts["u"], 1)
+        self.assertEqual(root_param.symbol_counts["b"], 0)
+        self.assertEqual(root_param.symbol_counts["r"], 0)
+        self.assertEqual(root_param.symbol_counts["g"], 0)
+
 
 class ColourContainsTestCase(TestCase):
     """
@@ -243,11 +272,24 @@ class ColourContainsTestCase(TestCase):
     """
 
     def setUp(self) -> None:
+        self.set_obj = create_test_set("Setty", "SET", {})
         self.red_card = create_test_card({"colour_flags": Card.colour_flags.red})
+        self.red_card_printing = create_test_card_printing(
+            self.red_card, self.set_obj, {}
+        )
+
         self.green_card = create_test_card({"colour_flags": Card.colour_flags.green})
+        self.green_card_printing = create_test_card_printing(
+            self.green_card, self.set_obj, {}
+        )
+
         self.red_green_card = create_test_card(
             {"colour_flags": Card.colour_flags.red | Card.colour_flags.green}
         )
+        self.red_green_card_printing = create_test_card_printing(
+            self.red_green_card, self.set_obj, {}
+        )
+
         self.red_green_black_card = create_test_card(
             {
                 "colour_flags": Card.colour_flags.red
@@ -255,9 +297,17 @@ class ColourContainsTestCase(TestCase):
                 | Card.colour_flags.black
             }
         )
+        self.red_green_black_card_printing = create_test_card_printing(
+            self.red_green_black_card, self.set_obj, {}
+        )
+
         self.blue_red_card = create_test_card(
             {"colour_flags": Card.colour_flags.blue | Card.colour_flags.red}
         )
+        self.blue_red_card_printing = create_test_card_printing(
+            self.blue_red_card, self.set_obj, {}
+        )
+
         self.parse_search = ParseSearch()
 
     def tearDown(self):
