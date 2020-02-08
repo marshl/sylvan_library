@@ -91,6 +91,11 @@ COLOUR_NAMES_TO_FLAGS = {
     | Card.colour_flags.blue
     | Card.colour_flags.black
     | Card.colour_flags.red,
+    "all": Card.colour_flags.white
+    | Card.colour_flags.blue
+    | Card.colour_flags.black
+    | Card.colour_flags.red
+    | Card.colour_flags.green,
 }
 
 
@@ -371,7 +376,11 @@ def parse_produces_param(param_args: ParameterArgs) -> CardProducesManaParam:
     :param param_args: The parameter arguments
     :return:
     """
-    return CardProducesManaParam(text_to_colours(param_args.text), param_args.operator)
+    if param_args.text == "any":
+        return CardProducesManaParam(0, param_args.operator, any_colour=True)
+
+    colours = text_to_colours(param_args.text)
+    return CardProducesManaParam(colours, param_args.operator)
 
 
 @param_parser(
@@ -387,6 +396,9 @@ def parse_colour_identity_param(
     :param param_args: The parameter arguments
     :return:
     """
+    if param_args.text == "all":
+        param_args.operator = ">="
+
     try:
         num = int(param_args.text)
         return CardColourCountParam(num, param_args.operator, identity=True)

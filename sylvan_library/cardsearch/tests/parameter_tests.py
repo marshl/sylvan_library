@@ -4,7 +4,7 @@ The module for searching tests
 
 from django.test import TestCase
 
-from cards.models import Card, Set, CardPrinting
+from cards.models import Set, CardPrinting
 from cards.tests import create_test_card, create_test_card_printing, create_test_set
 from cardsearch.parameters import (
     AndParam,

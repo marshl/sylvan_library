@@ -128,9 +128,7 @@ def create_test_set(name: str, setcode: str, fields: dict) -> Set:
     :param fields: Other fields
     :return: A set object
     """
-    set_obj, created = Set.objects.get_or_create(
-        name=name, code=setcode, total_set_size=0
-    )
+    set_obj, _ = Set.objects.get_or_create(name=name, code=setcode, total_set_size=0)
 
     for key, value in fields.items():
         set_obj.__dict__[key] = value
@@ -147,9 +145,7 @@ def create_test_rarity(name: str, symbol: str) -> Rarity:
     :param symbol: The rarity symbl
     :return: The dummy rarity object
     """
-    rarity, created = Rarity.objects.get_or_create(
-        name=name, symbol=symbol, display_order=1
-    )
+    rarity, _ = Rarity.objects.get_or_create(name=name, symbol=symbol, display_order=1)
     return rarity
 
 

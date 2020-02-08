@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 """
 The module for all search parameters
 """
@@ -40,7 +41,33 @@ NUMERICAL_OPERATOR_CHOICES = (
 )
 
 
-def validate_colour_flags(colours: int):
+def or_group_queries(q_objects: List[Q]) -> Q:
+    """
+    Groups a list of Q query objects into an or group
+    :param q_objects: The Q objects to group
+    :return: The grouped queries
+    """
+    if not q_objects:
+        return Q()
+    return reduce(lambda a, b: a | b, q_objects)
+
+
+def and_group_queries(q_objects: List[Q]) -> Q:
+    """
+    Groups a list of Q query objects into an and group
+    :param q_objects: The Q objects to group
+    :return: The grouped queries
+    """
+    if not q_objects:
+        return Q()
+    return reduce(lambda a, b: a & b, q_objects)
+
+
+def validate_colour_flags(colours: int) -> None:
+    """
+    Validates that the given colour flags do exist
+    :param colours: The colours to validate
+    """
     assert colours >= 0
     assert colours <= (
         Card.colour_flags.white
@@ -52,9 +79,14 @@ def validate_colour_flags(colours: int):
 
 
 def colour_flags_to_symbols(colours: int) -> str:
+    """
+    Converts colours flags to symbols
+    :param colours: The colours to convert to symbols
+    :return: The symbols of the given colours
+    """
     colour_names = ""
     for colour in Colour.objects.all():
-        if colour.bit_value & colours:
+        if colour.bit_value & colours == colour.bit_value:
             colour_names += colour.symbol
 
     return colour_names
@@ -716,6 +748,7 @@ class CardColourCountParam(CardNumericalParam):
     def __init__(self, number: int, operator: str, identity: bool = False):
         super().__init__(number, operator)
         self.identity = identity
+        self.operator = "=" if self.identity and operator == ":" else operator
 
     def query(self) -> Q:
         """
@@ -814,49 +847,68 @@ class CardIsPhyrexianParam(CardSearchParam):
         return "card " + ("isn't" if self.negated else "is") + " phyrexian"
 
 
+def get_produces_query_for_colour(colour: Colour):
+    """
+    Gets the Q object for searching
+    :param colour: The colour to get produce query for
+    :return: The Q search object
+    """
+    query = Q(card__rules_text__iregex=r"adds?\W[^\n]*?{" + colour.symbol + "}")
+    if colour.symbol != "C":
+        query |= Q(card__rules_text__iregex=r"adds?\W[^\n]*?any color")
+    return query
+
+
 class CardProducesManaParam(CardSearchParam):
-    def __init__(self, colours: int, operator: str = "="):
+    """
+    Parameter for the mana that a card can produce
+    """
+
+    def __init__(self, colours: int, operator: str = "=", any_colour: bool = False):
         super().__init__()
         validate_colour_flags(colours)
 
         self.colours = colours
         self.operator = "=" if operator == ":" else operator
-
-    def get_colour_query_part(self, colour: Colour):
-        return Q(card__rules_text__iregex=":.*?add[^\n]*?{" + colour.symbol + "}") | Q(
-            card__rules_text__iregex=":.*?add[^\n]*?any color"
-        )
+        self.any_colour = any_colour
 
     def query(self) -> Q:
+        if self.any_colour:
+            query = Q(card__rules_text__iregex=r"adds?\W")
+            return ~query if self.negated else query
+
         included_colours: List[Q] = []
         excluded_colours: List[Q] = []
 
-        for colour in Colour.objects.exclude(symbol="C"):
-            query_part = self.get_colour_query_part(colour)
-            if bool(colour.bit_value & self.colours):
+        for colour in Colour.objects.all():
+            query_part = get_produces_query_for_colour(colour)
+            included = colour.bit_value & self.colours == colour.bit_value
+
+            if included:
                 included_colours.append(query_part)
             else:
                 excluded_colours.append(query_part)
 
         if self.operator in ("<", "<="):
-            query = reduce(lambda a, b: a | b, included_colours) & ~reduce(
-                lambda a, b: a | b, excluded_colours
+            query = or_group_queries(included_colours) & ~or_group_queries(
+                included_colours
             )
 
             if self.operator == "<":
-                query &= ~reduce(lambda a, b: a & b, included_colours)
+                query &= ~and_group_queries(included_colours)
         else:
-            query = reduce(lambda a, b: a & b, included_colours)
+            query = and_group_queries(included_colours)
             if self.operator == "=":
-                query &= ~reduce(lambda a, b: a | b, excluded_colours)
+                query &= ~or_group_queries(excluded_colours)
             elif self.operator == ">":
-                query &= reduce(lambda a, b: a | b, excluded_colours)
+                query &= or_group_queries(excluded_colours)
 
         return ~query if self.negated else query
 
     def get_pretty_str(self, within_or_block: bool = False) -> str:
         verb = "doesn't produce" if self.negated else "produces"
-        return f"card {verb} {self.operator} {colour_flags_to_symbols(self.colours)}"
+        colour_names = colour_flags_to_symbols(self.colours)
+        return f"card {verb} {self.operator} {colour_names}"
 
 
 class CardHasWatermarkParam(CardSearchParam):

@@ -257,7 +257,7 @@ class ParserTests(TestCase):
         root_param = self.parser.parse("mana>3wu")
         self.assertIsInstance(root_param, CardManaCostComplexParam)
         self.assertFalse(root_param.negated)
-        self.assertEquals(root_param.operator, ">")
+        self.assertEqual(root_param.operator, ">")
         self.assertEqual(root_param.symbol_counts["3"], 1)
         self.assertEqual(root_param.symbol_counts["w"], 1)
         self.assertEqual(root_param.symbol_counts["u"], 1)
@@ -267,6 +267,7 @@ class ParserTests(TestCase):
 
 
 class ColourContainsTestCase(TestCase):
+    # pylint: disable=too-many-instance-attributes
     """
     Tests for the card name parameter
     """
