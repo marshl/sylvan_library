@@ -4,6 +4,7 @@ The module for all search parameters
 import logging
 from abc import ABC
 from collections import Counter
+from functools import reduce
 from typing import List, Union
 
 from bitfield.types import Bit
@@ -37,6 +38,26 @@ NUMERICAL_OPERATOR_CHOICES = (
     ("LTE", "<="),
     ("EQ", "="),
 )
+
+
+def validate_colour_flags(colours: int):
+    assert colours >= 0
+    assert colours <= (
+        Card.colour_flags.white
+        | Card.colour_flags.blue
+        | Card.colour_flags.black
+        | Card.colour_flags.red
+        | Card.colour_flags.green
+    )
+
+
+def colour_flags_to_symbols(colours: int) -> str:
+    colour_names = ""
+    for colour in Colour.objects.all():
+        if colour.bit_value & colours:
+            colour_names += colour.symbol
+
+    return colour_names
 
 
 class CardSearchParam:
@@ -132,7 +153,7 @@ class OrParam(BranchParam):
 
         query = Q()
         for child in self.child_parameters:
-            query.add(child.query(), Q.OR)
+            query |= child.query()
 
         return ~query if self.negated else query
 
@@ -347,14 +368,7 @@ class CardComplexColourParam(CardSearchParam):
 
     def __init__(self, colours: int, operator: str = "=", identity: bool = False):
         super().__init__()
-        assert colours >= 0
-        assert colours <= (
-            Card.colour_flags.white
-            | Card.colour_flags.blue
-            | Card.colour_flags.black
-            | Card.colour_flags.red
-            | Card.colour_flags.green
-        )
+        validate_colour_flags(colours)
         self.colours = colours
         if operator == ":":
             self.operator = "<=" if identity else ">="
@@ -419,13 +433,10 @@ class CardComplexColourParam(CardSearchParam):
                 else "the cards are colourless"
             )
 
-        colour_names = ""
-        for colour in Colour.objects.all():
-            if colour.bit_value & self.colours:
-                colour_names += colour.symbol
-
         param_type = "colour identity" if self.identity else "colours"
-        return f"the {param_type} {self.operator} {colour_names}"
+        return (
+            f"the {param_type} {self.operator} {colour_flags_to_symbols(self.colours)}"
+        )
 
 
 class CardColourIdentityParam(CardSearchParam):
@@ -576,7 +587,12 @@ class CardManaCostComplexParam(CardSearchParam):
                 pass
 
             if num is not None:
-                query &= Q(card__generic_mana_count__gte=num)
+                query &= Q(
+                    **{
+                        "card__generic_mana_count"
+                        + OPERATOR_MAPPING[self.operator]: num
+                    }
+                )
             else:
                 query &= Q(card__cost__icontains=("{" + symbol + "}") * count)
                 if self.operator == "=":
@@ -783,6 +799,64 @@ class CardHasColourIndicatorParam(CardSearchParam):
             + ("doesn't have" if self.negated else "has")
             + " a colour indicator"
         )
+
+
+class CardIsPhyrexianParam(CardSearchParam):
+    """
+    Parameter for whether a card has any phyrexian mana symbols or not
+    """
+
+    def query(self) -> Q:
+        query = Q(card__cost__icontains="/p") | Q(card__rules_text__icontains="/p")
+        return ~query if self.negated else query
+
+    def get_pretty_str(self, within_or_block: bool = False) -> str:
+        return "card " + ("isn't" if self.negated else "is") + " phyrexian"
+
+
+class CardProducesManaParam(CardSearchParam):
+    def __init__(self, colours: int, operator: str = "="):
+        super().__init__()
+        validate_colour_flags(colours)
+
+        self.colours = colours
+        self.operator = "=" if operator == ":" else operator
+
+    def get_colour_query_part(self, colour: Colour):
+        return Q(card__rules_text__iregex=":.*?add[^\n]*?{" + colour.symbol + "}") | Q(
+            card__rules_text__iregex=":.*?add[^\n]*?any color"
+        )
+
+    def query(self) -> Q:
+        included_colours: List[Q] = []
+        excluded_colours: List[Q] = []
+
+        for colour in Colour.objects.exclude(symbol="C"):
+            query_part = self.get_colour_query_part(colour)
+            if bool(colour.bit_value & self.colours):
+                included_colours.append(query_part)
+            else:
+                excluded_colours.append(query_part)
+
+        if self.operator in ("<", "<="):
+            query = reduce(lambda a, b: a | b, included_colours) & ~reduce(
+                lambda a, b: a | b, excluded_colours
+            )
+
+            if self.operator == "<":
+                query &= ~reduce(lambda a, b: a & b, included_colours)
+        else:
+            query = reduce(lambda a, b: a & b, included_colours)
+            if self.operator == "=":
+                query &= ~reduce(lambda a, b: a | b, excluded_colours)
+            elif self.operator == ">":
+                query &= reduce(lambda a, b: a | b, excluded_colours)
+
+        return ~query if self.negated else query
+
+    def get_pretty_str(self, within_or_block: bool = False) -> str:
+        verb = "doesn't produce" if self.negated else "produces"
+        return f"card {verb} {self.operator} {colour_flags_to_symbols(self.colours)}"
 
 
 class CardHasWatermarkParam(CardSearchParam):

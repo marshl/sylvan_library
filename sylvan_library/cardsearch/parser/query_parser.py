@@ -29,6 +29,8 @@ from cardsearch.parameters import (
     CardHasColourIndicatorParam,
     CardHasWatermarkParam,
     CardIsReprintParam,
+    CardIsPhyrexianParam,
+    CardProducesManaParam,
 )
 from .base_parser import Parser, ParseError
 
@@ -286,6 +288,8 @@ def parse_is_param(param_args: ParameterArgs) -> CardSearchParam:
         param = CardIsReprintParam()
     elif param_args.text == "indicator":
         param = CardHasColourIndicatorParam()
+    elif param_args.text == "phyrexian":
+        param = CardIsPhyrexianParam()
     elif param_args.text == "watermark":
         param = CardHasWatermarkParam()
     else:
@@ -354,6 +358,20 @@ def parse_colour_param(
     return CardComplexColourParam(
         text_to_colours(param_args.text), param_args.operator, identity=False
     )
+
+
+@param_parser(
+    name="produces",
+    keywords=["p", "produce", "produces"],
+    operators=[":", "=", "<", "<=", ">", ">="],
+)
+def parse_produces_param(param_args: ParameterArgs) -> CardProducesManaParam:
+    """
+    Parses a card produces colour param
+    :param param_args: The parameter arguments
+    :return:
+    """
+    return CardProducesManaParam(text_to_colours(param_args.text), param_args.operator)
 
 
 @param_parser(
