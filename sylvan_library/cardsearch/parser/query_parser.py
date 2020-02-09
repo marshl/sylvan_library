@@ -2,6 +2,7 @@
 Module for the card query recursive descent parser
 """
 import inspect
+import math
 import sys
 from typing import Union, Optional, Dict, Callable, List
 
@@ -112,7 +113,9 @@ class ParameterArgs:
         self.context_user = context_user
 
 
-def parse_numeric_parameter(param_name: str, operator: str, text: str) -> Union[int, F]:
+def parse_numeric_parameter(
+    param_name: str, operator: str, text: str
+) -> Union[float, F]:
     """
     Parses a numeric parameter and returns the value that should be used for an operator
     :param param_name: The name of the parameter
@@ -135,8 +138,11 @@ def parse_numeric_parameter(param_name: str, operator: str, text: str) -> Union[
     if text in ("cmc", "cost"):
         return F("cmc")
 
+    if text in ("inf", "infinity", "∞"):
+        return math.inf
+
     try:
-        return int(text)
+        return float(text)
     except ValueError:
         raise ValueError(f"Could not convert {text} to number")
 

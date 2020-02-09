@@ -203,7 +203,7 @@ class CardNumericalParam(CardSearchParam, ABC):
     The base parameter for searching by some numerical value
     """
 
-    def __init__(self, number: Union[int, F], operator: str):
+    def __init__(self, number: Union[float, F], operator: str):
         super().__init__()
         self.number = number
         self.operator = operator
