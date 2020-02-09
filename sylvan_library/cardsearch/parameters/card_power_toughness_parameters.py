@@ -13,7 +13,7 @@ class CardNumPowerParam(CardNumericalParam):
 
     def query(self) -> Q:
         args = self.get_args("card__num_power")
-        query = Q(**args) & Q(power__isnull=False)
+        query = Q(**args) & Q(card__power__isnull=False)
         return ~query if self.negated else query
 
     def get_pretty_str(self) -> str:
@@ -27,7 +27,7 @@ class CardNumToughnessParam(CardNumericalParam):
 
     def query(self) -> Q:
         args = self.get_args("card__num_toughness")
-        return Q(**args) & Q(toughness__isnull=False)
+        return Q(**args) & Q(card__toughness__isnull=False)
 
     def get_pretty_str(self) -> str:
         return f"the toughness {self.operator} {self.number}"
