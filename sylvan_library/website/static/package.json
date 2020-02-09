@@ -9,7 +9,7 @@
     "jquery": "^3.4.1",
     "jquery-ui-dist": "^1.12.1",
     "js-cookie": "^2.2.1",
-    "keyrune": "^3.6.2",
-    "mana-font": "^1.4.1"
+    "keyrune": "^3.6.3",
+    "mana-font": "^1.6.0"
   }
 }
