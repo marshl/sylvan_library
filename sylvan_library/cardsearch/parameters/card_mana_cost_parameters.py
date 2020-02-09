@@ -26,7 +26,7 @@ class CardManaCostParam(CardSearchParam):
             else Q(card__cost__icontains=self.cost)
         )
 
-    def get_pretty_str(self, within_or_block: bool = False) -> str:
+    def get_pretty_str(self) -> str:
         verb = "isn't" if self.negated else "is"
         if self.exact_match:
             verb = f"{verb} exactly"
@@ -114,11 +114,10 @@ class CardManaCostComplexParam(CardSearchParam):
 
         return query
 
-    def get_pretty_str(self, within_or_block: bool = False) -> str:
+    def get_pretty_str(self) -> str:
         """
         Returns a human readable version of this parameter
         (and all sub parameters for those with children)
-        :param within_or_block: Whether this it being output inside an OR block
         :return: The pretty version of this parameter
         """
         return f"mana cost {'does not contain' if self.negated else 'contains'} {self.cost_text}"
@@ -146,11 +145,10 @@ class CardColourCountParam(CardNumericalParam):
         )
         return Q(**args)
 
-    def get_pretty_str(self, within_or_block: bool = False) -> str:
+    def get_pretty_str(self) -> str:
         """
         Returns a human readable version of this parameter
         (and all sub parameters for those with children)
-        :param within_or_block: Whether this it being output inside an OR block
         :return: The pretty version of this parameter
         """
         return (
@@ -172,7 +170,7 @@ class CardCmcParam(CardNumericalParam):
             query &= Q(**{"toughness__isnull": False})
         return query & Q(**args)
 
-    def get_pretty_str(self, within_or_block: bool = False) -> str:
+    def get_pretty_str(self) -> str:
         return (
             "cmd "
             + ("isn't " if self.negated else "")

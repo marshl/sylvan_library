@@ -102,11 +102,10 @@ class CardSearchParam:
         """
         raise NotImplementedError("Please implement this method")
 
-    def get_pretty_str(self, within_or_block: bool = False) -> str:
+    def get_pretty_str(self) -> str:
         """
         Returns a human readable version of this parameter
         (and all sub parameters for those with children)
-        :param within_or_block: Whether this it being output inside an OR block
         :return: The pretty version of this parameter
         """
         raise NotImplementedError(
@@ -152,18 +151,20 @@ class AndParam(BranchParam):
             return ~query
         return query
 
-    def get_pretty_str(self, within_or_block: bool = False) -> str:
+    def get_pretty_str(self) -> str:
         """
         Returns a human readable version of this parameter
         (and all sub parameters for those with children)
-        :param within_or_block: Whether this it being output inside an OR block
         :return: The pretty version of this parameter
         """
         if len(self.child_parameters) == 1:
             return self.child_parameters[0].get_pretty_str()
-        result = " and ".join(param.get_pretty_str() for param in self.child_parameters)
-        if within_or_block:
-            return "(" + result + ")"
+        result = " and ".join(
+            "(" + param.get_pretty_str() + ")"
+            if isinstance(param, OrParam) and len(param.child_parameters) > 1
+            else param.get_pretty_str()
+            for param in self.child_parameters
+        )
 
         return result
 
@@ -184,19 +185,16 @@ class OrParam(BranchParam):
 
         return ~query if self.negated else query
 
-    def get_pretty_str(self, within_or_block: bool = False) -> str:
+    def get_pretty_str(self) -> str:
         """
         Returns a human readable version of this parameter
         (and all sub parameters for those with children)
-        :param within_or_block: Whether this it being output inside an OR block
         :return: The pretty version of this parameter
         """
         if len(self.child_parameters) == 1:
             return self.child_parameters[0].get_pretty_str()
-        return " or ".join(
-            param.get_pretty_str(within_or_block=True)
-            for param in self.child_parameters
-        )
+
+        return " or ".join(param.get_pretty_str() for param in self.child_parameters)
 
 
 class CardNumericalParam(CardSearchParam, ABC):

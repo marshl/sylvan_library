@@ -24,11 +24,10 @@ class CardNameParam(CardSearchParam):
 
         return ~query if self.negated else query
 
-    def get_pretty_str(self, within_or_block: bool = False) -> str:
+    def get_pretty_str(self) -> str:
         """
         Returns a human readable version of this parameter
         (and all sub parameters for those with children)
-        :param within_or_block: Whether this it being output inside an OR block
         :return: The pretty version of this parameter
         """
         if self.negated:

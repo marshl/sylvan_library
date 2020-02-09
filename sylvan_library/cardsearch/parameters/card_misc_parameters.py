@@ -15,7 +15,7 @@ class CardIsPhyrexianParam(CardSearchParam):
         query = Q(card__cost__icontains="/p") | Q(card__rules_text__icontains="/p")
         return ~query if self.negated else query
 
-    def get_pretty_str(self, within_or_block: bool = False) -> str:
+    def get_pretty_str(self) -> str:
         return "card " + ("isn't" if self.negated else "is") + " phyrexian"
 
 
@@ -27,7 +27,7 @@ class CardHasWatermarkParam(CardSearchParam):
     def query(self) -> Q:
         return Q(watermark__isnull=self.negated)
 
-    def get_pretty_str(self, within_or_block: bool = False) -> str:
+    def get_pretty_str(self) -> str:
         return "card " + ("doesn't have " if self.negated else "has") + " a watermark"
 
 
@@ -39,7 +39,7 @@ class CardIsReprintParam(CardSearchParam):
     def query(self) -> Q:
         return Q(is_reprint=not self.negated)
 
-    def get_pretty_str(self, within_or_block: bool = False) -> str:
+    def get_pretty_str(self) -> str:
         return "card " + ("isn't" if self.negated else "is") + " a reprint"
 
 
@@ -52,7 +52,7 @@ class CardHasColourIndicatorParam(CardSearchParam):
         query = Q(card__colour_indicator_flags=0)
         return query if self.negated else ~query
 
-    def get_pretty_str(self, within_or_block: bool = False) -> str:
+    def get_pretty_str(self) -> str:
         return (
             "card "
             + ("doesn't have" if self.negated else "has")

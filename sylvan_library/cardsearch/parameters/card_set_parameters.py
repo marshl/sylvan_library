@@ -19,7 +19,7 @@ class CardSetParam(CardSearchParam):
     def query(self) -> Q:
         return Q(set=self.set_obj)
 
-    def get_pretty_str(self, within_or_block: bool = False) -> str:
+    def get_pretty_str(self) -> str:
         return "set " + ("isn't" if self.negated else "is") + f" {self.set_obj.name}"
 
 
@@ -35,6 +35,6 @@ class CardBlockParam(CardSearchParam):
     def query(self) -> Q:
         return Q(set__block=self.block_obj)
 
-    def get_pretty_str(self, within_or_block: bool = False) -> str:
+    def get_pretty_str(self) -> str:
         verb = "isn't" if self.negated else "is"
         return f"card {verb} in {self.block_obj}"

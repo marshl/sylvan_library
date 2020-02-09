@@ -19,5 +19,5 @@ class CardRarityParam(CardSearchParam):
     def query(self) -> Q:
         return Q(rarity=self.rarity)
 
-    def get_pretty_str(self, within_or_block: bool = False) -> str:
+    def get_pretty_str(self) -> str:
         return "rarity " + ("isn't" if self.negated else "is") + " " + self.rarity.name

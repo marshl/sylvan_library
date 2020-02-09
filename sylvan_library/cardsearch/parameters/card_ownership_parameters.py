@@ -21,7 +21,7 @@ class CardOwnerParam(CardSearchParam):
     def query(self) -> Q:
         return Q(printed_languages__physical_cards__ownerships__owner=self.user)
 
-    def get_pretty_str(self, within_or_block: bool = False) -> str:
+    def get_pretty_str(self) -> str:
         verb = "don't own" if self.negated else "own"
         return f"{verb} the card"
 
@@ -57,11 +57,10 @@ class CardOwnershipCountParam(CardNumericalParam):
         query = Q(**kwargs)
         return Q(card_id__in=annotated_result.filter(query))
 
-    def get_pretty_str(self, within_or_block: bool = False) -> str:
+    def get_pretty_str(self) -> str:
         """
         Returns a human readable version of this parameter
         (and all sub parameters for those with children)
-        :param within_or_block: Whether this it being output inside an OR block
         :return: The pretty version of this parameter
         """
         return f"you own {self.operator} {self.number}"
