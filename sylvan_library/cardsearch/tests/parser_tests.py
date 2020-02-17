@@ -23,7 +23,7 @@ class ParserTests(TestCase):
     Tests for teh CardQueryParser
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.parser = CardQueryParser()
 
     def test_single_unquoted_param(self) -> None:
@@ -311,7 +311,7 @@ class ColourContainsTestCase(TestCase):
 
         self.parse_search = ParseSearch()
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         self.red_card.delete()
         self.green_card.delete()
 

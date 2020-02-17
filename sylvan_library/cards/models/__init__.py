@@ -1,9 +1,11 @@
 """
 Models for the card app
 """
+import datetime
+
+from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import IntegerField
-from django.contrib.auth.models import User
 
 from cards.models.card import (
     Card,
@@ -14,12 +16,11 @@ from cards.models.card import (
     UserOwnedCard,
     UserCardChange,
 )
-from cards.models.sets import Block, Set, Format
-from cards.models.rarity import Rarity
+from cards.models.card_price import CardPrice
 from cards.models.colour import Colour
 from cards.models.decks import Deck, DeckCard
-from cards.models.card_price import CardPrice
-
+from cards.models.rarity import Rarity
+from cards.models.sets import Block, Set, Format
 
 CARD_LEGALITY_RESTRICTION_CHOICES = (
     ("Legal", "Legal"),
@@ -33,10 +34,12 @@ class CardRuling(models.Model):
     Model for a ruling made on a card
     """
 
-    date = models.DateField()
-    text = models.CharField(max_length=4000)
+    date: datetime.datetime = models.DateField()
+    text: str = models.CharField(max_length=4000)
 
-    card = models.ForeignKey(Card, related_name="rulings", on_delete=models.CASCADE)
+    card: Card = models.ForeignKey(
+        Card, related_name="rulings", on_delete=models.CASCADE
+    )
 
     class Meta:
         """
@@ -78,9 +81,11 @@ class CardTag(models.Model):
     Model for a user owned tag that can be applied to many cards
     """
 
-    name = models.CharField(max_length=200)
-    owner = models.ForeignKey(User, related_name="card_tags", on_delete=models.CASCADE)
-    cards = models.ManyToManyField(Card, related_name="tags")
+    name: str = models.CharField(max_length=200)
+    owner: User = models.ForeignKey(
+        User, related_name="card_tags", on_delete=models.CASCADE
+    )
+    cards: Card = models.ManyToManyField(Card, related_name="tags")
 
     def __str__(self):
         return self.name

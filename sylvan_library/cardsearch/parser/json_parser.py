@@ -2,7 +2,7 @@
 Example parser for JSON
 """
 
-from typing import Union, Tuple
+from typing import Union, Tuple, Any, Dict, List, Type
 from cardsearch.parser.base_parser import Parser, ParseError
 
 
@@ -30,14 +30,14 @@ class JSONParser(Parser):
 
             self.pos += 1
 
-    def start(self) -> Union[str, dict, list]:
+    def start(self) -> Union[str, Dict[str, Any], List[Any]]:
         """
         Starts parsing
         :return: The parse result
         """
         return self.match("any_type")
 
-    def any_type(self) -> Union[str, dict, list]:
+    def any_type(self) -> Union[str, Dict[Any, Any], List[Any]]:
         """
         Parses any value type
         :return: The parsed value
@@ -51,14 +51,14 @@ class JSONParser(Parser):
         """
         return self.match("null", "boolean", "quoted_string", "unquoted")
 
-    def complex_type(self) -> Union[list, dict]:
+    def complex_type(self) -> Union[List[Any], Dict[str, Any]]:
         """
         Parses any complex type
         :return: The parsed complex type
         """
         return self.match("list", "map")
 
-    def list(self) -> list:
+    def list(self) -> List[Any]:
         """
         Attempts to parse a list
         :return: The parsed list
@@ -99,7 +99,7 @@ class JSONParser(Parser):
         self.keyword("}")
         return result
 
-    def pair(self) -> Tuple[str, Union[str, dict, list]]:
+    def pair(self) -> Tuple[str, Union[str, Dict[str, Any], List[Any]]]:
         """
         Attempts to parse a key/value pair
         where the key is a string and the value can be a string dict or list
@@ -138,7 +138,7 @@ class JSONParser(Parser):
         :return: The unquoted string
         """
         acceptable_chars = "0-9A-Za-z \t!$%&()*+./;<=>?^_`|~-"
-        number_type = int
+        number_type: Type = int
 
         chars = [self.char(acceptable_chars)]
 

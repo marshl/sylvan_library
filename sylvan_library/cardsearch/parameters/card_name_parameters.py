@@ -11,7 +11,7 @@ class CardNameParam(CardSearchParam):
     The parameter for searching by a card's name
     """
 
-    def __init__(self, card_name, match_exact: bool = False):
+    def __init__(self, card_name, match_exact: bool = False) -> None:
         super().__init__()
         self.card_name = card_name
         self.match_exact = match_exact

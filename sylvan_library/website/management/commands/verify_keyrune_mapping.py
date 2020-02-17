@@ -18,10 +18,10 @@ class Command(BaseCommand):
 
     help = "Verifies that database update was successful"
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
-    def handle(self, *args, **options):
+    def handle(self, *args, **options) -> None:
         sass_path = os.path.join(
             "website", "static", "node_modules", "keyrune", "sass", "_variables.scss"
         )

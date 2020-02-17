@@ -25,12 +25,17 @@ class Command(BaseCommand):
         "download_tournament_decks_report"
     )
 
-    def __init__(self, stdout=None, stderr=None, no_color=False):
+    def __init__(
+        self,
+        stdout: Optional[OutputWrapper] = None,
+        stderr: Optional[OutputWrapper] = None,
+        no_color: bool = False,
+    ) -> None:
         self.rarities = ["C", "U", "R", "M"]
         register_matplotlib_converters()
         super().__init__(stdout=stdout, stderr=stderr, no_color=no_color)
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser) -> None:
         parser.add_argument(
             "--exclude-lands",
             action="store_true",
@@ -39,7 +44,7 @@ class Command(BaseCommand):
             help='Exclude all cards with the "land" type from the result',
         )
 
-    def handle(self, *args, **options):
+    def handle(self, *args, **options) -> None:
 
         if not options["exclude_lands"]:
             self.rarities.insert(0, "L")

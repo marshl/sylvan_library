@@ -17,12 +17,12 @@ class NameSearch(BaseSearch):
     The search form for a series of different fields
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.card_name = None
 
-    def build_parameters(self):
+    def build_parameters(self) -> None:
         if self.card_name:
             self.root_parameter.add_parameter(CardNameParam(self.card_name))
 

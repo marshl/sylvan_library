@@ -4,7 +4,7 @@ The module for the import_usercards command
 
 import logging
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction
 from django.contrib.auth.models import User
 
@@ -33,7 +33,7 @@ class Command(BaseCommand):
         self.user = None
         super().__init__(stdout=stdout, stderr=stderr, no_color=no_color)
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: CommandParser):
 
         # Positional arguments
         parser.add_argument(
@@ -43,7 +43,7 @@ class Command(BaseCommand):
             "filename", nargs=1, type=str, help="The file to import the cards from"
         )
 
-    def handle(self, *args, **options):
+    def handle(self, *args, **options) -> None:
 
         filename = options.get("filename")[0]
         username = options.get("username")[0]

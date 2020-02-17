@@ -2,6 +2,7 @@
 Unit tests for the cards module
 """
 import uuid
+from typing import Dict, Any
 
 from django.test import TestCase
 from django.contrib.auth.models import User
@@ -17,7 +18,7 @@ from cards.models import (
 )
 
 
-def create_test_card(fields: dict) -> Card:
+def create_test_card(fields: Dict[str, Any]) -> Card:
     """
     Creates a test card with fields from the given dict
     :param fields: The fields to populate
@@ -50,7 +51,9 @@ def create_test_card(fields: dict) -> Card:
     return card
 
 
-def create_test_card_printing(card: Card, set_obj: Set, fields: dict) -> CardPrinting:
+def create_test_card_printing(
+    card: Card, set_obj: Set, fields: Dict[str, Any]
+) -> CardPrinting:
     """
     Creates a test CardPrinting object with values set to passed fields
     :param card: The card for the printing
@@ -120,7 +123,7 @@ def create_test_physical_card(printlang: CardPrintingLanguage) -> PhysicalCard:
     return physcard
 
 
-def create_test_set(name: str, setcode: str, fields: dict) -> Set:
+def create_test_set(name: str, setcode: str, fields: Dict[str, Any]) -> Set:
     """
     Creates a test Set with the input values
     :param name: The name of the set
@@ -149,7 +152,7 @@ def create_test_rarity(name: str, symbol: str) -> Rarity:
     return rarity
 
 
-def create_test_user():
+def create_test_user() -> User:
     """
     Creates a test user
     """
@@ -164,7 +167,7 @@ class CardOwnershipTestCase(TestCase):
     Test cases for card ownership
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """
         Sets up the for the unit tests
         """

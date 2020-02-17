@@ -147,7 +147,12 @@ def parse_numeric_parameter(
         raise ValueError(f"Could not convert {text} to number")
 
 
-def param_parser(name: str, keywords: List[str], operators: List[str]):
+def param_parser(
+    name: str, keywords: List[str], operators: List[str]
+) -> Callable[
+    [Callable[[ParameterArgs], CardSearchParam]],
+    Callable[[ParameterArgs], CardSearchParam],
+]:
     """
     Decorator for parameter parsing functions
     Only functions with this decorator can be used to parse parameters
@@ -157,7 +162,7 @@ def param_parser(name: str, keywords: List[str], operators: List[str]):
     :return:
     """
 
-    def decorator(function):
+    def decorator(function: Callable[[ParameterArgs], CardSearchParam]):
         function.is_param_parser = True
         function.param_name = name
         function.param_keywords = keywords
@@ -252,7 +257,7 @@ def parse_type_param(param_args: ParameterArgs) -> CardGenericTypeParam:
 
 
 @param_parser(name="set", keywords=["s", "set"], operators=[":", "="])
-def parse_set_param(param_args: ParameterArgs):
+def parse_set_param(param_args: ParameterArgs) -> CardSetParam:
     """
     Creates a card set parameter from the given operator and text
     :param param_args: The parameter arguments
@@ -590,10 +595,11 @@ class CardQueryParser(Parser):
             )
         return self.parse_param("name", ":", parameter_value)
 
-    def parse_param(self, parameter_type: str, operator: str, parameter_value: str):
-        # pylint: disable=too-many-return-statements
+    def parse_param(
+        self, parameter_type: str, operator: str, parameter_value: str
+    ) -> CardSearchParam:
         """
-        REturns a parameter based on the given parameter type
+        Returns a parameter based on the given parameter type
         :param parameter_type: The type of the parameter
         :param operator: The parameter operator
         :param parameter_value: The parameter alue
@@ -603,6 +609,8 @@ class CardQueryParser(Parser):
             raise ValueError(f"Unknown parameter type {parameter_type}")
 
         parser_func = self.parser_dict[parameter_type]
+        assert hasattr(parser_func, "param_operators")
+        assert hasattr(parser_func, "param_name")
 
         if operator not in parser_func.param_operators:
             raise ValueError(
@@ -638,7 +646,7 @@ class CardQueryParser(Parser):
         Attempts to parse an unquoted string (basically any characters without spaces)
         :return: The contents of the unquoted string
         """
-        acceptable_chars = "0-9A-Za-z!$%&*+./;<=>?^_`|~{}/-:"
+        acceptable_chars = "0-9A-Za-z!$%&*+./;<=>?^_`|~{}[]/-:"
         chars = [self.char(acceptable_chars)]
 
         while True:

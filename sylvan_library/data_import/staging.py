@@ -4,7 +4,7 @@ Module for staging classes
 import datetime
 import math
 import re
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 
 import dateutil
 
@@ -107,7 +107,7 @@ class StagedCard:
     See data structure reference here: https://mtgjson.com/files/all-cards/#data-structure
     """
 
-    def __init__(self, card_data: dict, is_token: bool = False):
+    def __init__(self, card_data: dict, is_token: bool = False) -> None:
         self.is_token: bool = is_token
         self.scryfall_oracle_id: str = card_data.get("scryfallOracleId")
         self.display_name: str = card_data["name"]
@@ -157,7 +157,7 @@ class StagedCard:
             if "type" in card_data:
                 self.subtype = card_data["type"].split("—")[-1].strip()
         elif "subtypes" in card_data:
-            self.subtype = " ".join(card_data.get("subtypes"))
+            self.subtype = " ".join(card_data["subtypes"])
 
         self.rulings: List[Dict[str, str]] = card_data.get("rulings", [])
         self.legalities: Dict[str, str] = card_data.get("legalities", [])
@@ -254,8 +254,8 @@ class StagedSet:
         self.is_online_only: bool = set_data["isOnlineOnly"]
         self.is_partial_preview: bool = set_data.get("isPartialPreview", False)
         self.keyrune_code: str = set_data["keyruneCode"]
-        self.magic_card_market_name: str = set_data.get("mcmName")
-        self.magic_card_market_id: str = set_data.get("mcmId")
+        self.magic_card_market_name: Optional[str] = set_data.get("mcmName")
+        self.magic_card_market_id: Optional[str] = set_data.get("mcmId")
         self.mtgo_code: str = set_data.get("mtgoCode")
         self.name: str = set_data["name"]
         self.release_date: datetime.date = dateutil.parser.parse(
@@ -365,8 +365,8 @@ class StagedCardPrintingLanguage:
     def __init__(
         self,
         staged_card_printing: StagedCardPrinting,
-        foreign_data: dict,
-        card_data: dict,
+        foreign_data: Dict[str, Any],
+        card_data: Dict[str, Any],
     ):
         self.printing_uid = staged_card_printing.json_id
 

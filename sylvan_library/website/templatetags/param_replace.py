@@ -1,15 +1,18 @@
 """
 Module for the param_replace template tag
 """
+from typing import Any
 
 from django import template
 
 # pylint: disable=invalid-name
+from django.template import RequestContext
+
 register = template.Library()
 
 
 @register.simple_tag(takes_context=True)
-def param_replace(context, **kwargs):
+def param_replace(context: RequestContext, **kwargs: Any) -> str:
     """
     Return encoded URL parameters that are the same as the current
     request's parameters, only with the specified GET parameters added or changed.

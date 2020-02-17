@@ -3,6 +3,8 @@ Module for custom template filters to get the image paths of different card mode
 """
 
 import os
+from typing import Optional
+
 from django import template
 from cards.models import Card, CardPrinting, CardPrintingLanguage, Language
 
@@ -10,7 +12,7 @@ from cards.models import Card, CardPrinting, CardPrintingLanguage, Language
 register = template.Library()
 
 
-def does_image_exist(path):
+def does_image_exist(path: Optional[str]) -> bool:
     """
     Returns whether the given image path exists or not
     :param path:  The path of the image
@@ -19,7 +21,7 @@ def does_image_exist(path):
     return path is not None and os.path.exists(os.path.join("website", "static", path))
 
 
-def get_default_image():
+def get_default_image() -> str:
     """
     Gets the oath of the default iimage to use if one can't be found
     :return: A path to an image in the static folder
@@ -36,7 +38,7 @@ def card_printing_language_image_url(printed_language: CardPrintingLanguage) -> 
     """
     path = printed_language.get_image_path()
 
-    if not does_image_exist(path):
+    if not path or not does_image_exist(path):
         return get_default_image()
 
     return path

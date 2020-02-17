@@ -4,18 +4,18 @@ Django sell commands for data_import
 import json
 import os
 from datetime import date
-from typing import Generator
+from typing import Generator, Dict, Any, List
 
 import _paths
 
 
-def get_all_set_data() -> Generator[dict, None, None]:
+def get_all_set_data() -> Generator[Dict[str, Any], None, None]:
     """
     Gets set data from the sets directory and returns each one as a parsed dict
     :return: The set data as a dict
     """
 
-    set_list = []
+    set_list: List[Dict[str, Any]] = []
 
     for set_file_path in [
         os.path.join(_paths.SET_FOLDER, s) for s in os.listdir(_paths.SET_FOLDER)

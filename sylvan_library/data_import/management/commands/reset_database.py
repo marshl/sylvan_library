@@ -29,7 +29,7 @@ from cards.models import (
 from data_import import _query
 
 
-def reset_sequence(table_name: str):
+def reset_sequence(table_name: str) -> None:
     """
     Resets the sequence of a table
     :param table_name: The name of the table to have its sequence reset
@@ -40,7 +40,7 @@ def reset_sequence(table_name: str):
         )
 
 
-def truncate_model(model_obj: Type[models.Model]):
+def truncate_model(model_obj: Type[models.Model]) -> None:
     """
     Truncates the table of the given model
     :param model_obj: The model to truncate
@@ -59,7 +59,7 @@ class Command(BaseCommand):
 
     help = "Delete all records from all tables without dropping the tables"
 
-    def handle(self, *args, **options):
+    def handle(self, *args: Any, **options: Any) -> None:
         confirm = _query.query_yes_no(
             "Are you sure you want to delete all data in the database?", "no"
         )

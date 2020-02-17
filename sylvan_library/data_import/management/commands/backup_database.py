@@ -6,6 +6,7 @@ import subprocess
 import datetime
 import logging
 import re
+from typing import Any
 
 from django.core.management.base import BaseCommand
 from django.conf import settings
@@ -20,7 +21,7 @@ class Command(BaseCommand):
 
     help = "Backs up the database"
 
-    def handle(self, *args, **options):
+    def handle(self, *args: Any, **options: Any) -> None:
         for key, database in settings.DATABASES.items():
             logger.info("Backing up database %s", key)
             os.environ["PGPASSWORD"] = database["PASSWORD"]

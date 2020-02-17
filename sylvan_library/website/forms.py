@@ -2,12 +2,13 @@
 Forms for the website module
 """
 import re
-from typing import Dict, Optional, List, Tuple
+from typing import Dict, Optional, List, Tuple, Any
 
 from django import forms
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
 from django.db.models import Func, Value, F
+from django.forms import BoundField
 from django_select2.forms import Select2MultipleWidget
 
 from tinymce.widgets import TinyMCE
@@ -127,7 +128,7 @@ class QuerySearchForm(SearchForm):
     The search form for searching by a query string
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.user = None
 
@@ -183,7 +184,7 @@ class FieldSearchForm(SearchForm):
         required=False,
     )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
         for colour in Colour.objects.all().order_by("display_order"):
@@ -209,7 +210,7 @@ class FieldSearchForm(SearchForm):
             for colour in Colour.objects.all().order_by("display_order")
         }
 
-    def colourid_fields(self) -> dict:
+    def colourid_fields(self) -> Dict[str, BoundField]:
         """
         Gets all the colour identity fields
         :return: A dictionary of fields
@@ -257,7 +258,7 @@ class FieldSearchForm(SearchForm):
         """
         self.full_clean()
 
-        search = FieldSearch()
+        search: FieldSearch = FieldSearch()
         search.card_name = self.data.get("card_name")
         search.rules_text = self.data.get("rules_text")
         search.flavour_text = self.data.get("flavour_text")
@@ -341,7 +342,7 @@ class DeckForm(forms.ModelForm):
             "is_private",
         ]
 
-    def clean(self) -> dict:
+    def clean(self) -> Dict[str, Any]:
         """
         Validates the content of this form
         :return: The cleaned data
@@ -391,7 +392,7 @@ class DeckForm(forms.ModelForm):
         :return: The list of DeckCards as long as they are all valid
         :raises: ValidationError if ANY of the cards are invalid (wrong number, wrong name etc.)
         """
-        deck_cards = []
+        deck_cards: List[DeckCard] = []
         validation_errors = []
         for board_key, board in self.get_boards().items():
             for line in board.split("\n"):
@@ -428,7 +429,7 @@ class DeckForm(forms.ModelForm):
         return deck_cards
 
     # pylint: disable=no-self-use
-    def parse_card_text(self, text: str) -> (int, str, dict):
+    def parse_card_text(self, text: str) -> Optional[Tuple[int, str, dict]]:
         """
         Parses the text of a card row and returns the count, name and other options of the card
         :param text: The line of deck text for the card
@@ -471,7 +472,7 @@ class DeckForm(forms.ModelForm):
         return count, card_name, {"is_commander": bool(matches["cmdr"])}
 
     def card_from_text(
-        self, count: int, card_name: str, board: str, options: Dict
+        self, count: int, card_name: str, board: str, options: Dict[str, Any]
     ) -> Optional[DeckCard]:
         """
         Parses a single line of text and returns the DeckCard for it

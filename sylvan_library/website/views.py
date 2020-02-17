@@ -8,6 +8,7 @@ import urllib.parse
 import urllib.request
 from typing import Dict, Any
 
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.paginator import Paginator
@@ -103,16 +104,6 @@ def simple_search(request: WSGIRequest) -> HttpResponse:
     )
 
 
-# pylint: disable=unused-argument, missing-docstring
-def advanced_search(request: WSGIRequest):
-    return "advanced search"
-
-
-# pylint: disable=unused-argument, missing-docstring
-def search_results(request: WSGIRequest):
-    return "search results"
-
-
 def ajax_search_result_details(request: WSGIRequest, printing_id: int) -> HttpResponse:
     printing = CardPrinting.objects.get(id=printing_id)
     return render(
@@ -152,12 +143,12 @@ def ajax_search_result_add(request: WSGIRequest, printing_id: int) -> HttpRespon
 def ajax_search_result_ownership(request: WSGIRequest, card_id: int) -> HttpResponse:
     card = Card.objects.get(id=card_id)
     ownerships = (
-        UserOwnedCard.objects.filter(owner_id=request.user.id)
+        UserOwnedCard.objects.filter(owner=request.user)
         .filter(physical_card__printed_languages__card_printing__card__id=card_id)
         .order_by("physical_card__printed_languages__card_printing__set__release_date")
     )
     changes = (
-        UserCardChange.objects.filter(owner_id=request.user.id)
+        UserCardChange.objects.filter(owner=request.user)
         .filter(physical_card__printed_languages__card_printing__card__id=card_id)
         .order_by("date")
     )
@@ -174,8 +165,8 @@ def ajax_change_card_ownership(request: WSGIRequest) -> HttpResponse:
 
     try:
         with transaction.atomic():
-            change_count = int(request.POST.get("count"))
-            physical_card_id = int(request.POST.get("printed_language"))
+            change_count = int(request.POST["count"])
+            physical_card_id = int(request.POST["printed_language"])
             physical_card = PhysicalCard.objects.get(id=physical_card_id)
             physical_card.apply_user_change(change_count, request.user)
             return JsonResponse({"result": True})
@@ -298,7 +289,7 @@ def get_page_number(request: WSGIRequest) -> int:
 
 
 def deck_stats(request: WSGIRequest) -> HttpResponse:
-    if not request.user.is_authenticated:
+    if not request.user.is_authenticated or not isinstance(request.user, User):
         return redirect("website:index")
 
     users_deck_cards = Card.objects.filter(deck_cards__deck__owner=request.user)
@@ -351,15 +342,19 @@ def deck_stats(request: WSGIRequest) -> HttpResponse:
 
 
 def change_unused_decks(request: WSGIRequest) -> HttpResponse:
-    if not hasattr(request.user, "userprops"):
-        UserProps.add_to_user(request.user)
+    if isinstance(request.user, User):
+        if not hasattr(request.user, "userprops"):
+            UserProps.add_to_user(request.user)
 
-    props = request.user.userprops
-    props.unused_cards_seed = random.randint(
-        0, abs(UserProps._meta.get_field("unused_cards_seed").validators[0].limit_value)
-    )
-    props.full_clean()
-    props.save()
+        props = request.user.userprops
+        props.unused_cards_seed = random.randint(
+            0,
+            abs(
+                UserProps._meta.get_field("unused_cards_seed").validators[0].limit_value
+            ),
+        )
+        props.full_clean()
+        props.save()
     return redirect("website:deck_stats")
 
 

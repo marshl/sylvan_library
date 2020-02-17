@@ -34,7 +34,9 @@ class CardComplexColourParam(CardSearchParam):
     Parameter for complex card parameters, including subset superset and colour identity handling
     """
 
-    def __init__(self, colours: int, operator: str = "=", identity: bool = False):
+    def __init__(
+        self, colours: int, operator: str = "=", identity: bool = False
+    ) -> None:
         super().__init__()
         validate_colour_flags(colours)
         self.colours = colours

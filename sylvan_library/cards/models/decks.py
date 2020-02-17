@@ -1,13 +1,13 @@
 """
 Models for deck objects
 """
-
+import datetime
 from typing import List, Dict
 
-from django.db import models
-from django.db.models import Sum, Avg
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.db import models
+from django.db.models import Sum, Avg
 
 from cards.models.card import Card
 from cards.models.colour import Colour
@@ -56,20 +56,22 @@ class Deck(models.Model):
         ("oathbreaker", "Oathbreaker"),
     )
 
-    date_created = models.DateField()
-    last_modified = models.DateField(auto_now=True)
-    name = models.CharField(max_length=200)
-    subtitle = models.CharField(max_length=200, blank=True, null=True)
-    description = models.TextField(null=True, blank=True)
-    owner = models.ForeignKey(User, related_name="decks", on_delete=models.CASCADE)
-    format = models.CharField(max_length=50, choices=FORMAT_CHOICES)
-    exclude_colours = models.ManyToManyField(
+    date_created: datetime.datetime = models.DateField()
+    last_modified: datetime.datetime = models.DateField(auto_now=True)
+    name: str = models.CharField(max_length=200)
+    subtitle: str = models.CharField(max_length=200, blank=True, null=True)
+    description: str = models.TextField(null=True, blank=True)
+    owner: User = models.ForeignKey(
+        User, related_name="decks", on_delete=models.CASCADE
+    )
+    format: str = models.CharField(max_length=50, choices=FORMAT_CHOICES)
+    exclude_colours: List[Colour] = models.ManyToManyField(
         Colour, related_name="exclude_from_decks", blank=True
     )
-    is_prototype = models.BooleanField(default=False)
-    is_private = models.BooleanField(default=False)
+    is_prototype: bool = models.BooleanField(default=False)
+    is_private: bool = models.BooleanField(default=False)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
     def get_cards(self, board: str) -> List["DeckCard"]:
@@ -340,11 +342,13 @@ class DeckCard(models.Model):
         ("acquire", "Acquire"),
     )
 
-    count = models.IntegerField()
-    card = models.ForeignKey(Card, related_name="deck_cards", on_delete=models.CASCADE)
-    deck = models.ForeignKey(Deck, related_name="cards", on_delete=models.CASCADE)
-    board = models.CharField(max_length=20, choices=BOARD_CHOICES, default="main")
-    is_commander = models.BooleanField(default=False)
+    count: int = models.IntegerField()
+    card: Card = models.ForeignKey(
+        Card, related_name="deck_cards", on_delete=models.CASCADE
+    )
+    deck: Deck = models.ForeignKey(Deck, related_name="cards", on_delete=models.CASCADE)
+    board: str = models.CharField(max_length=20, choices=BOARD_CHOICES, default="main")
+    is_commander: bool = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.card} in {self.deck}"

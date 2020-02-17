@@ -7,9 +7,11 @@ import random
 import queue
 import threading
 import time
+from typing import Optional
+
 import requests
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, OutputWrapper
 
 from cards.models import CardPrinting, CardPrintingLanguage, Language, CardImage
 
@@ -25,7 +27,12 @@ class Command(BaseCommand):
 
     download_thread_count = 8
 
-    def __init__(self, stdout=None, stderr=None, no_color=False):
+    def __init__(
+        self,
+        stdout: Optional[OutputWrapper] = None,
+        stderr: Optional[OutputWrapper] = None,
+        no_color: bool = False,
+    ) -> None:
         self.image_download_queue = queue.Queue()
         self.root_dir = os.path.join("website", "static")
         super().__init__(stdout=stdout, stderr=stderr, no_color=no_color)

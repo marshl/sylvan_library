@@ -3,10 +3,10 @@ Module for the update_database command
 """
 import json
 import logging
-from typing import Union
+from typing import Union, Any
 
 from django.core.exceptions import ValidationError
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction
 
 import _paths
@@ -43,8 +43,7 @@ class Command(BaseCommand):
         self.logger = logging.getLogger("django")
         super().__init__(stdout=stdout, stderr=stderr, no_color=no_color)
 
-    def add_arguments(self, parser):
-
+    def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "--no-transaction",
             action="store_true",
@@ -53,7 +52,7 @@ class Command(BaseCommand):
             help="Update the database without a transaction (unsafe)",
         )
 
-    def handle(self, *args, **options):
+    def handle(self, *args: Any, **options: Any):
         if not Colour.objects.exists() or not Rarity.objects.exists():
             self.logger.error(
                 "No colours or rarities were found. "

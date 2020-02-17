@@ -16,7 +16,7 @@ class ParseError(Exception):
         super().__init__()
         self.pos: int = pos
         self.msg: str = msg
-        self.args: Tuple[Any] = args
+        self.args: Tuple[Any, ...] = args
 
     def __str__(self) -> str:
         return f"{self.msg % self.args} at position {self.pos}"
@@ -27,7 +27,7 @@ class Parser(ABC):
     Generic recursive descent parser
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.cache: Dict[str, List[str]] = {}
         self.text: str = ""
         self.pos: int = -1
@@ -187,7 +187,7 @@ class Parser(ABC):
                 elif ex.pos == last_error_pos:
                     last_error_rules.append(rule)
 
-        if len(last_error_rules) == 1:
+        if len(last_error_rules) == 1 and last_exception:
             raise last_exception
 
         raise ParseError(

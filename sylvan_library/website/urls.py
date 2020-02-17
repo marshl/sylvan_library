@@ -11,7 +11,6 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("simple_search/", views.simple_search, name="simple_search"),
     path("name_search/", views.name_search, name="name_search"),
-    path("advanced_search/", views.advanced_search, name="advanced_search"),
     path(
         "ajax/search_result_details/<int:printing_id>/",
         views.ajax_search_result_details,

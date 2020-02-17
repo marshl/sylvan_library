@@ -19,7 +19,7 @@ def deck_card_group_count(cards: QuerySet) -> int:
     :param cards: A QuerySet of DeckCards
     :return: The total number of cards
     """
-    return cards.aggregate(sum=Sum("count"))["sum"]
+    return int(cards.aggregate(sum=Sum("count"))["sum"])
 
 
 @register.filter(name="board_cards")

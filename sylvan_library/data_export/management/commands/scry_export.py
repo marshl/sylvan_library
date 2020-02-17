@@ -26,7 +26,7 @@ class Command(BaseCommand):
         self.user = None
         super().__init__(stdout=stdout, stderr=stderr, no_color=no_color)
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser) -> None:
         # Positional arguments
         parser.add_argument(
             "username", nargs=1, type=str, help="The user to who owns the cards"

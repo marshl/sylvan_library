@@ -1,6 +1,10 @@
 """
 The module for the simple search form
 """
+from typing import Optional, List
+
+from bitfield import Bit
+
 from cardsearch.base_search import BaseSearch, create_colour_param
 
 from cardsearch.parameters import (
@@ -15,32 +19,36 @@ from cardsearch.parameters import (
 )
 
 
+from cards.models import Set
+
 # pylint: disable=too-many-instance-attributes
+from models import Format
+
+
 class SimpleSearch(BaseSearch):
     """
     A simple flat search
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.text = None
-        self.colours = list()
-        self.include_name = False
-        self.include_types = False
-        self.include_rules = False
-        self.set = None
-        self.format = None
-        self.match_colours = False
-        self.multicoloured_only = False
-        self.exclude_colours = False
-        self.card_type = False
-        self.sort_order = None
+        self.text: Optional[str] = None
+        self.colours: List[Bit] = list()
+        self.include_name: bool = False
+        self.include_types: bool = False
+        self.include_rules: bool = False
+        self.set: Optional[Set] = None
+        self.format: Optional[Format] = None
+        self.match_colours: bool = False
+        self.multicoloured_only: bool = False
+        self.exclude_colours: bool = False
+        self.card_type: bool = False
+        self.sort_order: Optional[str] = None
 
-    def get_preferred_set(self):
+    def get_preferred_set(self) -> Optional[Set]:
         return None
 
-    def build_parameters(self):
-
+    def build_parameters(self) -> None:
         root_param = self.root_parameter
 
         if self.text:

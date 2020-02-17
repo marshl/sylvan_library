@@ -18,9 +18,9 @@ class ParseSearch(BaseSearch):
 
     def __init__(self, user: User = None):
         super().__init__()
-        self.query_string = None
-        self.error_message = None
-        self.user = user
+        self.query_string: Optional[str] = None
+        self.error_message: Optional[str] = None
+        self.user: User = user
 
     def get_preferred_set(self) -> Optional[Set]:
         """

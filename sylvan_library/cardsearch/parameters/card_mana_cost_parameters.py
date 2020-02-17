@@ -47,12 +47,12 @@ class CardManaCostComplexParam(CardSearchParam):
     Parameter for complex mana cost checking
     """
 
-    def __init__(self, cost: str, operator: str):
+    def __init__(self, cost: str, operator: str) -> None:
         super().__init__()
-        self.cost_text = cost.lower()
-        self.operator = operator
+        self.cost_text: str = cost.lower()
+        self.operator: str = operator
 
-        self.symbol_counts = Counter()
+        self.symbol_counts: Counter[int] = Counter()
         pos: int = 0
         current_symbol: str = ""
         in_symbol: bool = False

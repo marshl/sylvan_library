@@ -1,6 +1,8 @@
 """
 The module for all search parameters
 """
+from typing import List
+
 from .base_parameters import OrParam, AndParam, CardSearchParam, BranchParam
 from .card_colour_parameters import (
     CardComplexColourParam,
@@ -43,7 +45,7 @@ class CardSortParam:
         super().__init__()
         self.sort_descending = descending
 
-    def get_sort_list(self) -> list:
+    def get_sort_list(self) -> List[str]:
         """
         Gets the sort list taking order into account
         :return:
@@ -52,7 +54,7 @@ class CardSortParam:
             "-" + arg if self.sort_descending else arg for arg in self.get_sort_keys()
         ]
 
-    def get_sort_keys(self) -> list:
+    def get_sort_keys(self) -> List[str]:
         """
         Gets the list of attributes to be sorted by
         :return:
@@ -98,7 +100,7 @@ class CardColourSortParam(CardSortParam):
     The sort parameter for a card's colour key
     """
 
-    def get_sort_keys(self) -> list:
+    def get_sort_keys(self) -> List[str]:
         return ["colour_sort_key"]
 
 

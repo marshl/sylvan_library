@@ -5,7 +5,7 @@ import json
 import logging
 import os
 import zipfile
-from typing import List
+from typing import List, Any
 
 import requests
 
@@ -33,7 +33,7 @@ class Command(BaseCommand):
             if s.endswith(".json")
         ]
 
-    def handle(self, *args, **options):
+    def handle(self, *args: Any, **options: Any) -> None:
         logging.info("Downloading json file from %s", _paths.JSON_ZIP_DOWNLOAD_URL)
         stream = requests.get(_paths.JSON_ZIP_DOWNLOAD_URL)
 

@@ -40,7 +40,7 @@ class CalcParser(Parser):
         Matches a group of multiplied or divided values (tighter binding than "expressions"
         :return: The numerical result
         """
-        result = self.match("factor")
+        result: float = self.match("factor")
         while True:
             operator = self.maybe_keyword("*", "/")
             if operator is None:

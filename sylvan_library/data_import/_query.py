@@ -4,7 +4,7 @@ The module for the query_yes_no function
 import sys
 
 
-def query_yes_no(question, default="yes"):
+def query_yes_no(question: str, default: str = "yes") -> bool:
     """Ask a yes/no question via raw_input() and return their answer.
 
     "question" is a string that is presented to the user.

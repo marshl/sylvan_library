@@ -4,7 +4,7 @@ Base parameters objects and helpers
 import logging
 from abc import ABC
 from functools import reduce
-from typing import List, Union
+from typing import List, Union, Dict
 
 from django.db.models import F
 from django.db.models.query import Q
@@ -92,7 +92,7 @@ class CardSearchParam:
     The base search parameter class
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.negated: bool = False
 
     def query(self) -> Q:
@@ -208,7 +208,7 @@ class CardNumericalParam(CardSearchParam, ABC):
         self.number = number
         self.operator = operator
 
-    def get_args(self, field: str) -> dict:
+    def get_args(self, field: str) -> Dict[str, Union[float, F]]:
         """
         Shortcut to generate the Q object parameters for the given field
         :param field: The card field to compare with

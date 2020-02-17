@@ -20,7 +20,7 @@ class PageButton:
         is_previous=False,
         is_next=False,
         is_spacer=False,
-    ):
+    ) -> None:
         self.number = number
         self.enabled = is_enabled
         self.is_active = is_active

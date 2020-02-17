@@ -35,7 +35,7 @@ class FieldSearch(BaseSearch):
     The search form for a series of different fields
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.card_name = None
@@ -66,7 +66,7 @@ class FieldSearch(BaseSearch):
         self.match_sets_exactly = False
 
     # pylint: disable=too-many-branches
-    def build_parameters(self):
+    def build_parameters(self) -> None:
         """
         Constructs the parameter list for this searching object
         """

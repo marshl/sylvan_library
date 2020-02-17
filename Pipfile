@@ -31,6 +31,7 @@ pre-commit = "==1.21.0"
 pylint = "==2.4.4"
 pylint-django = "==2.0.13"
 mypy = "*"
+django-stubs = "*"
 
 [requires]
 python_version = "3.7"

@@ -883,7 +883,9 @@ mana. Spend this mana only to cast the last card exiled with Ice Cauldron.""",
             f'{card_name}.colours was expected to be "{colours}", actually "{actual}"',
         )
 
-    def assert_card_colour_identity_eq(self, card_name: str, colour_identity: int):
+    def assert_card_colour_identity_eq(
+        self, card_name: str, colour_identity: int
+    ) -> None:
         """
         Asserts that the card with the given name has the given colour identity
         :param card_name: The name of the card to test

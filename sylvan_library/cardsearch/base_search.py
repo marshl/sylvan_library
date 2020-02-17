@@ -114,20 +114,19 @@ class BaseSearch:
     all use a single root node with parameters haning off of it
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.root_parameter: BranchParam = AndParam()
-        self.sort_params = list()
-        self.paginator = None
-        self.results = []
-        self.page = None
+        self.sort_params: List[CardSortParam] = []
+        self.paginator: Optional[Paginator] = None
+        self.results: List[SearchResult] = []
+        self.page: Optional[int] = None
 
     # pylint: disable=no-self-use
-    def build_parameters(self):
+    def build_parameters(self) -> None:
         """
         Build the parameters tree for this search object
-        :return:
         """
-        return
+        raise NotImplementedError()
 
     def get_queryset(self) -> QuerySet:
         """
@@ -150,7 +149,7 @@ class BaseSearch:
         )
         return queryset
 
-    def search(self, page_number: int = 1, page_size: int = 25):
+    def search(self, page_number: int = 1, page_size: int = 25) -> None:
         """
         Runs the search for this search and constructs
         :param page_number: The result page

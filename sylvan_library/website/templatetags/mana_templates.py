@@ -3,6 +3,8 @@ Module for a custom template filter to replace mana symbols such as {G} and {2/R
 """
 
 import re
+from re import Match
+from typing import Optional
 
 from django import template
 
@@ -22,7 +24,7 @@ def replace_reminder_text(text: str) -> str:
 
 
 @register.filter(name="replace_loyalty_symbols")
-def replace_loyalty_symbols(text: str, scale: str = None) -> str:
+def replace_loyalty_symbols(text: str, scale: Optional[str] = None) -> str:
     """
     Converts any loyalty costs in the given string with CSS images
     :param text: The text to change
@@ -30,7 +32,7 @@ def replace_loyalty_symbols(text: str, scale: str = None) -> str:
     :return: The text with all loyalty costs converted to icons
     """
 
-    def replace_symbol(loyalty_match):
+    def replace_symbol(loyalty_match: Match) -> str:
         """
         Replaces the given symbol with its loyalty tag
 
@@ -42,6 +44,8 @@ def replace_loyalty_symbols(text: str, scale: str = None) -> str:
         matches = re.search(
             r"(?P<sign>[+−\-]?)(?P<number>[\dxX]+)", loyalty_match.group()
         )
+        if not matches:
+            return ""
         sign = matches.group("sign")
         number = matches.group("number")
         classes = ["ms", f"ms-loyalty-{number.lower()}"]
@@ -65,7 +69,7 @@ def replace_loyalty_symbols(text: str, scale: str = None) -> str:
 
 
 @register.filter(name="replace_mana_symbols")
-def replace_mana_symbols(text: str, scale: str = None) -> str:
+def replace_mana_symbols(text: str, scale: Optional[str] = None) -> str:
     """
     Converts any mana symbols in the given string with CSS images
     :param text: The text to replace the
@@ -76,7 +80,7 @@ def replace_mana_symbols(text: str, scale: str = None) -> str:
     if text is None:
         return ""
 
-    def replace_symbol(match):
+    def replace_symbol(match: Match) -> str:
         """
         Replaces the given symbol with its colour tag
 

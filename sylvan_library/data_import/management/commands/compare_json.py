@@ -7,6 +7,7 @@ import time
 from datetime import date
 from typing import List, Optional, Dict, Tuple, Union, Any
 
+import typing
 from django.core.management.base import BaseCommand
 
 import _paths
@@ -79,14 +80,14 @@ class Command(BaseCommand):
 
     cards_to_create: Dict[str, StagedCard] = {}
     cards_to_update: Dict[str, Dict[str, Dict[str, Any]]] = {}
-    cards_to_delete = set()
+    cards_to_delete: typing.Set[str] = set()
 
-    cards_parsed = set()
+    cards_parsed: typing.Set[str] = set()
 
     card_printings_to_create: Dict[str, StagedCardPrinting] = {}
     card_printings_to_update: Dict[str, Dict[str, dict]] = {}
-    card_printings_parsed = set()
-    card_printings_to_delete = set()
+    card_printings_parsed: typing.Set[str] = set()
+    card_printings_to_delete: typing.Set[str] = set()
 
     printed_languages_to_create: List[StagedCardPrintingLanguage] = []
     printed_languages_to_update: List[dict] = []
@@ -518,7 +519,7 @@ class Command(BaseCommand):
 
     def get_card_differences(
         self, existing_card: Card, staged_card: StagedCard
-    ) -> Dict[str, dict]:
+    ) -> Dict[str, Dict[str, Any]]:
         """
         Returns the differences between an existing Card object and the StagedCard version
         :param existing_card: The existing database Card object
@@ -635,8 +636,8 @@ class Command(BaseCommand):
     def process_printed_language(
         self,
         staged_card_printing: StagedCardPrinting,
-        foreign_data: dict,
-        card_data: dict,
+        foreign_data: Dict[str, Any],
+        card_data: Dict[str, Any],
     ) -> StagedCardPrintingLanguage:
         """
         Processes card data nad returns the StagedCardPritningLanguage that would represent it
@@ -695,7 +696,7 @@ class Command(BaseCommand):
         self,
         existing_printlang: CardPrintingLanguage,
         staged_printlang: StagedCardPrintingLanguage,
-    ) -> Dict[str, dict]:
+    ) -> Dict[str, Dict[str, Any]]:
         """
        Gets the differences between an existing printed language and one from the json
 
@@ -713,7 +714,7 @@ class Command(BaseCommand):
         return result
 
     @staticmethod
-    def write_object_to_json(filename: str, data: Union[list, dict]) -> None:
+    def write_object_to_json(filename: str, data: Union[list, Dict[str, Any]]) -> None:
         """
         Writes out the given object to file as JSON
         :param filename: The file to write out to

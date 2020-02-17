@@ -2,15 +2,16 @@
 Module for the update_printing_uids command
 """
 import logging
-from typing import Dict, List
+from typing import Dict, List, Any
 
+import typing
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from _query import query_yes_no
 from cards.models import CardPrinting
-from data_import.staging import StagedCard, StagedCardPrinting
 from data_import.management.commands import get_all_set_data
+from data_import.staging import StagedCard, StagedCardPrinting
 
 logger = logging.getLogger("django")
 
@@ -27,11 +28,11 @@ class Command(BaseCommand):
 
     existing_card_printings: Dict[str, CardPrinting] = {}
 
-    cards_parsed = set()
+    cards_parsed: typing.Set[str] = set()
 
     card_printings_to_create: Dict[str, List[StagedCardPrinting]] = {}
-    card_printings_parsed = set()
-    card_printings_to_delete = set()
+    card_printings_parsed: typing.Set[str] = set()
+    card_printings_to_delete: typing.Set[str] = set()
 
     force_update = False
 
@@ -49,7 +50,7 @@ class Command(BaseCommand):
             help="Update every UId without prompt",
         )
 
-    def handle(self, *args, **options) -> None:
+    def handle(self, *args: Any, **options: Any) -> None:
         """
         Fixes printing UIDs of cards that might have been broken by having multiple printings
         of the same multiple faced cards in teh same set
@@ -105,7 +106,7 @@ class Command(BaseCommand):
                     printing_to_delete.clean()
                     printing_to_delete.save()
 
-    def process_set_cards(self, set_data: dict) -> None:
+    def process_set_cards(self, set_data: Dict[str, Any]) -> None:
         """
         Processes all the cards within a set,
         creating Cards, CardPrintings and CardPrintingLanguages
@@ -119,7 +120,7 @@ class Command(BaseCommand):
             staged_card = self.process_card(card_data, True)
             self.process_card_printing(staged_card, set_data, card_data)
 
-    def process_card(self, card_data: dict, is_token: bool) -> StagedCard:
+    def process_card(self, card_data: Dict[str, Any], is_token: bool) -> StagedCard:
         """
         Processes a single Card
         :param card_data: The JSON data for a card
@@ -134,7 +135,7 @@ class Command(BaseCommand):
         return staged_card
 
     def process_card_printing(
-        self, staged_card: StagedCard, set_data: dict, card_data: dict
+        self, staged_card: StagedCard, set_data: Dict[str, Any], card_data: dict
     ) -> None:
         """
         Process a card printing

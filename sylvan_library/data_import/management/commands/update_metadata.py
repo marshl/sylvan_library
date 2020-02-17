@@ -58,7 +58,7 @@ class Command(BaseCommand):
 
         self.log_stats()
 
-    def update_colours(self):
+    def update_colours(self) -> None:
         """
         Updates all colours from file
         """
@@ -80,7 +80,7 @@ class Command(BaseCommand):
             colour_obj.full_clean()
             colour_obj.save()
 
-    def update_rarities(self):
+    def update_rarities(self) -> None:
         """
         Updates all rarities from file
         """
@@ -109,7 +109,7 @@ class Command(BaseCommand):
 
         logger.info("Rarity update complete")
 
-    def update_languages(self):
+    def update_languages(self) -> None:
         """
         Updates all languages from file
         """
@@ -170,7 +170,7 @@ class Command(BaseCommand):
 
         self.created_counts[object_type] += 1
 
-    def increment_ignores(self, object_type: str):
+    def increment_ignores(self, object_type: str) -> None:
         """
         Increments the number of objects that were ignored
         :param object_type: The type of object that was ignored
@@ -180,7 +180,7 @@ class Command(BaseCommand):
 
         self.ignored_counts[object_type] += 1
 
-    def log_stats(self):
+    def log_stats(self) -> None:
         """
         Logs all updated/created/ignored objects
         """

@@ -43,46 +43,50 @@ class Card(models.Model):
     Model for a unique card
     """
 
-    name = models.CharField(max_length=200, unique=True)
-    display_name = models.CharField(max_length=200)
+    name: str = models.CharField(max_length=200, unique=True)
+    display_name: str = models.CharField(max_length=200)
 
-    cost = models.CharField(max_length=50, blank=True, null=True)
-    cmc = models.FloatField()
-    face_cmc = models.FloatField(blank=True, null=True)
-    colour_flags = BitField(flags=("white", "blue", "black", "red", "green"))
-    colour_identity_flags = BitField(flags=("white", "blue", "black", "red", "green"))
-    colour_indicator_flags = BitField(flags=("white", "blue", "black", "red", "green"))
-    colour_count = models.IntegerField()
-    colour_identity_count = models.IntegerField()
-    colour_sort_key = models.IntegerField()
-    colour_weight = models.IntegerField()
-    generic_mana_count = models.IntegerField(default=0)
+    cost: str = models.CharField(max_length=50, blank=True, null=True)
+    cmc: float = models.FloatField()
+    face_cmc: float = models.FloatField(blank=True, null=True)
+    colour_flags: BitField = BitField(flags=("white", "blue", "black", "red", "green"))
+    colour_identity_flags: int = BitField(
+        flags=("white", "blue", "black", "red", "green")
+    )
+    colour_indicator_flags: int = BitField(
+        flags=("white", "blue", "black", "red", "green")
+    )
+    colour_count: int = models.IntegerField()
+    colour_identity_count: int = models.IntegerField()
+    colour_sort_key: int = models.IntegerField()
+    colour_weight: int = models.IntegerField()
+    generic_mana_count: int = models.IntegerField(default=0)
 
-    type = models.CharField(max_length=100, blank=True, null=True)
-    subtype = models.CharField(max_length=100, blank=True, null=True)
+    type: str = models.CharField(max_length=100, blank=True, null=True)
+    subtype: str = models.CharField(max_length=100, blank=True, null=True)
 
-    power = models.CharField(max_length=20, blank=True, null=True)
-    num_power = models.FloatField(default=0)
-    toughness = models.CharField(max_length=20, blank=True, null=True)
-    num_toughness = models.FloatField(default=0)
-    loyalty = models.CharField(max_length=20, blank=True, null=True)
-    num_loyalty = models.FloatField(default=0)
+    power: str = models.CharField(max_length=20, blank=True, null=True)
+    num_power: int = models.FloatField(default=0)
+    toughness: str = models.CharField(max_length=20, blank=True, null=True)
+    num_toughness: int = models.FloatField(default=0)
+    loyalty: str = models.CharField(max_length=20, blank=True, null=True)
+    num_loyalty: int = models.FloatField(default=0)
 
-    rules_text = models.CharField(max_length=1000, blank=True, null=True)
-    layout = models.CharField(max_length=50, choices=CARD_LAYOUT_CHOICES)
-    side = models.CharField(max_length=1, blank=True, null=True)
+    rules_text: str = models.CharField(max_length=1000, blank=True, null=True)
+    layout: str = models.CharField(max_length=50, choices=CARD_LAYOUT_CHOICES)
+    side: str = models.CharField(max_length=1, blank=True, null=True)
 
-    hand_modifier = models.CharField(max_length=10, blank=True, null=True)
-    num_hand_modifier = models.IntegerField(default=0)
-    life_modifier = models.CharField(max_length=10, blank=True, null=True)
-    num_life_modifier = models.IntegerField(default=0)
+    hand_modifier: str = models.CharField(max_length=10, blank=True, null=True)
+    num_hand_modifier: int = models.IntegerField(default=0)
+    life_modifier: str = models.CharField(max_length=10, blank=True, null=True)
+    num_life_modifier: int = models.IntegerField(default=0)
 
-    is_reserved = models.BooleanField(default=False)
-    scryfall_oracle_id = models.CharField(max_length=36, blank=True, null=True)
+    is_reserved: bool = models.BooleanField(default=False)
+    scryfall_oracle_id: int = models.CharField(max_length=36, blank=True, null=True)
     # Card rank on EDHRec.
-    edh_rec_rank = models.IntegerField(default=0)
-    is_token = models.BooleanField(default=False)
-    links = models.ManyToManyField("self")
+    edh_rec_rank: int = models.IntegerField(default=0)
+    is_token: bool = models.BooleanField(default=False)
+    links: List["Card"] = models.ManyToManyField("self")
 
     @staticmethod
     def get_random_card() -> "Card":
@@ -176,110 +180,114 @@ class CardPrinting(models.Model):
         ("tombstone", "tombstone"),
     )
 
-    flavour_text = models.CharField(max_length=500, blank=True, null=True)
-    artist = models.CharField(max_length=100, blank=True, null=True)
-    number = models.CharField(max_length=10, blank=True, null=True)
+    flavour_text: str = models.CharField(max_length=500, blank=True, null=True)
+    artist: str = models.CharField(max_length=100, blank=True, null=True)
+    number: str = models.CharField(max_length=10, blank=True, null=True)
 
     # Text on the card as originally printed.
-    original_text = models.CharField(max_length=1000, blank=True, null=True)
+    original_text: str = models.CharField(max_length=1000, blank=True, null=True)
 
     # Type as originally printed. Includes any supertypes and subtypes.
-    original_type = models.CharField(max_length=200, blank=True, null=True)
-    watermark = models.CharField(max_length=100, blank=True, null=True)
+    original_type: str = models.CharField(max_length=200, blank=True, null=True)
+    watermark: str = models.CharField(max_length=100, blank=True, null=True)
 
     # The unique identifier that mtgjson uses for the card
     # It is made up by doing an SHA1 hash of setCode + cardName + cardImageName
-    json_id = models.CharField(max_length=40, unique=True)
+    json_id: str = models.CharField(max_length=40, unique=True)
 
-    scryfall_id = models.CharField(max_length=40, blank=True, null=True)
+    scryfall_id: str = models.CharField(max_length=40, blank=True, null=True)
 
-    scryfall_illustration_id = models.CharField(max_length=36, blank=True, null=True)
+    scryfall_illustration_id: str = models.CharField(
+        max_length=36, blank=True, null=True
+    )
 
     # The border colour of the card if it differs from the border colour of the rest of the set
     # (e.g. basic lands in Unglued)
-    border_colour = models.CharField(max_length=10, blank=True, null=True)
+    border_colour: str = models.CharField(max_length=10, blank=True, null=True)
 
-    frame_effect = models.CharField(
+    frame_effect: str = models.CharField(
         max_length=50, blank=True, null=True, choices=FRAME_EFFECT_CHOICES
     )
-    frame_version = models.CharField(max_length=50, blank=True, null=True)
+    frame_version: str = models.CharField(max_length=50, blank=True, null=True)
 
-    set = models.ForeignKey(
+    set: Set = models.ForeignKey(
         Set, related_name="card_printings", on_delete=models.CASCADE
     )
-    card = models.ForeignKey(Card, related_name="printings", on_delete=models.CASCADE)
-    rarity = models.ForeignKey(
+    card: Card = models.ForeignKey(
+        Card, related_name="printings", on_delete=models.CASCADE
+    )
+    rarity: Rarity = models.ForeignKey(
         Rarity, related_name="card_printings", on_delete=models.CASCADE
     )
 
     # If the card is in a duel deck product, can be a (left) or b (right).
-    duel_deck_side = models.CharField(max_length=1, blank=True, null=True)
+    duel_deck_side: str = models.CharField(max_length=1, blank=True, null=True)
 
     # Set to true if this card was only released as part of a core box set.
     # These are technically part of the core sets and are tournament
     # legal despite not being available in boosters.
-    is_starter = models.BooleanField()
+    is_starter: bool = models.BooleanField()
 
-    is_timeshifted = models.BooleanField()
+    is_timeshifted: bool = models.BooleanField()
 
     # Can the card be found in foil?
-    has_foil = models.BooleanField(default=True)
+    has_foil: bool = models.BooleanField(default=True)
     # Can the card be found in non-foil?
-    has_non_foil = models.BooleanField(default=True)
+    has_non_foil: bool = models.BooleanField(default=True)
 
     # The card has some kind of alternative variation to its printed counterpart.
-    is_alternative = models.BooleanField(default=False)
+    is_alternative: bool = models.BooleanField(default=False)
 
     # Is the card available in Magic: The Gathering Arena?
-    is_arena = models.BooleanField(default=False)
+    is_arena: bool = models.BooleanField(default=False)
 
     # Is the card available in Magic: The Gathering Online?
-    is_mtgo = models.BooleanField(default=False)
+    is_mtgo: bool = models.BooleanField(default=False)
 
     # Is the card only available online?
-    is_online_only = models.BooleanField(default=False)
+    is_online_only: bool = models.BooleanField(default=False)
 
     # Is the card available in print?
-    is_paper = models.BooleanField(default=True)
+    is_paper: bool = models.BooleanField(default=True)
 
     # Is the card full artwork?
-    is_full_art = models.BooleanField(default=False)
+    is_full_art: bool = models.BooleanField(default=False)
 
     # Is the card oversized?
-    is_oversized = models.BooleanField(default=False)
+    is_oversized: bool = models.BooleanField(default=False)
 
     # Does the card normally have a text box, but doesn't on this card?
-    is_textless = models.BooleanField(default=False)
+    is_textless: bool = models.BooleanField(default=False)
 
     # Has the card been reprinted?
-    is_reprint = models.BooleanField(default=False)
+    is_reprint: bool = models.BooleanField(default=False)
 
     # Is the card a promotional print?
-    is_promo = models.BooleanField(default=False)
+    is_promo: bool = models.BooleanField(default=False)
 
     # Does the card have a story spotlight?
-    is_story_spotlight = models.BooleanField(default=False)
+    is_story_spotlight: bool = models.BooleanField(default=False)
 
     # The Magic Card Market card ID.
-    magic_card_market_id = models.IntegerField(null=True, blank=True)
+    magic_card_market_id: int = models.IntegerField(null=True, blank=True)
 
     # The Magic Card Market card meta ID.
-    magic_card_market_meta_id = models.IntegerField(null=True, blank=True)
+    magic_card_market_meta_id: int = models.IntegerField(null=True, blank=True)
 
     # The Magic: The Gathering Arena card ID.
-    mtg_arena_id = models.IntegerField(null=True, blank=True)
+    mtg_arena_id: int = models.IntegerField(null=True, blank=True)
 
     # The Magic: The Gathering Online card ID.
-    mtgo_id = models.IntegerField(null=True, blank=True)
+    mtgo_id: int = models.IntegerField(null=True, blank=True)
 
     # The Magic: The Gathering Online card foil ID.
-    mtgo_foil_id = models.IntegerField(null=True, blank=True)
+    mtgo_foil_id: int = models.IntegerField(null=True, blank=True)
 
     # mtgstocks.com card ID.
-    mtg_stocks_id = models.IntegerField(null=True, blank=True)
+    mtg_stocks_id: int = models.IntegerField(null=True, blank=True)
 
     # Numeric identifier for the card for TCGPlayer.
-    tcg_player_product_id = models.IntegerField(null=True, blank=True)
+    tcg_player_product_id: int = models.IntegerField(null=True, blank=True)
 
     class Meta:
         """
@@ -340,7 +348,7 @@ class PhysicalCard(models.Model):
 
     layout = models.CharField(max_length=50, choices=CARD_LAYOUT_CHOICES)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "//".join([str(x) for x in self.printed_languages.all()])
 
     def get_simple_string(self) -> str:
@@ -414,7 +422,7 @@ class CardPrintingLanguage(models.Model):
     Model for a card printed in a certain set of a certain language
     """
 
-    language = models.ForeignKey(
+    language: "Language" = models.ForeignKey(
         "Language", related_name="cards", on_delete=models.CASCADE
     )
     card_name = models.CharField(max_length=200)
@@ -476,7 +484,7 @@ class CardPrintingLanguage(models.Model):
                 ownership.count
                 for physical_card in self.physical_cards.all()
                 for ownership in physical_card.ownerships.all()
-                if ownership.owner_id == user.id
+                if ownership.owner == user
             )
 
         return self.physical_cards.aggregate(
@@ -495,11 +503,11 @@ class UserOwnedCard(models.Model):
     Model for a user owned a number of physical cards
     """
 
-    count = models.IntegerField()
-    physical_card = models.ForeignKey(
+    count: int = models.IntegerField()
+    physical_card: PhysicalCard = models.ForeignKey(
         PhysicalCard, related_name="ownerships", on_delete=models.CASCADE
     )
-    owner = models.ForeignKey(
+    owner: User = models.ForeignKey(
         User, related_name="owned_cards", on_delete=models.CASCADE
     )
 
