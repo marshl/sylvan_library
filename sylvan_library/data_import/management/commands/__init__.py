@@ -26,7 +26,7 @@ def get_all_set_data() -> Generator[Dict[str, Any], None, None]:
         with open(set_file_path, "r", encoding="utf8") as set_file:
             set_data = json.load(set_file, encoding="utf8")
 
-        if set_data.get("isPreview"):
+        if set_data.get("isPreview") or set_data.get("isPartialPreview"):
             continue
         set_list.append(
             {"path": set_file_path, "date": set_data.get("releaseDate", str(date.max))}
