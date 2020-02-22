@@ -48,10 +48,41 @@ class CardManaCostComplexParam(CardSearchParam):
     Parameter for complex mana cost checking
     """
 
+    symbols = [
+        "W",
+        "U",
+        "B",
+        "R",
+        "G",
+        "C",
+        "X",
+        "W/U",
+        "U/B",
+        "B/R",
+        "R/G",
+        "G/W",
+        "W/B",
+        "U/R",
+        "B/G",
+        "R/W",
+        "G/U",
+        "2/W",
+        "2/U",
+        "2/B",
+        "2/R",
+        "2/G",
+        "W/P",
+        "U/P",
+        "B/P",
+        "R/P",
+        "G/P",
+    ]
+
     def __init__(self, cost: str, operator: str) -> None:
         super().__init__()
         self.cost_text: str = cost.lower()
-        self.operator: str = operator
+        self.operator: str = ">=" if operator == ":" else operator
+        self.symbol_counts = {}
 
         self.symbol_counts: typing.Counter[str] = Counter()
         pos: int = 0
@@ -89,29 +120,58 @@ class CardManaCostComplexParam(CardSearchParam):
         if in_symbol:
             raise ValueError(f"Could not parse {self.cost_text}: expected '}}'")
 
+        self.generic_mana = 0
+        for symbol, count in dict(self.symbol_counts).items():
+            try:
+                self.generic_mana = int(symbol)
+                del self.symbol_counts[symbol]
+            except (TypeError, ValueError):
+                continue
+
     def query(self) -> Q:
         query = Q()
 
         for symbol, count in dict(self.symbol_counts).items():
-            num = None
-            try:
-                num = int(symbol)
-            except (TypeError, ValueError):
-                pass
+            if symbol.upper() not in self.symbols:
+                raise ValueError(f'Unknown symbol "{symbol}"')
 
-            if num is not None:
+            query &= Q(
+                **{
+                    "card__search_metadata__symbol_count_"
+                    + symbol.lower().replace("/", "_")
+                    + OPERATOR_MAPPING[self.operator]: count
+                }
+            )
+
+        if self.generic_mana:
+            query &= Q(
+                **{
+                    "card__search_metadata__symbol_count_generic"
+                    + OPERATOR_MAPPING[self.operator]: self.generic_mana
+                }
+            )
+
+        # If we are in "less than" mode
+        if self.operator in ("<", "<=", "="):
+            # Exclude cards with any other symbol
+            for symbol in self.symbols:
+                if symbol.lower() in self.symbol_counts:
+                    continue
                 query &= Q(
                     **{
-                        "card__generic_mana_count"
-                        + OPERATOR_MAPPING[self.operator]: num
+                        "card__search_metadata__symbol_count_"
+                        + symbol.lower().replace("/", "_"): 0
                     }
                 )
-            else:
-                query &= Q(card__cost__icontains=("{" + symbol + "}") * count)
-                if self.operator == "=":
-                    query &= ~Q(
-                        card__cost__icontains=("{" + symbol + "}") * (count + 1)
-                    )
+
+            # Only include cards with no generic mana
+            if not self.generic_mana:
+                query &= Q(
+                    **{
+                        "card__search_metadata__symbol_count_generic"
+                        + OPERATOR_MAPPING[self.operator]: 0
+                    }
+                )
 
         return query
 

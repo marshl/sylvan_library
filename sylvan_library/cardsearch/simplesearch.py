@@ -5,8 +5,9 @@ from typing import Optional, List
 
 from bitfield import Bit
 
-from cardsearch.base_search import BaseSearch, create_colour_param
 
+from cards.models import Format, Set
+from cardsearch.base_search import BaseSearch, create_colour_param
 from cardsearch.parameters import (
     OrParam,
     CardNameParam,
@@ -18,13 +19,7 @@ from cardsearch.parameters import (
     CardMulticolouredOnlyParam,
 )
 
-
-from cards.models import Set
-
 # pylint: disable=too-many-instance-attributes
-from models import Format
-
-
 class SimpleSearch(BaseSearch):
     """
     A simple flat search

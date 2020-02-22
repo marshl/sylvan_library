@@ -60,7 +60,6 @@ class Card(models.Model):
     colour_identity_count: int = models.IntegerField()
     colour_sort_key: int = models.IntegerField()
     colour_weight: int = models.IntegerField()
-    generic_mana_count: int = models.IntegerField(default=0)
 
     type: str = models.CharField(max_length=100, blank=True, null=True)
     subtype: str = models.CharField(max_length=100, blank=True, null=True)
