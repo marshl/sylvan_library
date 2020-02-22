@@ -9,7 +9,7 @@ import urllib.request
 from typing import Dict, Any
 
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.paginator import Paginator
 from django.db import transaction
@@ -105,6 +105,12 @@ def simple_search(request: WSGIRequest) -> HttpResponse:
 
 
 def ajax_search_result_details(request: WSGIRequest, printing_id: int) -> HttpResponse:
+    """
+    Gets the details of a card in the result page
+    :param request: The user's request
+    :param printing_id: The ID of the CardPrinting
+    :return: The HTTP response
+    """
     printing = CardPrinting.objects.get(id=printing_id)
     return render(
         request, "website/results/search_result_details.html", {"printing": printing}
@@ -112,6 +118,12 @@ def ajax_search_result_details(request: WSGIRequest, printing_id: int) -> HttpRe
 
 
 def ajax_search_result_rulings(request: WSGIRequest, card_id: int) -> HttpResponse:
+    """
+    Returns the rulings of a card
+    :param request: The user's request
+    :param card_id: The ID of the Card
+    :return: The rulings HTML
+    """
     card = Card.objects.get(id=card_id)
     return render(request, "website/results/search_result_rulings.html", {"card": card})
 
@@ -119,6 +131,12 @@ def ajax_search_result_rulings(request: WSGIRequest, card_id: int) -> HttpRespon
 def ajax_search_result_languages(
     request: WSGIRequest, printing_id: int
 ) -> HttpResponse:
+    """
+    Gets the languages HTML of a printing
+    :param request: The user's request
+    :param printing_id: The CardPrinting ID
+    :return: The languages HTML
+    """
     printing = CardPrinting.objects.get(id=printing_id)
     return render(
         request, "website/results/search_result_languages.html", {"printing": printing}
@@ -126,11 +144,23 @@ def ajax_search_result_languages(
 
 
 def ajax_card_printing_image(request: WSGIRequest, printing_id: int) -> HttpResponse:
+    """
+    Gets the image view of a printing
+    :param request: The user's request
+    :param printing_id: The CardPrinting ID
+    :return: The image HTML
+    """
     printing = CardPrinting.objects.get(id=printing_id)
     return render(request, "website/card_image.html", {"printing": printing})
 
 
 def ajax_search_result_add(request: WSGIRequest, printing_id: int) -> HttpResponse:
+    """
+    Gets the "Add card" form for a card printing
+    :param request: The user's request
+    :param printing_id: The CardPrinting ID
+    :return: The add form HTML
+    """
     printing = CardPrinting.objects.get(id=printing_id)
     form = ChangeCardOwnershipForm(printing)
     return render(
@@ -141,6 +171,12 @@ def ajax_search_result_add(request: WSGIRequest, printing_id: int) -> HttpRespon
 
 
 def ajax_search_result_ownership(request: WSGIRequest, card_id: int) -> HttpResponse:
+    """
+    Gets the ownership list for a Card
+    :param request: The user's request
+    :param card_id: The Card ID
+    :return: The ownership HTML
+    """
     card = Card.objects.get(id=card_id)
     ownerships = (
         UserOwnedCard.objects.filter(owner=request.user)
@@ -160,6 +196,11 @@ def ajax_search_result_ownership(request: WSGIRequest, card_id: int) -> HttpResp
 
 
 def ajax_change_card_ownership(request: WSGIRequest) -> HttpResponse:
+    """
+    Applies an ownership change (adding or removing the amount that a card owns)
+    :param request: The user's request
+    :return: JSON containing whether the change was successful or not
+    """
     if not request.POST.get("count"):
         return JsonResponse({"result": False, "error": "Invalid count"})
 
@@ -175,6 +216,12 @@ def ajax_change_card_ownership(request: WSGIRequest) -> HttpResponse:
 
 
 def ajax_ownership_summary(request: WSGIRequest, card_id: int) -> HttpResponse:
+    """
+    Gets the ownership HTML summary
+    :param request: The user's request
+    :param card_id: The Card ID
+    :return: The ownership summary HTML
+    """
     card = Card.objects.get(id=card_id)
     return render(request, "website/results/ownership_summary.html", {"card": card})
 
@@ -182,6 +229,12 @@ def ajax_ownership_summary(request: WSGIRequest, card_id: int) -> HttpResponse:
 def ajax_search_result_set_summary(
     request: WSGIRequest, printing_id: int
 ) -> HttpResponse:
+    """
+    Gets the set summary for a given CardPrinting
+    :param request: The user's request
+    :param printing_id: The CardPrinting ID
+    :return: The set summary HTML
+    """
     printing = CardPrinting.objects.get(id=printing_id)
     return render(
         request,
@@ -191,6 +244,12 @@ def ajax_search_result_set_summary(
 
 
 def ajax_search_result_decks(request: WSGIRequest, card_id: int) -> HttpResponse:
+    """
+    Gets the deck list used by a given card
+    :param request: The user's request
+    :param card_id: The ID of the Card to get the HTML for
+    :return: THe deck list HTML
+    """
     card = Card.objects.get(pk=card_id)
     deck_cards = (
         DeckCard.objects.filter(deck__owner=request.user)
@@ -208,6 +267,12 @@ def ajax_search_result_decks(request: WSGIRequest, card_id: int) -> HttpResponse
 
 
 def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse:
+    """
+    Gets the links HTML of a Card
+    :param request: The user's request
+    :param card_id: The ID of the Card
+    :return: The link HTML
+    """
     card = Card.objects.get(pk=card_id)
     linked_card_name = (
         card.display_name if card.layout != "split" else card.get_linked_name()
@@ -282,6 +347,11 @@ def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse
 
 
 def get_page_number(request: WSGIRequest) -> int:
+    """
+    Gets the page number of a given request
+    :param request: The request to get the page from
+    :return: The page number
+    """
     try:
         return int(request.GET.get("page"))
     except (TypeError, ValueError):
@@ -289,6 +359,11 @@ def get_page_number(request: WSGIRequest) -> int:
 
 
 def deck_stats(request: WSGIRequest) -> HttpResponse:
+    """
+    Gets the stats page for a user's decks
+    :param request: The user's request
+    :return: The deck stats HTML page
+    """
     if not request.user.is_authenticated or not isinstance(request.user, User):
         return redirect("website:index")
 
@@ -342,19 +417,25 @@ def deck_stats(request: WSGIRequest) -> HttpResponse:
 
 
 def change_unused_decks(request: WSGIRequest) -> HttpResponse:
-    if isinstance(request.user, User):
-        if not hasattr(request.user, "userprops"):
-            UserProps.add_to_user(request.user)
+    """
+    Rerolls the random number seed for which unused cards should be shown in the user's deck stats
+    :param request: The request
+    :return: A redirect back to decks stats
+    """
+    if not isinstance(request.user, User):
+        return redirect("website:deck_stats")
+    if request.user.is_anonymous:
+        return redirect("website:index")
 
-        props = request.user.userprops
-        props.unused_cards_seed = random.randint(
-            0,
-            abs(
-                UserProps._meta.get_field("unused_cards_seed").validators[0].limit_value
-            ),
-        )
-        props.full_clean()
-        props.save()
+    if not hasattr(request.user, "userprops"):
+        UserProps.add_to_user(request.user)
+
+    props = request.user.userprops
+    props.unused_cards_seed = random.randint(
+        0, abs(UserProps._meta.get_field("unused_cards_seed").validators[0].limit_value)
+    )
+    props.full_clean()
+    props.save()
     return redirect("website:deck_stats")
 
 
@@ -379,6 +460,12 @@ def deck_list(request: WSGIRequest) -> HttpResponse:
 
 
 def deck_view(request: WSGIRequest, deck_id: int) -> HttpResponse:
+    """
+    Read-only view of a deck
+    :param request: The user's request
+    :param deck_id: The ID of th deck
+    :return: The HTTP response
+    """
     try:
         deck = Deck.objects.get(id=deck_id, owner=request.user)
     except Deck.DoesNotExist:
@@ -387,6 +474,12 @@ def deck_view(request: WSGIRequest, deck_id: int) -> HttpResponse:
 
 
 def deck_edit(request: WSGIRequest, deck_id: int) -> HttpResponse:
+    """
+    The deck edit form
+    :param request: The user's request
+    :param deck_id: The ID of the deck
+    :return: The response
+    """
     deck = Deck.objects.get(pk=deck_id)
     if deck.owner != request.user:
         return redirect("website:decks")
@@ -425,14 +518,17 @@ def deck_edit(request: WSGIRequest, deck_id: int) -> HttpResponse:
 
 
 def deck_create(request: WSGIRequest) -> HttpResponse:
+    """
+    Deck creation form
+    :param request: The user's request
+    :return: Either the deck page, or the deck view page, depending on errors and settings
+    """
     if request.method == "POST":
         deck_form = DeckForm(request.POST)
-
         if deck_form.is_valid():
             try:
                 deck = deck_form.instance
                 deck.owner = request.user
-                # deck_form.full_clean()
                 with transaction.atomic():
                     deck.full_clean()
                     deck.save()
@@ -448,7 +544,6 @@ def deck_create(request: WSGIRequest) -> HttpResponse:
             except ValidationError as err:
                 deck_form.add_error(None, err)
                 deck_form.instance.id = None
-                # deck_form = DeckForm(request.POST)
     else:
         deck = Deck()
         deck.owner = request.user
@@ -481,10 +576,19 @@ def deck_card_search(request: WSGIRequest) -> JsonResponse:
 
 
 def deck_colour_weights(request: WSGIRequest, deck_id: int) -> JsonResponse:
+    """
+    Gets the colour weights of a given deck
+    :param request: The user's request
+    :param deck_id: The ID of the deck
+    :return: The colour weights in JSON
+    """
     try:
         deck = Deck.objects.get(pk=deck_id)
     except Deck.DoesNotExist:
         return JsonResponse({"error": "Deck not found"})
+
+    if deck.is_private and request.user != deck.owner:
+        raise PermissionDenied()
 
     colours = get_colour_info()
     land_symbols = deck.get_land_symbol_counts()
@@ -500,6 +604,10 @@ def deck_colour_weights(request: WSGIRequest, deck_id: int) -> JsonResponse:
 
 
 def get_colour_info() -> Dict[int, Dict[str, Any]]:
+    """
+    Gets information about all colours
+    :return: The colour information as a dict
+    """
     return {
         colour.symbol: {
             "name": colour.name,

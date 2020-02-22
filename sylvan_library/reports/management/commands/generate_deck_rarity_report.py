@@ -3,12 +3,12 @@ Module for the verify_database command
 """
 import os
 from datetime import date
-from typing import List
+from typing import List, Optional
 import pandas as pd
 from pandas.plotting import register_matplotlib_converters
 import seaborn as sns
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, OutputWrapper
 from django.db.models.query import QuerySet
 from cards.models import Deck, User
 

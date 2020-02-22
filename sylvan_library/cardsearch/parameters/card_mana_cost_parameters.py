@@ -3,6 +3,7 @@ Card mana cost parameters
 """
 from collections import Counter
 
+import typing
 from django.db.models import F
 from django.db.models.query import Q
 
@@ -52,7 +53,7 @@ class CardManaCostComplexParam(CardSearchParam):
         self.cost_text: str = cost.lower()
         self.operator: str = operator
 
-        self.symbol_counts: Counter[int] = Counter()
+        self.symbol_counts: typing.Counter[str] = Counter()
         pos: int = 0
         current_symbol: str = ""
         in_symbol: bool = False
