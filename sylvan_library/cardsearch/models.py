@@ -1,3 +1,7 @@
+"""
+Models for helping perform searches by tracking card statistics that would be
+hard/expensive to search for at run time
+"""
 from django.db import models
 
 from cards.models import Card
@@ -45,3 +49,10 @@ class CardSearchMetadata(models.Model):
     symbol_count_g_p = models.IntegerField(default=0)
 
     symbol_count_generic = models.IntegerField(default=0)
+
+    produces_w = models.BooleanField(default=False)
+    produces_u = models.BooleanField(default=False)
+    produces_b = models.BooleanField(default=False)
+    produces_r = models.BooleanField(default=False)
+    produces_g = models.BooleanField(default=False)
+    produces_c = models.BooleanField(default=False)
