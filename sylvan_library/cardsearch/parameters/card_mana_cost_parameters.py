@@ -233,7 +233,7 @@ class CardCmcParam(CardNumericalParam):
 
     def get_pretty_str(self) -> str:
         return (
-            "cmd "
+            "cmc "
             + ("isn't " if self.negated else "")
             + f"{self.operator} {self.number}"
         )

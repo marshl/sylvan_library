@@ -10,7 +10,6 @@ from django.db.models.query import Q
 from cards.models import Colour
 from .base_parameters import (
     CardSearchParam,
-    validate_colour_flags,
     or_group_queries,
     and_group_queries,
     colour_flags_to_symbols,
@@ -78,29 +77,17 @@ class CardRulesTextParam(CardSearchParam):
         return f'rules text {modifier} "{self.card_rules}"'
 
 
-def get_produces_query_for_colour(colour: Colour):
-    """
-    Gets the Q object for searching
-    :param colour: The colour to get produce query for
-    :return: The Q search object
-    """
-    query = Q(card__rules_text__iregex=r"adds?\W[^\n]*?{" + colour.symbol + "}")
-    if colour.symbol != "C":
-        query |= Q(card__rules_text__iregex=r"adds?\W[^\n]*?any color")
-    return query
-
-
 class CardProducesManaParam(CardSearchParam):
     """
     Parameter for the mana that a card can produce
     """
 
-    def __init__(self, colours: int, operator: str = "=", any_colour: bool = False):
+    def __init__(
+        self, colours: List[int], operator: str = "=", any_colour: bool = False
+    ):
         super().__init__()
-        validate_colour_flags(colours)
-
         self.colours = colours
-        self.operator = "=" if operator == ":" else operator
+        self.operator = ">=" if operator == ":" else operator
         self.any_colour = any_colour
 
     def query(self) -> Q:
@@ -112,8 +99,10 @@ class CardProducesManaParam(CardSearchParam):
         excluded_colours: List[Q] = []
 
         for colour in Colour.objects.all():
-            query_part = get_produces_query_for_colour(colour)
-            included = colour.bit_value & self.colours == colour.bit_value
+            query_part = Q(
+                **{"card__search_metadata__produces_" + colour.symbol.lower(): True}
+            )
+            included = colour.bit_value in self.colours
 
             if included:
                 included_colours.append(query_part)
@@ -138,5 +127,10 @@ class CardProducesManaParam(CardSearchParam):
 
     def get_pretty_str(self) -> str:
         verb = "doesn't produce" if self.negated else "produces"
-        colour_names = colour_flags_to_symbols(self.colours)
+        if self.any_colour:
+            colour_names = "any colour"
+        else:
+            colour_names = ", ".join(
+                colour_flags_to_symbols(colour) for colour in self.colours
+            )
         return f"card {verb} {self.operator} {colour_names}"
