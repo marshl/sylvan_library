@@ -9,7 +9,7 @@ from typing import List, Union, Dict
 from django.db.models import F
 from django.db.models.query import Q
 
-from cards.models import Card, Colour
+from cards.models import Card
 
 logger = logging.getLogger("django")
 
@@ -71,20 +71,6 @@ def validate_colour_flags(colours: int) -> None:
         | Card.colour_flags.red
         | Card.colour_flags.green
     )
-
-
-def colour_flags_to_symbols(colours: int) -> str:
-    """
-    Converts colours flags to symbols
-    :param colours: The colours to convert to symbols
-    :return: The symbols of the given colours
-    """
-    colour_names = ""
-    for colour in Colour.objects.all():
-        if colour.bit_value & colours == colour.bit_value:
-            colour_names += colour.symbol
-
-    return colour_names
 
 
 class CardSearchParam:

@@ -4,13 +4,13 @@ Module for the card query recursive descent parser
 import inspect
 import math
 import sys
-from functools import reduce
 from typing import Union, Optional, Dict, Callable, List
 
 from django.contrib.auth.models import User
 from django.db.models import F, Q
 
-from cards.models import Card, Set, Rarity
+from cards.models import Set, Rarity, colour
+from cards.models.colour import get_colours_for_nickname
 from cardsearch.parameters import (
     CardSearchParam,
     OrParam,
@@ -35,86 +35,6 @@ from cardsearch.parameters import (
     CardProducesManaParam,
 )
 from .base_parser import Parser, ParseError
-
-COLOUR_NAMES_TO_FLAGS: Dict[str, List[int]] = {
-    "colourless": [0],
-    "c": [0],
-    "white": [Card.colour_flags.white],
-    "w": [Card.colour_flags.white],
-    "blue": [Card.colour_flags.blue],
-    "u": [Card.colour_flags.blue],
-    "black": [Card.colour_flags.black],
-    "b": [Card.colour_flags.black],
-    "red": [Card.colour_flags.red],
-    "r": [Card.colour_flags.red],
-    "green": [Card.colour_flags.green],
-    "g": [Card.colour_flags.green],
-    "azorius": [Card.colour_flags.white, Card.colour_flags.blue],
-    "dimir": [Card.colour_flags.blue, Card.colour_flags.black],
-    "rakdos": [Card.colour_flags.black, Card.colour_flags.red],
-    "gruul": [Card.colour_flags.red, Card.colour_flags.green],
-    "selesnya": [Card.colour_flags.green, Card.colour_flags.white],
-    "orzhov": [Card.colour_flags.white, Card.colour_flags.black],
-    "izzet": [Card.colour_flags.blue, Card.colour_flags.red],
-    "golgari": [Card.colour_flags.black, Card.colour_flags.green],
-    "boros": [Card.colour_flags.red, Card.colour_flags.white],
-    "simic": [Card.colour_flags.green, Card.colour_flags.blue],
-    "esper": [Card.colour_flags.white, Card.colour_flags.blue, Card.colour_flags.black],
-    "grixis": [Card.colour_flags.blue, Card.colour_flags.black, Card.colour_flags.red],
-    "jund": [Card.colour_flags.black, Card.colour_flags.red, Card.colour_flags.green],
-    "naya": [Card.colour_flags.red, Card.colour_flags.green, Card.colour_flags.white],
-    "bant": [Card.colour_flags.green, Card.colour_flags.white, Card.colour_flags.blue],
-    "abzan": [
-        Card.colour_flags.white,
-        Card.colour_flags.black,
-        Card.colour_flags.green,
-    ],
-    "jeskai": [Card.colour_flags.blue, Card.colour_flags.red, Card.colour_flags.white],
-    "sultai": [
-        Card.colour_flags.black,
-        Card.colour_flags.green,
-        Card.colour_flags.blue,
-    ],
-    "mardu": [Card.colour_flags.red, Card.colour_flags.white, Card.colour_flags.black],
-    "temur": [Card.colour_flags.green, Card.colour_flags.blue, Card.colour_flags.red],
-    "chaos": [
-        Card.colour_flags.blue,
-        Card.colour_flags.black,
-        Card.colour_flags.red,
-        Card.colour_flags.green,
-    ],
-    "aggression": [
-        Card.colour_flags.black,
-        Card.colour_flags.red,
-        Card.colour_flags.green,
-        Card.colour_flags.white,
-    ],
-    "altruism": [
-        Card.colour_flags.red,
-        Card.colour_flags.green,
-        Card.colour_flags.white,
-        Card.colour_flags.blue,
-    ],
-    "growth": [
-        Card.colour_flags.green,
-        Card.colour_flags.white,
-        Card.colour_flags.blue,
-        Card.colour_flags.black,
-    ],
-    "artifice": [
-        Card.colour_flags.white,
-        Card.colour_flags.blue,
-        Card.colour_flags.black,
-        Card.colour_flags.red,
-    ],
-    "all": [
-        Card.colour_flags.white,
-        Card.colour_flags.blue,
-        Card.colour_flags.black,
-        Card.colour_flags.red,
-        Card.colour_flags.green,
-    ],
-}
 
 
 class ParameterArgs:
@@ -333,36 +253,6 @@ def parse_is_param(param_args: ParameterArgs) -> CardSearchParam:
     return param
 
 
-def text_to_colours(text: str) -> List[int]:
-    """
-    Converts text to a list of colour flag
-    Raises a value error if the text doesn't match any known colours
-    :param text: The colour text to parse
-    :return: The colours or'd together
-    """
-    text = text.lower()
-    if text in COLOUR_NAMES_TO_FLAGS:
-        return COLOUR_NAMES_TO_FLAGS[text]
-
-    result = []
-    for char in text:
-        if char not in COLOUR_NAMES_TO_FLAGS:
-            raise ValueError(f"Unknown colour {text}")
-
-        result += COLOUR_NAMES_TO_FLAGS[char]
-    return result
-
-
-def colour_flags_to_int(colour_flags: List[int]) -> int:
-    """
-    Converts a list of colour flags to an int
-    :param colour_flags: The list of colour flags
-    :return: The combined integer version of those flags
-    Note that this will basically "remove" colourless
-    """
-    return reduce(colour_flags, lambda x, y: x | y)
-
-
 @param_parser(name="name", keywords=["n", "name"], operators=[":", "="])
 def parse_name_param(param_args: ParameterArgs) -> CardNameParam:
     """
@@ -397,10 +287,8 @@ def parse_colour_param(
         return CardColourCountParam(num, param_args.operator, identity=False)
     except ValueError:
         pass
-    flags = text_to_colours(param_args.text)
-    return CardComplexColourParam(
-        colour_flags_to_int(flags), param_args.operator, identity=False
-    )
+    colours = colour.get_colours_for_nickname(param_args.text)
+    return CardComplexColourParam(colours, param_args.operator, identity=False)
 
 
 @param_parser(
@@ -417,7 +305,7 @@ def parse_produces_param(param_args: ParameterArgs) -> CardProducesManaParam:
     if param_args.text == "any":
         return CardProducesManaParam([], param_args.operator, any_colour=True)
 
-    colours = text_to_colours(param_args.text)
+    colours = colour.get_colours_for_nickname(param_args.text)
     return CardProducesManaParam(colours, param_args.operator)
 
 
@@ -444,7 +332,7 @@ def parse_colour_identity_param(
         pass
 
     return CardComplexColourParam(
-        text_to_colours(param_args.text), param_args.operator, identity=True
+        get_colours_for_nickname(param_args.text), param_args.operator, identity=True
     )
 
 

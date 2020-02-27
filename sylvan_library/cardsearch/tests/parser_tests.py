@@ -3,7 +3,7 @@ Tests for the parser (search parameter tests are elsewhere)
 """
 from django.test import TestCase
 
-from cards.models import Card
+from cards.models import Card, Colour
 from cards.tests import create_test_card, create_test_set, create_test_card_printing
 from cardsearch.parameters import (
     AndParam,
@@ -22,6 +22,8 @@ class ParserTests(TestCase):
     """
     Tests for teh CardQueryParser
     """
+
+    fixtures = ["colours.json"]
 
     def setUp(self) -> None:
         self.parser = CardQueryParser()
@@ -100,9 +102,7 @@ class ParserTests(TestCase):
         """
         root_param = self.parser.parse("color:rg")
         self.assertIsInstance(root_param, CardComplexColourParam)
-        self.assertEqual(
-            root_param.colours, Card.colour_flags.red | Card.colour_flags.green
-        )
+        self.assertEqual(root_param.colours, [Colour.red(), Colour.green()])
         self.assertEqual(root_param.operator, ">=")
 
     def test_multiple_colour_params(self) -> None:
@@ -116,13 +116,11 @@ class ParserTests(TestCase):
         self.assertIsInstance(white_blue_param, CardComplexColourParam)
         self.assertIsInstance(not_red_param, CardComplexColourParam)
 
-        self.assertEqual(
-            white_blue_param.colours, Card.colour_flags.white | Card.colour_flags.blue
-        )
+        self.assertListEqual(white_blue_param.colours, [Colour.blue(), Colour.white()])
         self.assertEqual(white_blue_param.operator, ">=")
         self.assertEqual(white_blue_param.negated, False)
 
-        self.assertEqual(not_red_param.colours, Card.colour_flags.red)
+        self.assertEqual(not_red_param.colours, [Colour.red()])
         self.assertEqual(not_red_param.operator, ">=")
         self.assertEqual(not_red_param.negated, True)
 
@@ -137,8 +135,7 @@ class ParserTests(TestCase):
 
         self.assertIsInstance(esper_param, CardComplexColourParam)
         self.assertEqual(
-            esper_param.colours,
-            Card.colour_flags.white | Card.colour_flags.blue | Card.colour_flags.black,
+            esper_param.colours, [Colour.white(), Colour.blue(), Colour.black()]
         )
         self.assertEqual(esper_param.operator, "<=")
         self.assertFalse(esper_param.negated)
@@ -157,7 +154,7 @@ class ParserTests(TestCase):
         id_param, type_param = root_param.child_parameters
         self.assertIsInstance(id_param, CardComplexColourParam)
         self.assertIsInstance(type_param, CardGenericTypeParam)
-        self.assertEqual(id_param.colours, 0)
+        self.assertEqual(id_param.colours, [Colour.colourless()])
         self.assertEqual(id_param.operator, "<=")
 
         self.assertEqual(type_param.operator, ":")

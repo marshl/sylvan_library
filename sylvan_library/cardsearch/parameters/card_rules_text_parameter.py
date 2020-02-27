@@ -8,12 +8,8 @@ from django.db.models.functions import Concat
 from django.db.models.query import Q
 
 from cards.models import Colour
-from .base_parameters import (
-    CardSearchParam,
-    or_group_queries,
-    and_group_queries,
-    colour_flags_to_symbols,
-)
+from cards.models.colour import colours_to_symbols
+from .base_parameters import CardSearchParam, or_group_queries, and_group_queries
 
 
 class CardRulesTextParam(CardSearchParam):
@@ -83,7 +79,7 @@ class CardProducesManaParam(CardSearchParam):
     """
 
     def __init__(
-        self, colours: List[int], operator: str = "=", any_colour: bool = False
+        self, colours: List[Colour], operator: str = "=", any_colour: bool = False
     ):
         super().__init__()
         self.colours = colours
@@ -102,7 +98,7 @@ class CardProducesManaParam(CardSearchParam):
             query_part = Q(
                 **{"card__search_metadata__produces_" + colour.symbol.lower(): True}
             )
-            included = colour.bit_value in self.colours
+            included = colour in self.colours
 
             if included:
                 included_colours.append(query_part)
@@ -130,7 +126,5 @@ class CardProducesManaParam(CardSearchParam):
         if self.any_colour:
             colour_names = "any colour"
         else:
-            colour_names = ", ".join(
-                colour_flags_to_symbols(colour) for colour in self.colours
-            )
+            colour_names = colours_to_symbols(self.colours)
         return f"card {verb} {self.operator} {colour_names}"

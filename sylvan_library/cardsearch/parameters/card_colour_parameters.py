@@ -1,15 +1,14 @@
 """
 Card colour parameters
 """
+from typing import List
+
 from bitfield.types import Bit
 from django.db.models.query import Q
 
 from cards.models import Colour
-from .base_parameters import (
-    CardSearchParam,
-    validate_colour_flags,
-    colour_flags_to_symbols,
-)
+from cards.models.colour import colours_to_int_flags, colours_to_symbols
+from .base_parameters import CardSearchParam
 
 
 class CardColourParam(CardSearchParam):
@@ -35,10 +34,9 @@ class CardComplexColourParam(CardSearchParam):
     """
 
     def __init__(
-        self, colours: int, operator: str = "=", identity: bool = False
+        self, colours: List[Colour], operator: str = "=", identity: bool = False
     ) -> None:
         super().__init__()
-        validate_colour_flags(colours)
         self.colours = colours
         if operator == ":":
             self.operator = "<=" if identity else ">="
@@ -52,19 +50,20 @@ class CardComplexColourParam(CardSearchParam):
         :return: The Q query object
         """
         field = "card__colour_identity_flags" if self.identity else "card__colour_flags"
+        colour_flags = colours_to_int_flags(self.colours)
         if self.operator == ">=":
             return (
-                ~Q(**{field: self.colours})
+                ~Q(**{field: colour_flags})
                 if self.negated
-                else Q(**{field: self.colours})
+                else Q(**{field: colour_flags})
             )
 
         if self.operator == ">" or self.operator == "=":
-            result = Q(**{field: self.colours})
+            result = Q(**{field: colour_flags})
             exclude = Q()
 
             for colour in Colour.objects.exclude(symbol="C"):
-                if not colour.bit_value & self.colours:
+                if not colour in self.colours:
                     exclude |= Q(**{field: colour.bit_value})
             if exclude:
                 result &= exclude if self.operator == ">" else ~exclude
@@ -74,7 +73,7 @@ class CardComplexColourParam(CardSearchParam):
             include = Q()
             exclude = Q()
             for colour in Colour.objects.exclude(symbol="C"):
-                if colour.bit_value & self.colours:
+                if colour in self.colours:
                     include |= Q(**{field: colour.bit_value})
                 else:
                     exclude &= ~Q(**{field: colour.bit_value})
@@ -83,7 +82,7 @@ class CardComplexColourParam(CardSearchParam):
                 include |= Q(card__colour_identity_flags=0)
 
             if self.operator == "<":
-                result = include & exclude & ~Q(**{field: self.colours})
+                result = include & exclude & ~Q(**{field: colour_flags})
                 return ~result if self.negated else result
             result = include & exclude
             return ~result if self.negated else result
@@ -103,9 +102,7 @@ class CardComplexColourParam(CardSearchParam):
             )
 
         param_type = "colour identity" if self.identity else "colours"
-        return (
-            f"the {param_type} {self.operator} {colour_flags_to_symbols(self.colours)}"
-        )
+        return f"the {param_type} {self.operator} {colours_to_symbols(self.colours)}"
 
 
 class CardColourIdentityParam(CardSearchParam):

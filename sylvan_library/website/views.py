@@ -31,13 +31,13 @@ from cards.models import (
     UserOwnedCard,
     UserProps,
 )
-from pagination import get_page_buttons
 from website.forms import (
     FieldSearchForm,
     QuerySearchForm,
     ChangeCardOwnershipForm,
     DeckForm,
 )
+from website.pagination import get_page_buttons
 
 logger = logging.getLogger("django")
 
