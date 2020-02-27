@@ -2,7 +2,7 @@
 Models for Colour objects
 """
 from functools import reduce
-from typing import List, Dict
+from typing import List, Dict, Optional
 from django.db import models
 
 
@@ -17,13 +17,22 @@ class Colour(models.Model):
     bit_value = models.IntegerField(unique=True)
     chart_colour = models.CharField(max_length=20)
 
+    _white = None
+    _blue = None
+    _black = None
+    _red = None
+    _green = None
+    _colourless = None
+
     @staticmethod
     def white() -> "Colour":
         """
         Gets the colour object for white
         :return:
         """
-        return Colour.objects.get(symbol="W")
+        if not Colour._white:
+            Colour._white = Colour.objects.get(symbol="W")
+        return Colour._white
 
     @staticmethod
     def blue() -> "Colour":
@@ -31,7 +40,9 @@ class Colour(models.Model):
         Gets the colour object for blue
         :return:
         """
-        return Colour.objects.get(symbol="U")
+        if not Colour._blue:
+            Colour._blue = Colour.objects.get(symbol="U")
+        return Colour._blue
 
     @staticmethod
     def black() -> "Colour":
@@ -39,7 +50,9 @@ class Colour(models.Model):
         Gets the colour object for black
         :return:
         """
-        return Colour.objects.get(symbol="B")
+        if not Colour._black:
+            Colour._black = Colour.objects.get(symbol="B")
+        return Colour._black
 
     @staticmethod
     def red() -> "Colour":
@@ -47,7 +60,9 @@ class Colour(models.Model):
         Gets the colour object for red
         :return:
         """
-        return Colour.objects.get(symbol="R")
+        if not Colour._red:
+            Colour._red = Colour.objects.get(symbol="R")
+        return Colour._red
 
     @staticmethod
     def green() -> "Colour":
@@ -55,7 +70,9 @@ class Colour(models.Model):
         Gets the colour object for green
         :return:
         """
-        return Colour.objects.get(symbol="G")
+        if not Colour._green:
+            Colour._green = Colour.objects.get(symbol="G")
+        return Colour._green
 
     @staticmethod
     def colourless() -> "Colour":
@@ -63,7 +80,10 @@ class Colour(models.Model):
         Gets the colour object for green
         :return:
         """
-        return Colour.objects.get(symbol="C")
+        # return Colour.objects.get(symbol="C")
+        if not Colour._colourless:
+            Colour._colourless = Colour.objects.get(symbol="C")
+        return Colour._colourless
 
     @staticmethod
     def colour_names_to_flags(colour_names: List[str]) -> int:
@@ -95,8 +115,8 @@ class Colour(models.Model):
         return self.name
 
 
-ALL_COLOURS = list(Colour.objects.all().order_by("display_order"))
-WHITE, BLUE, BLACK, RED, GREEN, COLOURLESS = ALL_COLOURS
+# ALL_COLOURS = list(Colour.objects.all().order_by("display_order"))
+# WHITE, BLUE, BLACK, RED, GREEN, COLOURLESS = ALL_COLOURS
 
 
 def colours_to_int_flags(colours: List[Colour]) -> int:
@@ -106,49 +126,10 @@ def colours_to_int_flags(colours: List[Colour]) -> int:
     :return: The combined integer version of those flags
     Note that this will basically "remove" colourless
     """
-    return reduce(lambda x, y: x.bit_value | y.bit_value, colours)
+    return reduce(lambda x, y: x | y, (c.bit_value for c in colours))
 
 
-COLOUR_NAME_LOOKUP: Dict[str, List[Colour]] = {
-    "colourless": [COLOURLESS],
-    "c": [COLOURLESS],
-    "white": [WHITE],
-    "w": [WHITE],
-    "blue": [BLUE],
-    "u": [BLUE],
-    "black": [BLACK],
-    "b": [BLACK],
-    "red": [RED],
-    "r": [RED],
-    "green": [GREEN],
-    "g": [GREEN],
-    "azorius": [WHITE, BLUE],
-    "dimir": [BLUE, BLACK],
-    "rakdos": [BLACK, RED],
-    "gruul": [RED, GREEN],
-    "selesnya": [GREEN, WHITE],
-    "orzhov": [WHITE, BLACK],
-    "izzet": [BLUE, RED],
-    "golgari": [BLACK, GREEN],
-    "boros": [RED, WHITE],
-    "simic": [GREEN, BLUE],
-    "esper": [WHITE, BLUE, BLACK],
-    "grixis": [BLUE, BLACK, RED],
-    "jund": [BLACK, RED, GREEN],
-    "naya": [RED, GREEN, WHITE],
-    "bant": [GREEN, WHITE, BLUE],
-    "abzan": [WHITE, BLACK, GREEN],
-    "jeskai": [BLUE, RED, WHITE],
-    "sultai": [BLACK, GREEN, BLUE],
-    "mardu": [RED, WHITE, BLACK],
-    "temur": [GREEN, BLUE, RED],
-    "chaos": [BLUE, BLACK, RED, GREEN],
-    "aggression": [BLACK, RED, GREEN, WHITE],
-    "altruism": [RED, GREEN, WHITE, BLUE],
-    "growth": [GREEN, WHITE, BLUE, BLACK],
-    "artifice": [WHITE, BLUE, BLACK, RED],
-    "all": [WHITE, BLUE, BLACK, RED, GREEN],
-}
+_COLOUR_NAME_LOOKUP: Optional[Dict[str, List[Colour]]] = None
 
 
 def get_colours_for_nickname(colour_name: str) -> List[Colour]:
@@ -158,16 +139,70 @@ def get_colours_for_nickname(colour_name: str) -> List[Colour]:
     :param colour_name: The colour text to parse
     :return: The colours or'd together
     """
+    global _COLOUR_NAME_LOOKUP
+    if not _COLOUR_NAME_LOOKUP:
+        _COLOUR_NAME_LOOKUP = {
+            "colourless": [Colour.colourless()],
+            "c": [Colour.colourless()],
+            "white": [Colour.white()],
+            "w": [Colour.white()],
+            "blue": [Colour.blue()],
+            "u": [Colour.blue()],
+            "black": [Colour.black()],
+            "b": [Colour.black()],
+            "red": [Colour.red()],
+            "r": [Colour.red()],
+            "green": [Colour.green()],
+            "g": [Colour.green()],
+            "azorius": [Colour.white(), Colour.blue()],
+            "dimir": [Colour.blue(), Colour.black()],
+            "rakdos": [Colour.black(), Colour.red()],
+            "gruul": [Colour.red(), Colour.green()],
+            "selesnya": [Colour.green(), Colour.white()],
+            "orzhov": [Colour.white(), Colour.black()],
+            "izzet": [Colour.blue(), Colour.red()],
+            "golgari": [Colour.black(), Colour.green()],
+            "boros": [Colour.red(), Colour.white()],
+            "simic": [Colour.green(), Colour.blue()],
+            "esper": [Colour.white(), Colour.blue(), Colour.black()],
+            "grixis": [Colour.blue(), Colour.black(), Colour.red()],
+            "jund": [Colour.black(), Colour.red(), Colour.green()],
+            "naya": [Colour.red(), Colour.green(), Colour.white()],
+            "bant": [Colour.green(), Colour.white(), Colour.blue()],
+            "abzan": [Colour.white(), Colour.black(), Colour.green()],
+            "jeskai": [Colour.blue(), Colour.red(), Colour.white()],
+            "sultai": [Colour.black(), Colour.green(), Colour.blue()],
+            "mardu": [Colour.red(), Colour.white(), Colour.black()],
+            "temur": [Colour.green(), Colour.blue(), Colour.red()],
+            "chaos": [Colour.blue(), Colour.black(), Colour.red(), Colour.green()],
+            "aggression": [
+                Colour.black(),
+                Colour.red(),
+                Colour.green(),
+                Colour.white(),
+            ],
+            "altruism": [Colour.red(), Colour.green(), Colour.white(), Colour.blue()],
+            "growth": [Colour.green(), Colour.white(), Colour.blue(), Colour.black()],
+            "artifice": [Colour.white(), Colour.blue(), Colour.black(), Colour.red()],
+            "all": [
+                Colour.white(),
+                Colour.blue(),
+                Colour.black(),
+                Colour.red(),
+                Colour.green(),
+            ],
+        }
+
     text = colour_name.lower()
-    if text in COLOUR_NAME_LOOKUP:
-        return COLOUR_NAME_LOOKUP[text]
+    if text in _COLOUR_NAME_LOOKUP:
+        return _COLOUR_NAME_LOOKUP[text]
 
     result = []
     for char in text:
-        if char not in COLOUR_NAME_LOOKUP:
+        if char not in _COLOUR_NAME_LOOKUP:
             raise ValueError(f"Unknown colour {text}")
 
-        result += COLOUR_NAME_LOOKUP[char]
+        result += _COLOUR_NAME_LOOKUP[char]
     return result
 
 

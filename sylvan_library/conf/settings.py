@@ -17,14 +17,14 @@ SITE_ROOT = root()
 DEBUG = env("DEBUG")  # False if not in os.environ
 DEBUG_TOOLBAR = DEBUG and env("DEBUG_TOOLBAR")
 
+DATABASES = {
+    "default": env.db()  # Raises ImproperlyConfigured if DATABASE_URL not in os.environ
+}
+
 if (
     "test" in sys.argv or "test_coverage" in sys.argv
 ):  # Covers regular testing and django-coverage
-    DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3"}}
-else:
-    DATABASES = {
-        "default": env.db()  # Raises ImproperlyConfigured if DATABASE_URL not in os.environ
-    }
+    DATABASES["default"]["ENGINE"] = "django.db.backends.sqlite3"
 
 public_root = root.path("public/")
 

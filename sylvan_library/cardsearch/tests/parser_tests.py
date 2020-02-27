@@ -269,6 +269,7 @@ class ColourContainsTestCase(TestCase):
     """
     Tests for the card name parameter
     """
+    fixtures = ["colours.json"]
 
     def setUp(self) -> None:
         self.set_obj = create_test_set("Setty", "SET", {})
