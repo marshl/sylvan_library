@@ -107,6 +107,12 @@ $(function () {
             .done(function (result) {
                 $tabContainer.find('.js-card-result-tab-content[data-tab-type="links"]').html(result);
             });
+
+
+        $.ajax('/website/ajax/search_result_prices/' + printing_id)
+            .done(function (result) {
+                $tabContainer.find('.js-card-result-tab-content[data-tab-type="prices"]').html(result);
+            });
     }
 
     function loadOwnershipTab($tabContainer, card_id) {

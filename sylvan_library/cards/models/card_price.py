@@ -13,9 +13,9 @@ class CardPrice(models.Model):
 
     PRICE_TYPE_CHOICES = (
         ("paper", "Paper"),
-        ("paper_foil", "Paper Foil"),
+        ("paperFoil", "Paper Foil"),
         ("mtgo", "MTGO"),
-        ("mtgo_foil", "MTGO Foil"),
+        ("mtgoFoil", "MTGO Foil"),
     )
 
     printing = models.ForeignKey(
@@ -24,3 +24,10 @@ class CardPrice(models.Model):
     price = models.FloatField()
     date = models.DateField()
     price_type = models.CharField(max_length=50, choices=PRICE_TYPE_CHOICES)
+
+    class Meta:
+        """
+        Meta information for CardPrintingLanguages
+        """
+
+        unique_together = ("date", "printing", "price_type")

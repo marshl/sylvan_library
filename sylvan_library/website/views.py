@@ -6,6 +6,7 @@ import logging
 import random
 import urllib.parse
 import urllib.request
+from collections import defaultdict
 from typing import Dict, Any
 
 from django.contrib.auth.models import User
@@ -344,6 +345,32 @@ def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse
         )
 
     return render(request, "website/results/search_result_links.html", {"links": links})
+
+
+def ajax_search_result_prices(
+    request: WSGIRequest, card_printing_id: int
+) -> HttpResponse:
+    """
+    Gets the prices HTML of a Card
+    :param request: The user's request
+    :param card_id: The ID of the Card
+    :return: The price HTML
+    """
+    printing = CardPrinting.objects.get(pk=card_printing_id)
+    price_dict = defaultdict(list)
+    for price in printing.prices.all():
+        price_dict[price.price_type].append(price)
+
+    results = {}
+    for price_type, prices in price_dict.items():
+        results[price_type] = {
+            "prices": sorted(prices, key=lambda x: x.date, reverse=True),
+            "name": prices[0].get_price_type_display(),
+        }
+
+    return render(
+        request, "website/results/search_result_prices.html", {"prices": results}
+    )
 
 
 def get_page_number(request: WSGIRequest) -> int:

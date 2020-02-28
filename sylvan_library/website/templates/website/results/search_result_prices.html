@@ -1,0 +1,17 @@
+{% load currency %}
+{% load staticfiles %}
+<div class="extraDetails">
+    {% for price_type, price_dict in prices.items %}
+        <span class="subtitle">
+                <b>{{ price_dict.name }}</b>
+            </span>
+        <br/>
+        {% for price in price_dict.prices %}
+            <span class="subtitle">
+                {{ price.date }} {{ price.price | currency }}
+            </span>
+            <br/>
+        {% endfor %}
+    {% endfor %}
+</div>
+
