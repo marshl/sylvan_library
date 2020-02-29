@@ -33,6 +33,7 @@ from cardsearch.parameters import (
     CardIsReprintParam,
     CardIsPhyrexianParam,
     CardProducesManaParam,
+    CardFlavourTextParam,
 )
 from .base_parser import Parser, ParseError
 
@@ -64,16 +65,16 @@ def parse_numeric_parameter(
         raise ValueError(f"Cannot use {operator} operator for {param_name} search")
 
     if text in ("toughness", "tough", "tou"):
-        return F("num_toughness")
+        return F("card__num_toughness")
 
     if text in ("power", "pow"):
-        return F("num_power")
+        return F("card__num_power")
 
     if text in ("loyalty", "loy"):
-        return F("num_loyalty")
+        return F("card__num_loyalty")
 
     if text in ("cmc", "cost"):
-        return F("cmc")
+        return F("card__cmc")
 
     if text in ("inf", "infinity", "∞"):
         return math.inf
