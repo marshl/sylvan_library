@@ -184,6 +184,18 @@ def parse_text_param(param_args: ParameterArgs) -> CardRulesTextParam:
     return CardRulesTextParam(param_args.text, exact=param_args.operator == "=")
 
 
+@param_parser(
+    name="flavour text", keywords=["f", "flavour", "flavor"], operators=[":", "="]
+)
+def parse_flavour_text_param(param_args: ParameterArgs) -> CardFlavourTextParam:
+    """
+    Parses and returns a flavour text parameter
+    :param param_args: The parameter arguments
+    :return: The rules parameter
+    """
+    return CardFlavourTextParam(param_args.text)
+
+
 @param_parser(name="type", keywords=["t", "type"], operators=[":", "="])
 def parse_type_param(param_args: ParameterArgs) -> CardGenericTypeParam:
     """
