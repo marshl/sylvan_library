@@ -574,7 +574,7 @@ class CardQueryParser(Parser):
         Attempts to parse an unquoted string (basically any characters without spaces)
         :return: The contents of the unquoted string
         """
-        acceptable_chars = "0-9A-Za-z!$%&*+./;<=>?^_`|~{}[]/-:"
+        acceptable_chars = "0-9A-Za-z!$%&*+./;<=>?^_`|~{}[]/-:'"
         chars = [self.char(acceptable_chars)]
 
         while True:
