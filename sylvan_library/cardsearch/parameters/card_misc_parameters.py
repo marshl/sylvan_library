@@ -58,3 +58,16 @@ class CardHasColourIndicatorParam(CardSearchParam):
             + ("doesn't have" if self.negated else "has")
             + " a colour indicator"
         )
+
+
+class CardIsHybridParam(CardSearchParam):
+    """
+    Parameter for whether a card has hybrid mana in its cost
+    """
+
+    def query(self) -> Q:
+        query = Q(card__cost__iregex=r"\/[wubrg]")
+        return ~query if self.negated else query
+
+    def get_pretty_str(self) -> str:
+        return "card " + ("isn't" if self.negated else "is") + " hybrid"

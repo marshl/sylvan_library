@@ -34,6 +34,7 @@ from cardsearch.parameters import (
     CardIsPhyrexianParam,
     CardProducesManaParam,
     CardFlavourTextParam,
+    CardIsHybridParam,
 )
 from .base_parser import Parser, ParseError
 
@@ -258,6 +259,8 @@ def parse_is_param(param_args: ParameterArgs) -> CardSearchParam:
         param = CardIsPhyrexianParam()
     elif param_args.text == "watermark":
         param = CardHasWatermarkParam()
+    elif param_args.text == "hybrid":
+        param = CardIsHybridParam()
     else:
         raise ValueError(f'Unknown parameter "{param_args.keyword}:{param_args.text}"')
 

@@ -21,6 +21,7 @@ from .card_misc_parameters import (
     CardHasWatermarkParam,
     CardIsPhyrexianParam,
     CardHasColourIndicatorParam,
+    CardIsHybridParam,
 )
 from .card_ownership_parameters import CardOwnershipCountParam, CardOwnerParam
 from .card_power_toughness_parameters import (
