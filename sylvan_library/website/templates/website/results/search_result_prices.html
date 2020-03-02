@@ -8,7 +8,12 @@
         <br/>
         {% for price in price_dict.prices %}
             <span class="subtitle">
-                {{ price.date }} {{ price.price | currency }}
+                {{ price.date }}
+            {% if 'paper' in price_type %}
+                {{ price.price | currency }}
+            {% else %}
+                {{ price.price }} TIX
+            {% endif %}
             </span>
             <br/>
         {% endfor %}
