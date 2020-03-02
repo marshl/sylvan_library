@@ -472,7 +472,10 @@ class CardQueryParser(Parser):
             return or_group
 
         parameter = self.match(
-            "quoted_name_parameter", "normal_parameter", "unquoted_name_parameter"
+            "simple_word_group_parameter",
+            "quoted_name_parameter",
+            "normal_parameter",
+            "unquoted_name_parameter",
         )
         if is_negated:
             parameter.negated = not parameter.negated
@@ -511,6 +514,22 @@ class CardQueryParser(Parser):
         """
         parameter_value = self.match("quoted_string")
         return self.parse_param("name", ":", parameter_value)
+
+    def simple_word_group_parameter(self) -> CardSearchParam:
+        """
+        Attempts to parse a parameter that has a list of words inside parentheses
+        For example "oracle:(foo bar)"
+        :return: An AndParam containing the parameters. All the parameters will be of
+        the type specified before the colon at the start of the string
+        """
+        parameter_type = self.match("param_type")
+        operator = self.match("operator")
+        param_values = self.match("simple_word_group")
+        and_param = AndParam()
+        for value in param_values:
+            param = self.parse_param(parameter_type, operator, value)
+            and_param.add_parameter(param)
+        return and_param
 
     def unquoted_name_parameter(self) -> CardSearchParam:
         """
@@ -610,3 +629,23 @@ class CardQueryParser(Parser):
                 chars.append(char)
 
         return "".join(chars)
+
+    def simple_word_group(self) -> List[str]:
+        """
+        Attempts to parse a list of words in parentheses, for example "(foo bar)"
+        :return: The words inside the parentheses
+        """
+        self.char("(")
+        chars: List[str] = []
+        words: List[str] = []
+        while True:
+            char = self.char()
+            if char in (" ", ")"):
+                if chars:
+                    words.append("".join(chars))
+                    chars = []
+                if char == ")":
+                    break
+            else:
+                chars.append(char)
+        return words
