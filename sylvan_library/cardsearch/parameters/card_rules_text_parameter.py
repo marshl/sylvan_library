@@ -40,7 +40,7 @@ class CardRulesTextParam(CardSearchParam):
             return ~query if self.negated else query
 
         chunks = [Value(c) for c in self.card_rules.split("~")]
-        params = [F("name")] * (len(chunks) * 2 - 1)
+        params = [F("card__name")] * (len(chunks) * 2 - 1)
         params[0::2] = chunks
         if self.regex_match:
             query = Q(card__rules_text__iregex=Concat(*params))
