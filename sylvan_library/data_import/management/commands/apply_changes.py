@@ -195,6 +195,8 @@ class Command(BaseCommand):
             for field, value in card_data.items():
                 if hasattr(card, field):
                     setattr(card, field, value)
+                elif field in ("generic_mana_count",):
+                    continue
                 else:
                     raise NotImplementedError(
                         f"Cannot set unrecognised field Card.{field}"
