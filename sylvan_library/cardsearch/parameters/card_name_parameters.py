@@ -15,9 +15,17 @@ class CardNameParam(CardSearchParam):
         super().__init__()
         self.card_name = card_name
         self.match_exact = match_exact
+        self.regex_match: bool = False
+        if self.card_name.startswith("/") and self.card_name.endswith("/"):
+            self.regex_match = True
+            self.card_name = self.card_name.strip("/")
+            if self.match_exact:
+                self.card_name = "^" + self.card_name + "$"
 
     def query(self) -> Q:
-        if self.match_exact:
+        if self.regex_match:
+            query = Q(card__name__iregex=self.card_name)
+        elif self.match_exact:
             query = Q(card__name__iexact=self.card_name)
         else:
             query = Q(card__name__icontains=self.card_name)
