@@ -36,6 +36,7 @@ from cardsearch.parameters import (
     CardFlavourTextParam,
     CardIsHybridParam,
 )
+from parameters import CardMulticolouredOnlyParam
 from .base_parser import Parser, ParseError
 
 
@@ -261,6 +262,8 @@ def parse_is_param(param_args: ParameterArgs) -> CardSearchParam:
         param = CardHasWatermarkParam()
     elif param_args.text == "hybrid":
         param = CardIsHybridParam()
+    elif param_args.text in ("multicoloured", "multicolored", "multi"):
+        param = CardMulticolouredOnlyParam()
     else:
         raise ValueError(f'Unknown parameter "{param_args.keyword}:{param_args.text}"')
 
