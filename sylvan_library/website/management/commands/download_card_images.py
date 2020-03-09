@@ -136,7 +136,7 @@ class Command(BaseCommand):
                     raise Exception("Neither card_images or card_faces could be found")
 
                 # Sleep after every request made to reduce server load
-                time.sleep(random.random() * 0.5)
+                time.sleep(random.random() * 0.5 + 0.5)
 
             image_path = os.path.join(self.root_dir, printed_language.get_image_path())
             localised_image_uri = base_image_uri.replace(
