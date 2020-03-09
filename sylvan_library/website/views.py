@@ -564,7 +564,9 @@ def deck_create(request: WSGIRequest) -> HttpResponse:
                         deck_card.full_clean()
                         deck_card.save()
 
-                    if not deck_form.cleaned_data.get("skip_validation"):
+                    if not deck_form.cleaned_data.get(
+                        "skip_validation"
+                    ) and not deck_form.cleaned_data.get("is_prototype"):
                         deck.validate_format()
                 if not request.POST.get("save_continue"):
                     return redirect("website:deck_view", deck_id=deck.id)
