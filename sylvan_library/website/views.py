@@ -474,7 +474,7 @@ def deck_list(request: WSGIRequest) -> HttpResponse:
     """
     page_size = 15
     users_decks = Deck.objects.filter(owner=request.user).order_by(
-        "-date_created", "-last_modified", "-id"
+        "-is_prototype", "-date_created", "-last_modified", "-id"
     )
     paginator = Paginator(users_decks, page_size)
     page_number = get_page_number(request)
