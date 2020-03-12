@@ -5,6 +5,8 @@ from functools import reduce
 from typing import List, Dict, Optional
 from django.db import models
 
+COLOUR_SYMBOLS_TO_CODES = {"W": 1, "U": 2, "B": 4, "R": 8, "G": 16}
+
 
 class Colour(models.Model):
     """
@@ -107,7 +109,7 @@ class Colour(models.Model):
         """
         flags = 0
         for symbol in colour_codes:
-            flags |= Colour.objects.get(symbol__iexact=symbol).bit_value
+            flags |= COLOUR_SYMBOLS_TO_CODES[symbol.upper()]
 
         return flags
 
