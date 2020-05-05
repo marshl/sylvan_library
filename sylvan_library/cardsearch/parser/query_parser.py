@@ -9,7 +9,7 @@ from typing import Union, Optional, Dict, Callable, List
 from django.contrib.auth.models import User
 from django.db.models import F, Q
 
-from cards.models import Set, Rarity, colour
+from cards.models import Set, Rarity, colour, Block
 from cards.models.colour import get_colours_for_nickname
 from cardsearch.parameters import (
     CardSearchParam,
@@ -35,8 +35,9 @@ from cardsearch.parameters import (
     CardProducesManaParam,
     CardFlavourTextParam,
     CardIsHybridParam,
+    CardMulticolouredOnlyParam,
+    CardBlockParam,
 )
-from parameters import CardMulticolouredOnlyParam
 from .base_parser import Parser, ParseError
 
 
@@ -231,6 +232,23 @@ def parse_set_param(param_args: ParameterArgs) -> CardSetParam:
         raise ValueError(f'Multiple sets match "{param_args.text}"')
 
     return CardSetParam(card_set)
+
+
+@param_parser(name="block", keywords=["b", "block"], operators=[":", "="])
+def parse_block_param(param_args: ParameterArgs) -> CardBlockParam:
+    """
+    Creates a card block parameter from the given operator and text
+    :param param_args: The parameter arguments
+    :return: The set parameter
+    """
+    try:
+        card_block = Block.objects.get(name__icontains=param_args.text)
+    except Block.DoesNotExist:
+        raise ValueError(f'Unknown block "{param_args.text}"')
+    except Block.MultipleObjectsReturned:
+        raise ValueError(f'Multiple blocks match "{param_args.text}"')
+
+    return CardBlockParam(card_block)
 
 
 @param_parser(
