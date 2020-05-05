@@ -163,6 +163,7 @@ class CardPrinting(models.Model):
 
     FRAME_EFFECT_CHOICES = (
         ("colorshifted", "colorshifted"),
+        ("companion", "Companion"),
         ("compasslanddfc", "compasslanddfc"),
         ("devoid", "devoid"),
         ("draft", "draft"),
@@ -177,6 +178,7 @@ class CardPrinting(models.Model):
         ("showcase", "showcase"),
         ("sunmoondfc", "sunmoondfc"),
         ("tombstone", "tombstone"),
+        ("waxingandwaningmoondfc", "Waxing and Waning Moon DFC"),
     )
 
     flavour_text: str = models.CharField(max_length=500, blank=True, null=True)
