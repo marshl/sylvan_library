@@ -62,6 +62,21 @@ class ParserTests(TestCase):
         self.assertEqual(foo_param.card_name, "foo")
         self.assertEqual(bar_param.card_name, "bar")
 
+    def test_and_or_param(self) -> None:
+        root_param = self.parser.parse("foo and (bar or baz)")
+        self.assertIsInstance(root_param, AndParam)
+        self.assertEquals(len(root_param.child_parameters), 2)
+        foo_param, or_param = root_param.child_parameters
+        self.assertIsInstance(foo_param, CardNameParam)
+        self.assertIsInstance(or_param, OrParam)
+        self.assertEqual(foo_param.card_name, "foo")
+        self.assertEqual(len(or_param.child_parameters), 2)
+        bar_param, baz_param = or_param.child_parameters
+        self.assertIsInstance(bar_param, CardNameParam)
+        self.assertIsInstance(baz_param, CardNameParam)
+        self.assertEqual(bar_param.card_name, "bar")
+        self.assertEqual(baz_param.card_name, "baz")
+
     def test_double_unquoted_param(self) -> None:
         """
         Tests that multiple unquoted words in a query string are converted to two

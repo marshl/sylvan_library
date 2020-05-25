@@ -15,6 +15,7 @@ from cardsearch.parameters import (
     AndParam,
     OrParam,
     BranchParam,
+    SearchMode,
 )
 
 from cards.models import Card, CardPrinting, Set
@@ -137,17 +138,24 @@ class BaseSearch:
         # TODO: Need to handle printing and card searches separately somehow
         queryset = Card.objects.filter(printings__in=queryset).distinct()
         # Add some default sort params to ensure stable ordering
-        self.add_sort_param(CardNameSortParam())
-        self.add_sort_param(CardColourSortParam())
-        self.add_sort_param(CardPowerSortParam())
+        if not self.sort_params:
+            self.add_sort_param(CardNameSortParam())
+            self.add_sort_param(CardColourSortParam())
+            self.add_sort_param(CardPowerSortParam())
+
         queryset = queryset.order_by(
             *[
                 order
                 for sort_param in self.sort_params
-                for order in sort_param.get_sort_list()
+                for order in sort_param.get_sort_list(SearchMode.SEARCH_MODE_CARD)
             ]
         )
         return queryset
+        queryset = queryset.distinct()
+        # card_ids = queryset.values_list("card", flat=True)
+        # queryset = Card.objects.filter(id__in=card_ids)
+        queryset = Card.objects.filter(printings__in=queryset)  # .distinct()
+        # queryset = queryset.select_related("card")
 
     def search(self, page_number: int = 1, page_size: int = 25) -> None:
         """

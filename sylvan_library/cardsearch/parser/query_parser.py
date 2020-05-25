@@ -37,6 +37,9 @@ from cardsearch.parameters import (
     CardIsHybridParam,
     CardMulticolouredOnlyParam,
     CardBlockParam,
+    CardSortParam,
+    CardCollectorNumSortParam,
+    CardCmcSortParam,
 )
 from .base_parser import Parser, ParseError
 
@@ -282,6 +285,8 @@ def parse_is_param(param_args: ParameterArgs) -> CardSearchParam:
         param = CardIsHybridParam()
     elif param_args.text in ("multicoloured", "multicolored", "multi"):
         param = CardMulticolouredOnlyParam()
+    elif param_args.text == "token":
+        param = CardGenericTypeParam("token", param_args.operator)
     else:
         raise ValueError(f'Unknown parameter "{param_args.keyword}:{param_args.text}"')
 
@@ -414,6 +419,18 @@ def parse_rarity_param(param_args: ParameterArgs) -> CardRarityParam:
     return CardRarityParam(rarity)
 
 
+@param_parser(name="order", keywords=["order", "sort"], operators=[":", "="])
+def parse_sort_order_param(param_args: ParameterArgs) -> CardSortParam:
+    if param_args.text == "number":
+        param = CardCollectorNumSortParam()
+    elif param_args.text == "cmc":
+        param = CardCmcSortParam()
+    else:
+        raise ValueError(f"Unknown sort parameter {param_args.text}")
+
+    return param
+
+
 class CardQueryParser(Parser):
     """
     Parser for parsing a scryfall-style card qquery
@@ -422,6 +439,7 @@ class CardQueryParser(Parser):
     def __init__(self, user: User = None):
         super().__init__()
         self.user: User = user
+        self.order_params = []
         all_functions = inspect.getmembers(sys.modules[__name__], inspect.isfunction)
         self.parser_dict: Dict[str, Callable] = {}
         for _, func in all_functions:
@@ -480,7 +498,7 @@ class CardQueryParser(Parser):
 
         return and_group or result
 
-    def parameter_group(self) -> CardSearchParam:
+    def parameter_group(self) -> Optional[CardSearchParam]:
         """
         Attempts to parse a parameter group (type + operator + value)
         :return: The parsed parameter
@@ -498,6 +516,8 @@ class CardQueryParser(Parser):
             "normal_parameter",
             "unquoted_name_parameter",
         )
+        if parameter is None:
+            return None
         if is_negated:
             parameter.negated = not parameter.negated
         return parameter
@@ -552,7 +572,7 @@ class CardQueryParser(Parser):
             and_param.add_parameter(param)
         return and_param
 
-    def unquoted_name_parameter(self) -> CardSearchParam:
+    def unquoted_name_parameter(self) -> Optional[CardSearchParam]:
         """
         Attempts to parse a parameter that is just an unquoted string
         :return: The name parameter
@@ -568,7 +588,7 @@ class CardQueryParser(Parser):
 
     def parse_param(
         self, parameter_type: str, operator: str, parameter_value: str
-    ) -> CardSearchParam:
+    ) -> Optional[CardSearchParam]:
         """
         Returns a parameter based on the given parameter type
         :param parameter_type: The type of the parameter
@@ -594,8 +614,12 @@ class CardQueryParser(Parser):
             text=parameter_value,
             context_user=self.user,
         )
-
-        return self.parser_dict[parameter_type](param_args)
+        # return self.parser_dict[parameter_type](param_args)
+        param = self.parser_dict[parameter_type](param_args)
+        if isinstance(param, CardSortParam):
+            self.order_params.append(param)
+            return None
+        return param
 
     def operator(self):
         """
@@ -617,7 +641,7 @@ class CardQueryParser(Parser):
         Attempts to parse an unquoted string (basically any characters without spaces)
         :return: The contents of the unquoted string
         """
-        acceptable_chars = "0-9A-Za-z!$%&*+./;<=>?^_`|~{}[]/-:'"
+        acceptable_chars = "0-9A-Za-z!$%&*+./;<=>?^_`|~{}[]/:'\\-"
         chars = [self.char(acceptable_chars)]
 
         while True:

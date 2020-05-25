@@ -49,6 +49,7 @@ class ParseSearch(BaseSearch):
         query_parser = CardQueryParser(self.user)
         try:
             self.root_parameter = query_parser.parse(self.query_string)
+            self.sort_params = query_parser.order_params
             print(self.root_parameter.query())
         except (ParseError, ValueError) as error:
             self.error_message = str(error)
