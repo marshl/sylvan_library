@@ -314,7 +314,11 @@ class Command(BaseCommand):
                     raise NotImplementedError(
                         f"Cannot update unrecognised field CardPrinting.{field}"
                     )
-            printing.full_clean()
+            try:
+                printing.full_clean()
+            except ValidationError:
+                logging.exception("Validation error for printing %s", printing)
+                raise
             printing.save()
         return True
 
