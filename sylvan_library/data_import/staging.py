@@ -321,6 +321,12 @@ class StagedCardPrinting:
 
         self.is_new = False
 
+    @property
+    def numerical_number(self) -> Optional[int]:
+        if self.number is None:
+            return None
+        return int(convert_number_field_to_numerical(self.number))
+
 
 # pylint: disable=too-few-public-methods
 class StagedLegality:

@@ -184,6 +184,7 @@ class CardPrinting(models.Model):
     flavour_text: str = models.CharField(max_length=500, blank=True, null=True)
     artist: str = models.CharField(max_length=100, blank=True, null=True)
     number: str = models.CharField(max_length=10, blank=True, null=True)
+    numerical_number = models.IntegerField(blank=True, null=True)
 
     # Text on the card as originally printed.
     original_text: str = models.CharField(max_length=1000, blank=True, null=True)
@@ -295,7 +296,7 @@ class CardPrinting(models.Model):
         Metaclass for CardPrinting
         """
 
-        ordering = ["set__release_date", "set__name", "number"]
+        ordering = ["set__release_date", "set__name", "numerical_number", "number"]
 
     def __str__(self):
         return f"{self.card} in {self.set} ({self.number})"
