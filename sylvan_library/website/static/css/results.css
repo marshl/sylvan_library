@@ -201,7 +201,7 @@
 
 .card-image.clicked {
     width: 223px;
-    border-radius: 10px;
+    border-radius: 12px;
 }
 
 .card-image.wide.clicked {
