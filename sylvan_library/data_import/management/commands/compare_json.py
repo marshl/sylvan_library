@@ -260,7 +260,7 @@ class Command(BaseCommand):
                 and card_data.get("side", "") == "b"
             ):
                 continue
-            staged_card = self.process_card(card_data, True)
+            staged_card = self.process_card(card_data, is_token=True)
             _, printlangs = self.process_card_printing(staged_card, set_data, card_data)
             for printlang in printlangs:
                 if printlang.is_new:

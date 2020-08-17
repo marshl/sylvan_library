@@ -367,7 +367,11 @@ class Command(BaseCommand):
                         json_id=value
                     )
                 elif field == "language":
-                    printed_language.language = Language.objects.get(name=value)
+                    try:
+                        printed_language.language = Language.objects.get(name=value)
+                    except Language.DoesNotExist:
+                        logging.error(f'Cannot find language : "{value}"')
+                        raise
                 elif field in {
                     "base_name",
                     "has_physical_card",
