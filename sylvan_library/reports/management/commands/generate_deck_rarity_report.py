@@ -94,7 +94,7 @@ class Command(BaseCommand):
 
                 rarity_ratios = self.get_deck_rarity_ratios(deck, exclude_lands)
                 for idx, rarity in enumerate(self.rarities):
-                    row[idx] += rarity_ratios[rarity]
+                    row[idx] += rarity_ratios[rarity] * 100
 
                 deck_count += 1
 
@@ -137,8 +137,10 @@ class Command(BaseCommand):
             "R": "#C1A15B",
             "M": "#EC7802",
         }
-        plt = sns.lineplot(data=data, palette=palette, linewidth=1.5, hue="A")
-        plt.set(ylabel="Average Proportion of Deck")
+        plt = sns.lineplot(
+            data=data, palette=palette, linewidth=1.5, hue="A", dashes=False
+        )
+        plt.set(ylabel="% of deck")
         fig = plt.figure
 
         fig.savefig(output_path)
