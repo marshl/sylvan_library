@@ -41,6 +41,7 @@ from cardsearch.parameters import (
     CardSortParam,
     CardCollectorNumSortParam,
     CardCmcSortParam,
+    CardPowerSortParam,
 )
 from .base_parser import Parser, ParseError
 
@@ -442,13 +443,23 @@ def parse_rarity_param(param_args: ParameterArgs) -> CardRarityParam:
 
 @param_parser(name="order", keywords=["order", "sort"], operators=[":", "="])
 def parse_sort_order_param(param_args: ParameterArgs) -> CardSortParam:
+    if param_args.text.startswith("-"):
+        negate_param = True
+        param_args.text = param_args.text.lstrip("-")
+    else:
+        negate_param = False
+
     if param_args.text == "number":
         param = CardCollectorNumSortParam()
     elif param_args.text == "cmc":
         param = CardCmcSortParam()
+    elif param_args.text == "power":
+        param = CardPowerSortParam()
     else:
         raise ValueError(f"Unknown sort parameter {param_args.text}")
 
+    if negate_param:
+        param.sort_descending = not param.sort_descending
     return param
 
 
@@ -662,7 +673,7 @@ class CardQueryParser(Parser):
         Attempts to parse an unquoted string (basically any characters without spaces)
         :return: The contents of the unquoted string
         """
-        acceptable_chars = "0-9A-Za-z!$%&*+./;<=>?^_`|~{}[]/:'\\-"
+        acceptable_chars = "0-9A-Za-z!$%&*+.,/;<=>?^_`|~{}[]/:'\\-"
         chars = [self.char(acceptable_chars)]
 
         while True:

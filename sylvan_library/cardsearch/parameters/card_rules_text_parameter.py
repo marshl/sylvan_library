@@ -23,7 +23,8 @@ class CardRulesTextParam(CardSearchParam):
         self.exact_match: bool = exact
         if self.card_rules.startswith("/") and self.card_rules.endswith("/"):
             self.regex_match: bool = True
-            self.card_rules = "(?m)" + self.card_rules.strip("/")
+            # self.card_rules = "(?m)" + self.card_rules.strip("/")
+            self.card_rules = self.card_rules.strip("/")
             if self.exact_match:
                 self.card_rules = "^" + self.card_rules + "$"
         else:
@@ -128,3 +129,25 @@ class CardProducesManaParam(CardSearchParam):
         else:
             colour_names = colours_to_symbols(self.colours)
         return f"card {verb} {self.operator} {colour_names}"
+
+
+class CardWatermarkParam(CardSearchParam):
+    """
+    Parameter for whether a printing has a watermark or not
+    """
+
+    def __init__(self, watermark: str):
+        super().__init__()
+        self.watermark = watermark
+
+    def query(self) -> Q:
+        return Q(watermark__iexact=self.watermark)
+
+    def get_pretty_str(self) -> str:
+        return (
+            "card "
+            + ("doesn't have " if self.negated else "has")
+            + " a "
+            + self.watermark
+            + " watermark"
+        )
