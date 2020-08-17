@@ -426,11 +426,11 @@ def deck_stats(request: WSGIRequest) -> HttpResponse:
     deck_count = Deck.objects.filter(owner=request.user).count()
 
     deck_warnings = []
-    for deck in Deck.objects.filter(owner=request.user, is_prototype=False):
-        try:
-            deck.validate_format()
-        except ValidationError as error:
-            deck_warnings.append({"deck": deck, "msg": error.message})
+    # for deck in Deck.objects.filter(owner=request.user, is_prototype=False):
+    #     try:
+    #         deck.validate_format()
+    #     except ValidationError as error:
+    #         deck_warnings.append({"deck": deck, "msg": error.message})
 
     return render(
         request,
