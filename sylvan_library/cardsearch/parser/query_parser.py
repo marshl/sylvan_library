@@ -223,19 +223,29 @@ def parse_set_param(param_args: ParameterArgs) -> CardSetParam:
     card_set: Optional[Set] = None
     try:
         card_set = Set.objects.get(code__iexact=param_args.text)
+        return CardSetParam(card_set)
     except Set.DoesNotExist:
         pass
-    if card_set:
+
+    try:
+        card_set = Set.objects.get(name__iexact=param_args.text)
         return CardSetParam(card_set)
+    except Set.DoesNotExist:
+        pass
 
     try:
         card_set = Set.objects.get(name__icontains=param_args.text)
+        return CardSetParam(card_set)
     except Set.DoesNotExist:
         raise ValueError(f'Unknown set "{param_args.text}"')
     except Set.MultipleObjectsReturned:
-        raise ValueError(f'Multiple sets match "{param_args.text}"')
-
-    return CardSetParam(card_set)
+        try:
+            card_set = Set.objects.get(name__icontains=param_args.text).exclude(
+                type="promo"
+            )
+            return CardSetParam(card_set)
+        except (Set.DoesNotExist, Set.MultipleObjectsReturned):
+            raise ValueError(f'Multiple sets match "{param_args.text}"')
 
 
 @param_parser(name="block", keywords=["b", "block"], operators=[":", "="])
