@@ -29,6 +29,7 @@ from cardsearch.parameters import (
     CardNumLoyaltyParam,
     CardRarityParam,
     CardHasColourIndicatorParam,
+    CardWatermarkParam,
     CardHasWatermarkParam,
     CardIsReprintParam,
     CardIsPhyrexianParam,
@@ -309,6 +310,16 @@ def parse_name_param(param_args: ParameterArgs) -> CardNameParam:
     else:
         text = param_args.text
     return CardNameParam(card_name=text, match_exact=match_exact)
+
+
+@param_parser(name="watermark", keywords=["w", "watermark", "wm"], operators=[":", "="])
+def parse_watermark_param(param_args: ParameterArgs) -> CardWatermarkParam:
+    """
+    Parses a card watermark parameter
+    :param param_args: The parameter arguments
+    :return: The name parameter
+    """
+    return CardWatermarkParam(watermark=param_args.text)
 
 
 @param_parser(

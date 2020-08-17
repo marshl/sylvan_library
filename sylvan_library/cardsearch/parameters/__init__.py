@@ -35,7 +35,11 @@ from .card_set_parameters import CardSetParam, CardBlockParam
 from .card_type_parameters import CardGenericTypeParam, CardSubtypeParam, CardTypeParam
 from .card_flavour_text_parameter import CardFlavourTextParam
 from .card_name_parameters import CardNameParam
-from .card_rules_text_parameter import CardRulesTextParam, CardProducesManaParam
+from .card_rules_text_parameter import (
+    CardRulesTextParam,
+    CardProducesManaParam,
+    CardWatermarkParam,
+)
 
 
 class SearchMode(Enum):
