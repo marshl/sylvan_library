@@ -141,6 +141,7 @@ def get_colours_for_nickname(colour_name: str) -> List[Colour]:
     :param colour_name: The colour text to parse
     :return: The colours or'd together
     """
+    # pylint: disable=global-statement
     global _COLOUR_NAME_LOOKUP
     if not _COLOUR_NAME_LOOKUP:
         _COLOUR_NAME_LOOKUP = {

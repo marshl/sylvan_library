@@ -47,8 +47,8 @@ MANA_SYMBOLS = [
 ]
 
 RE_PRODUCES_MAP = {
-    symbol: re.compile(r"adds?\W[^\n.]*?{" + symbol + "}", re.IGNORECASE)
-    for symbol in ["W", "U", "B", "R", "G", "C"]
+    symbol: re.compile(r"adds?\W[^\n.]*?{" + symbol.upper() + "}", re.IGNORECASE)
+    for symbol in ["w", "u", "b", "r", "g", "c"]
 }
 
 RE_PRODUCES_ANY = re.compile(
@@ -101,34 +101,26 @@ def build_produces_counts(metadata: CardSearchMetadata) -> bool:
     Computes what colours a card can produce
     :param metadata: The card to build "produces" data for
     """
-    changed = False
     if not metadata.card.rules_text:
-        if (
-            metadata.produces_w
-            or metadata.produces_u
-            or metadata.produces_b
-            or metadata.produces_r
-            or metadata.produces_g
-            or metadata.produces_c
-        ):
-            changed = True
-            metadata.produces_w = (
-                metadata.produces_u
-            ) = (
-                metadata.produces_b
-            ) = metadata.produces_r = metadata.produces_g = metadata.produces_c = False
-        return changed
+        if any(getattr(metadata, "produces_" + c) for c in RE_PRODUCES_MAP.keys()):
+            map(
+                lambda c: setattr(metadata, "produces_" + c, False),
+                RE_PRODUCES_MAP.keys(),
+            )
+            return True
+        return False
 
-    produces_any = bool(RE_PRODUCES_ANY.search(metadata.card.rules_text))
+    changed = False
+    produces_every_colour = bool(RE_PRODUCES_ANY.search(metadata.card.rules_text))
     for symbol, regex in RE_PRODUCES_MAP.items():
-        produces = (
-            symbol != "C"
-            if produces_any
+        does_produce_colour = (
+            symbol != "c"
+            if produces_every_colour
             else bool(regex.search(metadata.card.rules_text))
         )
-        attr_name = "produces_" + symbol.lower()
-        if getattr(metadata, attr_name) != produces:
-            setattr(metadata, attr_name, produces)
+        attr_name = "produces_" + symbol
+        if getattr(metadata, attr_name) != does_produce_colour:
+            setattr(metadata, attr_name, does_produce_colour)
             changed = True
     return changed
 
@@ -149,10 +141,8 @@ def build_metadata_for_card(card: Card) -> None:
             metadata.rules_without_reminders = new_text
             changed = True
 
-    if build_card_symbol_counts(metadata):
-        changed = True
-    if build_produces_counts(metadata):
-        changed = True
+    changed = build_card_symbol_counts(metadata) or changed
+    changed = build_produces_counts(metadata) or changed
 
     if changed or not metadata.id:
         metadata.save()
