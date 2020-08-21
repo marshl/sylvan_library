@@ -3,7 +3,7 @@ from django.db.models import Q
 from parameters import CardSearchParam
 
 
-class CardFlavourText(CardSearchParam):
+class CardFlavourTextParam(CardSearchParam):
     """
     Parameter for the printing flavour text
     """
@@ -17,4 +17,8 @@ class CardFlavourText(CardSearchParam):
         return ~query if self.negated else query
 
     def get_pretty_str(self) -> str:
-        return "flavour " + ("doesn't contain" if self.negated else "contains")
+        return (
+            "flavour "
+            + ("doesn't contain" if self.negated else "contains")
+            + f' "{self.flavour_text}"'
+        )
