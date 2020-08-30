@@ -8,10 +8,10 @@
     <div class="body-content">
         <div class="main-content">
             <h1>Your Decks</h1>
-        <div style="margin: 15px;">
-            <a class="action-button" href="{% url 'website:create_deck' %}">Create New Deck</a>
-            <a class="action-button" href="{% url 'website:deck_stats' %}">Deck Stats</a>
-        </div>
+            <div style="margin: 15px;">
+                <a class="action-button" href="{% url 'website:create_deck' %}">Create New Deck</a>
+                <a class="action-button" href="{% url 'website:deck_stats' %}">Deck Stats</a>
+            </div>
             <div class="search-result-list">
                 {% for deck in decks %}
                     <div class="search-result js-deck-result" style="flex-direction: row;" data-deck-id="{{ deck.id }}">
@@ -28,6 +28,10 @@
                                     {% endif %}
                                 </a>
                             </h2>
+
+                            <h3 class="search-result-subtitle">
+                                {{ deck.subtitle }}
+                            </h3>
                             {% if deck.description %}
                                 <h3 class="subtitle">
                                     {% if deck.description|length > 200 %}
