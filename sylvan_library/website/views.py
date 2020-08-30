@@ -394,7 +394,11 @@ def deck_stats(request: WSGIRequest) -> HttpResponse:
     if not request.user.is_authenticated or not isinstance(request.user, User):
         return redirect("website:index")
 
-    users_deck_cards = Card.objects.filter(deck_cards__deck__owner=request.user)
+    users_deck_cards = Card.objects.filter(
+        deck_cards__deck__owner=request.user,
+        deck_cards__deck__is_prototype=False,
+        deck_cards__board="main",
+    )
     users_cards = (
         Card.objects.filter(
             printings__printed_languages__physical_cards__ownerships__owner=request.user,
