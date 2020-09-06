@@ -10,7 +10,7 @@ from typing import List, Optional, Dict, Tuple, Union, Any
 import typing
 from django.core.management.base import BaseCommand
 
-import _paths
+from data_import import _paths
 from cards.models import (
     Block,
     Card,

@@ -9,7 +9,6 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction
 
-import _paths
 from cards.models import (
     Block,
     Card,
@@ -25,7 +24,7 @@ from cards.models import (
     Rarity,
     Set,
 )
-from data_import import _query
+from data_import import _paths, _query
 
 
 class Command(BaseCommand):

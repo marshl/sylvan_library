@@ -6,7 +6,7 @@ import os
 from datetime import date
 from typing import Generator, Dict, Any, List
 
-import _paths
+from data_import import _paths
 
 
 def get_all_set_data() -> Generator[Dict[str, Any], None, None]:
