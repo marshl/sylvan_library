@@ -14,7 +14,7 @@ from django.core.exceptions import ValidationError, PermissionDenied
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 
@@ -385,6 +385,81 @@ def get_page_number(request: WSGIRequest) -> int:
         return 1
 
 
+def get_unused_cards(user: User):
+    users_deck_cards = Card.objects.filter(
+        deck_cards__deck__owner=user,
+        deck_cards__deck__is_prototype=False,
+        deck_cards__board="main",
+    )
+    users_cards = (
+        Card.objects.filter(
+            printings__printed_languages__physical_cards__ownerships__owner=user,
+            is_token=False,
+        )
+        .exclude(side="b")
+        .exclude(side="c")
+        .distinct()
+    )
+    if not hasattr(user, "userprops"):
+        UserProps.add_to_user(user)
+
+    rand = random.Random(user.userprops.unused_cards_seed)
+    unused_cards = list(users_cards.exclude(id__in=users_deck_cards).order_by("id"))
+    rand.shuffle(unused_cards)
+    unused_cards = unused_cards[:10]
+    unused_cards = [
+        {
+            "card": card,
+            "preferred_printing": card.printings.filter(
+                printed_languages__physical_cards__ownerships__owner=user
+            )
+            .order_by("set__release_date")
+            .last(),
+        }
+        for card in unused_cards
+    ]
+    return unused_cards
+
+
+def get_unused_commanders(user: User):
+    users_deck_cards = Card.objects.filter(
+        deck_cards__deck__owner=user,
+        deck_cards__deck__is_prototype=False,
+        deck_cards__is_commander=True,
+    )
+    users_commanders = (
+        Card.objects.filter(
+            printings__printed_languages__physical_cards__ownerships__owner=user,
+            is_token=False,
+        )
+        .filter(
+            (Q(type__contains="Legend") & Q(type__contains="Creature"))
+            | Q(rules_text__contains="can be your commander")
+        )
+        .exclude(side="b")
+        .exclude(side="c")
+        .distinct()
+    )
+    rand = random.Random(user.userprops.unused_cards_seed)
+    unused_cards = list(
+        users_commanders.exclude(id__in=users_deck_cards).order_by("id")
+    )
+    rand.shuffle(unused_cards)
+    unused_cards = unused_cards[:10]
+    unused_cards = [
+        {
+            "card": card,
+            "preferred_printing": card.printings.filter(
+                printed_languages__physical_cards__ownerships__owner=user
+            )
+            .order_by("set__release_date")
+            .last(),
+        }
+        for card in unused_cards
+    ]
+    return unused_cards
+
+
 def deck_stats(request: WSGIRequest) -> HttpResponse:
     """
     Gets the stats page for a user's decks
@@ -393,39 +468,6 @@ def deck_stats(request: WSGIRequest) -> HttpResponse:
     """
     if not request.user.is_authenticated or not isinstance(request.user, User):
         return redirect("website:index")
-
-    users_deck_cards = Card.objects.filter(
-        deck_cards__deck__owner=request.user,
-        deck_cards__deck__is_prototype=False,
-        deck_cards__board="main",
-    )
-    users_cards = (
-        Card.objects.filter(
-            printings__printed_languages__physical_cards__ownerships__owner=request.user,
-            is_token=False,
-        )
-        .exclude(side="b")
-        .exclude(side="c")
-        .distinct()
-    )
-    if not hasattr(request.user, "userprops"):
-        UserProps.add_to_user(request.user)
-
-    rand = random.Random(request.user.userprops.unused_cards_seed)
-    unused_cards = list(users_cards.exclude(id__in=users_deck_cards).order_by("id"))
-    rand.shuffle(unused_cards)
-    unused_cards = unused_cards[:10]
-    unused_cards = [
-        {
-            "card": card,
-            "preferred_printing": card.printings.filter(
-                printed_languages__physical_cards__ownerships__owner=request.user
-            )
-            .order_by("set__release_date")
-            .last(),
-        }
-        for card in unused_cards
-    ]
 
     deck_count = Deck.objects.filter(owner=request.user).count()
 
@@ -440,7 +482,8 @@ def deck_stats(request: WSGIRequest) -> HttpResponse:
         request,
         "website/decks/deck_stats.html",
         {
-            "unused_cards": unused_cards,
+            "unused_cards": get_unused_cards(request.user),
+            "unused_commanders": get_unused_commanders(request.user),
             "deck_count": deck_count,
             "deck_warnings": deck_warnings,
         },

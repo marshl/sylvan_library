@@ -13,6 +13,14 @@
                             </li>
                         {% endfor %}
                     </ul>
+                    <h2>Some unused commanders</h2>
+                    <ul>
+                        {% for unused_card in unused_commanders %}
+                            <li>
+                                {% include "website/card_link.html" with card=unused_card.card preferred_printing=unused_card.preferred_printing %}
+                            </li>
+                        {% endfor %}
+                    </ul>
                     <a href="{% url "website:change_unused_decks" %}">See more unused cards</a>
                     <h2>Decks</h2> {{ deck_count }}
                     <h2>Warnings</h2>
