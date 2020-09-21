@@ -71,7 +71,7 @@ class CardRulesTextParam(CardSearchParam):
             modifier = "is not" if self.exact_match else "does not contain"
         else:
             modifier = "is" if self.exact_match else "contains"
-        return f'rules text {modifier} "{self.card_rules}"'
+        return f'the rules text {modifier} "{self.card_rules}"'
 
 
 class CardProducesManaParam(CardSearchParam):
