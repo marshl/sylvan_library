@@ -519,6 +519,8 @@ def deck_list(request: WSGIRequest) -> HttpResponse:
     :param request: The HttpRequest
     :return: THe HttpResponse
     """
+    if not isinstance(request.user, User) or request.user.is_anonymous:
+        return redirect("website:index")
     page_size = 15
     users_decks = Deck.objects.filter(owner=request.user).order_by(
         "-is_prototype", "-date_created", "-last_modified", "-id"
