@@ -185,11 +185,10 @@ body {
     background: white;
     border-radius: 3px;
     position: absolute;
-    top: 0;
-    left: 0;
     display: block;
     pointer-events: none;
     font-size: 0;
+    z-index: 1000;
 }
 
 .image-popup-container img {
