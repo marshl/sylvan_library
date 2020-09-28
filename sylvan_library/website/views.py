@@ -542,6 +542,8 @@ def deck_view(request: WSGIRequest, deck_id: int) -> HttpResponse:
     :param deck_id: The ID of th deck
     :return: The HTTP response
     """
+    if not isinstance(request.user, User) or request.user.is_anonymous:
+        return redirect("website:index")
     try:
         deck = Deck.objects.get(id=deck_id, owner=request.user)
     except Deck.DoesNotExist:
