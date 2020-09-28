@@ -109,9 +109,6 @@ class Command(BaseCommand):
 
     card_links_to_create: Dict[str, set] = dict()
 
-    # existing_prices: Dict[str, Dict[str, CardPrice]] = {}
-    # prices_to_create: List[StagedCardPrice] = []
-
     force_update = False
     start_time = None
 
@@ -380,27 +377,6 @@ class Command(BaseCommand):
 
                     self.rulings_to_delete[staged_card.name].append(existing_ruling)
 
-    # def process_card_prices(
-    #     self, staged_card_printing: StagedCardPrinting, card_data: dict
-    # ) -> None:
-    #     for price_type, prices in card_data.get("prices", {}).items():
-    #         if not prices:
-    #             continue
-    #         for price_date, price_value in prices.items():
-    #             if (
-    #                 staged_card_printing.json_id not in self.existing_prices
-    #                 or price_date
-    #                 not in self.existing_prices[staged_card_printing.json_id]
-    #             ):
-    #                 self.prices_to_create.append(
-    #                     StagedCardPrice(
-    #                         staged_card_printing.json_id,
-    #                         price_date,
-    #                         price_value,
-    #                         price_type,
-    #                     )
-    #                 )
-
     def process_card_legalities(self, staged_card: StagedCard) -> None:
         """
         Find CardLegalities for a card to update, create or delete
@@ -629,8 +605,6 @@ class Command(BaseCommand):
             printlangs.append(staged_printlang)
         self.card_printings_parsed.add(staged_card_printing.json_id)
 
-        # self.process_card_prices(staged_card_printing, card_data)
-
         return staged_card_printing, printlangs
 
     def process_printed_language(
@@ -840,11 +814,6 @@ class Command(BaseCommand):
             },
         )
 
-        # self.write_object_to_json(
-        #     _paths.PRICES_TO_CREATE,
-        #     [price.to_dict() for price in self.prices_to_create],
-        # )
-
     def log_stats(self) -> None:
         """
         Logs out the number sof objects to delete/create/update
@@ -873,5 +842,4 @@ class Command(BaseCommand):
         logger.info("%s legalities to create", len(self.legalities_to_create))
         logger.info("%s legalities to delete", len(self.legalities_to_delete))
         logger.info("%s legalities to update", len(self.legalities_to_update))
-        # logger.info("%s prices to create", len(self.prices_to_create))
         logger.info("Completed in %ss", time.time() - self.start_time)

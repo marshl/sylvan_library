@@ -49,8 +49,12 @@ class Command(BaseCommand):
 
 def update_card_prices(card_data) -> typing.Tuple[int, int]:
     created = skipped = 0
+    try:
+        card_printing = CardPrinting.objects.get(json_id=card_data["uuid"])
+    except CardPrinting.DoesNotExist:
+        logger.warning(f"Could not find card {card_data['uuid']}")
+        return 0, 0
 
-    card_printing = CardPrinting.objects.get(json_id=card_data["uuid"])
     for price_type, price_dates in card_data.get("prices", {}).items():
         if not price_dates:
             continue
