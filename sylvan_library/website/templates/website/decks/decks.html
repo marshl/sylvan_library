@@ -29,9 +29,11 @@
                                 </a>
                             </h2>
 
-                            <h3 class="search-result-subtitle">
-                                {{ deck.subtitle }}
-                            </h3>
+                            {% if deck.subtitle %}
+                                <h3 class="search-result-subtitle">
+                                    {{ deck.subtitle }}
+                                </h3>
+                            {% endif %}
                             {% if deck.description %}
                                 <h3 class="subtitle">
                                     {% if deck.description|length > 200 %}
