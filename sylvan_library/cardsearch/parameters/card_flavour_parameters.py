@@ -1,6 +1,6 @@
 from django.db.models import Q
 
-from parameters import CardSearchParam
+from cardsearch.parameters import CardSearchParam
 
 
 class CardFlavourTextParam(CardSearchParam):
