@@ -30,7 +30,12 @@
                     {% for group_name, cards in deck.get_card_groups.items %}
                         {% if cards.exists %}
                             <div class="card-group">
-                                <div class="group-title">{{ group_name }} ({{ cards|deck_group_count }})</div>
+                                <div class="group-title">{{ cards|deck_group_count }} {{ group_name }}
+                                    {# Add land total if there are modal dfc cards #}
+                                    {% if group_name == 'Land' and cards|deck_group_count != deck.get_total_land_count %}
+                                        ({{ deck.get_total_land_count }} <i class="ms ms-land"></i>)
+                                    {% endif %}
+                                </div>
                                 {% for deck_card in cards.all %}
                                     {% include "website/decks/deck_card.html" with deck_card=deck_card %}
                                 {% endfor %}

@@ -20,6 +20,10 @@
     <a href="{% url 'website:name_search' %}?query_string={{ card.name }}"
        {% if newtab %}target="_blank"{% endif %}
     >{% if card_name %}{{ card_name }}{% else %}
-        {{ card.name }}{% endif %}</a>
+        {{ card.name }}{% endif %}
+    </a>
     </span>
+    {% if not card.is_land and card.layout == "modal_dfc" %}
+        <i class="ms ms-land"></i>
+    {% endif %}
 {% endblock %}

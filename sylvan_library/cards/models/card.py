@@ -156,6 +156,10 @@ class Card(models.Model):
         """
         return self.layout == "planar"
 
+    @property
+    def is_land(self) -> bool:
+        return "Land" in self.type
+
 
 class CardPrinting(models.Model):
     """

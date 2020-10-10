@@ -7,7 +7,7 @@ from typing import List, Dict
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Sum, Avg
+from django.db.models import Sum, Avg, Q
 
 from cards.models.card import Card
 from cards.models.colour import Colour
@@ -88,6 +88,13 @@ class Deck(models.Model):
         :return:
         """
         return self.get_cards("side")
+
+    def get_total_land_count(self) -> int:
+        main_cards = self.cards.filter(board="main")
+        land_cards = main_cards.filter(
+            Q(card__type__contains="Land") | Q(card__layout="modal_dfc")
+        )
+        return int(land_cards.aggregate(sum=Sum("count"))["sum"])
 
     def get_card_groups(self) -> Dict[str, List["DeckCard"]]:
         """
@@ -372,7 +379,7 @@ class DeckCard(models.Model):
 
     def as_deck_text(self) -> str:
         """
-        COnverts this card to how it should appear in board text of the DeckForm
+        Converts this card to how it should appear in board text of the DeckForm
         :return: The text representation version of the card for use in the DeckForm
         """
 
@@ -380,3 +387,11 @@ class DeckCard(models.Model):
         if self.is_commander:
             result += " *CMDR*"
         return result
+
+    @property
+    def is_companion(self) -> bool:
+        """
+        Gets whether this card is a companion for the deck
+        :return: A boolean
+        """
+        return self.board == "side" and "Companion" in self.card.rules_text

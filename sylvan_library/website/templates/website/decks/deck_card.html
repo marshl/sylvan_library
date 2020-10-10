@@ -4,5 +4,8 @@
 {% block content %}
     <div class="deck-card">{{ deck_card.count }}x
         {% include "website/card_link.html" with card=deck_card.card card_name=deck_card.get_card_name preferred_printing=deck_card|owner_preferred_card newtab=True%}
+        {% if deck_card.is_companion %}
+            <i class="ms ms-ability-companion"></i>
+        {% endif %}
     </div>
 {% endblock %}
