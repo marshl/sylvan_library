@@ -131,7 +131,8 @@ class AndParam(BranchParam):
 
         query = Q()
         for child in self.child_parameters:
-            query.add(child.query(), Q.AND)
+            if isinstance(child, CardSearchParam):
+                query.add(child.query(), Q.AND)
 
         if self.negated:
             return ~query
@@ -150,6 +151,7 @@ class AndParam(BranchParam):
             if isinstance(param, OrParam) and len(param.child_parameters) > 1
             else param.get_pretty_str()
             for param in self.child_parameters
+            if isinstance(param, CardSearchParam)
         )
 
         return result
@@ -180,7 +182,11 @@ class OrParam(BranchParam):
         if len(self.child_parameters) == 1:
             return self.child_parameters[0].get_pretty_str()
 
-        return " or ".join(param.get_pretty_str() for param in self.child_parameters)
+        return " or ".join(
+            param.get_pretty_str()
+            for param in self.child_parameters
+            if isinstance(param, CardSearchParam)
+        )
 
 
 class CardNumericalParam(CardSearchParam, ABC):

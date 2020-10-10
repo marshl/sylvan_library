@@ -650,7 +650,6 @@ class CardQueryParser(Parser):
         param = self.parser_dict[parameter_type](param_args)
         if isinstance(param, CardSortParam):
             self.order_params.append(param)
-            return None
         return param
 
     def operator(self):
