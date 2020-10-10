@@ -75,7 +75,11 @@ def card_image_url(card: Card) -> str:
     :param card: The card to get an image for
     :return: The relative image path
     """
-    printing = card.printings.order_by("-set__release_date").first()
+    non_promo_printings = card.printings.exclude(set__type="promo")
+    if non_promo_printings.exists():
+        printing = non_promo_printings.order_by("-set__release_date").first()
+    else:
+        printing = card.printings.order_by("-set__release_date").first()
 
     if not printing:
         return get_default_image()
