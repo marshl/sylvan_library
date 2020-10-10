@@ -34,6 +34,7 @@ CARD_LAYOUT_CHOICES = (
     ("double_faced_token", "Double-faced Token"),
     ("aftermath", "Aftermath"),
     ("adventure", "Adventure"),
+    ("modal_dfc", "Modal DFC"),
 )
 
 
@@ -179,6 +180,7 @@ class CardPrinting(models.Model):
         ("sunmoondfc", "sunmoondfc"),
         ("tombstone", "tombstone"),
         ("waxingandwaningmoondfc", "Waxing and Waning Moon DFC"),
+        ("fullart", "Full Art"),
     )
 
     flavour_text: str = models.CharField(max_length=500, blank=True, null=True)
@@ -460,8 +462,13 @@ class CardPrintingLanguage(models.Model):
         """
         if self.language.code is None:
             return None
+        # Replace any non-wordy characters (like a star symbol) with s
         image_name = re.sub(r"\W", "s", self.card_printing.number)
-        if self.card_printing.card.layout in ("transform", "double_faced_token"):
+        if self.card_printing.card.layout in (
+            "transform",
+            "double_faced_token",
+            "modal_dfc",
+        ):
             image_name += "_" + self.card_printing.card.side
 
         if self.card_printing.card.is_token:
