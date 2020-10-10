@@ -43,6 +43,7 @@ from cardsearch.parameters import (
     CardCmcSortParam,
     CardPowerSortParam,
 )
+from parameters import CardArtistParam
 from .base_parser import Parser, ParseError
 
 
@@ -439,6 +440,11 @@ def parse_rarity_param(param_args: ParameterArgs) -> CardRarityParam:
         Q(symbol__iexact=param_args.text) | Q(name__iexact=param_args.text)
     )
     return CardRarityParam(rarity)
+
+
+@param_parser(name="artist", keywords=["art", "artist"], operators=[":", "="])
+def parse_rarity_param(param_args: ParameterArgs) -> CardArtistParam:
+    return CardArtistParam(param_args.text)
 
 
 @param_parser(name="order", keywords=["order", "sort"], operators=[":", "="])
