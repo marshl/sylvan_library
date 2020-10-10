@@ -3,8 +3,7 @@ Module for a custom template filter to replace mana symbols such as {G} and {2/R
 """
 
 import re
-from re import Match
-from typing import Optional
+from typing import Optional, Match
 
 from django import template
 
