@@ -127,8 +127,8 @@ class CardProducesManaParam(CardSearchParam):
         if self.any_colour:
             colour_names = "any colour"
         else:
-            colour_names = colours_to_symbols(self.colours)
-        return f"card {verb} {self.operator} {colour_names}"
+            colour_names = f"{self.operator} {colours_to_symbols(self.colours)}"
+        return f"card {verb} {colour_names}"
 
 
 class CardWatermarkParam(CardSearchParam):

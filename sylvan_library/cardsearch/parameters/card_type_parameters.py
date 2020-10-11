@@ -73,12 +73,12 @@ class CardGenericTypeParam(CardSearchParam):
         """
         if self.negated:
             if self.operator == "=":
-                include = "don't match"
+                inclusion = "don't match"
             else:
-                include = "doesn't include"
+                inclusion = "exclude"
         else:
             if self.operator == "=":
-                include = "match"
+                inclusion = "match"
             else:
-                include = "include"
-        return f'the card types {include} "{self.card_type}"'
+                inclusion = "include"
+        return f'the card types {inclusion} "{self.card_type}"'
