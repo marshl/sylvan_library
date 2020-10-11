@@ -3,19 +3,19 @@
 <div class="extraDetails">
     {% for price_type, price_dict in prices.items %}
         <span class="subtitle">
-                <b>{{ price_dict.name }}</b>
-            </span>
+            <b>{{ price_dict.name }}: </b> {{ price_dict.prices.0.price | currency }}
+        </span>
         <br/>
         {% for price in price_dict.prices %}
-            <span class="subtitle">
+            <span class="subtitle" style="display: none;">
                 {{ price.date }}
-            {% if 'paper' in price_type %}
-                {{ price.price | currency }}
-            {% else %}
-                {{ price.price }} TIX
-            {% endif %}
+                {% if 'paper' in price_type %}
+                    {{ price.price | currency }}
+                {% else %}
+                    {{ price.price }} TIX
+                {% endif %}
+                <br/>
             </span>
-            <br/>
         {% endfor %}
     {% endfor %}
 </div>
