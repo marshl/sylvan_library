@@ -443,7 +443,12 @@ def parse_rarity_param(param_args: ParameterArgs) -> CardRarityParam:
 
 
 @param_parser(name="artist", keywords=["art", "artist"], operators=[":", "="])
-def parse_rarity_param(param_args: ParameterArgs) -> CardArtistParam:
+def parse_artist_param(param_args: ParameterArgs) -> CardArtistParam:
+    """
+    Creates a artist parameter from the given operator and text
+    :param param_args: The parameter arguments
+    :return: The created artist parameter
+    """
     return CardArtistParam(param_args.text)
 
 
