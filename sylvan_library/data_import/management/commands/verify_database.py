@@ -184,7 +184,14 @@ class Command(BaseCommand):
 
         low_count_two_faced_cards = (
             PhysicalCard.objects.filter(
-                layout__in=("split", "flip", "transform", "meld", "adventure")
+                layout__in=(
+                    "split",
+                    "flip",
+                    "transform",
+                    "meld",
+                    "adventure",
+                    "modal_dfc",
+                )
             )
             .annotate(printlang_count=Count("printed_languages"))
             .exclude(printlang_count__gte=2)
@@ -205,6 +212,7 @@ class Command(BaseCommand):
                     "meld",
                     "aftermath",
                     "adventure",
+                    "modal_dfc",
                 )
             )
             .annotate(printlang_count=Count("printed_languages"))
@@ -747,7 +755,8 @@ mana. Spend this mana only to cast the last card exiled with Ice Cauldron.""",
         self.assert_cardprinting_flavour_eq(
             "Lhurgoyf",
             "ICE",
-            """"Ach! Hans, run! It's the Lhurgoyf!" —Saffi Eriksdotter, last words""",
+            """"Ach! Hans, run! It's the Lhurgoyf!"
+—Saffi Eriksdotter, last words""",
         )
 
         self.assert_cardprinting_flavour_eq("Magma Mine", "VIS", "BOOM!")
