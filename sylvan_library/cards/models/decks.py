@@ -90,6 +90,10 @@ class Deck(models.Model):
         return self.get_cards("side")
 
     def get_total_land_count(self) -> int:
+        """
+        Gets the total number of lands in this deck including modal dual-faced cards
+        :return: The total number of lands as an int
+        """
         main_cards = self.cards.filter(board="main")
         land_cards = main_cards.filter(
             Q(card__type__contains="Land") | Q(card__layout="modal_dfc")

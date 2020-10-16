@@ -353,7 +353,7 @@ def ajax_search_result_prices(
     """
     Gets the prices HTML of a Card
     :param request: The user's request
-    :param card_id: The ID of the Card
+    :param card_printing_id: The ID of the CardPrinting
     :return: The price HTML
     """
     printing = CardPrinting.objects.get(pk=card_printing_id)
@@ -386,6 +386,11 @@ def get_page_number(request: WSGIRequest) -> int:
 
 
 def get_unused_cards(user: User):
+    """
+    Gets all cards that the given user has never used in a deck
+    :param user: The user to get the unused cards for
+    :return:
+    """
     users_deck_cards = Card.objects.filter(
         deck_cards__deck__owner=user,
         deck_cards__deck__is_prototype=False,

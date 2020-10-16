@@ -151,13 +151,39 @@ class Card(models.Model):
     @property
     def is_wide(self) -> bool:
         """
-        Returns whether or not this is an oversized cardd
+        Returns whether or not this is an oversized card
         :return: True if this is an oversized card, otherwise False
         """
         return self.layout == "planar"
 
+    def is_double_faced(self) -> bool:
+        """
+        Gets whether this card has another card on the back
+        :return: True if this card has is dual-faced or not
+        """
+        return self.layout in ("transform", "meld", "modal_dfc")
+
+    def has_other_half(self) -> bool:
+        """
+        Gets whether this card has another half (flip, split, transform etc)
+        :return: True if this card has anther half, otherwise False
+        """
+        return self.layout in (
+            "flip",
+            "split",
+            "transform",
+            "meld",
+            "aftermath",
+            "adventure",
+            "modal_dfc",
+        )
+
     @property
     def is_land(self) -> bool:
+        """
+        Returns whether or not this is a land card
+        :return: True if this is a land card, otherwise False
+        """
         return "Land" in self.type
 
 

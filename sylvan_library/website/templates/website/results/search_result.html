@@ -44,9 +44,9 @@
                                 </span>
                         {% endif %}
                     </h2>
-                    {% if result.card.layout == 'flip' or result.card.layout == 'split' or result.card.layout == 'transform' or result.card.layout == 'meld' or result.card.layout == 'aftermath' or result.card.layout == 'adventure' or result.card.layout == 'modal_dfc' %}
+                    {% if result.card.has_other_half %}
                         <div class="subtitle">
-                            {% if result.card.layout == 'flip' or result.card.layout == 'split' or result.card.layout == 'aftermath' or result.card.layout == 'adventure' or result.card.layout == 'modal_dfc' %}
+                            {% if result.card.has_other_half %}
                                 Other half of
                             {% elif result.card.layout == 'transform' %}
                                 Transforms {% if result.card.side == 'a' %}into{% else %}from{% endif %}

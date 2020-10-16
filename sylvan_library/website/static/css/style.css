@@ -175,7 +175,6 @@ body {
 }
 
 .card-link:hover {
-    color: #333;
     background-color: #0092d6;
     border-radius: 2px;
 }
