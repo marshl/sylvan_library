@@ -64,6 +64,13 @@ class SearchResult:
         """
         return self.card.type and "Planeswalker" in self.card.type
 
+    def is_saga(self) -> bool:
+        """
+        Returns true if this card result is an Enchantment - Saga
+        :return: True if this result is a saga, otherwise False
+        """
+        return bool(self.card.subtype and "Saga" in self.card.subtype)
+
     def can_rotate(self) -> bool:
         """
         Returns whether or not this card should have be able to rotate its image

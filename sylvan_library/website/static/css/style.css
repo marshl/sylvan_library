@@ -4,6 +4,10 @@
     background-color: #151515;
 }
 
+.ms-saga-1:after, .ms-saga-2:after, .ms-saga-3:after, .ms-saga-4:after, .ms-saga-5:after {
+    color: #000;
+}
+
 .unselectable {
     -webkit-user-select: none; /* Safari */
     -moz-user-select: none; /* Firefox */

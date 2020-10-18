@@ -67,6 +67,33 @@ def replace_loyalty_symbols(text: str, scale: Optional[str] = None) -> str:
     )
 
 
+@register.filter(name="replace_chapter_symbols")
+def replace_chapter_symbols(text: str, scale: Optional[str] = None) -> str:
+    """
+    Converts any chapter symbols in any saga cards with CSS images
+    :param text: The text to change
+    :return: The text with all chapter symbols converted to icons
+    """
+
+    def replace_symbol(chapter_match: Match) -> str:
+        """
+        Replaces the given symbol with its chapter
+
+        This function is nested so that it can access the values of the outer function,
+        and it can't have arguments passed in as it is used in an re.sub() call
+        :param chapter_match: The text match to be replaced
+        :return: The resulting symbol
+        """
+        roman_map = {"i": 1, "ii": 2, "iii": 3, "iv": 4, "v": 5}
+        roman_symbol = chapter_match.groups()[0].lower()
+        classes = ["ms", "ms-saga", "ms-saga-{}".format(roman_map.get(roman_symbol))]
+        if scale is not None:
+            classes.append(f"ms-{scale}")
+        return '<i class="{}"></i>'.format(" ".join(classes))
+
+    return re.sub(r"\b([IV]+)\b", replace_symbol, text)
+
+
 @register.filter(name="replace_mana_symbols")
 def replace_mana_symbols(text: str, scale: Optional[str] = None) -> str:
     """
