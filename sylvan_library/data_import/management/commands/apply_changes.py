@@ -124,10 +124,14 @@ class Command(BaseCommand):
                 name=set_data["name"],
                 type=set_data["type"],
                 total_set_size=set_data["total_set_size"],
+                base_set_size=set_data.get("base_set_size", 0),
                 block=Block.objects.get(name=set_data["block"])
                 if set_data["block"]
                 else None,
                 keyrune_code=set_data["keyrune_code"],
+                mtgo_code=set_data.get("mtgo_code"),
+                magic_card_market_id=set_data.get("magic_card_market_id"),
+                magic_card_market_name=set_data.get("magic_card_market_name"),
             )
             set_obj.full_clean()
             set_obj.save()

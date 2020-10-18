@@ -184,23 +184,27 @@ class Command(BaseCommand):
         Parses a set dict and checks for updates/creates/deletes to be done
         :param set_data: The MTGJSON set dict
         """
-        staged_set = StagedSet(set_data)
-        if staged_set.code not in self.existing_sets:
-            self.sets_to_create[staged_set.code] = staged_set
-        else:
-            existing_set = self.existing_sets[staged_set.code]
-            self.compare_sets(existing_set, staged_set)
+        sets = [StagedSet(set_data, for_token=False)]
+        if set_data.get("tokens") and set_data.get("type") != "token":
+            sets.append(StagedSet(set_data, for_token=True))
 
-        if staged_set.block and staged_set.block not in self.existing_blocks:
-            block_to_create = self.blocks_to_create.get(staged_set.block)
-            if not block_to_create:
-                self.blocks_to_create[staged_set.block] = StagedBlock(
-                    staged_set.block, staged_set.release_date
-                )
+        for staged_set in sets:
+            if staged_set.code not in self.existing_sets:
+                self.sets_to_create[staged_set.code] = staged_set
             else:
-                block_to_create.release_date = min(
-                    block_to_create.release_date, staged_set.release_date
-                )
+                existing_set = self.existing_sets[staged_set.code]
+                self.compare_sets(existing_set, staged_set)
+
+            if staged_set.block and staged_set.block not in self.existing_blocks:
+                block_to_create = self.blocks_to_create.get(staged_set.block)
+                if not block_to_create:
+                    self.blocks_to_create[staged_set.block] = StagedBlock(
+                        staged_set.block, staged_set.release_date
+                    )
+                else:
+                    block_to_create.release_date = min(
+                        block_to_create.release_date, staged_set.release_date
+                    )
 
     def compare_sets(self, existing_set: Set, staged_set: StagedSet) -> None:
         """
@@ -241,7 +245,9 @@ class Command(BaseCommand):
         new_printlangs = []
         for card_data in set_data.get("cards", []):
             staged_card = self.process_card(card_data, False)
-            _, printlangs = self.process_card_printing(staged_card, set_data, card_data)
+            _, printlangs = self.process_card_printing(
+                staged_card, set_data, card_data, is_token=False
+            )
 
             for printlang in printlangs:
                 if printlang.is_new:
@@ -258,7 +264,9 @@ class Command(BaseCommand):
             ):
                 continue
             staged_card = self.process_card(card_data, is_token=True)
-            _, printlangs = self.process_card_printing(staged_card, set_data, card_data)
+            _, printlangs = self.process_card_printing(
+                staged_card, set_data, card_data, is_token=True
+            )
             for printlang in printlangs:
                 if printlang.is_new:
                     new_printlangs.append(printlang)
@@ -557,7 +565,7 @@ class Command(BaseCommand):
         return result
 
     def process_card_printing(
-        self, staged_card: StagedCard, set_data: dict, card_data: dict
+        self, staged_card: StagedCard, set_data: dict, card_data: dict, is_token: bool
     ) -> Tuple[StagedCardPrinting, List[StagedCardPrintingLanguage]]:
         """
         Process a Card printed in a given set,
@@ -565,9 +573,12 @@ class Command(BaseCommand):
         :param staged_card: The already known StagedCard
         :param set_data: The set data
         :param card_data: The data of the card
+        :param is_token: Whether the card is a token or not
         :return: A tuple containing the StagedCardPrinting and a list of StagedCardPrintingLanguages
         """
-        staged_card_printing = StagedCardPrinting(staged_card.name, card_data, set_data)
+        staged_card_printing = StagedCardPrinting(
+            staged_card.name, card_data, set_data, for_token=is_token
+        )
         uuid = staged_card_printing.json_id
         if uuid not in self.existing_card_printings:
             if uuid not in self.card_printings_to_update:

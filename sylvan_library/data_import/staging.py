@@ -245,7 +245,7 @@ class StagedSet:
     Class for staging a Set record from MTGJSON
     """
 
-    def __init__(self, set_data: dict):
+    def __init__(self, set_data: dict, for_token: bool):
         self.base_set_size: int = set_data["baseSetSize"]
         self.block: str = set_data.get("block")
         self.code: str = set_data["code"]
@@ -266,6 +266,13 @@ class StagedSet:
         self.type: str = set_data["type"]
         self.parent_set_code = set_data.get("parentCode")
 
+        if for_token:
+            self.code = "T" + self.code
+            self.name += " Tokens"
+            self.parent_set_code = set_data["code"]
+            self.type = "token"
+            self.total_set_size = self.base_set_size = len(set_data["tokens"])
+
 
 # pylint: disable=too-many-instance-attributes
 class StagedCardPrinting:
@@ -273,7 +280,9 @@ class StagedCardPrinting:
     Class for staging a CardPrinting record from MTGJSON
     """
 
-    def __init__(self, card_name: str, card_data: dict, set_data: dict):
+    def __init__(
+        self, card_name: str, card_data: dict, set_data: dict, for_token: bool
+    ):
         self.card_name = card_name
 
         self.artist = card_data.get("artist")
@@ -315,7 +324,10 @@ class StagedCardPrinting:
         self.rarity = card_data.get("rarity", "common")
         self.scryfall_id = card_data.get("scryfallId")
         self.scryfall_illustration_id = card_data.get("scryfallIllustrationId")
-        self.set_code = set_data["code"]
+        if for_token:
+            self.set_code = "T" + set_data["code"]
+        else:
+            self.set_code = set_data["code"]
         self.tcg_player_product_id = set_data.get("tcgPlayerProductId")
         self.watermark = card_data.get("watermark")
 
