@@ -18,5 +18,9 @@
             </span>
         {% endfor %}
     {% endfor %}
+
+    {% if not prices %}
+        No price data for this printing.
+    {% endif %}
 </div>
 
