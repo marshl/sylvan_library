@@ -53,7 +53,7 @@ class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         """
         Fixes printing UIDs of cards that might have been broken by having multiple printings
-        of the same multiple faced cards in teh same set
+        of the same multiple faced cards in the same set
         :param args: Command arguments
         :param options: Command keyword arguments
         """

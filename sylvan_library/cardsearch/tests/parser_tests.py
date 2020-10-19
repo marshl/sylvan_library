@@ -20,7 +20,7 @@ from cardsearch.parser import CardQueryParser
 
 class ParserTests(TestCase):
     """
-    Tests for teh CardQueryParser
+    Tests for the CardQueryParser
     """
 
     fixtures = ["colours.json"]

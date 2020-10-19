@@ -2,7 +2,7 @@
 Card ownership parameters
 """
 from django.contrib.auth.models import User
-from django.db.models import Sum, Case, When, IntegerField, Q
+from django.db.models import Sum, Case, When, IntegerField, Q, Count
 
 from cards.models import Card
 from .base_parameters import CardSearchParam
@@ -37,7 +37,7 @@ class CardOwnershipCountParam(CardNumericalParam):
 
     def query(self) -> Q:
         """
-        Gets teh Q query object
+        Gets the Q query object
         :return: The Q object
         """
         annotated_result = Card.objects.annotate(
@@ -64,3 +64,40 @@ class CardOwnershipCountParam(CardNumericalParam):
         :return: The pretty version of this parameter
         """
         return f"you own {self.operator} {self.number}"
+
+
+class CardUsageCountParam(CardNumericalParam):
+    """
+    The parameter for searching by how many times it has been used in a deck
+    """
+
+    def __init__(self, user: User, operator: str, number: int):
+        super().__init__(number, operator)
+        self.user = user
+
+    def query(self) -> Q:
+        """
+        Gets the Q query object
+        :return: The Q object
+        """
+        annotated_result = Card.objects.annotate(
+            usage_count=Sum(
+                Case(
+                    When(deck_cards__deck__owner=self.user, then=1),
+                    output_field=IntegerField(),
+                    default=0,
+                )
+            )
+        )
+
+        kwargs = {f"usage_count{OPERATOR_MAPPING[self.operator]}": self.number}
+        query = Q(**kwargs)
+        return Q(card_id__in=annotated_result.filter(query))
+
+    def get_pretty_str(self) -> str:
+        """
+        Returns a human readable version of this parameter
+        (and all sub parameters for those with children)
+        :return: The pretty version of this parameter
+        """
+        return f"the card was used in {self.operator} {self.number} decks"

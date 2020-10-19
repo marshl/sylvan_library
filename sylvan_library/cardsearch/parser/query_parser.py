@@ -36,6 +36,7 @@ from cardsearch.parameters import (
     CardNumPowerParam,
     CardNumToughnessParam,
     CardOwnershipCountParam,
+    CardUsageCountParam,
     CardPowerSortParam,
     CardProducesManaParam,
     CardRarityParam,
@@ -427,6 +428,34 @@ def parse_ownership_param(param_args: ParameterArgs) -> CardOwnershipCountParam:
         raise ValueError(f'Cannot parse number "{param_args.text}"')
 
     return CardOwnershipCountParam(param_args.context_user, param_args.operator, count)
+
+
+@param_parser(
+    name="usage",
+    keywords=["used", "decks", "deck"],
+    operators=[":", "=", "<", "<=", ">", ">="],
+)
+def parse_deck_usage_param(param_args: ParameterArgs) -> CardUsageCountParam:
+    """
+    Creates an card usage parameter from the given operator and text
+    :param param_args: The parameter arguments
+    :return: The card usage parameter
+    """
+    if param_args.context_user.is_anonymous:
+        raise ValueError("Cannot search by deck usage if you aren't logged in")
+
+    if param_args.operator == ":" and param_args.text == "any":
+        return CardUsageCountParam(param_args.context_user, ">=", 1)
+
+    if param_args.operator == ":" and param_args.text == "none":
+        return CardUsageCountParam(param_args.context_user, "=", 0)
+
+    try:
+        count = int(param_args.text)
+    except (ValueError, TypeError):
+        raise ValueError(f'Cannot parse number "{param_args.text}"')
+
+    return CardUsageCountParam(param_args.context_user, param_args.operator, count)
 
 
 @param_parser(name="rarity", keywords=["r", "rarity"], operators=[":", "="])

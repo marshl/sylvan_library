@@ -28,7 +28,11 @@ from .card_misc_parameters import (
     CardIsHybridParam,
 )
 from .card_name_parameters import CardNameParam
-from .card_ownership_parameters import CardOwnershipCountParam, CardOwnerParam
+from .card_ownership_parameters import (
+    CardOwnershipCountParam,
+    CardOwnerParam,
+    CardUsageCountParam,
+)
 from .card_power_toughness_parameters import (
     CardNumLoyaltyParam,
     CardNumToughnessParam,
