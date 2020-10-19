@@ -134,14 +134,14 @@ class Deck(models.Model):
         )
 
         return {
-            "Commander": commanders,
-            "Land": lands,
-            "Creature": creatures,
-            "Instant": instants,
-            "Sorcery": sorceries,
-            "Artifact": artifacts,
-            "Enchantment": enchantments,
-            "Planeswalker": planeswalkers,
+            "Commander" if commanders.count() == 1 else "Commanders": commanders,
+            "Lands": lands,
+            "Creatures": creatures,
+            "Instants": instants,
+            "Sorceries": sorceries,
+            "Artifacts": artifacts,
+            "Enchantments": enchantments,
+            "Planeswalkers": planeswalkers,
             "Other": other,
         }
 
