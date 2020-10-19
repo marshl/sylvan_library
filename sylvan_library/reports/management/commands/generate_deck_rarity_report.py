@@ -4,14 +4,15 @@ Module for the verify_database command
 import os
 from datetime import date
 from typing import List, Optional
-import pandas as pd
-from pandas.plotting import register_matplotlib_converters
-import seaborn as sns
 
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 from django.core.management.base import BaseCommand, OutputWrapper
 from django.db.models.query import QuerySet
-from cards.models import Deck, User
+from pandas.plotting import register_matplotlib_converters
 
+from cards.models import Deck, User
 from sylvan_library.reports.management.commands import download_tournament_decks
 
 
@@ -49,16 +50,16 @@ class Command(BaseCommand):
         if not options["exclude_lands"]:
             self.rarities.insert(0, "L")
 
-        output_path = os.path.join("reports", "output", "deck_rarity_progression.png")
+        output_path = os.path.join("reports", "output", "deck_rarity_progression.svg")
         if os.path.exists(output_path):
             os.remove(output_path)
 
         owner = User.objects.get(
             username=download_tournament_decks.Command.deck_owner_username
         )
-        decks = Deck.objects.filter(owner=owner).prefetch_related(
-            "cards__card__printings__set"
-        )
+        decks = Deck.objects.filter(
+            owner=owner  # date_created__lte=date(1998, 1, 1)
+        ).prefetch_related("cards__card__printings__set")
         dates = self.get_dates(decks)
         rows = self.get_rarity_ratio_rows(dates, decks, options["exclude_lands"])
         dataframe = self.generate_dataframe(dates, rows)
@@ -137,13 +138,24 @@ class Command(BaseCommand):
             "R": "#C1A15B",
             "M": "#EC7802",
         }
-        plt = sns.lineplot(
-            data=data, palette=palette, linewidth=1.5, hue="A", dashes=False
-        )
-        plt.set(ylabel="% of deck")
-        fig = plt.figure
+        data_perc = data.divide(data.sum(axis=1), axis=0)
 
-        fig.savefig(output_path)
+        plt.stackplot(
+            data_perc.index,
+            [
+                data_perc["L"],
+                data_perc["C"],
+                data_perc["U"],
+                data_perc["R"],
+                data_perc["M"],
+            ],
+            labels=["Basic Land", "Common", "Uncommon", "Rare", "Mythic"],
+            colors=palette.values(),
+        )
+        plt.legend(loc=3, fontsize="medium")
+        plt.ylabel("Proportion of deck")
+
+        plt.savefig(output_path)
 
     def get_deck_rarity_ratios(self, deck: Deck, exclude_lands: bool = False) -> dict:
         """
@@ -155,7 +167,7 @@ class Command(BaseCommand):
         counts = {r: 0 for r in self.rarities}
         total_count = 0
 
-        for deck_card in deck.cards.all():
+        for deck_card in deck.cards.filter(board="main"):
             if exclude_lands and "Land" in deck_card.card.type:
                 continue
 
