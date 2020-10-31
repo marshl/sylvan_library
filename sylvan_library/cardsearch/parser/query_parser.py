@@ -44,6 +44,7 @@ from cardsearch.parameters import (
     CardSetParam,
     CardSortParam,
     CardWatermarkParam,
+    CardColourSortParam,
 )
 from .base_parser import Parser, ParseError
 
@@ -495,6 +496,8 @@ def parse_sort_order_param(param_args: ParameterArgs) -> CardSortParam:
         param = CardCmcSortParam()
     elif param_args.text == "power":
         param = CardPowerSortParam()
+    elif param_args.text in ("color", "colour"):
+        param = CardColourSortParam()
     else:
         raise ValueError(f"Unknown sort parameter {param_args.text}")
 

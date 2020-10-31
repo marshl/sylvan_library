@@ -145,10 +145,9 @@ class BaseSearch:
         # TODO: Need to handle printing and card searches separately somehow
         queryset = Card.objects.filter(printings__in=queryset).distinct()
         # Add some default sort params to ensure stable ordering
-        if not self.sort_params:
-            self.add_sort_param(CardNameSortParam())
-            self.add_sort_param(CardColourSortParam())
-            self.add_sort_param(CardPowerSortParam())
+        self.add_sort_param(CardNameSortParam())
+        self.add_sort_param(CardColourSortParam())
+        self.add_sort_param(CardPowerSortParam())
 
         queryset = queryset.order_by(
             *[
