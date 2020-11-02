@@ -373,6 +373,26 @@ def ajax_search_result_prices(
     )
 
 
+def ajax_search_result_price_json(
+    request: WSGIRequest, card_printing_id: int
+) -> JsonResponse:
+    printing = CardPrinting.objects.get(pk=card_printing_id)
+    prices = printing.prices.order_by("date").all()
+    result = {
+        price_type: {
+            "label": price_type,
+            "currency": "tickets" if price_type.startswith("mtgo") else "dollars",
+            "prices": [
+                {"date": price.date.isoformat(), "value": price.price}
+                for price in prices.all()
+                if price.price_type == price_type
+            ],
+        }
+        for price_type in set(price.price_type for price in prices.all())
+    }
+    return JsonResponse(result)
+
+
 def get_page_number(request: WSGIRequest) -> int:
     """
     Gets the page number of a given request

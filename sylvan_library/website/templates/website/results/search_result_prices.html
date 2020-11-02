@@ -3,17 +3,13 @@
 <div class="extraDetails">
     {% for price_type, price_dict in prices.items %}
         <span class="subtitle">
-            <b>{{ price_dict.name }}: </b> {{ price_dict.prices.0.price | currency }}
+            <b>{{ price_dict.name }}: </b> {{ price_dict.prices.0 }}
         </span>
         <br/>
         {% for price in price_dict.prices %}
             <span class="subtitle" style="display: none;">
                 {{ price.date }}
-                {% if 'paper' in price_type %}
-                    {{ price.price | currency }}
-                {% else %}
-                    {{ price.price }} TIX
-                {% endif %}
+                {{ price }}
                 <br/>
             </span>
         {% endfor %}
@@ -22,5 +18,77 @@
     {% if not prices %}
         No price data for this printing.
     {% endif %}
+
+    <div>
+        <canvas class="js-result-price-chart" height="75px" data-printing-id="{{ printing.id }}"></canvas>
+    </div>
 </div>
+<script>
+    $('.js-result-price-chart').each(function () {
+        showChart($(this));
+    });
+
+    function showChart($chartContainer) {
+        let ctx = $chartContainer.get(0).getContext('2d');
+
+        $.ajax({
+            url: '/website/ajax/search_result_price_json/{{ printing.id }}/'
+        }).done(function (result) {
+            let datasets = [];
+            Object.keys(result).map(function (key) {
+                let price_set = result[key];
+                let dataset = {
+                    label: price_set.label,
+                    yAxisID: price_set.currency,
+                    data: price_set.prices.map(function (x) {
+                        return {t: new Date(x.date), y: x.value}
+                    }),
+                    lineColor: "red",
+                    borderColor: price_set.label.endsWith("Foil") ? "#e3cb8c" : "#ffffff",
+                    backgroundColor: price_set.label.endsWith("Foil") ? "#e3cb8c44" : "#ffffff44",
+                };
+                if(!price_set.label.startsWith("mtgo")) {
+                    datasets.push(dataset);
+                }
+            });
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: datasets
+                },
+                options: {
+                    legend: {
+                        labels: {
+                            fontColor: "white",
+                        }
+                    },
+                    scales: {
+                        xAxes: [{
+                            type: 'time',
+                            ticks: {
+                                fontColor: "white"
+                            }
+                        }],
+                        yAxes: [{
+                            id: 'dollars',
+                            type: 'linear',
+                            position: 'left',
+                            ticks: {
+                                fontColor: "white"
+                            }
+                        }, /*{
+                            id: 'tickets',
+                            type: 'linear',
+                            position: 'right',
+                            ticks: {
+                                fontColor: "white"
+                            }
+                        }*/]
+                    }
+                }
+            });
+        });
+    }
+</script>
 
