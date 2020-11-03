@@ -6,7 +6,7 @@
         {% include "website/card_link.html" with card=deck_card.card card_name=deck_card.get_card_name preferred_printing=deck_card|owner_preferred_card newtab=True%}
         {% if deck_card.is_companion %}
             <i class="ms ms-ability-companion"></i>
-        {% elif not deck_card.card.is_land and card.layout == "modal_dfc" %}
+        {% elif not deck_card.card.is_land and deck_card.card.layout == "modal_dfc" %}
             <i class="ms ms-land"></i>
         {% endif %}
     </div>
