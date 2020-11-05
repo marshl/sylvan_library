@@ -315,7 +315,7 @@ def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse
         {
             "name": "Search on Starcity Games",
             "url": "https://starcitygames.com/search/?{}".format(
-                urllib.parse.urlencode({"card_name": card.display_name})
+                urllib.parse.urlencode({"search_query": card.display_name})
             ),
         },
         {
