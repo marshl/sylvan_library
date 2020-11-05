@@ -2,7 +2,7 @@
 Card ownership parameters
 """
 from django.contrib.auth.models import User
-from django.db.models import Sum, Case, When, IntegerField, Q, Count
+from django.db.models import Sum, Case, When, IntegerField, Q
 
 from cards.models import Card
 from .base_parameters import CardSearchParam

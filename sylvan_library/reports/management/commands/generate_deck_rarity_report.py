@@ -149,7 +149,7 @@ class Command(BaseCommand):
                 data_perc["R"],
                 data_perc["M"],
             ],
-            labels=["Basic Land", "Common", "Uncommon", "Rare", "Mythic"],
+            labels=["Basic Land", "Common", "Uncommon", "Rare", "Mythic Rare"],
             colors=palette.values(),
         )
         plt.legend(loc=3, fontsize="medium")
@@ -167,7 +167,7 @@ class Command(BaseCommand):
         counts = {r: 0 for r in self.rarities}
         total_count = 0
 
-        for deck_card in deck.cards.filter(board="main"):
+        for deck_card in deck.cards.all():
             if exclude_lands and "Land" in deck_card.card.type:
                 continue
 

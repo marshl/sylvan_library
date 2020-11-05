@@ -46,7 +46,7 @@ class Command(BaseCommand):
         dates = self.get_dates(decks)
         rows = self.get_colour_ratio_rows(dates, decks)
         dataframe = self.generate_dataframe(rows)
-        self.generate_plot(dates, dataframe, image_path)
+        self.generate_plot(dataframe, image_path)
 
     @staticmethod
     def get_dates(decks: QuerySet) -> List[date]:
@@ -86,7 +86,7 @@ class Command(BaseCommand):
         dataframe = dataframe.interpolate(method="linear")
         return dataframe
 
-    def generate_plot(self, dates, data: pd.DataFrame, output_path: str) -> None:
+    def generate_plot(self, data: pd.DataFrame, output_path: str) -> None:
         """
         Generates am image plot for the given dataframe
         :param data: The dataframe to generate the plot for
