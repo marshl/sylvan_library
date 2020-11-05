@@ -152,16 +152,16 @@ class Deck(models.Model):
         be included)
         """
         land_cards = self.cards.filter(board="main", card__type__contains="Land")
+        modal_dfc_cards = self.cards.filter(board="main", card__layout="modal_dfc")
         result = {}
         for colour in Colour.objects.exclude(
             id__in=self.exclude_colours.all()
         ).order_by("display_order"):
+            symbol_regex = ":.*?add[^\n]*?{" + colour.symbol + "}"
             count = (
-                land_cards.filter(
-                    card__rules_text__iregex=":.*?add[^\n]*?{" + colour.symbol + "}"
-                ).aggregate(sum=Sum("count"))["sum"]
-                or 0
-            )
+                land_cards.filter(card__rules_text__iregex=symbol_regex)
+                | modal_dfc_cards.filter(card__links__rules_text__iregex=symbol_regex)
+            ).aggregate(sum=Sum("count"))["sum"] or 0
 
             if count > 0:
                 result[colour.symbol] = count
