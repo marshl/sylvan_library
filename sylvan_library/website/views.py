@@ -370,13 +370,21 @@ def ajax_search_result_prices(
         }
 
     return render(
-        request, "website/results/search_result_prices.html", {"prices": results}
+        request,
+        "website/results/search_result_prices.html",
+        {"prices": results, "printing": printing},
     )
 
 
 def ajax_search_result_price_json(
     request: WSGIRequest, card_printing_id: int
 ) -> JsonResponse:
+    """
+    Gets the pricing data for the given search result
+    :param request: The users request
+    :param card_printing_id: The ID of the CardPrinting
+    :return: The pricing data for the printing
+    """
     printing = CardPrinting.objects.get(pk=card_printing_id)
     prices = printing.prices.order_by("date").all()
     result = {
@@ -448,6 +456,11 @@ def get_unused_cards(user: User):
 
 
 def get_unused_commanders(user: User):
+    """
+    Gets the commanders that haven't been used in any deck by the given user
+    :param user: The user to get unused commands for
+    :return: A list of dicts containing the unused cards
+    """
     users_deck_cards = Card.objects.filter(
         deck_cards__deck__owner=user,
         deck_cards__deck__is_prototype=False,
@@ -691,7 +704,7 @@ def deck_colour_weights(request: WSGIRequest, deck_id: int) -> JsonResponse:
     try:
         deck = Deck.objects.get(pk=deck_id)
     except Deck.DoesNotExist:
-        return JsonResponse({"error": "Deck not found"})
+        return JsonResponse({"error": "Deck not found"}, 404)
 
     if deck.is_private and request.user != deck.owner:
         raise PermissionDenied()
