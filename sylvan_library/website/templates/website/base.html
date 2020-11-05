@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Sylvan Libary</title>
+    <title>{% firstof page_title 'Sylvan Library' %}</title>
     <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}"/>
     <link href="{% static "node_modules/keyrune/css/keyrune.css" %}" rel="stylesheet" type="text/css"/>
     <link href="{% static "node_modules/mana-font/css/mana.min.css" %}" rel="stylesheet" type="text/css"/>
