@@ -17,11 +17,11 @@
 
     {% if not prices %}
         No price data for this printing.
+    {% else %}
+        <div>
+            <canvas class="js-result-price-chart" height="75px" data-printing-id="{{ printing.id }}"></canvas>
+        </div>
     {% endif %}
-
-    <div>
-        <canvas class="js-result-price-chart" height="75px" data-printing-id="{{ printing.id }}"></canvas>
-    </div>
 </div>
 <script>
     $('.js-result-price-chart').each(function () {
@@ -47,7 +47,7 @@
                     borderColor: price_set.label.endsWith("Foil") ? "#e3cb8c" : "#ffffff",
                     backgroundColor: price_set.label.endsWith("Foil") ? "#e3cb8c44" : "#ffffff44",
                 };
-                if(!price_set.label.startsWith("mtgo")) {
+                if (!price_set.label.startsWith("mtgo")) {
                     datasets.push(dataset);
                 }
             });
@@ -75,7 +75,12 @@
                             type: 'linear',
                             position: 'left',
                             ticks: {
-                                fontColor: "white"
+                                fontColor: "white",
+                                beginAtZero: true,
+                                callback: function (value, index, values) {
+                                    return "$" + parseInt(value).toLocaleString();
+                                }
+
                             }
                         }, /*{
                             id: 'tickets',
