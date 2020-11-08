@@ -536,8 +536,10 @@ class DeckForm(forms.ModelForm):
             else:
                 raise ValidationError(f'Unknown card "{card_name}"')
 
-        if card.layout in ("scheme", "planer", "vanguard", "emblem"):
-            raise ValidationError(f"You can't out {card.name} in a deck")
+        if card.layout in ("scheme", "planar", "vanguard", "emblem"):
+            raise ValidationError(
+                f'You can\'t put the {card.layout} card "{card.name}" in a deck'
+            )
 
         # Two-sided cards should always be stored as the front-facing card
         # This even includes cards like Fire // Ice (which will be stored as Fire)
