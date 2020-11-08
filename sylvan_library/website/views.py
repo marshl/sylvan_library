@@ -325,6 +325,14 @@ def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse
                 urllib.parse.urlencode({"name": card.display_name})
             ),
         },
+        {
+            "name": "Card Kingdom",
+            "url": "https://www.cardkingdom.com/catalog/search?{}".format(
+                urllib.parse.urlencode(
+                    {"search": "header", "filter[name]": card.display_name}
+                )
+            ),
+        },
     ]
 
     printlang = (
