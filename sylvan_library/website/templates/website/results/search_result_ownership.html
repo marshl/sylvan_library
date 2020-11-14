@@ -7,6 +7,13 @@
             </span>
                 {% for ownership in ownerships.all %}
                     <div>
+                        <i class="ss ss-2x ss-{{ ownership.physical_card.printed_languages.first.card_printing.get_set_keyrune_code }}
+                            {% if printing.set.code == 'TSB' %}
+                                ss-timeshifted
+                            {% else %}
+                                ss-{{ ownership.physical_card.printed_languages.first.card_printing.rarity.name | lower }}
+                            {% endif %}"
+                        ></i>
                         <span class="subtitle">
                             {{ ownership.count }} {{ ownership.physical_card.get_simple_string }}
                         </span>
@@ -14,6 +21,8 @@
                     </div>
                 {% endfor %}
             </div>
+        {% else %}
+            <span class="subtitle">You don't own a {{ card.display_name }}
         {% endif %}
         {% if changes %}
             <span class="subtitle">
