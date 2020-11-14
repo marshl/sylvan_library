@@ -42,16 +42,20 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "data_export",
-    "data_import",
-    "cardsearch",
-    "cards",
+    # Django extension apps
+    "rest_framework",
     "django_extensions",
-    "reports",
-    "website",
-    "widget_tweaks",
     "django_select2",
     "tinymce",
+    "widget_tweaks",
+    # my apps
+    "cards.apps.CardsConfig",
+    "cardsearch.apps.CardsearchConfig",
+    "data_export.apps.DataExportConfig",
+    "data_import.apps.DataImportConfig",
+    "reports.apps.ReportsConfig",
+    "website.apps.WebsiteConfig",
+    "frontend",
 ]
 
 if DEBUG_TOOLBAR:
@@ -86,3 +90,19 @@ TEMPLATES = [
 ]
 
 DATE_FORMAT = "Y-m-d"
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly"
+    ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+}
+
+# Disable browsable API when in production
+if not DEBUG:
+    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = (
+        "rest_framework.renderers.JSONRenderer",
+    )
