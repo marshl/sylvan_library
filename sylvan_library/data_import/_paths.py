@@ -3,7 +3,7 @@ Module for all useful file paths
 """
 from os import path
 
-JSON_ZIP_DOWNLOAD_URL = "https://www.mtgjson.com/files/AllSetFiles.zip"
+JSON_ZIP_DOWNLOAD_URL = "https://mtgjson.com/api/v5/AllSetFiles.zip"
 DATA_FOLDER = path.abspath("data_import/data")
 SET_FOLDER = path.join(DATA_FOLDER, "sets")
 JSON_ZIP_PATH = path.join(DATA_FOLDER, "AllSetFiles.zip")

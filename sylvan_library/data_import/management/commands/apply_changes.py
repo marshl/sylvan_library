@@ -65,10 +65,6 @@ class Command(BaseCommand):
                 not self.create_new_blocks()
                 or not self.create_new_sets()
                 or not self.update_sets()
-                or not self.delete_card_printings()
-                or not self.delete_rulings()
-                or not self.delete_legalities()
-                or not self.delete_cards()
                 or not self.create_cards()
                 or not self.update_cards()
                 or not self.create_card_links()
@@ -80,6 +76,10 @@ class Command(BaseCommand):
                 or not self.create_rulings()
                 or not self.create_legalities()
                 or not self.update_legalities()
+                or not self.delete_legalities()
+                or not self.delete_rulings()
+                or not self.delete_card_printings()
+                or not self.delete_cards()
             ):
                 raise Exception("Change application aborted")
 
@@ -180,6 +180,12 @@ class Command(BaseCommand):
                     "no",
                 ):
                     return False
+            if card.deck_cards.exists():
+                if not _query.query_yes_no(
+                    f'Trying to delete card "{card}" but it is in a deck. Continue?',
+                    "no",
+                ):
+                    return False
             card.delete()
         PhysicalCard.objects.filter(printed_languages__isnull=True).delete()
         return True
@@ -263,10 +269,16 @@ class Command(BaseCommand):
 
         for scryfall_id, printing_data in printing_list.items():
             card = Card.objects.get(name=printing_data["card_name"])
-            set_obj = Set.objects.get(code=printing_data["set_code"])
+            try:
+                set_obj = Set.objects.get(code=printing_data["set_code"])
+            except Set.DoesNotExist:
+                logging.warning(
+                    f"Can't find Set \"{printing_data['set_code']}\" for: {printing_data}"
+                )
+                raise
             printing = CardPrinting(card=card, set=set_obj)
             for field, value in printing_data.items():
-                if field in {"card_name", "set_code"}:
+                if field in {"card_name", "set_code", "frame_effects"}:
                     continue
 
                 if field == "rarity":
@@ -303,7 +315,9 @@ class Command(BaseCommand):
             try:
                 printing = CardPrinting.objects.get(json_id=uuid)
             except CardPrinting.DoesNotExist:
-                self.logger.error("Could not find card printing %s", uuid)
+                self.logger.error(
+                    "Could not find card printing %s for %s", uuid, printing_diff
+                )
                 raise
 
             for field, change in printing_diff.items():

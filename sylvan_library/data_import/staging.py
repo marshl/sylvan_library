@@ -6,7 +6,7 @@ import math
 import re
 from typing import List, Optional, Dict, Any
 
-import dateutil
+import arrow
 
 from cards.models import Card, Colour
 
@@ -109,11 +109,29 @@ class StagedCard:
 
     def __init__(self, card_data: dict, is_token: bool = False) -> None:
         self.is_token: bool = is_token
-        self.scryfall_oracle_id: str = card_data.get("scryfallOracleId")
-        self.display_name: str = card_data["name"]
+        self.scryfall_oracle_id: str = card_data.get("identifiers", {}).get(
+            "scryfallOracleId"
+        )
+        self.display_name: str = card_data.get("faceName", card_data["name"])
         self.name: str = self.display_name
-        if self.is_token and self.scryfall_oracle_id:
+        # For tokens the name need to have part of the scryfall oracle ID tacked on in order to make
+        # the name unique. But not in the case of Face the Hydra or other sets like it
+        if (
+            self.is_token
+            and self.scryfall_oracle_id
+            and card_data.get("setCode") not in ("TDAG", "TFTH", "TBTH")
+        ):
             self.name = f"{self.name} ({self.scryfall_oracle_id.split('-')[0]})"
+        elif card_data.get("setCode") == "UST" and self.name not in (
+            "Delighted Killbot",
+            "Enraged Killbot",
+            "Despondent Killbot",
+        ):
+            matches = re.match(r"^\d+(?P<letter>[a-f])$", card_data.get("number"))
+            if matches and matches["letter"] != "a":
+                self.name = f"{self.name} ({matches['letter']})"
+        elif self.name == "B.F.M. (Big Furry Monster)" and card_data["number"] == "29":
+            self.name = f"{self.name} (b)"
 
         self.cost: str = card_data.get("manaCost")
         self.cmc: float = float(card_data.get("convertedManaCost", 0.0))
@@ -258,9 +276,7 @@ class StagedSet:
         self.magic_card_market_id: Optional[str] = set_data.get("mcmId")
         self.mtgo_code: str = set_data.get("mtgoCode")
         self.name: str = set_data["name"]
-        self.release_date: datetime.date = dateutil.parser.parse(
-            set_data["releaseDate"]
-        ).date()
+        self.release_date: datetime.date = arrow.get(set_data["releaseDate"]).date()
         self.tcg_player_group_id: str = set_data.get("tcg_player_group_id")
         self.total_set_size: int = set_data["totalSetSize"]
         self.type: str = set_data["type"]
@@ -281,7 +297,7 @@ class StagedCardPrinting:
     """
 
     def __init__(
-        self, card_name: str, card_data: dict, set_data: dict, for_token: bool
+        self, card_name: str, card_data: dict, staged_set: StagedSet, for_token: bool
     ):
         self.card_name = card_name
 
@@ -289,14 +305,16 @@ class StagedCardPrinting:
         self.border_colour = card_data.get("borderColor")
         self.duel_deck_side = card_data.get("duelDeck")
         self.flavour_text = card_data.get("flavorText")
-        self.frame_effect = card_data.get("frameEffect")
+        self.frame_effects = card_data.get("frameEffects", [])
+        # TODO: Frame effect list
+        self.frame_effect = self.frame_effects[0] if self.frame_effects else None
         self.frame_version = card_data.get("frameVersion")
         self.has_foil = card_data.get("hasFoil", True)
         self.has_non_foil = card_data.get("hasNonFoil", True)
         self.is_alternative = card_data.get("isAlternative", False)
-        self.is_arena = card_data.get("isArena", False)
+        self.is_arena = "arena" in card_data.get("availability", [])
         self.is_full_art = card_data.get("isFullArt", False)
-        self.is_mtgo = card_data.get("isMtgo", False)
+        self.is_mtgo = "mtgo" in card_data.get("availability", [])
         self.is_online_only = card_data.get("isOnlineOnly", False)
         self.is_oversized = card_data.get("isOversized", False)
         self.is_paper = card_data.get("isPaper", True)
@@ -308,27 +326,50 @@ class StagedCardPrinting:
         self.is_timeshifted = (
             "isTimeshifted" in card_data and card_data["isTimeshifted"]
         )
-        self.json_id: str = card_data.get("uuid")
-        self.magic_card_market_id = card_data.get("mcmId")
-        self.magic_card_market_meta_id = card_data.get("mcmMetaId")
-        self.mtg_arena_id = card_data.get("mtgArenaId")
-        self.mtgo_id = card_data.get("mtgoId")
-        self.mtgo_foil_id = card_data.get("mtgoFoilId")
+        # self.json_id: str = card_data.get("uuid")
+        self.json_id = card_data.get("identifiers", {}).get("mtgjsonV4Id")
         self.mtg_stocks_id = card_data.get("mtgStocksId")
-        self.multiverse_id = card_data.get("multiverseId")
         self.names = card_data.get("names", [])
         self.number = card_data.get("number")
         self.original_text = card_data.get("originalText")
         self.original_type = card_data.get("originalType")
         self.other_languages = card_data.get("foreignData", [])
         self.rarity = card_data.get("rarity", "common")
-        self.scryfall_id = card_data.get("scryfallId")
-        self.scryfall_illustration_id = card_data.get("scryfallIllustrationId")
-        if for_token:
-            self.set_code = "T" + set_data["code"]
-        else:
-            self.set_code = set_data["code"]
-        self.tcg_player_product_id = set_data.get("tcgPlayerProductId")
+
+        self.mtgo_id = card_data.get("identifiers", {}).get("mtgoId")
+        if self.mtgo_id:
+            self.mtgo_id = int(self.mtgo_id)
+        self.mtgo_foil_id = card_data.get("identifiers", {}).get("mtgoFoilId")
+        if self.mtgo_foil_id:
+            self.mtgo_foil_id = int(self.mtgo_foil_id)
+
+        self.magic_card_market_id = card_data.get("identifiers", {}).get("mcmId")
+        if self.magic_card_market_id:
+            self.magic_card_market_id = int(self.magic_card_market_id)
+
+        self.magic_card_market_meta_id = card_data.get("identifiers", {}).get(
+            "mcmMetaId"
+        )
+        if self.magic_card_market_meta_id:
+            self.magic_card_market_meta_id = int(self.magic_card_market_meta_id)
+
+        self.multiverse_id = card_data.get("identifiers", {}).get("multiverseId")
+        if self.multiverse_id is not None:
+            self.multiverse_id = int(self.multiverse_id)
+
+        self.scryfall_id = card_data.get("identifiers", {}).get("scryfallId")
+        self.scryfall_illustration_id = card_data.get("identifiers", {}).get(
+            "scryfallIllustrationId"
+        )
+
+        self.mtg_arena_id = card_data.get("identifiers", {}).get("mtgArenaId")
+        if self.mtg_arena_id:
+            self.mtg_arena_id = int(self.mtg_arena_id)
+
+        self.set_code = staged_set.code
+        self.tcg_player_product_id = card_data.get("identifiers", {}).get(
+            "tcgPlayerProductId"
+        )
         self.watermark = card_data.get("watermark")
 
         self.is_new = False
@@ -389,7 +430,7 @@ class StagedCardPrintingLanguage:
         self.printing_uid = staged_card_printing.json_id
 
         self.language = foreign_data["language"]
-        self.card_name = foreign_data["name"]
+        self.card_name = foreign_data.get("faceName", foreign_data["name"])
 
         self.multiverse_id = foreign_data.get("multiverseId")
         self.text = foreign_data.get("text")
@@ -405,7 +446,7 @@ class StagedCardPrintingLanguage:
             else []
         )
 
-        self.base_name = card_data["name"]
+        self.base_name = card_data.get("faceName", card_data["name"])
         if self.base_name in self.other_names:
             self.other_names.remove(self.base_name)
         self.layout = card_data["layout"]

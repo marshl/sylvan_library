@@ -24,7 +24,7 @@ def get_all_set_data() -> Generator[Dict[str, Any], None, None]:
             continue
 
         with open(set_file_path, "r", encoding="utf8") as set_file:
-            set_data = json.load(set_file, encoding="utf8")
+            set_data = json.load(set_file, encoding="utf8").get("data")
 
         if set_data.get("isPreview") or set_data.get("isPartialPreview"):
             continue
@@ -36,4 +36,4 @@ def get_all_set_data() -> Generator[Dict[str, Any], None, None]:
     for card_set in set_list:
         with open(card_set["path"], "r", encoding="utf8") as set_file:
             set_data = json.load(set_file, encoding="utf8")
-        yield set_data
+        yield set_data.get("data")

@@ -122,18 +122,21 @@ class Command(BaseCommand):
             logger.info(
                 "Parsing set %s (%s)", set_data.get("code"), set_data.get("name")
             )
-            self.parse_set_data(set_data)
-            self.process_set_cards(set_data)
+            staged_set, staged_token_set = self.parse_set_data(set_data)
+            self.process_set_cards(set_data, staged_set, staged_token_set)
             self.process_card_links(set_data)
 
+        logger.info("Finding cards to delete")
         self.cards_to_delete = set(self.existing_cards.keys()).difference(
             self.cards_parsed
         )
 
+        logger.info("Finding printings to delete")
         self.card_printings_to_delete = set(
             self.existing_card_printings.keys()
         ).difference(self.card_printings_parsed)
 
+        logger.info("Writing results to disc")
         self.write_to_file()
         self.log_stats()
 
@@ -179,7 +182,7 @@ class Command(BaseCommand):
                 legality.format.code
             ] = legality.restriction
 
-    def parse_set_data(self, set_data: dict) -> None:
+    def parse_set_data(self, set_data: dict) -> Tuple[StagedSet, Optional[StagedSet]]:
         """
         Parses a set dict and checks for updates/creates/deletes to be done
         :param set_data: The MTGJSON set dict
@@ -205,6 +208,8 @@ class Command(BaseCommand):
                     block_to_create.release_date = min(
                         block_to_create.release_date, staged_set.release_date
                     )
+
+        return sets[0], sets[1] if len(sets) > 1 else None
 
     def compare_sets(self, existing_set: Set, staged_set: StagedSet) -> None:
         """
@@ -236,7 +241,12 @@ class Command(BaseCommand):
         if differences:
             self.sets_to_update[staged_set.code] = differences
 
-    def process_set_cards(self, set_data: dict) -> None:
+    def process_set_cards(
+        self,
+        set_data: dict,
+        staged_set: StagedSet,
+        staged_token_set: Optional[StagedSet] = None,
+    ) -> None:
         """
         Processes the cards within a set dictionary
         :param set_data:  The MTGJSON set dictionary
@@ -246,7 +256,7 @@ class Command(BaseCommand):
         for card_data in set_data.get("cards", []):
             staged_card = self.process_card(card_data, False)
             _, printlangs = self.process_card_printing(
-                staged_card, set_data, card_data, is_token=False
+                staged_card, staged_set, card_data, is_token=False
             )
 
             for printlang in printlangs:
@@ -258,14 +268,11 @@ class Command(BaseCommand):
             # example, there could exist a Knight/Saproling as well as a Saproling/Elemental
             # They could be connected at the printing level, but they can't be connected at the Card
             # level or the Knight and the Elemental would also be linked together
-            if (
-                card_data["layout"] == "double_faced_token"
-                and card_data.get("side", "") == "b"
-            ):
+            if card_data["layout"] == "token" and card_data.get("side", "") == "b":
                 continue
             staged_card = self.process_card(card_data, is_token=True)
             _, printlangs = self.process_card_printing(
-                staged_card, set_data, card_data, is_token=True
+                staged_card, staged_token_set or staged_set, card_data, is_token=True
             )
             for printlang in printlangs:
                 if printlang.is_new:
@@ -565,19 +572,23 @@ class Command(BaseCommand):
         return result
 
     def process_card_printing(
-        self, staged_card: StagedCard, set_data: dict, card_data: dict, is_token: bool
+        self,
+        staged_card: StagedCard,
+        staged_set: StagedSet,
+        card_data: dict,
+        is_token: bool,
     ) -> Tuple[StagedCardPrinting, List[StagedCardPrintingLanguage]]:
         """
         Process a Card printed in a given set,
          returning the printings and printined languages that were found
         :param staged_card: The already known StagedCard
-        :param set_data: The set data
+        :param staged_set: The staged set data
         :param card_data: The data of the card
         :param is_token: Whether the card is a token or not
         :return: A tuple containing the StagedCardPrinting and a list of StagedCardPrintingLanguages
         """
         staged_card_printing = StagedCardPrinting(
-            staged_card.name, card_data, set_data, for_token=is_token
+            staged_card.name, card_data, staged_set, for_token=is_token
         )
         uuid = staged_card_printing.json_id
         if uuid not in self.existing_card_printings:

@@ -73,7 +73,7 @@ class Card(models.Model):
     num_loyalty: int = models.FloatField(default=0)
 
     rules_text: str = models.CharField(max_length=1000, blank=True, null=True)
-    layout: str = models.CharField(max_length=50, choices=CARD_LAYOUT_CHOICES)
+    layout: str = models.CharField(max_length=50)
     side: str = models.CharField(max_length=1, blank=True, null=True)
 
     hand_modifier: str = models.CharField(max_length=10, blank=True, null=True)
@@ -380,7 +380,7 @@ class PhysicalCard(models.Model):
     Model for joining one or more CardPrintingLanguages into a single card that can be owned
     """
 
-    layout = models.CharField(max_length=50, choices=CARD_LAYOUT_CHOICES)
+    layout = models.CharField(max_length=50)
 
     def __str__(self) -> str:
         return "//".join([str(x) for x in self.printed_languages.all()])

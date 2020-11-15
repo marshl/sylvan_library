@@ -4,6 +4,7 @@ Module for the fetch_data command
 import json
 import logging
 import os
+import sys
 import zipfile
 from typing import List, Any
 
@@ -35,17 +36,30 @@ class Command(BaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> None:
         logging.info("Downloading json file from %s", _paths.JSON_ZIP_DOWNLOAD_URL)
-        stream = requests.get(_paths.JSON_ZIP_DOWNLOAD_URL)
-
-        logging.info("Writing json data to file %s", _paths.JSON_ZIP_PATH)
+        response = requests.get(_paths.JSON_ZIP_DOWNLOAD_URL, stream=True)
+        total_length = response.headers.get("content-length")
+        logging.info(
+            "Writing json data to file %s: %s bytes", _paths.JSON_ZIP_PATH, total_length
+        )
         with open(_paths.JSON_ZIP_PATH, "wb") as output:
-            output.write(stream.content)
+            if total_length is None:  # no content length header
+                output.write(response.content)
+            else:
+                dl = 0
+                total_length = int(total_length)
+                for data in response.iter_content(chunk_size=4096):
+                    dl += len(data)
+                    output.write(data)
+                    done = int(50 * dl / total_length)
+                    sys.stdout.write("\r[%s%s]" % ("=" * done, " " * (50 - done)))
+                    sys.stdout.flush()
 
         for set_file in self.get_json_files():
             if set_file.endswith(".json"):
                 os.remove(set_file)
 
         json_zip_file = zipfile.ZipFile(_paths.JSON_ZIP_PATH)
+        logging.info("Extracting set files")
         json_zip_file.extractall(_paths.SET_FOLDER)
 
         # Prettify the json files

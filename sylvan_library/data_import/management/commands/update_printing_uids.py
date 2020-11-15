@@ -32,7 +32,6 @@ class Command(BaseCommand):
 
     card_printings_to_create: Dict[str, List[StagedCardPrinting]] = {}
     card_printings_parsed: typing.Set[str] = set()
-    card_printings_to_delete: typing.Set[str] = set()
 
     force_update = False
 
@@ -68,12 +67,15 @@ class Command(BaseCommand):
             )
             self.process_set_cards(set_data)
 
-        self.card_printings_to_delete = set(
-            self.existing_card_printings.keys()
-        ).difference(self.card_printings_parsed)
+        card_printing_differences = set(self.existing_card_printings.keys()).difference(
+            self.card_printings_parsed
+        )
+
+        if not card_printing_differences:
+            return
 
         with transaction.atomic():
-            for printing_json_id in self.card_printings_to_delete:
+            for printing_json_id in card_printing_differences:
                 printing_to_delete = CardPrinting.objects.get(json_id=printing_json_id)
                 card_name = printing_to_delete.card.name
                 if card_name not in self.card_printings_to_create:
@@ -88,10 +90,10 @@ class Command(BaseCommand):
 
                     if not options["yes_to_all"]:
                         query = (
-                            f"Card {printing_to_delete} might have had its UID changed "
-                            f"from {printing_json_id} to {printing_to_create.json_id} "
+                            f'Card "{printing_to_delete}" might have had its UID changed '
+                            f'from "{printing_json_id}" to "{printing_to_create.json_id}" '
                             f"({printing_to_create.card_name} in {printing_to_create.set_code})."
-                            f" Change UID?"
+                            f"\nChange UID?"
                         )
                         if not query_yes_no(query, "no"):
                             continue
@@ -105,6 +107,8 @@ class Command(BaseCommand):
                     printing_to_delete.json_id = printing_to_create.json_id
                     printing_to_delete.clean()
                     printing_to_delete.save()
+            if options["yes_to_all"] and not query_yes_no("Save all changes?", "no"):
+                raise Exception("Change application aborted")
 
     def process_set_cards(self, set_data: Dict[str, Any]) -> None:
         """
@@ -114,11 +118,15 @@ class Command(BaseCommand):
         """
         for card_data in set_data.get("cards", []):
             staged_card = self.process_card(card_data, False)
-            self.process_card_printing(staged_card, set_data, card_data)
+            self.process_card_printing(
+                staged_card, set_data, card_data, for_tokens=False
+            )
 
         for card_data in set_data.get("tokens", []):
             staged_card = self.process_card(card_data, True)
-            self.process_card_printing(staged_card, set_data, card_data)
+            self.process_card_printing(
+                staged_card, set_data, card_data, for_tokens=True
+            )
 
     def process_card(self, card_data: Dict[str, Any], is_token: bool) -> StagedCard:
         """
@@ -135,15 +143,22 @@ class Command(BaseCommand):
         return staged_card
 
     def process_card_printing(
-        self, staged_card: StagedCard, set_data: Dict[str, Any], card_data: dict
+        self,
+        staged_card: StagedCard,
+        set_data: Dict[str, Any],
+        card_data: dict,
+        for_tokens: bool,
     ) -> None:
         """
         Process a card printing
         :param staged_card: The staged card
         :param set_data: The set data dict
         :param card_data: The card data dict
+        :param for_tokens:
         """
-        staged_card_printing = StagedCardPrinting(staged_card.name, card_data, set_data)
+        staged_card_printing = StagedCardPrinting(
+            staged_card.name, card_data, set_data, for_tokens
+        )
         uuid = staged_card_printing.json_id
 
         if uuid not in self.existing_card_printings:
