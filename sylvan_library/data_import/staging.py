@@ -326,8 +326,7 @@ class StagedCardPrinting:
         self.is_timeshifted = (
             "isTimeshifted" in card_data and card_data["isTimeshifted"]
         )
-        # self.json_id: str = card_data.get("uuid")
-        self.json_id = card_data.get("identifiers", {}).get("mtgjsonV4Id")
+        self.json_id = card_data.get("uuid")
         self.mtg_stocks_id = card_data.get("mtgStocksId")
         self.names = card_data.get("names", [])
         self.number = card_data.get("number")
