@@ -63,6 +63,14 @@ class CardOwnershipCountParam(CardNumericalParam):
         (and all sub parameters for those with children)
         :return: The pretty version of this parameter
         """
+        if self.operator in ("<", "<=", "=") and self.number <= 0:
+            return f"you you don't own any"
+
+        if (self.operator == ">" and self.number == 0) or (
+            self.operator == ">=" and self.number == 1
+        ):
+            return f"you own it"
+
         return f"you own {self.operator} {self.number}"
 
 

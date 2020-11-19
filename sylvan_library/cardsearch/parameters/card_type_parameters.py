@@ -42,7 +42,7 @@ class CardSubtypeParam(CardSearchParam):
 
 class CardGenericTypeParam(CardSearchParam):
     """
-    Parameter for searching btoh types and subtypes
+    Parameter for searching both types and subtypes
     """
 
     def __init__(self, card_type: str, operator: str):
