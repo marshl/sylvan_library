@@ -83,5 +83,5 @@ python manage.py runserver
  - **cards**: The cards project is where the primary database models are stored, and is designed to be consumed by either an api or a website project
  - **cardsearch**: The cardsearch project contains classes for filtering cards using complex parameter trees
  - **data_import**: The data_import project contains commands and staging zones for importing data from external sources into the database
- - **reports**: Ther reports project contains Report and graph generation for offline data analysis
+ - **reports**: The reports project contains Report and graph generation for offline data analysis
  - **website**: The website project contains views and controllers for rendering the sylvan_library front-end

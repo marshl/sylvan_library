@@ -239,9 +239,7 @@ class CardPrinting(models.Model):
     # (e.g. basic lands in Unglued)
     border_colour: str = models.CharField(max_length=10, blank=True, null=True)
 
-    frame_effect: str = models.CharField(
-        max_length=50, blank=True, null=True, choices=FRAME_EFFECT_CHOICES
-    )
+    frame_effect: str = models.CharField(max_length=50, blank=True, null=True)
     frame_version: str = models.CharField(max_length=50, blank=True, null=True)
 
     set: Set = models.ForeignKey(
