@@ -56,6 +56,7 @@ class CardManaCostComplexParam(CardSearchParam):
         "G",
         "C",
         "X",
+        "S",
         "W/U",
         "U/B",
         "B/R",

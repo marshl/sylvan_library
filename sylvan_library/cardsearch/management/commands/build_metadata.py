@@ -23,6 +23,7 @@ MANA_SYMBOLS = [
     "R",
     "G",
     "C",
+    "S",
     "X",
     "W/U",
     "U/B",

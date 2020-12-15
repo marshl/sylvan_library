@@ -26,6 +26,7 @@ class CardSearchMetadata(models.Model):
     symbol_count_r = models.IntegerField(default=0)
     symbol_count_g = models.IntegerField(default=0)
     symbol_count_c = models.IntegerField(default=0)
+    symbol_count_s = models.IntegerField(default=0)
     symbol_count_x = models.IntegerField(default=0)
     symbol_count_w_u = models.IntegerField(default=0)
     symbol_count_u_b = models.IntegerField(default=0)
