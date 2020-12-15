@@ -5,17 +5,18 @@ import json
 import logging
 import time
 
-from django.db import transaction
 from django.core.management.base import BaseCommand
+from django.db import transaction
 
+import _paths
 from cards.models import Colour, Format, Language, Rarity
+from cards.models.card import CardType, CardSupertype, CardSubtype
 from data_import._paths import (
     LANGUAGE_JSON_PATH,
     RARITY_JSON_PATH,
     COLOUR_JSON_PATH,
     FORMAT_JSON_PATH,
 )
-
 
 logger = logging.getLogger("django")
 
@@ -55,6 +56,7 @@ class Command(BaseCommand):
             self.update_colours()
             self.update_languages()
             self.update_formats()
+            self.update_types()
 
         self.log_stats()
 
@@ -148,6 +150,31 @@ class Command(BaseCommand):
             format_obj.name = fmt["name"]
             format_obj.full_clean()
             format_obj.save()
+
+    def update_types(self) -> None:
+        logger.info("Updating types")
+
+        type_dict = import_json(_paths.TYPES_JSON_PATH)["data"]
+        for type_str, children in type_dict.items():
+            type_str = type_str.title()
+            if not CardType.objects.filter(name=type_str).exists():
+                CardType.objects.create(name=type_str)
+                self.increment_created("CardType")
+
+            for subtype in children.get("subTypes"):
+                if not CardSubtype.objects.filter(name=subtype).exists():
+                    CardSubtype.objects.create(name=subtype)
+                    self.increment_created("CardSubtype")
+
+            for supertype in children.get("superTypes"):
+                if not CardSupertype.objects.filter(name=supertype).exists():
+                    CardSupertype.objects.create(name=supertype)
+                    self.increment_created("CardSupertype")
+
+        for extra_type in ["Token", "Card", "Emblem"]:
+            if not CardType.objects.filter(name=extra_type).exists():
+                CardType.objects.create(name=extra_type)
+                self.increment_created("CardType")
 
     def increment_updated(self, object_type: str):
         """

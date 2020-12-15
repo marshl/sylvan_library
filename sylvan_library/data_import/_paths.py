@@ -6,7 +6,17 @@ from os import path
 JSON_ZIP_DOWNLOAD_URL = "https://mtgjson.com/api/v5/AllSetFiles.zip"
 DATA_FOLDER = path.abspath("data_import/data")
 SET_FOLDER = path.join(DATA_FOLDER, "sets")
+DOWNLOADS_FOLDER_PATH = path.join(DATA_FOLDER, "downloads")
+
 JSON_ZIP_PATH = path.join(DATA_FOLDER, "AllSetFiles.zip")
+TYPES_DOWNLOAD_URL = "https://mtgjson.com/api/v5/CardTypes.json.zip"
+TYPES_ZIP_PATH = path.join(DOWNLOADS_FOLDER_PATH, "CardTypes.json.zip")
+TYPES_JSON_PATH = path.join(DOWNLOADS_FOLDER_PATH, "CardTypes.json")
+
+ATOMIC_CARDS_DOWNLOAD_URL = "https://mtgjson.com/api/v5/AtomicCards.json.zip"
+ATOMIC_CARDS_FOLDER = path.join(DATA_FOLDER, "cards")
+ATOMIC_CARDS_ZIP_PATH = path.join(ATOMIC_CARDS_FOLDER, "AtomicCards.json.zip")
+ATOMIC_CARDS_PATH = path.join(ATOMIC_CARDS_FOLDER, "AtomicCards.json")
 
 LANGUAGE_JSON_PATH = path.join(DATA_FOLDER, "languages.json")
 COLOUR_JSON_PATH = path.join(DATA_FOLDER, "colours.json")
@@ -43,3 +53,4 @@ LEGALITIES_TO_DELETE = path.join(IMPORT_FOLDER, "legalities_to_delete.json")
 LEGALITIES_TO_UPDATE = path.join(IMPORT_FOLDER, "legalities_to_update.json")
 
 CARD_LINKS_TO_CREATE = path.join(IMPORT_FOLDER, "card_links_to_create.json")
+

@@ -85,7 +85,7 @@ def parse_numeric_parameter(
         return F("card__num_loyalty")
 
     if text in ("cmc", "cost"):
-        return F("card__cmc")
+        return F("card__converted_mana_cost")
 
     if text in ("inf", "infinity", "∞"):
         return math.inf

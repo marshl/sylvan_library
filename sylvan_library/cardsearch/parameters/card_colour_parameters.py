@@ -3,7 +3,6 @@ Card colour parameters
 """
 from typing import List
 
-from bitfield.types import Bit
 from django.db.models.query import Q
 
 from cards.models import Colour
@@ -16,7 +15,7 @@ class CardColourParam(CardSearchParam):
     The parameter for searching by a card's colour
     """
 
-    def __init__(self, card_colour: Bit):
+    def __init__(self, card_colour: int):
         super().__init__()
         self.card_colour = card_colour
 
@@ -110,7 +109,7 @@ class CardColourIdentityParam(CardSearchParam):
     The parameter for searching by a card's colour identity
     """
 
-    def __init__(self, colour_identity: Bit):
+    def __init__(self, colour_identity: int):
         super().__init__()
         self.colour_identity = colour_identity
 

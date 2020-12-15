@@ -5,8 +5,6 @@ from functools import reduce
 from typing import List, Dict, Optional
 from django.db import models
 
-COLOUR_SYMBOLS_TO_CODES = {"W": 1, "U": 2, "B": 4, "R": 8, "G": 16}
-
 
 class Colour(models.Model):
     """
@@ -18,6 +16,12 @@ class Colour(models.Model):
     display_order = models.IntegerField(unique=True)
     bit_value = models.IntegerField(unique=True)
     chart_colour = models.CharField(max_length=20)
+
+    WHITE = 1
+    BLUE = 2
+    BLACK = 4
+    RED = 8
+    GREEN = 16
 
     _white = None
     _blue = None
@@ -115,6 +119,15 @@ class Colour(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+
+COLOUR_SYMBOLS_TO_CODES = {
+    "W": Colour.WHITE,
+    "U": Colour.BLUE,
+    "B": Colour.BLACK,
+    "R": Colour.RED,
+    "G": Colour.GREEN,
+}
 
 
 # ALL_COLOURS = list(Colour.objects.all().order_by("display_order"))

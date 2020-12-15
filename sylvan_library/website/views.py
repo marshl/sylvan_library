@@ -26,7 +26,6 @@ from cards.models import (
     Deck,
     DeckCard,
     Language,
-    PhysicalCard,
     Set,
     UserCardChange,
     UserOwnedCard,
@@ -206,15 +205,16 @@ def ajax_change_card_ownership(request: WSGIRequest) -> HttpResponse:
     if not request.POST.get("count"):
         return JsonResponse({"result": False, "error": "Invalid count"})
 
-    try:
-        with transaction.atomic():
-            change_count = int(request.POST["count"])
-            physical_card_id = int(request.POST["printed_language"])
-            physical_card = PhysicalCard.objects.get(id=physical_card_id)
-            physical_card.apply_user_change(change_count, request.user)
-            return JsonResponse({"result": True})
-    except PhysicalCard.DoesNotExist as ex:
-        return JsonResponse({"result": False, "error": str(ex)})
+    # TODO: Card ownership on CardPrintingLanguage, not PhysicalCard
+    # try:
+    #     with transaction.atomic():
+    #         change_count = int(request.POST["count"])
+    #         physical_card_id = int(request.POST["printed_language"])
+    #         physical_card = PhysicalCard.objects.get(id=physical_card_id)
+    #         physical_card.apply_user_change(change_count, request.user)
+    #         return JsonResponse({"result": True})
+    # except PhysicalCard.DoesNotExist as ex:
+    #     return JsonResponse({"result": False, "error": str(ex)})
 
 
 def ajax_ownership_summary(request: WSGIRequest, card_id: int) -> HttpResponse:

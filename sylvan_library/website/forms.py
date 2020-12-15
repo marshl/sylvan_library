@@ -20,7 +20,6 @@ from cards.models import (
     Deck,
     DeckCard,
     Language,
-    PhysicalCard,
     Rarity,
     Set,
 )
@@ -30,7 +29,7 @@ from cardsearch.parse_search import ParseSearch
 
 
 def get_physical_card_key_pair(
-    physical_card: PhysicalCard, printing: CardPrinting
+    physical_card, printing: CardPrinting
 ) -> Tuple[int, str]:
     """
     Gets the ID and display name of th given PhysicalCard for the given CardPrinting
@@ -38,10 +37,11 @@ def get_physical_card_key_pair(
     :param printing: The printing of the physical card
     :return: A tuple of the physical card's ID and a display string
     """
-    return (
-        physical_card.id,
-        f"{physical_card.get_display_for_adding()} ({printing.number})",
-    )
+    # TODO: PhysicalCard
+    # return (
+    #     physical_card.id,
+    #     f"{physical_card.get_display_for_adding()} ({printing.number})",
+    # )
 
 
 class ChangeCardOwnershipForm(forms.Form):

@@ -225,7 +225,7 @@ class CardCmcParam(CardNumericalParam):
     """
 
     def query(self) -> Q:
-        args = self.get_args("card__cmc")
+        args = self.get_args("card__converted_mana_cost")
         query = Q()
         if isinstance(self.number, F):
             query &= Q(**{"toughness__isnull": False})

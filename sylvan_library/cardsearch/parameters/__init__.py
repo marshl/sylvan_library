@@ -120,7 +120,7 @@ class CardCmcSortParam(CardSortParam):
         """
         if search_mode == SearchMode.SEARCH_MODE_CARD:
             return ["cmc", "colour_weight"]
-        return ["card__cmc", "card__colour_weight"]
+        return ["card__converted_mana_cost", "card__colour_weight"]
 
 
 class CardCollectorNumSortParam(CardSortParam):
@@ -153,4 +153,4 @@ class CardColourWeightSortParam(CardSortParam):
     def get_sort_keys(self, search_mode: SearchMode) -> list:
         if search_mode == SearchMode.SEARCH_MODE_CARD:
             return ["cmc", "colour_sort_key", "colour_weight"]
-        return ["card__cmc", "card__colour_sort_key", "card__colour_weight"]
+        return ["card__converted_mana_cost", "card__colour_sort_key", "card__colour_weight"]

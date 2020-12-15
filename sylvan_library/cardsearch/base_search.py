@@ -2,7 +2,6 @@
 The module for the base search classes
 """
 from typing import List, Optional
-from bitfield.types import Bit
 
 from django.core.paginator import Paginator, EmptyPage
 from django.db.models import prefetch_related_objects, QuerySet
@@ -80,7 +79,7 @@ class SearchResult:
 
 
 def create_colour_param(
-    colour_params: List[Bit],
+    colour_params: List[int],
     param_class: type,
     match_colours: bool,
     exclude_colours: bool,

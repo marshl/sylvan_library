@@ -195,7 +195,7 @@ class Deck(models.Model):
         return (
             self.cards.filter(board="main")
             .exclude(card__type__contains="Land")
-            .aggregate(Avg("card__cmd"))["card__cmc__avg"]
+            .aggregate(Avg("card__cmd"))["card__converted_mana_cost__avg"]
         )
 
     def get_mainboard_count(self) -> int:
@@ -369,7 +369,7 @@ class DeckCard(models.Model):
         Metaclass for DeckCard
         """
 
-        ordering = ["card__cmc", "card__colour_sort_key", "card__name"]
+        ordering = ["card__converted_mana_cost", "card__name"]
 
     def get_card_name(self) -> str:
         """

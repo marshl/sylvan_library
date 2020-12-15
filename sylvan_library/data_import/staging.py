@@ -10,73 +10,74 @@ import arrow
 
 from cards.models import Card, Colour
 
-COLOUR_TO_SORT_KEY = {
-    0: 0,
-    int(Card.colour_flags.white): 1,
-    int(Card.colour_flags.blue): 2,
-    int(Card.colour_flags.black): 3,
-    int(Card.colour_flags.red): 4,
-    int(Card.colour_flags.green): 5,
-    int(Card.colour_flags.white | Card.colour_flags.blue): 6,
-    int(Card.colour_flags.blue | Card.colour_flags.black): 7,
-    int(Card.colour_flags.black | Card.colour_flags.red): 8,
-    int(Card.colour_flags.red | Card.colour_flags.green): 9,
-    int(Card.colour_flags.green | Card.colour_flags.white): 10,
-    int(Card.colour_flags.white | Card.colour_flags.black): 11,
-    int(Card.colour_flags.blue | Card.colour_flags.red): 12,
-    int(Card.colour_flags.black | Card.colour_flags.green): 13,
-    int(Card.colour_flags.red | Card.colour_flags.white): 14,
-    int(Card.colour_flags.green | Card.colour_flags.blue): 15,
-    int(Card.colour_flags.white | Card.colour_flags.blue | Card.colour_flags.black): 16,
-    int(Card.colour_flags.blue | Card.colour_flags.black | Card.colour_flags.red): 17,
-    int(Card.colour_flags.black | Card.colour_flags.red | Card.colour_flags.green): 18,
-    int(Card.colour_flags.red | Card.colour_flags.green | Card.colour_flags.white): 19,
-    int(Card.colour_flags.green | Card.colour_flags.white | Card.colour_flags.blue): 20,
-    int(
-        Card.colour_flags.white | Card.colour_flags.black | Card.colour_flags.green
-    ): 21,
-    int(Card.colour_flags.blue | Card.colour_flags.red | Card.colour_flags.white): 22,
-    int(Card.colour_flags.black | Card.colour_flags.green | Card.colour_flags.blue): 23,
-    int(Card.colour_flags.red | Card.colour_flags.white | Card.colour_flags.black): 24,
-    int(Card.colour_flags.green | Card.colour_flags.blue | Card.colour_flags.red): 25,
-    int(
-        Card.colour_flags.white
-        | Card.colour_flags.blue
-        | Card.colour_flags.black
-        | Card.colour_flags.red
-    ): 26,
-    int(
-        Card.colour_flags.blue
-        | Card.colour_flags.black
-        | Card.colour_flags.red
-        | Card.colour_flags.green
-    ): 27,
-    int(
-        Card.colour_flags.black
-        | Card.colour_flags.red
-        | Card.colour_flags.green
-        | Card.colour_flags.white
-    ): 28,
-    int(
-        Card.colour_flags.red
-        | Card.colour_flags.green
-        | Card.colour_flags.white
-        | Card.colour_flags.blue
-    ): 29,
-    int(
-        Card.colour_flags.green
-        | Card.colour_flags.white
-        | Card.colour_flags.blue
-        | Card.colour_flags.black
-    ): 30,
-    int(
-        Card.colour_flags.white
-        | Card.colour_flags.blue
-        | Card.colour_flags.black
-        | Card.colour_flags.red
-        | Card.colour_flags.green
-    ): 31,
-}
+#
+# COLOUR_TO_SORT_KEY = {
+#     0: 0,
+#     int(Card.colour_flags.white): 1,
+#     int(Card.colour_flags.blue): 2,
+#     int(Card.colour_flags.black): 3,
+#     int(Card.colour_flags.red): 4,
+#     int(Card.colour_flags.green): 5,
+#     int(Card.colour_flags.white | Card.colour_flags.blue): 6,
+#     int(Card.colour_flags.blue | Card.colour_flags.black): 7,
+#     int(Card.colour_flags.black | Card.colour_flags.red): 8,
+#     int(Card.colour_flags.red | Card.colour_flags.green): 9,
+#     int(Card.colour_flags.green | Card.colour_flags.white): 10,
+#     int(Card.colour_flags.white | Card.colour_flags.black): 11,
+#     int(Card.colour_flags.blue | Card.colour_flags.red): 12,
+#     int(Card.colour_flags.black | Card.colour_flags.green): 13,
+#     int(Card.colour_flags.red | Card.colour_flags.white): 14,
+#     int(Card.colour_flags.green | Card.colour_flags.blue): 15,
+#     int(Card.colour_flags.white | Card.colour_flags.blue | Card.colour_flags.black): 16,
+#     int(Card.colour_flags.blue | Card.colour_flags.black | Card.colour_flags.red): 17,
+#     int(Card.colour_flags.black | Card.colour_flags.red | Card.colour_flags.green): 18,
+#     int(Card.colour_flags.red | Card.colour_flags.green | Card.colour_flags.white): 19,
+#     int(Card.colour_flags.green | Card.colour_flags.white | Card.colour_flags.blue): 20,
+#     int(
+#         Card.colour_flags.white | Card.colour_flags.black | Card.colour_flags.green
+#     ): 21,
+#     int(Card.colour_flags.blue | Card.colour_flags.red | Card.colour_flags.white): 22,
+#     int(Card.colour_flags.black | Card.colour_flags.green | Card.colour_flags.blue): 23,
+#     int(Card.colour_flags.red | Card.colour_flags.white | Card.colour_flags.black): 24,
+#     int(Card.colour_flags.green | Card.colour_flags.blue | Card.colour_flags.red): 25,
+#     int(
+#         Card.colour_flags.white
+#         | Card.colour_flags.blue
+#         | Card.colour_flags.black
+#         | Card.colour_flags.red
+#     ): 26,
+#     int(
+#         Card.colour_flags.blue
+#         | Card.colour_flags.black
+#         | Card.colour_flags.red
+#         | Card.colour_flags.green
+#     ): 27,
+#     int(
+#         Card.colour_flags.black
+#         | Card.colour_flags.red
+#         | Card.colour_flags.green
+#         | Card.colour_flags.white
+#     ): 28,
+#     int(
+#         Card.colour_flags.red
+#         | Card.colour_flags.green
+#         | Card.colour_flags.white
+#         | Card.colour_flags.blue
+#     ): 29,
+#     int(
+#         Card.colour_flags.green
+#         | Card.colour_flags.white
+#         | Card.colour_flags.blue
+#         | Card.colour_flags.black
+#     ): 30,
+#     int(
+#         Card.colour_flags.white
+#         | Card.colour_flags.blue
+#         | Card.colour_flags.black
+#         | Card.colour_flags.red
+#         | Card.colour_flags.green
+#     ): 31,
+# }
 
 
 def convert_number_field_to_numerical(val: str) -> float:
@@ -112,86 +113,62 @@ class StagedCard:
         self.scryfall_oracle_id: str = card_data.get("identifiers", {}).get(
             "scryfallOracleId"
         )
-        self.display_name: str = card_data.get("faceName", card_data["name"])
-        self.name: str = self.display_name
-        # For tokens the name need to have part of the scryfall oracle ID tacked on in order to make
-        # the name unique. But not in the case of Face the Hydra or other sets like it
-        if (
-            self.is_token
-            and self.scryfall_oracle_id
-            and card_data.get("setCode") not in ("TDAG", "TFTH", "TBTH")
-        ):
-            self.name = f"{self.name} ({self.scryfall_oracle_id.split('-')[0]})"
-        elif card_data.get("setCode") == "UST" and self.name not in (
-            "Delighted Killbot",
-            "Enraged Killbot",
-            "Despondent Killbot",
-        ):
-            matches = re.match(r"^\d+(?P<letter>[a-f])$", card_data.get("number"))
-            if matches and matches["letter"] != "a":
-                self.name = f"{self.name} ({matches['letter']})"
-        elif self.name == "B.F.M. (Big Furry Monster)" and card_data["number"] == "29":
-            self.name = f"{self.name} (b)"
-
-        self.cost: str = card_data.get("manaCost")
-        self.cmc: float = float(card_data.get("convertedManaCost", 0.0))
-        self.face_cmc: float = (
-            float(card_data.get("faceConvertedManaCost"))
-            if "faceConvertedManaCost" in card_data
-            else None
-        )
-        self.colour_flags: int = Colour.colour_codes_to_flags(
-            card_data.get("colors", [])
-        )
-        self.colour_identity_flags: int = Colour.colour_codes_to_flags(
+        assert self.scryfall_oracle_id, "Staged cards must have a scryfall oracle ID"
+        self.name: str = card_data["name"]
+        self.converted_mana_cost: float = float(card_data.get("convertedManaCost", 0.0))
+        self.colour_identity: int = Colour.colour_codes_to_flags(
             card_data.get("colorIdentity", [])
         )
-        self.colour_indicator_flags: int = Colour.colour_codes_to_flags(
-            card_data.get("colorIndicator", [])
-        )
-        self.colour_count: int = bin(self.colour_flags).count("1")
-        self.colour_identity_count: int = bin(self.colour_identity_flags).count("1")
-        self.colour_sort_key: int = COLOUR_TO_SORT_KEY[int(self.colour_flags)]
+        self.colour_identity_count: int = bin(self.colour_identity).count("1")
 
         self.layout: str = card_data.get("layout", "normal")
+
+        self.rulings: List[Dict[str, str]] = card_data.get("rulings", [])
+        self.legalities: Dict[str, str] = card_data.get("legalities", [])
+        self.is_reserved: bool = bool(card_data.get("isReserved", False))
+
+
+# pylint: disable=too-many-instance-attributes
+class StagedCardFace:
+    def __init__(self, card_data: dict) -> None:
+        self.scryfall_oracle_id: str = card_data.get("identifiers", {}).get(
+            "scryfallOracleId"
+        )
+        assert self.scryfall_oracle_id
+
+        self.name: str = card_data.get("faceName", card_data["name"])
+        self.side = card_data.get("side")
+
+        self.mana_cost: str = card_data.get("manaCost")
+
+        cmc_text = card_data.get(
+            "faceConvertedManaCost", card_data.get("convertedManaCost")
+        )
+        self.converted_mana_cost: float = (
+            float(cmc_text) if cmc_text is not None else float(0)
+        )
+
+        self.colour: int = Colour.colour_codes_to_flags(
+            card_data.get("colors", [])
+        )
+        self.colour_indicator: int = Colour.colour_codes_to_flags(
+            card_data.get("colorIndicator", [])
+        )
+        self.colour_count: int = bin(self.colour).count("1")
+        # self.colour_sort_key: int = COLOUR_TO_SORT_KEY[int(self.colour_flags)]
+        self.colour_sort_key: int = 0  # TODO: Colour sort keys
 
         self.power: Optional[str] = card_data.get("power")
         self.toughness: Optional[str] = card_data.get("toughness")
         self.loyalty: Optional[str] = card_data.get("loyalty")
-
         self.rules_text: Optional[str] = card_data.get("text")
-
-        self.type: Optional[str] = None
-        if self.is_token:
-            if "type" in card_data:
-                self.type = card_data["type"].split("—")[0].strip()
-        elif "types" in card_data:
-            self.type = " ".join(
-                (card_data.get("supertypes") or []) + (card_data["types"])
-            )
-
-        self.subtype: Optional[str] = None
-        if self.is_token:
-            if "type" in card_data:
-                self.subtype = card_data["type"].split("—")[-1].strip()
-        elif "subtypes" in card_data:
-            self.subtype = " ".join(card_data["subtypes"])
-
-        self.rulings: List[Dict[str, str]] = card_data.get("rulings", [])
-        self.legalities: Dict[str, str] = card_data.get("legalities", [])
-        self.has_other_names: bool = (
-            "names" in card_data and self.layout != "double_faced_token"
-        )
-        self.other_names = (
-            [n for n in card_data["names"] if n != self.name]
-            if self.has_other_names
-            else []
-        )
-        self.side = card_data.get("side")
         self.hand_modifier: str = card_data.get("hand")
         self.life_modifier: str = card_data.get("life")
-        self.is_reserved: bool = bool(card_data.get("isReserved", False))
-        # self.edh_rec_rank = card_data.get("edhrecRank", 0)
+
+        self.type_line: Optional[str] = card_data.get("type")
+        self.types: List[str] = card_data.get("types", [])
+        self.subtypes: List[str] = card_data.get("subtypes", [])
+        self.supertypes: List[str] = card_data.get("supertypes", [])
 
     @property
     def colour_weight(self) -> int:
@@ -199,7 +176,7 @@ class StagedCard:
         Gets the "colour weight" of the card, the number of coloured mana symbols te card has
         :return: The card's colour weight
         """
-        return int(self.cmc) - self.generic_mana_count
+        return int(self.converted_mana_cost) - self.generic_mana_count
 
     @property
     def num_power(self) -> float:
@@ -248,10 +225,10 @@ class StagedCard:
         (if there is one, otherwise 0)
         :return: The amount of generic mana required to cast this card
         """
-        if not self.cost:
+        if not self.mana_cost:
             return 0
 
-        generic_mana = re.search(r"{(\d+)}", self.cost)
+        generic_mana = re.search(r"{(\d+)}", self.mana_cost)
         if generic_mana:
             return int(generic_mana.group(1))
         return 0
@@ -288,6 +265,11 @@ class StagedSet:
             self.parent_set_code = set_data["code"]
             self.type = "token"
             self.total_set_size = self.base_set_size = len(set_data["tokens"])
+
+        self.scryfall_oracle_ids: List[str] = [
+            card["identifiers"]["scryfallOracleId"]
+            for card in set_data.get("cards", []) + set_data.get("tokens", [])
+        ]
 
 
 # pylint: disable=too-many-instance-attributes

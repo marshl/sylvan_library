@@ -9,10 +9,10 @@ from django.db.models import IntegerField
 
 from cards.models.card import (
     Card,
+    CardFace,
     CARD_LAYOUT_CHOICES,
     CardPrintingLanguage,
     CardPrinting,
-    PhysicalCard,
     UserOwnedCard,
     UserCardChange,
 )
