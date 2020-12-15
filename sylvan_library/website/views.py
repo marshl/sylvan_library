@@ -329,7 +329,12 @@ def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse
             "name": "Card Kingdom",
             "url": "https://www.cardkingdom.com/catalog/search?{}".format(
                 urllib.parse.urlencode(
-                    {"search": "header", "filter[name]": card.display_name}
+                    {
+                        "search": "header",
+                        "filter[name]": f"{card.display_name} token"
+                        if card.is_token and "Emblem" not in card.type
+                        else card.display_name,
+                    }
                 )
             ),
         },
