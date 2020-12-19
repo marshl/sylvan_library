@@ -186,3 +186,18 @@ class UpdateCardRuling(models.Model):
 
     class Meta:
         unique_together = (("scryfall_oracle_id", "ruling_text"),)
+
+
+class UpdateCardLegality(models.Model):
+    update_mode = UPDATE_MODE_FIELD
+    card_name = models.CharField(max_length=100)
+    scryfall_oracle_id = models.CharField(max_length=36)
+    format_name = models.CharField(max_length=100)
+    restriction = models.CharField(max_length=100)
+
+    def __str__(self) -> str:
+        return f"{self.update_mode} {self.card_name} is {self.restriction} in {self.format_name}"
+
+    class Meta:
+        unique_together = (("scryfall_oracle_id", "format_name"),)
+        verbose_name_plural = "Update card legalities"

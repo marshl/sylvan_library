@@ -74,6 +74,7 @@ class CardLegality(models.Model):
         """
 
         unique_together = ("card", "format", "restriction")
+        verbose_name_plural = "card legalities"
 
     def __str__(self):
         return f"{self.card} is {self.restriction} in {self.format}"

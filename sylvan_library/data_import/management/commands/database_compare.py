@@ -19,6 +19,7 @@ from cards.models import (
     Set,
     CardFace,
     CardRuling,
+    CardLegality,
 )
 from data_import import _paths
 from data_import.management.commands import get_all_set_data
@@ -29,6 +30,7 @@ from data_import.models import (
     UpdateMode,
     UpdateCardFace,
     UpdateCardRuling,
+    UpdateCardLegality,
 )
 from data_import.staging import (
     StagedCard,
@@ -110,12 +112,14 @@ class Command(BaseCommand):
             UpdateCard.objects.all().delete()
             UpdateCardFace.objects.all().delete()
             UpdateCardRuling.objects.all().delete()
+            UpdateCardLegality.objects.all().delete()
 
             logger.info("Getting existing data")
             for card in Card.objects.prefetch_related("faces").all():
                 self.existing_scryfall_oracle_ids.add(card.scryfall_oracle_id)
                 for face in card.faces.all():
                     self.existing_card_faces.add((card.scryfall_oracle_id, face.side))
+            logger.info("Done")
 
             for set_data in get_all_set_data(options.get("set_codes")):
                 logger.info("Parsing set %s (%s)", set_data["code"], set_data["name"])
@@ -186,9 +190,14 @@ class Command(BaseCommand):
 
         existing_cards = {
             card.scryfall_oracle_id: card
-            # for card in Card.objects.filter(printings__set__code=staged_set.code)
             for card in Card.objects.filter(
                 scryfall_oracle_id__in=staged_set.scryfall_oracle_ids
+            ).prefetch_related(
+                "faces__subtypes",
+                "faces__supertypes",
+                "faces__types",
+                "rulings",
+                "legalities__format",
             )
         }
 
@@ -241,13 +250,16 @@ class Command(BaseCommand):
         """
 
         staged_card = StagedCard(card_data, is_token=is_token)
+        card_obj = existing_cards.get(staged_card.scryfall_oracle_id)
+
         if staged_card.scryfall_oracle_id not in self.cards_parsed:
             self.cards_parsed.add(staged_card.scryfall_oracle_id)
 
-            if staged_card.scryfall_oracle_id in existing_cards:
-                differences = staged_card.compare_with_card(
-                    existing_cards[staged_card.scryfall_oracle_id]
-                )
+            self.process_card_rulings(staged_card, existing_card=card_obj)
+            self.process_card_legalities(staged_card, existing_card=card_obj)
+
+            if card_obj:
+                differences = staged_card.compare_with_card(card_obj)
                 if differences:
                     UpdateCard.objects.create(
                         update_mode=UpdateMode.UPDATE,
@@ -268,16 +280,26 @@ class Command(BaseCommand):
 
         staged_card_face = StagedCardFace(card_data)
         face_tuple = (staged_card_face.scryfall_oracle_id, staged_card_face.side)
+        card_face = (
+            next(
+                face
+                for face in card_obj.faces.all()
+                if face.side == staged_card_face.side
+            )
+            if card_obj
+            else None
+        )
+
         if face_tuple not in self.card_faces_parsed:
             self.card_faces_parsed.add(face_tuple)
             try:
-                existing_face = CardFace.objects.get(
-                    card__scryfall_oracle_id=staged_card_face.scryfall_oracle_id,
-                    side=staged_card_face.side,
-                )
-                face_differences = staged_card_face.get_card_face_differences(
-                    existing_face
-                )
+                # existing_face = CardFace.objects.prefetch_related(
+                #     "types", "subtypes", "supertypes"
+                # ).get(
+                #     card__scryfall_oracle_id=staged_card_face.scryfall_oracle_id,
+                #     side=staged_card_face.side,
+                # )
+                face_differences = staged_card_face.get_card_face_differences(card_face)
                 if face_differences:
                     UpdateCardFace.objects.create(
                         update_mode=UpdateMode.UPDATE,
@@ -299,39 +321,41 @@ class Command(BaseCommand):
                     ),
                 )
 
-        self.process_card_rulings(staged_card)
-        # self.process_card_legalities(staged_card)
-        # self.cards_parsed.add(staged_card.name)
         return staged_card
 
-    def process_card_rulings(self, staged_card: StagedCard) -> None:
+    def process_card_rulings(
+        self, staged_card: StagedCard, existing_card: Optional[Card]
+    ) -> None:
         """
         Finds CardRulings of the given StagedCard to create or delete
         :param staged_card: The StagedCard to find rulings for
         """
-        if UpdateCardRuling.objects.filter(
-            scryfall_oracle_id=staged_card.scryfall_oracle_id
-        ).exists():
-            return
+        # if UpdateCardRuling.objects.filter(
+        #     scryfall_oracle_id=staged_card.scryfall_oracle_id
+        # ).exists():
+        #     return
 
-        existing_rulings: List[CardRuling] = list(
-            CardRuling.objects.filter(
-                card__scryfall_oracle_id=staged_card.scryfall_oracle_id
-            )
-        )
+        # existing_rulings: List[CardRuling] = list(
+        #     CardRuling.objects.filter(
+        #         card__scryfall_oracle_id=staged_card.scryfall_oracle_id
+        #     )
+        # )
+        existing_rulings = list(existing_card.rulings.all()) if existing_card else []
+
         for ruling in staged_card.rulings:
             if not any(
                 True
                 for existing_ruling in existing_rulings
                 if existing_ruling.text == ruling["text"]
             ):
-                UpdateCardRuling.objects.create(
+                create_ruling = UpdateCardRuling(
                     update_mode=UpdateMode.CREATE,
                     card_name=staged_card.name,
                     scryfall_oracle_id=staged_card.scryfall_oracle_id,
                     ruling_date=ruling["date"],
                     ruling_text=ruling["text"],
                 )
+                create_ruling.save()
 
         # For every existing ruling, it if isn't contained in the list of rulings,
         # then mark it for deletion
@@ -341,13 +365,75 @@ class Command(BaseCommand):
                 for ruling in staged_card.rulings
                 if ruling["text"] == existing_ruling.text
             ):
-                UpdateCardRuling.objects.create(
+                delete_ruling = UpdateCardRuling(
                     update_mode=UpdateMode.DELETE,
                     card_name=staged_card.name,
                     scryfall_oracle_id=staged_card.scryfall_oracle_id,
                     ruling_date=existing_ruling.date,
                     ruling_text=existing_ruling.text,
                 )
+                delete_ruling.save()
+
+    def process_card_legalities(
+        self, staged_card: StagedCard, existing_card: Optional[Card] = None
+    ) -> None:
+        """
+        Find CardLegalities for a card to update, create or delete
+        :param staged_card: The StagedCard to find legalities for
+        """
+        # if UpdateCardLegality.objects.filter(
+        #     scryfall_oracle_id=staged_card.scryfall_oracle_id
+        # ).exists():
+        #     return
+
+        # existing_legalities = list(
+        #     CardLegality.objects.filter(
+        #         card__scryfall_oracle_id=staged_card.scryfall_oracle_id
+        #     ).select_related("format")
+        # )
+        existing_legalities = (
+            list(existing_card.legalities.all()) if existing_card else []
+        )
+
+        for format_str, restriction in staged_card.legalities.items():
+            if not any(
+                True
+                for existing_legality in existing_legalities
+                if existing_legality.format.code == format_str
+            ):
+                create_legality = UpdateCardLegality(
+                    update_mode=UpdateMode.CREATE,
+                    card_name=staged_card.name,
+                    scryfall_oracle_id=staged_card.scryfall_oracle_id,
+                    format_name=format_str,
+                    restriction=restriction,
+                )
+                create_legality.save()
+
+        for old_legality in existing_legalities:
+            if old_legality.format.code not in staged_card.legalities:
+                delete_legality = UpdateCardLegality(
+                    update_mode=UpdateMode.DELETE,
+                    card_name=staged_card.name,
+                    scryfall_oracle_id=staged_card.scryfall_oracle_id,
+                    format_name=old_legality.format.code,
+                    restriction=old_legality.restriction,
+                )
+                delete_legality.save()
+
+            # Legalities to update
+            elif (
+                staged_card.legalities[old_legality.format.code]
+                != old_legality.restriction
+            ):
+                update_legality = UpdateCardLegality(
+                    update_mode=UpdateMode.UPDATE,
+                    card_name=staged_card.name,
+                    scryfall_oracle_id=staged_card.scryfall_oracle_id,
+                    format_name=old_legality.format.code,
+                    restriction=staged_card.legalities[old_legality.format.name],
+                )
+                update_legality.save()
 
     def process_card_printing(
         self,

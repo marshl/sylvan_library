@@ -7,6 +7,7 @@ from data_import.models import (
     UpdateBlock,
     UpdateCardFace,
     UpdateCardRuling,
+    UpdateCardLegality,
 )
 
 
@@ -52,3 +53,8 @@ class UpdateCardRulingModelForm(forms.ModelForm):
 class UpdateCardRulingAdmin(admin.ModelAdmin):
     search_fields = ["card_name"]
     form = UpdateCardRulingModelForm
+
+
+@admin.register(UpdateCardLegality)
+class UpdateCardLegalityAdmin(admin.ModelAdmin):
+    search_fields = ["card_name"]

@@ -111,9 +111,10 @@ class StagedObject:
         return differences
 
     def compare_related_list(self, existing_object: models.Model, field_name: str):
-        old_values = list(
-            getattr(existing_object, field_name).values_list("name", flat=True)
-        )
+        # old_values = list(
+        #     getattr(existing_object, field_name).values_list("name", flat=True)
+        # )
+        old_values = [related.name for related in getattr(existing_object, field_name).all()]
         new_values = getattr(self, field_name)
         if set(old_values) != set(new_values):
             return {field_name: {"from": old_values, "to": new_values}}
@@ -144,7 +145,7 @@ class StagedCard(StagedObject):
         self.layout: str = card_data.get("layout", "normal")
 
         self.rulings: List[Dict[str, str]] = card_data.get("rulings", [])
-        self.legalities: Dict[str, str] = card_data.get("legalities", [])
+        self.legalities: Dict[str, str] = card_data.get("legalities", {})
         self.is_reserved: bool = bool(card_data.get("isReserved", False))
 
     def compare_with_card(self, existing_card: Card) -> Dict[str, Dict[str, Any]]:

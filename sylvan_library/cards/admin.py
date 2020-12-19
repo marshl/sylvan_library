@@ -1,26 +1,20 @@
-# from bitfield.forms import BitFieldCheckboxSelectMultiple
 from bitfield import BitField
 from bitfield.forms import BitFieldCheckboxSelectMultiple
 from django import forms
 from django.contrib import admin
-from django_admin_relation_links import AdminChangeLinksMixin
 
-from cards.models import Block, Set, Card, CardFace, CardRuling, CardType, CardSupertype, CardSubtype
-
-
-# class CardFaceInline(admin.TabularInline):
-#     model = CardFace
-#     def has_change_permission(self, request, obj=None):
-#         return False
-#
-#     def has_add_permission(self, request, obj=None):
-#         return False
-#
-#     def has_delete_permission(self, request, obj=None):
-#         return False
-# from fields import BitFieldCheckboxSelectMultiple
-# from fields import BitFieldCheckboxSelectMultiple, BitFormField
-from widgets import ColourWidget
+from cards.models import (
+    Block,
+    Set,
+    Card,
+    CardFace,
+    CardRuling,
+    CardType,
+    CardSupertype,
+    CardSubtype,
+    CardLegality,
+    Format,
+)
 
 
 class CardFaceInline(admin.TabularInline):
@@ -38,31 +32,15 @@ class CardFaceInline(admin.TabularInline):
     def has_delete_permission(self, request, obj=None):
         return False
 
-    # class Meta:
-    #     name = forms.IntegerField()
-
-
-# class CardFaceAdminForm(forms.ModelForm):
-
 
 @admin.register(Card)
 class CardAdmin(admin.ModelAdmin):  # AdminChangeLinksMixin,
-    # form = CardAdminForm
     search_fields = ["name"]
-    # changelist_links = ['faces']
     inlines = [CardFaceInline]
 
 
 class CardFaceModelForm(forms.ModelForm):
     rules_text = forms.CharField(widget=forms.Textarea)
-    # colour = forms.IntegerField(widget=ColourWidget)
-    # colour = forms.IntegerField(
-    #     widget=BitFieldCheckboxSelectMultiple(
-    #         choices=((1, "W"), (2, "U"), (4, "B"), (8, "R"), (16, "G"))
-    #     )
-    # )
-    # colour = BitFormField(choices=((1, "W"), (2, "U"), (4, "B"), (8, "R"), (16, "G")))
-    # colour_indicator = forms.IntegerField(widget=BitFieldCheckboxSelectMultiple)
 
     class Meta:
         model = CardFace
@@ -115,3 +93,14 @@ class CardRulingAdmin(admin.ModelAdmin):
     search_fields = ["card__name"]
     autocomplete_fields = ["card"]
     form = CardRulingModelForm
+
+
+@admin.register(CardLegality)
+class CardLegalityAdmin(admin.ModelAdmin):
+    search_fields = ["card__name"]
+    autocomplete_fields = ["card"]
+
+
+@admin.register(Format)
+class FormatAdmin(admin.ModelAdmin):
+    pass

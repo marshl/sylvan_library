@@ -10,7 +10,17 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction, models
 
-from cards.models import Block, Colour, Rarity, Set, Card, CardFace, CardRuling
+from cards.models import (
+    Block,
+    Colour,
+    Rarity,
+    Set,
+    Card,
+    CardFace,
+    CardRuling,
+    CardLegality,
+    Format,
+)
 from data_import.models import (
     UpdateBlock,
     UpdateSet,
@@ -18,9 +28,9 @@ from data_import.models import (
     UpdateCard,
     UpdateCardFace,
     UpdateCardRuling,
+    UpdateCardLegality,
 )
 from cards.models.card import CardType, CardSubtype, CardSupertype
-
 
 class Command(BaseCommand):
     """
@@ -58,6 +68,7 @@ class Command(BaseCommand):
                 or not self.create_new_card_faces()
                 or not self.update_card_faces()
                 or not self.update_card_rulings()
+                or not self.update_card_legalities()
             ):
                 raise Exception("Change application aborted")
 
@@ -219,7 +230,7 @@ class Command(BaseCommand):
                         f"Cannot set unrecognised field CardFace.{field}"
                     )
 
-                if field == 'num_power' and value == "∞":
+                if field == "num_power" and value == "∞":
                     value = math.inf
                 setattr(card_face, field, value)
             try:
@@ -307,4 +318,44 @@ class Command(BaseCommand):
                 raise Exception(
                     f"Invalid operation {update_card_ruling.update_mode} for card ruling update: {update_card_ruling}"
                 )
+        return True
+
+    def update_card_legalities(self) -> bool:
+        self.logger.info("Updating card legalities")
+        for update_card_legality in UpdateCardLegality.objects.all():
+            try:
+                if update_card_legality.update_mode == UpdateMode.DELETE:
+                    deletions, _ = CardLegality.objects.filter(
+                        card__scryfall_oracle_id=update_card_legality.scryfall_oracle_id,
+                        format__code=update_card_legality.format_name,
+                    ).delete()
+
+                    if deletions == 0:
+                        raise Exception(f"No legality found for {update_card_legality}")
+                elif update_card_legality.update_mode == UpdateMode.CREATE:
+                    CardLegality.objects.create(
+                        card=Card.objects.get(
+                            scryfall_oracle_id=update_card_legality.scryfall_oracle_id
+                        ),
+                        format=Format.objects.get(
+                            code=update_card_legality.format_name
+                        ),
+                        restriction=update_card_legality.restriction,
+                    )
+                elif update_card_legality.update_mode == UpdateMode.UPDATE:
+                    existing_legality = CardLegality.objects.get(
+                        card__scryfall_oracle_id=update_card_legality.scryfall_oracle_id,
+                        format__code=update_card_legality.format_name,
+                    )
+                    existing_legality.restriction = update_card_legality.restriction
+                    existing_legality.full_clean()
+                    existing_legality.save()
+            except Format.DoesNotExist:
+                self.logger.error(
+                    "Could not find format %s for %s",
+                    update_card_legality.format_name,
+                    update_card_legality,
+                )
+                raise
+
         return True
