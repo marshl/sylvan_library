@@ -11,7 +11,15 @@ from typing import List, Optional, Dict, Tuple, Any
 from django.core.management.base import BaseCommand
 from django.db import models, transaction
 
-from cards.models import Block, Card, CardPrinting, CardPrintingLanguage, Set, CardFace
+from cards.models import (
+    Block,
+    Card,
+    CardPrinting,
+    CardPrintingLanguage,
+    Set,
+    CardFace,
+    CardRuling,
+)
 from data_import import _paths
 from data_import.management.commands import get_all_set_data
 from data_import.models import (
@@ -20,6 +28,7 @@ from data_import.models import (
     UpdateBlock,
     UpdateMode,
     UpdateCardFace,
+    UpdateCardRuling,
 )
 from data_import.staging import (
     StagedCard,
@@ -74,14 +83,16 @@ class Command(BaseCommand):
         "Use the update_rulings command to update rulings"
     )
 
-    existing_scryfall_oracle_ids: typing.Set[str] = set()
-    existing_card_faces: typing.Set[Tuple[str, str]] = set()
+    def __init__(self, stdout=None, stderr=None, no_color=False):
+        super().__init__(stdout=stdout, stderr=stderr, no_color=no_color)
+        self.existing_scryfall_oracle_ids: typing.Set[str] = set()
+        self.existing_card_faces: typing.Set[Tuple[str, str]] = set()
 
-    cards_parsed: typing.Set[str] = set()
-    card_faces_parsed: typing.Set[Tuple[str, str]] = set()
+        self.cards_parsed: typing.Set[str] = set()
+        self.card_faces_parsed: typing.Set[Tuple[str, str]] = set()
 
-    force_update = False
-    start_time = None
+        self.force_update = False
+        self.start_time = None
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -98,6 +109,7 @@ class Command(BaseCommand):
             UpdateSet.objects.all().delete()
             UpdateCard.objects.all().delete()
             UpdateCardFace.objects.all().delete()
+            UpdateCardRuling.objects.all().delete()
 
             logger.info("Getting existing data")
             for card in Card.objects.prefetch_related("faces").all():
@@ -124,7 +136,14 @@ class Command(BaseCommand):
         for staged_set in sets:
             if Set.objects.filter(code=staged_set.code).exists():
                 existing_set = Set.objects.get(code=staged_set.code)
-                self.compare_sets(existing_set, staged_set)
+                set_differences = staged_set.compare_with_set(existing_set)
+                if set_differences:
+                    UpdateSet.objects.create(
+                        update_mode=UpdateMode.UPDATE,
+                        set_code=staged_set.code,
+                        field_data=set_differences,
+                    )
+
             elif not UpdateSet.objects.filter(set_code=staged_set.code).exists():
                 UpdateSet.objects.create(
                     update_mode=UpdateMode.CREATE,
@@ -209,29 +228,6 @@ class Command(BaseCommand):
         #             new_printlangs.append(printlang)
         # self.process_physical_cards(new_printlangs)
 
-    def compare_cards(
-        self, existing_card: Card, staged_card: StagedCard
-    ) -> Dict[str, Dict[str, Any]]:
-        """
-        Returns the differences between an existing Card object and the StagedCard version
-        :param existing_card: The existing database Card object
-        :param staged_card: The json StagedCard object
-        :return: A dict of differences between the two object
-        """
-        differences = self.get_object_differences(
-            existing_card,
-            staged_card,
-            {"id", "edh_rec_rank", "colour_identity_flags", "colour_indicator_flags"},
-        )
-
-        if staged_card.colour_identity != int(existing_card.colour_identity):
-            differences["colour_identity_flags"] = {
-                "from": int(existing_card.colour_identity),
-                "to": staged_card.colour_identity,
-            }
-
-        return differences
-
     def process_card(
         self, card_data: dict, is_token: bool, existing_cards: Dict[str, Card]
     ) -> StagedCard:
@@ -249,8 +245,8 @@ class Command(BaseCommand):
             self.cards_parsed.add(staged_card.scryfall_oracle_id)
 
             if staged_card.scryfall_oracle_id in existing_cards:
-                differences = self.compare_cards(
-                    existing_cards[staged_card.scryfall_oracle_id], staged_card
+                differences = staged_card.compare_with_card(
+                    existing_cards[staged_card.scryfall_oracle_id]
                 )
                 if differences:
                     UpdateCard.objects.create(
@@ -279,8 +275,8 @@ class Command(BaseCommand):
                     card__scryfall_oracle_id=staged_card_face.scryfall_oracle_id,
                     side=staged_card_face.side,
                 )
-                face_differences = self.get_card_face_differences(
-                    existing_face, staged_card_face
+                face_differences = staged_card_face.get_card_face_differences(
+                    existing_face
                 )
                 if face_differences:
                     UpdateCardFace.objects.create(
@@ -302,184 +298,56 @@ class Command(BaseCommand):
                         staged_card_face, fields_to_ignore={"generic_mana_count"}
                     ),
                 )
-                pass
 
-        # if staged_card.name in self.cards_parsed:
-        #     return staged_card
-
-        # if staged_card.name not in self.existing_cards:
-        #     if staged_card.name not in self.cards_to_create:
-        #         self.cards_to_create[staged_card.name] = staged_card
-        # elif staged_card.name not in self.cards_to_update:
-        #     existing_card = self.existing_cards[staged_card.name]
-        #     differences = self.get_card_differences(existing_card, staged_card)
-        #     if differences:
-        #         self.cards_to_update[staged_card.name] = differences
-        #
-        # self.process_card_rulings(staged_card)
+        self.process_card_rulings(staged_card)
         # self.process_card_legalities(staged_card)
         # self.cards_parsed.add(staged_card.name)
         return staged_card
 
-    def compare_sets(self, existing_set: Set, staged_set: StagedSet) -> None:
+    def process_card_rulings(self, staged_card: StagedCard) -> None:
         """
-        Compares and existing  Set with a staged one,
-        and stores a list of updates if any are required
-        :param existing_set: THe existing Set object
-        :param staged_set: The StagedSet object
+        Finds CardRulings of the given StagedCard to create or delete
+        :param staged_card: The StagedCard to find rulings for
         """
-        differences = self.get_object_differences(
-            existing_set,
-            staged_set,
-            fields_to_ignore={"id", "release_date", "parent_set_id", "block_id"},
-        )
+        if UpdateCardRuling.objects.filter(
+            scryfall_oracle_id=staged_card.scryfall_oracle_id
+        ).exists():
+            return
 
-        if (not existing_set.block and staged_set.block) or (
-            existing_set.block and existing_set.block.name != staged_set.block
-        ):
-            differences["block"] = {
-                "from": existing_set.block.name if existing_set.block else None,
-                "to": staged_set.block,
-            }
-
-        if existing_set.release_date != staged_set.release_date:
-            differences["release_date"] = {
-                "from": existing_set.release_date.strftime("%Y-%m-%d"),
-                "to": staged_set.release_date.strftime("%Y-%m-%d"),
-            }
-
-        if differences:
-            UpdateSet.objects.create(
-                update_mode=UpdateMode.UPDATE,
-                set_code=staged_set.code,
-                field_data=differences,
+        existing_rulings: List[CardRuling] = list(
+            CardRuling.objects.filter(
+                card__scryfall_oracle_id=staged_card.scryfall_oracle_id
             )
-
-    @staticmethod
-    def get_object_differences(
-        old_object: models.Model, new_object, fields_to_ignore: Optional[set] = None
-    ) -> dict:
-        """
-        Gets the differences between the given fields of two objects
-        :param old_object: The old version of the object (stored in the database)
-        :param new_object: The new version of hte object (the Staged* object)
-        :param fields_to_ignore: The fields to ignore from comparison
-        :return: A dict of "field* => {"old" => "x", "new" => "y"} differences
-        """
-        if not fields_to_ignore:
-            fields_to_ignore = set()
-        fields_to_ignore.update(["id", "_state", "_prefetched_objects_cache"])
-
-        differences = {}
-        for field in old_object.__dict__.keys():
-            if field in fields_to_ignore:
-                continue
-
-            if not hasattr(new_object, field):
-                raise Exception(
-                    f"Could not find equivalent of {old_object.__class__.__name__}.{field} "
-                    f"on {new_object.__class__.__name__}"
-                )
-
-            old_val = getattr(old_object, field)
-            new_val = getattr(new_object, field)
-            if (
-                not isinstance(old_val, type(new_val))
-                and not isinstance(old_val, type(None))
-                and not isinstance(new_val, type(None))
+        )
+        for ruling in staged_card.rulings:
+            if not any(
+                True
+                for existing_ruling in existing_rulings
+                if existing_ruling.text == ruling["text"]
             ):
-                raise Exception(
-                    f"Type mismatch for '{field}: {old_val} != {new_val} "
-                    f"({type(old_val)} != {type(new_val)})"
+                UpdateCardRuling.objects.create(
+                    update_mode=UpdateMode.CREATE,
+                    card_name=staged_card.name,
+                    scryfall_oracle_id=staged_card.scryfall_oracle_id,
+                    ruling_date=ruling["date"],
+                    ruling_text=ruling["text"],
                 )
 
-            if old_val != new_val:
-                differences[field] = {"from": old_val, "to": new_val}
-
-        return differences
-
-    def get_card_differences(
-        self, existing_card: Card, staged_card: StagedCard
-    ) -> Dict[str, Dict[str, Any]]:
-        """
-        Returns the differences between an existing Card object and the StagedCard version
-        :param existing_card: The existing database Card object
-        :param staged_card: The json StagedCard object
-        :return: A dict of differences between the two object
-        """
-        differences = self.get_object_differences(
-            existing_card,
-            staged_card,
-            fields_to_ignore={
-                "id",
-                "edh_rec_rank",
-                "colour_flags",
-                "colour_identity_flags",
-            },
-        )
-
-        if staged_card.colour_identity_flags != int(existing_card.colour_identity):
-            differences["colour_identity_flags"] = {
-                "from": existing_card.colour_identity,
-                "to": staged_card.colour_identity_flags,
-            }
-
-        return differences
-
-    def get_card_face_differences(
-        self, existing_card_face: CardFace, staged_card_face: StagedCardFace
-    ) -> Dict[str, Dict[str, Any]]:
-        differences = self.get_object_differences(
-            existing_card_face, staged_card_face, fields_to_ignore={"card_id"}
-        )
-
-        # old_types = list(existing_card_face.types.values_list('name', flat=True))
-        # new_types = staged_card_face.types
-        # if set(old_types) != set(new_types):
-        #     differences['types'] = {"from": old_types, "to": new_types}
-        #
-
-        differences.update(
-            self.compare_related_list(existing_card_face, staged_card_face, "types")
-        )
-        differences.update(
-            self.compare_related_list(existing_card_face, staged_card_face, "subtypes")
-        )
-        differences.update(
-            self.compare_related_list(
-                existing_card_face, staged_card_face, "supertypes"
-            )
-        )
-
-        return differences
-
-    def compare_related_list(
-        self, existing_object: models.Model, staged_record, field_name: str
-    ):
-        old_values = list(
-            getattr(existing_object, field_name).values_list("name", flat=True)
-        )
-        new_values = getattr(staged_record, field_name)
-        if set(old_values) != set(new_values):
-            return {field_name: {"from": old_values, "to": new_values}}
-        return {}
-
-    def get_card_printing_differences(
-        self, existing_printing: CardPrinting, staged_printing: StagedCardPrinting
-    ) -> Dict[str, dict]:
-        """
-        Gets the differences between an existing printing and one from the json
-
-        Most of the time there won't be any differences, but this will be useful for adding in new
-        fields that didn't exist before
-        :param existing_printing: The existing CardPrinting object
-        :param staged_printing: The json StagedCardPrinting object
-        :return: The dict of differences between the two objects
-        """
-        result = self.get_object_differences(
-            existing_printing, staged_printing, {"id", "set_id", "rarity_id", "card_id"}
-        )
-        return result
+        # For every existing ruling, it if isn't contained in the list of rulings,
+        # then mark it for deletion
+        for existing_ruling in existing_rulings:
+            if not any(
+                True
+                for ruling in staged_card.rulings
+                if ruling["text"] == existing_ruling.text
+            ):
+                UpdateCardRuling.objects.create(
+                    update_mode=UpdateMode.DELETE,
+                    card_name=staged_card.name,
+                    scryfall_oracle_id=staged_card.scryfall_oracle_id,
+                    ruling_date=existing_ruling.date,
+                    ruling_text=existing_ruling.text,
+                )
 
     def process_card_printing(
         self,

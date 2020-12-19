@@ -15,6 +15,9 @@ from cards.models.card import (
     CardPrinting,
     UserOwnedCard,
     UserCardChange,
+    CardType,
+    CardSupertype,
+    CardSubtype,
 )
 from cards.models.card_price import CardPrice
 from cards.models.colour import Colour

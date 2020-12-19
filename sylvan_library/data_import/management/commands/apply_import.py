@@ -10,13 +10,14 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction, models
 
-from cards.models import Block, Colour, Rarity, Set, Card, CardFace
+from cards.models import Block, Colour, Rarity, Set, Card, CardFace, CardRuling
 from data_import.models import (
     UpdateBlock,
     UpdateSet,
     UpdateMode,
     UpdateCard,
     UpdateCardFace,
+    UpdateCardRuling,
 )
 from cards.models.card import CardType, CardSubtype, CardSupertype
 
@@ -56,6 +57,7 @@ class Command(BaseCommand):
                 or not self.update_cards()
                 or not self.create_new_card_faces()
                 or not self.update_card_faces()
+                or not self.update_card_rulings()
             ):
                 raise Exception("Change application aborted")
 
@@ -187,9 +189,7 @@ class Command(BaseCommand):
     def create_new_card_faces(self) -> bool:
         self.logger.info("Creating card faces")
 
-        for card_face_update in UpdateCardFace.objects.filter(
-            # update_mode=UpdateMode.CREATE
-        ):
+        for card_face_update in UpdateCardFace.objects.filter():
             try:
                 card = Card.objects.get(
                     scryfall_oracle_id=card_face_update.scryfall_oracle_id
@@ -214,15 +214,14 @@ class Command(BaseCommand):
                 if field in ("types", "subtypes", "supertypes", "scryfall_oracle_id"):
                     continue
 
-                if value == "∞":
-                    value = math.inf
-
-                if hasattr(card_face, field):
-                    setattr(card_face, field, value)
-                else:
+                if not hasattr(card_face, field):
                     raise NotImplementedError(
                         f"Cannot set unrecognised field CardFace.{field}"
                     )
+
+                if field == 'num_power' and value == "∞":
+                    value = math.inf
+                setattr(card_face, field, value)
             try:
                 card_face.full_clean()
                 card_face.save()
@@ -283,12 +282,29 @@ class Command(BaseCommand):
                 type_obj = type_model.objects.get(name=type_str)
             except type_model.DoesNotExist:
                 type_obj = type_model.objects.create(name=type_str)
-                self.logger.warning(
-                    "Created %s %s",
-                    type_key,
-                    type_str,
-                )
+                self.logger.warning("Created %s %s", type_key, type_str)
             getattr(card_face, type_key).add(type_obj)
 
     def update_card_faces(self) -> bool:
+        return True
+
+    def update_card_rulings(self) -> bool:
+        for update_card_ruling in UpdateCardRuling.objects.all():
+            if update_card_ruling.update_mode == UpdateMode.DELETE:
+                CardRuling.objects.filter(
+                    scryfall_oracle_id=update_card_ruling.scryfall_oracle_id,
+                    text=update_card_ruling.ruling_text,
+                ).delete()
+            elif update_card_ruling.update_mode == UpdateMode.CREATE:
+                CardRuling.objects.create(
+                    card=Card.objects.get(
+                        scryfall_oracle_id=update_card_ruling.scryfall_oracle_id
+                    ),
+                    text=update_card_ruling.ruling_text,
+                    date=update_card_ruling.ruling_date,
+                )
+            else:
+                raise Exception(
+                    f"Invalid operation {update_card_ruling.update_mode} for card ruling update: {update_card_ruling}"
+                )
         return True

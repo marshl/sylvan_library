@@ -17,6 +17,15 @@ class Colour(models.Model):
     bit_value = models.IntegerField(unique=True)
     chart_colour = models.CharField(max_length=20)
 
+    FLAG_CHOICES = (
+        ("w", "White"),
+        ("u", "Blue"),
+        ("b", "Black"),
+        ("r", "Red"),
+        ("g", "Green"),
+    )
+
+    COLOURLESS = 0
     WHITE = 1
     BLUE = 2
     BLACK = 4

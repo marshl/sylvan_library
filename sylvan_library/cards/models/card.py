@@ -14,6 +14,8 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Sum, IntegerField, Case, When
 
+from cards.models.colour import Colour
+
 CARD_LAYOUT_CHOICES = (
     ("normal", "Normal"),
     ("split", "Split"),
@@ -70,7 +72,7 @@ class Card(models.Model):
     is_reserved = models.BooleanField(default=False)
     edh_rec_rank = models.IntegerField(blank=True, null=True)
     is_token = models.BooleanField(default=False)
-    colour_identity = IntegerField()
+    colour_identity = BitField(flags=Colour.FLAG_CHOICES)
     colour_identity_count = models.IntegerField()
 
     @staticmethod
@@ -202,9 +204,8 @@ class CardFace(models.Model):
 
     mana_cost = models.CharField(max_length=50, blank=True, null=True)
     converted_mana_cost = models.FloatField()
-    colour = models.IntegerField(choices=(("W", 1), ("U", 2), ("B", 4)))
-    # colour = BitField(choices=)
-    colour_indicator = models.IntegerField()
+    colour = BitField(flags=Colour.FLAG_CHOICES)
+    colour_indicator = BitField(flags=Colour.FLAG_CHOICES)
     colour_count = models.IntegerField()
     colour_weight = models.IntegerField()
     colour_sort_key = models.IntegerField()
@@ -226,8 +227,8 @@ class CardFace(models.Model):
 
     types = models.ManyToManyField(CardType, related_name="card_faces")
 
-    subtypes = models.ManyToManyField(CardSubtype, related_name="card_faces")
-    supertypes = models.ManyToManyField(CardSupertype, related_name="card_faces")
+    subtypes = models.ManyToManyField(CardSubtype, related_name="card_faces", blank=True)
+    supertypes = models.ManyToManyField(CardSupertype, related_name="card_faces", blank=True)
 
     class Meta:
         unique_together = ("card", "side")

@@ -1,6 +1,13 @@
+from django import forms
 from django.contrib import admin
 
-from data_import.models import UpdateSet, UpdateCard, UpdateBlock, UpdateCardFace
+from data_import.models import (
+    UpdateSet,
+    UpdateCard,
+    UpdateBlock,
+    UpdateCardFace,
+    UpdateCardRuling,
+)
 
 
 @admin.register(UpdateBlock)
@@ -31,3 +38,17 @@ class UpdateCardFaceAdmin(admin.ModelAdmin):
 # @admin.register(CreateCard)
 # class CreateCardAdmin(admin.ModelAdmin):
 #     pass
+
+
+class UpdateCardRulingModelForm(forms.ModelForm):
+    ruling_text = forms.CharField(widget=forms.Textarea)
+
+    class Meta:
+        model = UpdateCardRuling
+        exclude = []
+
+
+@admin.register(UpdateCardRuling)
+class UpdateCardRulingAdmin(admin.ModelAdmin):
+    search_fields = ["card_name"]
+    form = UpdateCardRulingModelForm

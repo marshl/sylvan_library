@@ -7,77 +7,45 @@ import re
 from typing import List, Optional, Dict, Any
 
 import arrow
+from django.db import models
 
-from cards.models import Card, Colour
+from cards.models import Card, Colour, Set, CardFace, CardPrinting
 
 #
-# COLOUR_TO_SORT_KEY = {
-#     0: 0,
-#     int(Card.colour_flags.white): 1,
-#     int(Card.colour_flags.blue): 2,
-#     int(Card.colour_flags.black): 3,
-#     int(Card.colour_flags.red): 4,
-#     int(Card.colour_flags.green): 5,
-#     int(Card.colour_flags.white | Card.colour_flags.blue): 6,
-#     int(Card.colour_flags.blue | Card.colour_flags.black): 7,
-#     int(Card.colour_flags.black | Card.colour_flags.red): 8,
-#     int(Card.colour_flags.red | Card.colour_flags.green): 9,
-#     int(Card.colour_flags.green | Card.colour_flags.white): 10,
-#     int(Card.colour_flags.white | Card.colour_flags.black): 11,
-#     int(Card.colour_flags.blue | Card.colour_flags.red): 12,
-#     int(Card.colour_flags.black | Card.colour_flags.green): 13,
-#     int(Card.colour_flags.red | Card.colour_flags.white): 14,
-#     int(Card.colour_flags.green | Card.colour_flags.blue): 15,
-#     int(Card.colour_flags.white | Card.colour_flags.blue | Card.colour_flags.black): 16,
-#     int(Card.colour_flags.blue | Card.colour_flags.black | Card.colour_flags.red): 17,
-#     int(Card.colour_flags.black | Card.colour_flags.red | Card.colour_flags.green): 18,
-#     int(Card.colour_flags.red | Card.colour_flags.green | Card.colour_flags.white): 19,
-#     int(Card.colour_flags.green | Card.colour_flags.white | Card.colour_flags.blue): 20,
-#     int(
-#         Card.colour_flags.white | Card.colour_flags.black | Card.colour_flags.green
-#     ): 21,
-#     int(Card.colour_flags.blue | Card.colour_flags.red | Card.colour_flags.white): 22,
-#     int(Card.colour_flags.black | Card.colour_flags.green | Card.colour_flags.blue): 23,
-#     int(Card.colour_flags.red | Card.colour_flags.white | Card.colour_flags.black): 24,
-#     int(Card.colour_flags.green | Card.colour_flags.blue | Card.colour_flags.red): 25,
-#     int(
-#         Card.colour_flags.white
-#         | Card.colour_flags.blue
-#         | Card.colour_flags.black
-#         | Card.colour_flags.red
-#     ): 26,
-#     int(
-#         Card.colour_flags.blue
-#         | Card.colour_flags.black
-#         | Card.colour_flags.red
-#         | Card.colour_flags.green
-#     ): 27,
-#     int(
-#         Card.colour_flags.black
-#         | Card.colour_flags.red
-#         | Card.colour_flags.green
-#         | Card.colour_flags.white
-#     ): 28,
-#     int(
-#         Card.colour_flags.red
-#         | Card.colour_flags.green
-#         | Card.colour_flags.white
-#         | Card.colour_flags.blue
-#     ): 29,
-#     int(
-#         Card.colour_flags.green
-#         | Card.colour_flags.white
-#         | Card.colour_flags.blue
-#         | Card.colour_flags.black
-#     ): 30,
-#     int(
-#         Card.colour_flags.white
-#         | Card.colour_flags.blue
-#         | Card.colour_flags.black
-#         | Card.colour_flags.red
-#         | Card.colour_flags.green
-#     ): 31,
-# }
+COLOUR_TO_SORT_KEY = {
+    Colour.COLOURLESS: 0,
+    Colour.WHITE: 1,
+    Colour.BLUE: 2,
+    Colour.BLACK: 3,
+    Colour.RED: 4,
+    Colour.GREEN: 5,
+    Colour.WHITE | Colour.BLUE: 6,
+    Colour.BLUE | Colour.BLACK: 7,
+    Colour.BLACK | Colour.RED: 8,
+    Colour.RED | Colour.GREEN: 9,
+    Colour.GREEN | Colour.WHITE: 10,
+    Colour.WHITE | Colour.BLACK: 11,
+    Colour.BLUE | Colour.RED: 12,
+    Colour.BLACK | Colour.GREEN: 13,
+    Colour.RED | Colour.WHITE: 14,
+    Colour.GREEN | Colour.BLUE: 15,
+    Colour.WHITE | Colour.BLUE | Colour.BLACK: 16,
+    Colour.BLUE | Colour.BLACK | Colour.RED: 17,
+    Colour.BLACK | Colour.RED | Colour.GREEN: 18,
+    Colour.RED | Colour.GREEN | Colour.WHITE: 19,
+    Colour.GREEN | Colour.WHITE | Colour.BLUE: 20,
+    Colour.WHITE | Colour.BLACK | Colour.GREEN: 21,
+    Colour.BLUE | Colour.RED | Colour.WHITE: 22,
+    Colour.BLACK | Colour.GREEN | Colour.BLUE: 23,
+    Colour.RED | Colour.WHITE | Colour.BLACK: 24,
+    Colour.GREEN | Colour.BLUE | Colour.RED: 25,
+    Colour.WHITE | Colour.BLUE | Colour.BLACK | Colour.RED: 26,
+    Colour.BLUE | Colour.BLACK | Colour.RED | Colour.GREEN: 27,
+    Colour.BLACK | Colour.RED | Colour.GREEN | Colour.WHITE: 28,
+    Colour.RED | Colour.GREEN | Colour.WHITE | Colour.BLUE: 29,
+    Colour.GREEN | Colour.WHITE | Colour.BLUE | Colour.BLACK: 30,
+    Colour.WHITE | Colour.BLUE | Colour.BLACK | Colour.RED | Colour.GREEN: 31,
+}
 
 
 def convert_number_field_to_numerical(val: str) -> float:
@@ -100,8 +68,60 @@ def convert_number_field_to_numerical(val: str) -> float:
     return 0.0
 
 
+class StagedObject:
+    def get_object_differences(
+        self, old_object: models.Model, fields_to_ignore: Optional[set] = None
+    ) -> dict:
+        """
+        Gets the differences between the fields of this staged object and its model object
+        :param old_object: The old version of the object (stored in the database)
+        :param fields_to_ignore: The fields to ignore from comparison
+        :return: A dict of "field* => {"old" => "x", "new" => "y"} differences
+        """
+        if not fields_to_ignore:
+            fields_to_ignore = set()
+        fields_to_ignore.update(["id", "_state", "_prefetched_objects_cache"])
+
+        differences = {}
+        for field in old_object.__dict__.keys():
+            if field in fields_to_ignore:
+                continue
+
+            if not hasattr(self, field):
+                raise Exception(
+                    f"Could not find equivalent of {old_object.__class__.__name__}.{field} "
+                    f"on {self.__class__.__name__}"
+                )
+
+            old_val = getattr(old_object, field)
+            new_val = getattr(self, field)
+            if (
+                not isinstance(old_val, type(new_val))
+                and not isinstance(old_val, type(None))
+                and not isinstance(new_val, type(None))
+            ):
+                raise Exception(
+                    f"Type mismatch for '{field}: {old_val} != {new_val} "
+                    f"({type(old_val)} != {type(new_val)})"
+                )
+
+            if old_val != new_val:
+                differences[field] = {"from": old_val, "to": new_val}
+
+        return differences
+
+    def compare_related_list(self, existing_object: models.Model, field_name: str):
+        old_values = list(
+            getattr(existing_object, field_name).values_list("name", flat=True)
+        )
+        new_values = getattr(self, field_name)
+        if set(old_values) != set(new_values):
+            return {field_name: {"from": old_values, "to": new_values}}
+        return {}
+
+
 # pylint: disable=too-many-instance-attributes
-class StagedCard:
+class StagedCard(StagedObject):
     """
     Class for staging a card record from json
 
@@ -127,9 +147,27 @@ class StagedCard:
         self.legalities: Dict[str, str] = card_data.get("legalities", [])
         self.is_reserved: bool = bool(card_data.get("isReserved", False))
 
+    def compare_with_card(self, existing_card: Card) -> Dict[str, Dict[str, Any]]:
+        """
+        Returns the differences between an existing Card object and the StagedCard version
+        :param existing_card: The existing database Card object
+        :return: A dict of differences between the two object
+        """
+        differences = self.get_object_differences(
+            existing_card, {"id", "edh_rec_rank", "colour_identity"}
+        )
+
+        if self.colour_identity != int(existing_card.colour_identity):
+            differences["colour_identity_flags"] = {
+                "from": int(existing_card.colour_identity),
+                "to": self.colour_identity,
+            }
+
+        return differences
+
 
 # pylint: disable=too-many-instance-attributes
-class StagedCardFace:
+class StagedCardFace(StagedObject):
     def __init__(self, card_data: dict) -> None:
         self.scryfall_oracle_id: str = card_data.get("identifiers", {}).get(
             "scryfallOracleId"
@@ -148,14 +186,12 @@ class StagedCardFace:
             float(cmc_text) if cmc_text is not None else float(0)
         )
 
-        self.colour: int = Colour.colour_codes_to_flags(
-            card_data.get("colors", [])
-        )
+        self.colour: int = Colour.colour_codes_to_flags(card_data.get("colors", []))
         self.colour_indicator: int = Colour.colour_codes_to_flags(
             card_data.get("colorIndicator", [])
         )
         self.colour_count: int = bin(self.colour).count("1")
-        # self.colour_sort_key: int = COLOUR_TO_SORT_KEY[int(self.colour_flags)]
+        # self.colour_sort_key: int = COLOUR_TO_SORT_KEY[self.colour_flags]
         self.colour_sort_key: int = 0  # TODO: Colour sort keys
 
         self.power: Optional[str] = card_data.get("power")
@@ -176,7 +212,7 @@ class StagedCardFace:
         Gets the "colour weight" of the card, the number of coloured mana symbols te card has
         :return: The card's colour weight
         """
-        return int(self.converted_mana_cost) - self.generic_mana_count
+        return int(self.converted_mana_cost - self.generic_mana_count)
 
     @property
     def num_power(self) -> float:
@@ -233,9 +269,36 @@ class StagedCardFace:
             return int(generic_mana.group(1))
         return 0
 
+    def get_card_face_differences(
+        self, existing_card_face: CardFace
+    ) -> Dict[str, Dict[str, Any]]:
+        differences = self.get_object_differences(
+            existing_card_face,
+            fields_to_ignore={"card_id", "colour", "colour_indicator"},
+        )
+
+        # Colour flags need to be handled slightly explicitly because the database values aren't int
+        if self.colour != int(existing_card_face.colour):
+            differences["colour"] = {
+                "from": int(existing_card_face.colour),
+                "to": self.colour,
+            }
+
+        if self.colour_indicator != int(existing_card_face.colour_indicator):
+            differences["colour_indicator"] = {
+                "from": int(existing_card_face.colour_indicator),
+                "to": self.colour_indicator,
+            }
+
+        differences.update(self.compare_related_list(existing_card_face, "types"))
+        differences.update(self.compare_related_list(existing_card_face, "subtypes"))
+        differences.update(self.compare_related_list(existing_card_face, "supertypes"))
+
+        return differences
+
 
 # pylint: disable=too-many-instance-attributes, too-few-public-methods
-class StagedSet:
+class StagedSet(StagedObject):
     """
     Class for staging a Set record from MTGJSON
     """
@@ -271,9 +334,30 @@ class StagedSet:
             for card in set_data.get("cards", []) + set_data.get("tokens", [])
         ]
 
+    def compare_with_set(self, existing_set: Set):
+
+        differences = self.get_object_differences(
+            existing_set,
+            fields_to_ignore={"id", "release_date", "parent_set_id", "block_id"},
+        )
+        if (not existing_set.block and self.block) or (
+            existing_set.block and existing_set.block.name != self.block
+        ):
+            differences["block"] = {
+                "from": existing_set.block.name if existing_set.block else None,
+                "to": self.block,
+            }
+
+        if existing_set.release_date != self.release_date:
+            differences["release_date"] = {
+                "from": existing_set.release_date.strftime("%Y-%m-%d"),
+                "to": self.release_date.strftime("%Y-%m-%d"),
+            }
+        return differences
+
 
 # pylint: disable=too-many-instance-attributes
-class StagedCardPrinting:
+class StagedCardPrinting(StagedObject):
     """
     Class for staging a CardPrinting record from MTGJSON
     """
@@ -319,24 +403,24 @@ class StagedCardPrinting:
 
         self.mtgo_id = card_data.get("identifiers", {}).get("mtgoId")
         if self.mtgo_id:
-            self.mtgo_id = int(self.mtgo_id)
+            self.mtgo_id = self.mtgo_id
         self.mtgo_foil_id = card_data.get("identifiers", {}).get("mtgoFoilId")
         if self.mtgo_foil_id:
-            self.mtgo_foil_id = int(self.mtgo_foil_id)
+            self.mtgo_foil_id = self.mtgo_foil_id
 
         self.magic_card_market_id = card_data.get("identifiers", {}).get("mcmId")
         if self.magic_card_market_id:
-            self.magic_card_market_id = int(self.magic_card_market_id)
+            self.magic_card_market_id = self.magic_card_market_id
 
         self.magic_card_market_meta_id = card_data.get("identifiers", {}).get(
             "mcmMetaId"
         )
         if self.magic_card_market_meta_id:
-            self.magic_card_market_meta_id = int(self.magic_card_market_meta_id)
+            self.magic_card_market_meta_id = self.magic_card_market_meta_id
 
         self.multiverse_id = card_data.get("identifiers", {}).get("multiverseId")
         if self.multiverse_id is not None:
-            self.multiverse_id = int(self.multiverse_id)
+            self.multiverse_id = self.multiverse_id
 
         self.scryfall_id = card_data.get("identifiers", {}).get("scryfallId")
         self.scryfall_illustration_id = card_data.get("identifiers", {}).get(
@@ -345,7 +429,7 @@ class StagedCardPrinting:
 
         self.mtg_arena_id = card_data.get("identifiers", {}).get("mtgArenaId")
         if self.mtg_arena_id:
-            self.mtg_arena_id = int(self.mtg_arena_id)
+            self.mtg_arena_id = self.mtg_arena_id
 
         self.set_code = staged_set.code
         self.tcg_player_product_id = card_data.get("identifiers", {}).get(
@@ -359,7 +443,23 @@ class StagedCardPrinting:
     def numerical_number(self) -> Optional[int]:
         if self.number is None:
             return None
-        return int(convert_number_field_to_numerical(self.number))
+        return convert_number_field_to_numerical(self.number)
+
+    def compare_with_existing_card_printing(
+        self, existing_printing: CardPrinting
+    ) -> Dict[str, dict]:
+        """
+        Gets the differences between an existing printing and one from the json
+
+        Most of the time there won't be any differences, but this will be useful for adding in new
+        fields that didn't exist before
+        :param existing_printing: The existing CardPrinting object
+        :return: The dict of differences between the two objects
+        """
+        result = self.get_object_differences(
+            existing_printing, {"id", "set_id", "rarity_id", "card_id"}
+        )
+        return result
 
 
 # pylint: disable=too-few-public-methods
@@ -375,15 +475,16 @@ class StagedLegality:
 
 
 # pylint: disable=too-few-public-methods
-class StagedRuling:
-    """
-    Class for staging a CardRuling record from MTGJSON
-    """
-
-    def __init__(self, card_name: str, text: str, ruling_date: str):
-        self.card_name = card_name
-        self.text = text
-        self.date = ruling_date
+# class StagedRuling(StagedObject):
+#     """
+#     Class for staging a CardRuling record from MTGJSON
+#     """
+#
+#     def __init__(self, card_name: str, scryfall_oracle_id: str, text: str, ruling_date: str):
+#         self.card_name = card_name
+#         self.scryfall_oracle_id = scryfall_oracle_id
+#         self.text = text
+#         self.date = ruling_date
 
 
 class StagedBlock:

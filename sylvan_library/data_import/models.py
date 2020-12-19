@@ -172,3 +172,17 @@ class UpdateBlock(models.Model):
 
     def __str__(self) -> str:
         return f"{self.update_mode} {self.name} - {self.release_date}"
+
+
+class UpdateCardRuling(models.Model):
+    update_mode = UPDATE_MODE_FIELD
+    card_name = models.CharField(max_length=100)
+    scryfall_oracle_id = models.CharField(max_length=36)
+    ruling_date = models.DateField()
+    ruling_text = models.CharField(max_length=4000)
+
+    def __str__(self) -> str:
+        return f"{self.update_mode} {self.card_name}: {self.ruling_text}"
+
+    class Meta:
+        unique_together = (("scryfall_oracle_id", "ruling_text"),)
