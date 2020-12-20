@@ -1,0 +1,74 @@
+[
+  {
+    "name": "colorshifted",
+    "code": "colorshifted"
+  },
+  {
+    "name": "Companion",
+    "code": "companion"
+  },
+  {
+    "name": "Compass Land DFC",
+    "code": "compasslanddfc"
+  },
+  {
+    "name": "Devoid",
+    "code": "devoid"
+  },
+  {
+    "name": "Draft",
+    "code": "draft"
+  },
+  {
+    "name": "Extended Art",
+    "code": "extendedart"
+  },
+  {
+    "name": "Inverted",
+    "code": "inverted"
+  },
+  {
+    "name": "Legendary",
+    "code": "legendary"
+  },
+  {
+    "name": "Miracle",
+    "code": "miracle"
+  },
+  {
+    "name": "Moon Eldrazi DFC",
+    "code": "mooneldrazidfc"
+  },
+  {
+    "name": "Nyxborn",
+    "code": "nyxborn"
+  },
+  {
+    "name": "Nyxtouched",
+    "code": "nyxtouched"
+  },
+  {
+    "name": "Origin Planeswalker DFC",
+    "code": "originpwdfc"
+  },
+  {
+    "name": "Showcase",
+    "code": "showcase"
+  },
+  {
+    "name": "Sun/moon DFC",
+    "code": "sunmoondfc"
+  },
+  {
+    "name": "Tombstone",
+    "code": "tombstone"
+  },
+  {
+    "name": "Waxing and Waning Moon DFC",
+    "code": "waxingandwaningmoondfc"
+  },
+  {
+    "name": "Full Art",
+    "code": "fullart"
+  }
+]

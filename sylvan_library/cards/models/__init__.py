@@ -18,6 +18,7 @@ from cards.models.card import (
     CardType,
     CardSupertype,
     CardSubtype,
+    FrameEffect,
 )
 from cards.models.card_price import CardPrice
 from cards.models.colour import Colour

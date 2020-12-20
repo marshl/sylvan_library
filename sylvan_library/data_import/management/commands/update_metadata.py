@@ -10,7 +10,7 @@ from django.db import transaction
 
 import _paths
 from cards.models import Colour, Format, Language, Rarity
-from cards.models.card import CardType, CardSupertype, CardSubtype
+from cards.models.card import CardType, CardSupertype, CardSubtype, FrameEffect
 from data_import._paths import (
     LANGUAGE_JSON_PATH,
     RARITY_JSON_PATH,
@@ -57,6 +57,7 @@ class Command(BaseCommand):
             self.update_languages()
             self.update_formats()
             self.update_types()
+            self.update_frame_effects()
 
         self.log_stats()
 
@@ -175,6 +176,24 @@ class Command(BaseCommand):
             if not CardType.objects.filter(name=extra_type).exists():
                 CardType.objects.create(name=extra_type)
                 self.increment_created("CardType")
+
+    def update_frame_effects(self) -> None:
+        logger.info("Updating frame effects")
+        frame_effects = import_json(_paths.FRAME_EFFECT_JSON_PATH)
+        for frame_effect in frame_effects:
+            try:
+                existing_frame_effect = FrameEffect.objects.get(
+                    code=frame_effect["code"]
+                )
+                if frame_effect["name"] != existing_frame_effect.name:
+                    existing_frame_effect.name = frame_effect["name"]
+                    existing_frame_effect.save()
+                    self.increment_updated("FrameEffect")
+            except FrameEffect.DoesNotExist:
+                FrameEffect.objects.create(
+                    name=frame_effect["name"], code=frame_effect["code"]
+                )
+                self.increment_created("FrameEffect")
 
     def increment_updated(self, object_type: str):
         """

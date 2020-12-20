@@ -420,6 +420,11 @@ class CardPrinting(models.Model):
         )["card_count"]
 
 
+class FrameEffect(models.Model):
+    code = models.CharField(max_length=50)
+    name = models.CharField(max_length=100)
+
+
 class CardFacePrinting(models.Model):
     uuid = models.CharField(max_length=40, unique=True)
 
@@ -441,23 +446,24 @@ class CardFacePrinting(models.Model):
         CardPrinting, related_name="faces", on_delete=models.CASCADE
     )
 
+    frame_effects= models.ManyToManyField(FrameEffect, related_name="face_printings")
+
     class Meta:
         unique_together = ("card_face", "card_printing")
 
-
-class CardPrintingFaceFrameEffect(models.CharField):
-    name = models.CharField(max_length=50)
-    display_order = models.IntegerField()
-
-    card_printing_face = models.ForeignKey(
-        CardFacePrinting, on_delete=models.CASCADE, related_name="frame_effects"
-    )
-
-    class Meta:
-        unique_together = (
-            ("card_printing_face", "name"),
-            ("card_printing_face", "display_order"),
-        )
+# class CardPrintingFaceFrameEffect(models.CharField):
+#     name = models.CharField(max_length=50)
+#     display_order = models.IntegerField()
+#
+#     card_printing_face = models.ForeignKey(
+#         CardFacePrinting, on_delete=models.CASCADE, related_name="frame_effects"
+#     )
+#
+#     class Meta:
+#         unique_together = (
+#             ("card_printing_face", "name"),
+#             ("card_printing_face", "display_order"),
+#         )
 
 
 class CardPrintingLanguage(models.Model):
