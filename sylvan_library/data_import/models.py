@@ -91,13 +91,13 @@ class UpdateCardPrinting(models.Model):
     update_mode = UPDATE_MODE_FIELD
     card_scryfall_oracle_id = models.CharField(max_length=36)
     card_name = models.CharField(max_length=200)
-    uuid = models.CharField(max_length=36, unique=True)
+    scryfall_id = models.CharField(max_length=36, unique=True)
     set_code = models.CharField(max_length=10)
 
     field_data = models.JSONField()
 
     def __str__(self) -> str:
-        return f"{self.update_mode} {self.card_name} in {self.set_code}({self.uuid})"
+        return f"{self.update_mode} {self.card_name} in {self.set_code} ({self.scryfall_id})"
 
 
 # class DeleteCardPrinting(models.Model):

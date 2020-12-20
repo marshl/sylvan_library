@@ -14,6 +14,7 @@ from cards.models import (
     CardSubtype,
     CardLegality,
     Format,
+    CardPrinting,
 )
 
 
@@ -62,7 +63,7 @@ class BlockAdmin(admin.ModelAdmin):
 
 @admin.register(Set)
 class SetAdmin(admin.ModelAdmin):
-    pass
+    search_fields = ["name", "code"]
 
 
 @admin.register(CardType)
@@ -104,3 +105,8 @@ class CardLegalityAdmin(admin.ModelAdmin):
 @admin.register(Format)
 class FormatAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(CardPrinting)
+class CardPrintingAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["card", "set"]

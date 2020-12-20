@@ -31,6 +31,7 @@ from data_import.models import (
     UpdateCardFace,
     UpdateCardRuling,
     UpdateCardLegality,
+    UpdateCardPrinting,
 )
 from data_import.staging import (
     StagedCard,
@@ -41,37 +42,6 @@ from data_import.staging import (
 )
 
 logger = logging.getLogger("django")
-
-
-def staging_object_to_dict(obj: object, fields_to_ignore: Optional[set] = None) -> dict:
-    """
-    Converts any kind of staging object to a dictionary to save out to json
-    :param obj: The staging object
-    :param fields_to_ignore:  Fields that shouldn't be serialized out
-    :return: The staged object as a dictionary
-    """
-    result = {}
-    for key in dir(obj):
-        if fields_to_ignore and key in fields_to_ignore:
-            continue
-
-        if key.startswith("_"):
-            continue
-
-        attr = getattr(obj, key)
-        if callable(attr):
-            continue
-
-        if isinstance(attr, date):
-            result[key] = attr.strftime("%Y-%m-%d")
-            continue
-
-        if attr == math.inf:
-            result[key] = "\u221e"
-            continue
-
-        result[key] = attr
-    return result
 
 
 class Command(BaseCommand):
@@ -92,6 +62,7 @@ class Command(BaseCommand):
 
         self.cards_parsed: typing.Set[str] = set()
         self.card_faces_parsed: typing.Set[Tuple[str, str]] = set()
+        self.card_printings_parsed: typing.Set[str] = set()
 
         self.force_update = False
         self.start_time = None
@@ -113,6 +84,7 @@ class Command(BaseCommand):
             UpdateCardFace.objects.all().delete()
             UpdateCardRuling.objects.all().delete()
             UpdateCardLegality.objects.all().delete()
+            UpdateCardPrinting.objects.all().delete()
 
             logger.info("Getting existing data")
             for card in Card.objects.prefetch_related("faces").all():
@@ -152,9 +124,7 @@ class Command(BaseCommand):
                 UpdateSet.objects.create(
                     update_mode=UpdateMode.CREATE,
                     set_code=staged_set.code,
-                    field_data=staging_object_to_dict(
-                        staged_set, fields_to_ignore={"scryfall_oracle_ids"}
-                    ),
+                    field_data=staged_set.get_field_data(),
                 )
 
             if (
@@ -200,22 +170,28 @@ class Command(BaseCommand):
                 "legalities__format",
             )
         }
+        existing_printings = {
+            printing.scryfall_id: printing
+            for printing in CardPrinting.objects.filter(set__code=staged_set.code).all()
+        }
 
         for card_data in set_data.get("cards", []):
-            # staged_card = StagedCard(card_data, is_token=False)
-            staged_card = self.process_card(
+            staged_card, staged_card_face = self.process_card(
                 card_data, is_token=False, existing_cards=existing_cards
             )
 
-        for card_data in set_data.get("tokens", []):
-            staged_card = self.process_card(
-                card_data, is_token=True, existing_cards=existing_cards
+            self.process_card_printing(
+                staged_card,
+                staged_card_face,
+                staged_set,
+                card_data,
+                existing_printings=existing_printings,
             )
 
-            # staged_card = self.process_card(card_data, False)
-            # _, printlangs = self.process_card_printing(
-            #     staged_card, staged_set, card_data, is_token=False
-            # )
+        for card_data in set_data.get("tokens", []):
+            staged_card, staged_card_face = self.process_card(
+                card_data, is_token=True, existing_cards=existing_cards
+            )
 
             # for printlang in printlangs:
             #     if printlang.is_new:
@@ -239,7 +215,7 @@ class Command(BaseCommand):
 
     def process_card(
         self, card_data: dict, is_token: bool, existing_cards: Dict[str, Card]
-    ) -> StagedCard:
+    ) -> Tuple[StagedCard, StagedCardFace]:
         """
         Parses the given card data dict and returns a new or existing StagedCard
         :param card_data: THe MTG JSON card data dict
@@ -272,10 +248,7 @@ class Command(BaseCommand):
                     update_mode=UpdateMode.CREATE,
                     scryfall_oracle_id=staged_card.scryfall_oracle_id,
                     name=staged_card.name,
-                    field_data=staging_object_to_dict(
-                        staged_card,
-                        {"has_other_names", "legalities", "other_names", "rulings"},
-                    ),
+                    field_data=staged_card.get_field_data(),
                 )
 
         staged_card_face = StagedCardFace(card_data)
@@ -293,12 +266,6 @@ class Command(BaseCommand):
         if face_tuple not in self.card_faces_parsed:
             self.card_faces_parsed.add(face_tuple)
             try:
-                # existing_face = CardFace.objects.prefetch_related(
-                #     "types", "subtypes", "supertypes"
-                # ).get(
-                #     card__scryfall_oracle_id=staged_card_face.scryfall_oracle_id,
-                #     side=staged_card_face.side,
-                # )
                 face_differences = staged_card_face.get_card_face_differences(card_face)
                 if face_differences:
                     UpdateCardFace.objects.create(
@@ -316,30 +283,19 @@ class Command(BaseCommand):
                     name=staged_card.name,
                     face_name=staged_card_face.name,
                     side=staged_card_face.side,
-                    field_data=staging_object_to_dict(
-                        staged_card_face, fields_to_ignore={"generic_mana_count"}
-                    ),
+                    field_data=staged_card_face.get_field_data(),
                 )
 
-        return staged_card
+        return staged_card, staged_card_face
 
     def process_card_rulings(
-        self, staged_card: StagedCard, existing_card: Optional[Card]
+        self, staged_card: StagedCard, existing_card: Optional[Card] = None
     ) -> None:
         """
         Finds CardRulings of the given StagedCard to create or delete
         :param staged_card: The StagedCard to find rulings for
         """
-        # if UpdateCardRuling.objects.filter(
-        #     scryfall_oracle_id=staged_card.scryfall_oracle_id
-        # ).exists():
-        #     return
-
-        # existing_rulings: List[CardRuling] = list(
-        #     CardRuling.objects.filter(
-        #         card__scryfall_oracle_id=staged_card.scryfall_oracle_id
-        #     )
-        # )
+        # Use prefetch rulings to save performance
         existing_rulings = list(existing_card.rulings.all()) if existing_card else []
 
         for ruling in staged_card.rulings:
@@ -381,16 +337,7 @@ class Command(BaseCommand):
         Find CardLegalities for a card to update, create or delete
         :param staged_card: The StagedCard to find legalities for
         """
-        # if UpdateCardLegality.objects.filter(
-        #     scryfall_oracle_id=staged_card.scryfall_oracle_id
-        # ).exists():
-        #     return
-
-        # existing_legalities = list(
-        #     CardLegality.objects.filter(
-        #         card__scryfall_oracle_id=staged_card.scryfall_oracle_id
-        #     ).select_related("format")
-        # )
+        # Use prefetched legalities to improve performance
         existing_legalities = (
             list(existing_card.legalities.all()) if existing_card else []
         )
@@ -438,59 +385,76 @@ class Command(BaseCommand):
     def process_card_printing(
         self,
         staged_card: StagedCard,
+        staged_card_face: StagedCardFace,
         staged_set: StagedSet,
         card_data: dict,
-        is_token: bool,
+        existing_printings: Dict[str, CardPrinting],
     ) -> Tuple[StagedCardPrinting, List[StagedCardPrintingLanguage]]:
         """
         Process a Card printed in a given set,
-         returning the printings and printined languages that were found
+         returning the printings and printed languages that were found
         :param staged_card: The already known StagedCard
         :param staged_set: The staged set data
         :param card_data: The data of the card
-        :param is_token: Whether the card is a token or not
         :return: A tuple containing the StagedCardPrinting and a list of StagedCardPrintingLanguages
         """
-        staged_card_printing = StagedCardPrinting(
-            staged_card.name, card_data, staged_set, for_token=is_token
-        )
-        uuid = staged_card_printing.json_id
-        if uuid not in self.existing_card_printings:
-            if uuid not in self.card_printings_to_update:
-                staged_card_printing.is_new = True
-                self.card_printings_to_create[uuid] = staged_card_printing
+        staged_card_printing = StagedCardPrinting(card_data, staged_set)
+        if staged_card_printing.scryfall_id not in self.card_printings_parsed:
+            self.card_printings_parsed.add(staged_card_printing.scryfall_id)
+            existing_printing = existing_printings.get(staged_card_printing.scryfall_id)
+            if not existing_printing:
+                create_printing = UpdateCardPrinting(
+                    update_mode=UpdateMode.CREATE,
+                    card_scryfall_oracle_id=staged_card.scryfall_oracle_id,
+                    card_name=staged_card.name,
+                    scryfall_id=staged_card_printing.scryfall_id,
+                    set_code=staged_set.code,
+                    field_data=staged_card_printing.get_field_data(),
+                )
+                create_printing.save()
             else:
-                raise Exception(f"Printing already to be update {uuid}")
-        else:
-            existing_printing = self.existing_card_printings[uuid]
-            differences = self.get_card_printing_differences(
-                existing_printing, staged_card_printing
-            )
-            if differences:
-                self.card_printings_to_update[uuid] = differences
-
-        printlangs = [
-            self.process_printed_language(
-                staged_card_printing,
-                {
-                    "language": "English",
-                    "multiverseId": staged_card_printing.multiverse_id,
-                    "name": staged_card.display_name,
-                    "text": card_data.get("text"),
-                    "type": card_data.get("type"),
-                    "flavorText": card_data.get("flavorText"),
-                },
-                card_data,
-            )
-        ]
-
-        for foreign_data in staged_card_printing.other_languages:
-            staged_printlang = self.process_printed_language(
-                staged_card_printing, foreign_data, card_data
-            )
-            printlangs.append(staged_printlang)
-        self.card_printings_parsed.add(staged_card_printing.json_id)
-
+                differences = staged_card_printing.compare_with_existing_card_printing(
+                    existing_printing
+                )
+                if differences:
+                    UpdateCardPrinting.objects.create(
+                        update_mode=UpdateMode.UPDATE,
+                        card_scryfall_oracle_id=staged_card.scryfall_oracle_id,
+                        card_name=staged_card.name,
+                        scryfall_id=staged_card_printing.scryfall_id,
+                        set_code=staged_set.code,
+                        field_data=differences,
+                    )
+        # else:
+        #     existing_printing = self.existing_card_printings[uuid]
+        #     differences = self.get_card_printing_differences(
+        #         existing_printing, staged_card_printing
+        #     )
+        #     if differences:
+        #         self.card_printings_to_update[uuid] = differences
+        #
+        # printlangs = [
+        #     self.process_printed_language(
+        #         staged_card_printing,
+        #         {
+        #             "language": "English",
+        #             "multiverseId": staged_card_printing.multiverse_id,
+        #             "name": staged_card.display_name,
+        #             "text": card_data.get("text"),
+        #             "type": card_data.get("type"),
+        #             "flavorText": card_data.get("flavorText"),
+        #         },
+        #         card_data,
+        #     )
+        # ]
+        #
+        # for foreign_data in staged_card_printing.other_languages:
+        #     staged_printlang = self.process_printed_language(
+        #         staged_card_printing, foreign_data, card_data
+        #     )
+        #     printlangs.append(staged_printlang)
+        # self.card_printings_parsed.add(staged_card_printing.json_id)
+        printlangs = []
         return staged_card_printing, printlangs
 
     def process_printed_language(
@@ -572,18 +536,6 @@ class Command(BaseCommand):
             {"id", "language_id", "card_printing_id"},
         )
         return result
-
-    def write_to_file(self) -> None:
-        """
-        WRites all lists of changes out to their respective files
-        """
-        self.write_object_to_json(
-            _paths.BLOCKS_TO_CREATE_PATH,
-            {
-                block_name: staging_object_to_dict(staged_block, set())
-                for block_name, staged_block in self.blocks_to_create.items()
-            },
-        )
 
     def log_stats(self) -> None:
         """

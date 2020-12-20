@@ -284,6 +284,8 @@ class CardPrinting(models.Model):
 
     scryfall_id = models.CharField(max_length=36, unique=True)
     scryfall_illustration_id = models.CharField(max_length=36, blank=True, null=True)
+    number = models.CharField(max_length=10, blank=True, null=True)
+    numerical_number = models.IntegerField(blank=True, null=True)
 
     # The border colour of the card if it differs from the border colour of the rest of the set
     # (e.g. basic lands in Unglued)
@@ -440,10 +442,10 @@ class CardFacePrinting(models.Model):
     watermark = models.CharField(max_length=100, blank=True, null=True)
 
     card_face = models.ForeignKey(
-        CardFace, related_name="printings", on_delete=models.CASCADE
+        CardFace, related_name="card_printings", on_delete=models.CASCADE
     )
     card_printing = models.ForeignKey(
-        CardPrinting, related_name="faces", on_delete=models.CASCADE
+        CardPrinting, related_name="face_printings", on_delete=models.CASCADE
     )
 
     frame_effects= models.ManyToManyField(FrameEffect, related_name="face_printings")

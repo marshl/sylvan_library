@@ -69,6 +69,29 @@ def convert_number_field_to_numerical(val: str) -> float:
 
 
 class StagedObject:
+    def get_all_fields(self, fields_to_ignore: Optional[set] = None) -> dict:
+        """
+        Converts any kind of staging object to a dictionary to save out to json
+        :param fields_to_ignore:  Fields that shouldn't be serialized out
+        :return: The staged object as a dictionary
+        """
+        result = {}
+        for key in dir(self):
+            if fields_to_ignore and key in fields_to_ignore or key.startswith("_"):
+                continue
+
+            attr = getattr(self, key)
+            if callable(attr):
+                continue
+
+            if isinstance(attr, datetime.date):
+                result[key] = attr.strftime("%Y-%m-%d")
+            elif attr == math.inf:
+                result[key] = "\u221e"
+            else:
+                result[key] = attr
+        return result
+
     def get_object_differences(
         self, old_object: models.Model, fields_to_ignore: Optional[set] = None
     ) -> dict:
@@ -114,7 +137,9 @@ class StagedObject:
         # old_values = list(
         #     getattr(existing_object, field_name).values_list("name", flat=True)
         # )
-        old_values = [related.name for related in getattr(existing_object, field_name).all()]
+        old_values = [
+            related.name for related in getattr(existing_object, field_name).all()
+        ]
         new_values = getattr(self, field_name)
         if set(old_values) != set(new_values):
             return {field_name: {"from": old_values, "to": new_values}}
@@ -165,6 +190,11 @@ class StagedCard(StagedObject):
             }
 
         return differences
+
+    def get_field_data(self):
+        return super().get_all_fields(
+            fields_to_ignore={"has_other_names", "legalities", "other_names", "rulings"}
+        )
 
 
 # pylint: disable=too-many-instance-attributes
@@ -297,6 +327,9 @@ class StagedCardFace(StagedObject):
 
         return differences
 
+    def get_field_data(self):
+        return self.get_all_fields(fields_to_ignore={"generic_mana_count"})
+
 
 # pylint: disable=too-many-instance-attributes, too-few-public-methods
 class StagedSet(StagedObject):
@@ -356,6 +389,9 @@ class StagedSet(StagedObject):
             }
         return differences
 
+    def get_field_data(self):
+        return self.get_all_fields(fields_to_ignore={"scryfall_oracle_ids"})
+
 
 # pylint: disable=too-many-instance-attributes
 class StagedCardPrinting(StagedObject):
@@ -363,18 +399,13 @@ class StagedCardPrinting(StagedObject):
     Class for staging a CardPrinting record from MTGJSON
     """
 
-    def __init__(
-        self, card_name: str, card_data: dict, staged_set: StagedSet, for_token: bool
-    ):
-        self.card_name = card_name
+    def __init__(self, card_data: dict, staged_set: StagedSet):
+        self.card_name = card_data["name"]
+        self.scryfall_id = card_data["identifiers"]["scryfallId"]
 
-        self.artist = card_data.get("artist")
         self.border_colour = card_data.get("borderColor")
         self.duel_deck_side = card_data.get("duelDeck")
-        self.flavour_text = card_data.get("flavorText")
-        self.frame_effects = card_data.get("frameEffects", [])
-        # TODO: Frame effect list
-        self.frame_effect = self.frame_effects[0] if self.frame_effects else None
+
         self.frame_version = card_data.get("frameVersion")
         self.has_foil = card_data.get("hasFoil", True)
         self.has_non_foil = card_data.get("hasNonFoil", True)
@@ -393,50 +424,30 @@ class StagedCardPrinting(StagedObject):
         self.is_timeshifted = (
             "isTimeshifted" in card_data and card_data["isTimeshifted"]
         )
-        self.json_id = card_data.get("uuid")
         self.mtg_stocks_id = card_data.get("mtgStocksId")
-        self.names = card_data.get("names", [])
         self.number = card_data.get("number")
-        self.original_text = card_data.get("originalText")
-        self.original_type = card_data.get("originalType")
         self.other_languages = card_data.get("foreignData", [])
         self.rarity = card_data.get("rarity", "common")
 
-        self.mtgo_id = card_data.get("identifiers", {}).get("mtgoId")
-        if self.mtgo_id:
-            self.mtgo_id = self.mtgo_id
-        self.mtgo_foil_id = card_data.get("identifiers", {}).get("mtgoFoilId")
-        if self.mtgo_foil_id:
-            self.mtgo_foil_id = self.mtgo_foil_id
-
-        self.magic_card_market_id = card_data.get("identifiers", {}).get("mcmId")
-        if self.magic_card_market_id:
-            self.magic_card_market_id = self.magic_card_market_id
-
-        self.magic_card_market_meta_id = card_data.get("identifiers", {}).get(
-            "mcmMetaId"
+        identifiers = card_data.get("identifiers", {})
+        self.mtgo_id = int(identifiers["mtgoId"]) if "mtgoId" in identifiers else None
+        self.mtgo_foil_id = (
+            int(identifiers["mtgoFoilId"]) if "mtgoFoilId" in identifiers else None
         )
-        if self.magic_card_market_meta_id:
-            self.magic_card_market_meta_id = self.magic_card_market_meta_id
-
-        self.multiverse_id = card_data.get("identifiers", {}).get("multiverseId")
-        if self.multiverse_id is not None:
-            self.multiverse_id = self.multiverse_id
-
-        self.scryfall_id = card_data.get("identifiers", {}).get("scryfallId")
-        self.scryfall_illustration_id = card_data.get("identifiers", {}).get(
-            "scryfallIllustrationId"
+        self.magic_card_market_id = (
+            int(identifiers["mcmId"]) if "mcmId" in identifiers else None
+        )
+        self.magic_card_market_meta_id = (
+            int(identifiers["mcmMetaId"]) if "mcmMetaId" in identifiers else None
         )
 
-        self.mtg_arena_id = card_data.get("identifiers", {}).get("mtgArenaId")
-        if self.mtg_arena_id:
-            self.mtg_arena_id = self.mtg_arena_id
+        self.scryfall_id = identifiers.get("scryfallId")
+        self.scryfall_illustration_id = identifiers.get("scryfallIllustrationId")
+
+        self.mtg_arena_id = identifiers.get("mtgArenaId")
 
         self.set_code = staged_set.code
-        self.tcg_player_product_id = card_data.get("identifiers", {}).get(
-            "tcgPlayerProductId"
-        )
-        self.watermark = card_data.get("watermark")
+        self.tcg_player_product_id = identifiers.get("tcgPlayerProductId")
 
         self.is_new = False
 
@@ -444,7 +455,7 @@ class StagedCardPrinting(StagedObject):
     def numerical_number(self) -> Optional[int]:
         if self.number is None:
             return None
-        return convert_number_field_to_numerical(self.number)
+        return int(convert_number_field_to_numerical(self.number))
 
     def compare_with_existing_card_printing(
         self, existing_printing: CardPrinting
@@ -457,10 +468,40 @@ class StagedCardPrinting(StagedObject):
         :param existing_printing: The existing CardPrinting object
         :return: The dict of differences between the two objects
         """
-        result = self.get_object_differences(
+        differences = self.get_object_differences(
             existing_printing, {"id", "set_id", "rarity_id", "card_id"}
         )
-        return result
+        if self.rarity.lower() != existing_printing.rarity.name.lower():
+            differences["rarity"] = {
+                "from": existing_printing.rarity.name.lower(),
+                "to": self.rarity,
+            }
+        return differences
+
+    def get_field_data(self):
+        return self.get_all_fields(
+            fields_to_ignore={
+                "id",
+                "set_id",
+                "rarity_id",
+                "card_id",
+                "scryfall_id",
+                "is_new",
+                "other_languages",
+            }
+        )
+
+
+class StagedCardPrintingFace(StagedObject):
+    def __init__(self, card_data: dict):
+        self.artist = card_data["artist"]
+        self.flavour_text = card_data.get("flavorText")
+        self.original_text = card_data.get("originalText")
+        self.original_type = card_data.get("originalType")
+        self.watermark = card_data.get("watermark")
+        self.frame_effects = card_data.get("frameEffects", [])
+
+        self.multiverse_id = card_data.get("identifiers", {}).get("multiverseId")
 
 
 # pylint: disable=too-few-public-methods

@@ -20,6 +20,10 @@ from cards.models import (
     CardRuling,
     CardLegality,
     Format,
+    CardType,
+    CardSubtype,
+    CardSupertype,
+    CardPrinting,
 )
 from data_import.models import (
     UpdateBlock,
@@ -29,8 +33,9 @@ from data_import.models import (
     UpdateCardFace,
     UpdateCardRuling,
     UpdateCardLegality,
+    UpdateCardPrinting,
 )
-from cards.models.card import CardType, CardSubtype, CardSupertype
+
 
 class Command(BaseCommand):
     """
@@ -65,10 +70,10 @@ class Command(BaseCommand):
                 or not self.update_sets()
                 or not self.create_new_cards()
                 or not self.update_cards()
-                or not self.create_new_card_faces()
                 or not self.update_card_faces()
                 or not self.update_card_rulings()
                 or not self.update_card_legalities()
+                or not self.update_card_printings()
             ):
                 raise Exception("Change application aborted")
 
@@ -197,7 +202,7 @@ class Command(BaseCommand):
             card.save()
         return True
 
-    def create_new_card_faces(self) -> bool:
+    def update_card_faces(self) -> bool:
         self.logger.info("Creating card faces")
 
         for card_face_update in UpdateCardFace.objects.filter():
@@ -296,9 +301,6 @@ class Command(BaseCommand):
                 self.logger.warning("Created %s %s", type_key, type_str)
             getattr(card_face, type_key).add(type_obj)
 
-    def update_card_faces(self) -> bool:
-        return True
-
     def update_card_rulings(self) -> bool:
         for update_card_ruling in UpdateCardRuling.objects.all():
             if update_card_ruling.update_mode == UpdateMode.DELETE:
@@ -358,4 +360,42 @@ class Command(BaseCommand):
                 )
                 raise
 
+        return True
+
+    def update_card_printings(self) -> bool:
+        for update_card_printing in UpdateCardPrinting.objects.all():
+            if update_card_printing.update_mode == UpdateMode.CREATE:
+                printing = CardPrinting(
+                    card=Card.objects.get(
+                        scryfall_oracle_id=update_card_printing.card_scryfall_oracle_id
+                    ),
+                    scryfall_id=update_card_printing.scryfall_id,
+                    set=Set.objects.get(code=update_card_printing.set_code),
+                )
+            elif update_card_printing.update_mode == UpdateMode.UPDATE:
+                printing = CardPrinting.objects.get(
+                    card__scryfall_oracle_id=update_card_printing.card_scryfall_oracle_id,
+                    set__code=update_card_printing.set_code,
+                    scryfall_id=update_card_printing.scryfall_id,
+                )
+            else:
+                raise Exception
+
+            for field, value in update_card_printing.field_data.items():
+                if update_card_printing.update_mode == UpdateMode.UPDATE:
+                    value = value["to"]
+
+                if field in ("card_name", "set_code"):
+                    continue
+
+                if field == "rarity":
+                    printing.rarity = Rarity.objects.get(name__iexact=value)
+                elif hasattr(printing, field):
+                    setattr(printing, field, value)
+                else:
+                    raise NotImplementedError(
+                        f"Cannot set unrecognised field CardPrinting.{field}"
+                    )
+            printing.full_clean()
+            printing.save()
         return True
