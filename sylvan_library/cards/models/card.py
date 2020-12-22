@@ -426,6 +426,9 @@ class FrameEffect(models.Model):
     code = models.CharField(max_length=50)
     name = models.CharField(max_length=100)
 
+    def __str__(self):
+        return self.name
+
 
 class CardFacePrinting(models.Model):
     uuid = models.CharField(max_length=40, unique=True)
@@ -453,6 +456,8 @@ class CardFacePrinting(models.Model):
     class Meta:
         unique_together = ("card_face", "card_printing")
 
+    def __str__(self) -> str:
+        return f"{self.card_face.name} face of {self.card_printing}"
 # class CardPrintingFaceFrameEffect(models.CharField):
 #     name = models.CharField(max_length=50)
 #     display_order = models.IntegerField()

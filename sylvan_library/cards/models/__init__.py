@@ -19,6 +19,7 @@ from cards.models.card import (
     CardSupertype,
     CardSubtype,
     FrameEffect,
+    CardFacePrinting,
 )
 from cards.models.card_price import CardPrice
 from cards.models.colour import Colour

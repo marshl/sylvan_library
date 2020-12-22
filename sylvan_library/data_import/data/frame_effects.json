@@ -1,6 +1,6 @@
 [
   {
-    "name": "colorshifted",
+    "name": "Colorshifted",
     "code": "colorshifted"
   },
   {
@@ -18,6 +18,10 @@
   {
     "name": "Draft",
     "code": "draft"
+  },
+  {
+    "name": "Etched",
+    "code": "etched"
   },
   {
     "name": "Extended Art",

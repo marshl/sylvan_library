@@ -20,10 +20,11 @@ from cards.models import (
     DeckCard,
     Format,
     Language,
-    PhysicalCard,
     Rarity,
     Set,
     UserCardChange,
+    CardFace,
+    CardFacePrinting,
     UserOwnedCard,
 )
 from data_import import _query
@@ -74,9 +75,10 @@ class Command(BaseCommand):
         truncate_model(CardLegality)
         truncate_model(UserCardChange)
         truncate_model(UserOwnedCard)
-        truncate_model(PhysicalCard)
         truncate_model(CardPrintingLanguage)
+        truncate_model(CardFacePrinting)
         truncate_model(CardPrinting)
+        truncate_model(CardFace)
         truncate_model(Card)
         truncate_model(Rarity)
         truncate_model(Set)
@@ -84,6 +86,3 @@ class Command(BaseCommand):
         truncate_model(Format)
         truncate_model(Language)
         truncate_model(Colour)
-
-        reset_sequence("cards_card_links")
-        reset_sequence("cards_cardprintinglanguage_physical_cards")

@@ -9,9 +9,9 @@ from typing import List, Optional, Dict, Any
 import arrow
 from django.db import models
 
-from cards.models import Card, Colour, Set, CardFace, CardPrinting
+from cards.models import Card, Colour, Set, CardFace, CardPrinting, CardFacePrinting
 
-#
+
 COLOUR_TO_SORT_KEY = {
     Colour.COLOURLESS: 0,
     Colour.WHITE: 1,
@@ -124,8 +124,8 @@ class StagedObject:
                 and not isinstance(new_val, type(None))
             ):
                 raise Exception(
-                    f"Type mismatch for '{field}: {old_val} != {new_val} "
-                    f"({type(old_val)} != {type(new_val)})"
+                    f"Type mismatch for '{field}: was {old_val}, now {new_val} "
+                    f"(was {type(old_val)}, now {type(new_val)})"
                 )
 
             if old_val != new_val:
@@ -444,7 +444,9 @@ class StagedCardPrinting(StagedObject):
         self.scryfall_id = identifiers.get("scryfallId")
         self.scryfall_illustration_id = identifiers.get("scryfallIllustrationId")
 
-        self.mtg_arena_id = identifiers.get("mtgArenaId")
+        self.mtg_arena_id = (
+            int(identifiers.get("mtgArenaId")) if "mtgArenaId" in identifiers else None
+        )
 
         self.set_code = staged_set.code
         self.tcg_player_product_id = identifiers.get("tcgPlayerProductId")
@@ -492,16 +494,37 @@ class StagedCardPrinting(StagedObject):
         )
 
 
-class StagedCardPrintingFace(StagedObject):
+class StagedCardFacePrinting(StagedObject):
     def __init__(self, card_data: dict):
-        self.artist = card_data["artist"]
+        self.uuid = card_data["uuid"]
+        self.artist = card_data.get("artist")
         self.flavour_text = card_data.get("flavorText")
         self.original_text = card_data.get("originalText")
         self.original_type = card_data.get("originalType")
         self.watermark = card_data.get("watermark")
         self.frame_effects = card_data.get("frameEffects", [])
 
-        self.multiverse_id = card_data.get("identifiers", {}).get("multiverseId")
+    def get_field_data(self):
+        return self.get_all_fields(fields_to_ignore={"uuid"})
+
+    def compare_with_existing_face_printing(
+        self, existing_face_printing: CardFacePrinting
+    ):
+        differences = self.get_object_differences(
+            existing_face_printing,
+            {"frame_effects", "card_face_id", "card_printing_id"},
+        )
+        old_frame_effects = [
+            frame_effect.code
+            for frame_effect in existing_face_printing.frame_effects.all()
+        ]
+        if set(self.frame_effects) != set(old_frame_effects):
+            differences["frame_effects"] = {
+                "from": old_frame_effects,
+                "to": self.frame_effects,
+            }
+
+        return differences
 
 
 # pylint: disable=too-few-public-methods

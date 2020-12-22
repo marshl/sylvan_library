@@ -15,6 +15,7 @@ from cards.models import (
     CardLegality,
     Format,
     CardPrinting,
+    CardFacePrinting,
 )
 
 
@@ -110,3 +111,20 @@ class FormatAdmin(admin.ModelAdmin):
 @admin.register(CardPrinting)
 class CardPrintingAdmin(admin.ModelAdmin):
     autocomplete_fields = ["card", "set"]
+    search_fields = ["card__name", "scryfall_id"]
+
+
+class CardFacePrintingModelForm(forms.ModelForm):
+    flavour_text = forms.CharField(widget=forms.Textarea)
+    original_text = forms.CharField(widget=forms.Textarea)
+
+    class Meta:
+        model = CardFacePrinting
+        exclude = []
+
+
+@admin.register(CardFacePrinting)
+class CardFacePrintingAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["card_face", "card_printing"]
+    search_fields = ["card_face__card__name"]
+    form = CardFacePrintingModelForm

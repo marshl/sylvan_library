@@ -24,6 +24,8 @@ from cards.models import (
     CardSubtype,
     CardSupertype,
     CardPrinting,
+    CardFacePrinting,
+    FrameEffect,
 )
 from data_import.models import (
     UpdateBlock,
@@ -34,6 +36,7 @@ from data_import.models import (
     UpdateCardRuling,
     UpdateCardLegality,
     UpdateCardPrinting,
+    UpdateCardFacePrinting,
 )
 
 
@@ -65,8 +68,7 @@ class Command(BaseCommand):
         with transaction.atomic():
             # pylint: disable=too-many-boolean-expressions
             if (
-                not self.create_new_blocks()
-                or not self.create_new_sets()
+                not self.update_blocks()
                 or not self.update_sets()
                 or not self.create_new_cards()
                 or not self.update_cards()
@@ -74,10 +76,11 @@ class Command(BaseCommand):
                 or not self.update_card_rulings()
                 or not self.update_card_legalities()
                 or not self.update_card_printings()
+                or not self.update_card_face_printings()
             ):
                 raise Exception("Change application aborted")
 
-    def create_new_blocks(self) -> bool:
+    def update_blocks(self) -> bool:
         """
         Creates new Block objects
         returns: True if there were no errors, otherwise False
@@ -91,7 +94,7 @@ class Command(BaseCommand):
             )
         return True
 
-    def create_new_sets(self) -> bool:
+    def update_sets(self) -> bool:
         """
         Creates new Set objects
         returns: True if there were no errors, otherwise False
@@ -140,17 +143,6 @@ class Command(BaseCommand):
 
         return True
 
-    def update_sets(self) -> bool:
-        """
-        Updates Sets that have changed
-        returns: True if there were no errors, otherwise False
-        """
-        self.logger.info("Updating sets")
-        for set_to_update in UpdateSet.objects.filter(update_mode=UpdateMode.UPDATE):
-            pass
-        # TODO
-        return True
-
     def create_new_cards(self) -> bool:
         self.logger.info("Creating cards")
 
@@ -179,7 +171,7 @@ class Command(BaseCommand):
                 Updates existing Cards with any changes
                 returns: True if there were no errors, otherwise False
                 """
-        self.logger.info("Updating cards")
+        self.logger.info("Updating %s cards", UpdateCard.objects.count())
         for card_to_update in UpdateCard.objects.filter(
             update_mode=UpdateMode.UPDATE
         ).all():
@@ -203,23 +195,31 @@ class Command(BaseCommand):
         return True
 
     def update_card_faces(self) -> bool:
-        self.logger.info("Creating card faces")
+        self.logger.info("Creating %s card faces", UpdateCardFace.objects.count())
 
         for card_face_update in UpdateCardFace.objects.filter():
-            try:
-                card = Card.objects.get(
-                    scryfall_oracle_id=card_face_update.scryfall_oracle_id
-                )
-            except Card.DoesNotExist:
-                self.logger.error(
-                    f"Cannot find Card {card_face_update.scryfall_oracle_id} for face {card_face_update}"
-                )
-                raise
+            # try:
+            #     card = Card.objects.get(
+            #         scryfall_oracle_id=card_face_update.scryfall_oracle_id
+            #     )
+            # except Card.DoesNotExist:
+            #     self.logger.error(
+            #         f"Cannot find Card {card_face_update.scryfall_oracle_id} for face {card_face_update}"
+            #     )
+            #     raise
 
             if card_face_update.update_mode == UpdateMode.CREATE:
-                card_face = CardFace(card=card, side=card_face_update.side)
+                card_face = CardFace(
+                    card=Card.objects.get(
+                        scryfall_oracle_id=card_face_update.scryfall_oracle_id
+                    ),
+                    side=card_face_update.side,
+                )
             elif card_face_update.update_mode == UpdateMode.UPDATE:
-                card_face = CardFace.objects.get(card=card, side=card_face_update.side)
+                card_face = CardFace.objects.get(
+                    card__scryfall_oracle_id=card_face_update.scryfall_oracle_id,
+                    side=card_face_update.side,
+                )
             else:
                 raise Exception()  # TODO: Proper exception class
 
@@ -302,6 +302,7 @@ class Command(BaseCommand):
             getattr(card_face, type_key).add(type_obj)
 
     def update_card_rulings(self) -> bool:
+        self.logger.info("Updating %s card rulings", UpdateCardRuling.objects.count())
         for update_card_ruling in UpdateCardRuling.objects.all():
             if update_card_ruling.update_mode == UpdateMode.DELETE:
                 CardRuling.objects.filter(
@@ -323,7 +324,10 @@ class Command(BaseCommand):
         return True
 
     def update_card_legalities(self) -> bool:
-        self.logger.info("Updating card legalities")
+        self.logger.info(
+            "Updating %s card legalities", UpdateCardLegality.objects.count()
+        )
+        format_map = {format_obj.code: format_obj for format_obj in Format.objects.all()}
         for update_card_legality in UpdateCardLegality.objects.all():
             try:
                 if update_card_legality.update_mode == UpdateMode.DELETE:
@@ -339,9 +343,7 @@ class Command(BaseCommand):
                         card=Card.objects.get(
                             scryfall_oracle_id=update_card_legality.scryfall_oracle_id
                         ),
-                        format=Format.objects.get(
-                            code=update_card_legality.format_name
-                        ),
+                        format=format_map[update_card_legality.format_name],
                         restriction=update_card_legality.restriction,
                     )
                 elif update_card_legality.update_mode == UpdateMode.UPDATE:
@@ -363,6 +365,11 @@ class Command(BaseCommand):
         return True
 
     def update_card_printings(self) -> bool:
+        self.logger.info(
+            "Updating %s card printings", UpdateCardPrinting.objects.count()
+        )
+        set_map = {set_obj.code: set_obj for set_obj in Set.objects.all()}
+        rarity_map = {rarity.name.lower(): rarity for rarity in Rarity.objects.all()}
         for update_card_printing in UpdateCardPrinting.objects.all():
             if update_card_printing.update_mode == UpdateMode.CREATE:
                 printing = CardPrinting(
@@ -370,7 +377,7 @@ class Command(BaseCommand):
                         scryfall_oracle_id=update_card_printing.card_scryfall_oracle_id
                     ),
                     scryfall_id=update_card_printing.scryfall_id,
-                    set=Set.objects.get(code=update_card_printing.set_code),
+                    set=set_map[update_card_printing.set_code],
                 )
             elif update_card_printing.update_mode == UpdateMode.UPDATE:
                 printing = CardPrinting.objects.get(
@@ -389,7 +396,7 @@ class Command(BaseCommand):
                     continue
 
                 if field == "rarity":
-                    printing.rarity = Rarity.objects.get(name__iexact=value)
+                    printing.rarity = rarity_map.get(value.lower())
                 elif hasattr(printing, field):
                     setattr(printing, field, value)
                 else:
@@ -398,4 +405,59 @@ class Command(BaseCommand):
                     )
             printing.full_clean()
             printing.save()
+        return True
+
+    def update_card_face_printings(self) -> bool:
+        self.logger.info(
+            "Updating %s card face printings", UpdateCardFacePrinting.objects.count()
+        )
+        for update_card_face_printing in UpdateCardFacePrinting.objects.all():
+            if update_card_face_printing.update_mode == UpdateMode.CREATE:
+                printing = CardPrinting.objects.select_related("card").get(
+                    scryfall_id=update_card_face_printing.scryfall_id
+                )
+                face_printing = CardFacePrinting(
+                    uuid=update_card_face_printing.printing_uuid,
+                    card_printing=printing,
+                    card_face=CardFace.objects.get(
+                        card=printing.card, side=update_card_face_printing.side
+                    ),
+                )
+            elif update_card_face_printing.update_mode == UpdateMode.UPDATE:
+                face_printing = CardFacePrinting.objects.get(
+                    uuid=update_card_face_printing.printing_uuid
+                )
+            else:
+                continue
+            for field, value in update_card_face_printing.field_data.items():
+                if update_card_face_printing.update_mode == UpdateMode.UPDATE:
+                    value = value["to"]
+
+                if field in ("frame_effects",):
+                    continue
+                elif hasattr(face_printing, field):
+                    setattr(face_printing, field, value)
+                else:
+                    raise NotImplementedError(
+                        f"Cannot set unrecognised field CardFacePrinting.{field}"
+                    )
+
+            try:
+                face_printing.full_clean()
+                face_printing.save()
+            except ValidationError:
+                self.logger.error(
+                    "Failed to validate %s", update_card_face_printing
+                )
+                raise
+
+            if "frame_effects" in update_card_face_printing.field_data:
+                frame_effects = update_card_face_printing.field_data["frame_effects"]
+                if update_card_face_printing.update_mode == UpdateMode.UPDATE:
+                    frame_effects = frame_effects["to"]
+                face_printing.frame_effects.set(
+                    FrameEffect.objects.filter(code__in=frame_effects)
+                )
+                print("!!!!")
+
         return True

@@ -116,17 +116,19 @@ class UpdateCardPrinting(models.Model):
 
 class UpdateCardFacePrinting(models.Model):
     update_mode = UPDATE_MODE_FIELD
-    card_scryfall_oracle_id = models.CharField(max_length=36)
+    scryfall_id = models.CharField(max_length=36)
+    scryfall_oracle_id = models.CharField(max_length=36)
     card_name = models.CharField(max_length=200)
     printing_uuid = models.CharField(max_length=36)
     card_face_name = models.CharField(max_length=200)
     side = models.CharField(max_length=1, blank=True, null=True)
+    field_data = models.JSONField()
 
     class Meta:
         unique_together = ("printing_uuid", "side")
 
     def __str__(self) -> str:
-        name = f"{self.update_mode} {self.card_name} ({self.printing_uuid})"
+        name = f"{self.update_mode} {self.card_face_name} ({self.printing_uuid})"
         if self.side:
             name += f" ({self.card_face_name} {self.side})"
         return name

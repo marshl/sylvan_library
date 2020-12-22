@@ -8,7 +8,7 @@ from data_import.models import (
     UpdateCardFace,
     UpdateCardRuling,
     UpdateCardLegality,
-    UpdateCardPrinting,
+    UpdateCardPrinting, UpdateCardFacePrinting,
 )
 
 
@@ -53,4 +53,9 @@ class UpdateCardLegalityAdmin(admin.ModelAdmin):
 
 @admin.register(UpdateCardPrinting)
 class UpdateCardPrintingAdmin(admin.ModelAdmin):
+    search_fields = ["card_name"]
+
+
+@admin.register(UpdateCardFacePrinting)
+class UpdateCardFacePrintingAdmin(admin.ModelAdmin):
     search_fields = ["card_name"]

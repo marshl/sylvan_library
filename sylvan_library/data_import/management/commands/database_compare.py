@@ -2,14 +2,12 @@
 Module for the update_database command
 """
 import logging
-import math
 import time
 import typing
-from datetime import date
 from typing import List, Optional, Dict, Tuple, Any
 
 from django.core.management.base import BaseCommand
-from django.db import models, transaction
+from django.db import transaction
 
 from cards.models import (
     Block,
@@ -18,10 +16,7 @@ from cards.models import (
     CardPrintingLanguage,
     Set,
     CardFace,
-    CardRuling,
-    CardLegality,
 )
-from data_import import _paths
 from data_import.management.commands import get_all_set_data
 from data_import.models import (
     UpdateSet,
@@ -32,6 +27,7 @@ from data_import.models import (
     UpdateCardRuling,
     UpdateCardLegality,
     UpdateCardPrinting,
+    UpdateCardFacePrinting,
 )
 from data_import.staging import (
     StagedCard,
@@ -39,6 +35,7 @@ from data_import.staging import (
     StagedCardPrintingLanguage,
     StagedCardPrinting,
     StagedCardFace,
+    StagedCardFacePrinting,
 )
 
 logger = logging.getLogger("django")
@@ -63,6 +60,7 @@ class Command(BaseCommand):
         self.cards_parsed: typing.Set[str] = set()
         self.card_faces_parsed: typing.Set[Tuple[str, str]] = set()
         self.card_printings_parsed: typing.Set[str] = set()
+        self.card_face_printings_parsed: typing.Set[str] = set()
 
         self.force_update = False
         self.start_time = None
@@ -85,6 +83,7 @@ class Command(BaseCommand):
             UpdateCardRuling.objects.all().delete()
             UpdateCardLegality.objects.all().delete()
             UpdateCardPrinting.objects.all().delete()
+            UpdateCardFacePrinting.objects.all().delete()
 
             logger.info("Getting existing data")
             for card in Card.objects.prefetch_related("faces").all():
@@ -172,7 +171,9 @@ class Command(BaseCommand):
         }
         existing_printings = {
             printing.scryfall_id: printing
-            for printing in CardPrinting.objects.filter(set__code=staged_set.code).all()
+            for printing in CardPrinting.objects.filter(set__code=staged_set.code)
+            .prefetch_related("face_printings__frame_effects")
+            .all()
         }
 
         for card_data in set_data.get("cards", []):
@@ -265,7 +266,7 @@ class Command(BaseCommand):
 
         if face_tuple not in self.card_faces_parsed:
             self.card_faces_parsed.add(face_tuple)
-            try:
+            if card_face:
                 face_differences = staged_card_face.get_card_face_differences(card_face)
                 if face_differences:
                     UpdateCardFace.objects.create(
@@ -276,7 +277,7 @@ class Command(BaseCommand):
                         side=staged_card_face.side,
                         field_data=face_differences,
                     )
-            except CardFace.DoesNotExist:
+            else:
                 UpdateCardFace.objects.create(
                     update_mode=UpdateMode.CREATE,
                     scryfall_oracle_id=staged_card.scryfall_oracle_id,
@@ -399,9 +400,9 @@ class Command(BaseCommand):
         :return: A tuple containing the StagedCardPrinting and a list of StagedCardPrintingLanguages
         """
         staged_card_printing = StagedCardPrinting(card_data, staged_set)
+        existing_printing = existing_printings.get(staged_card_printing.scryfall_id)
         if staged_card_printing.scryfall_id not in self.card_printings_parsed:
             self.card_printings_parsed.add(staged_card_printing.scryfall_id)
-            existing_printing = existing_printings.get(staged_card_printing.scryfall_id)
             if not existing_printing:
                 create_printing = UpdateCardPrinting(
                     update_mode=UpdateMode.CREATE,
@@ -425,6 +426,52 @@ class Command(BaseCommand):
                         set_code=staged_set.code,
                         field_data=differences,
                     )
+        staged_face_printing = StagedCardFacePrinting(card_data)
+        if staged_face_printing.uuid not in self.card_face_printings_parsed:
+            self.card_face_printings_parsed.add(staged_face_printing.uuid)
+            existing_face_printing = (
+                next(
+                    (
+                        face_printing
+                        for face_printing in existing_printing.face_printings.all()
+                        if face_printing.card_face.side == staged_card_face.side
+                    ),
+                    None,
+                )
+                if existing_printing
+                else None
+            )
+            if existing_face_printing:
+                # existing_face_printing = CardFacePrinting.objects.get(
+                #     uuid=staged_face_printing.uuid
+                # )
+                differences = staged_face_printing.compare_with_existing_face_printing(
+                    existing_face_printing
+                )
+                if differences:
+                    UpdateCardFacePrinting.objects.create(
+                        update_mode=UpdateMode.UPDATE,
+                        scryfall_id=staged_card_printing.scryfall_id,
+                        scryfall_oracle_id=staged_card.scryfall_oracle_id,
+                        card_name=staged_card.name,
+                        card_face_name=staged_card_face.name,
+                        printing_uuid=staged_face_printing.uuid,
+                        side=staged_card_face.side,
+                        field_data=differences,
+                    )
+            # except CardFacePrinting.DoesNotExist:
+            else:
+                UpdateCardFacePrinting.objects.create(
+                    update_mode=UpdateMode.CREATE,
+                    scryfall_id=staged_card_printing.scryfall_id,
+                    scryfall_oracle_id=staged_card.scryfall_oracle_id,
+                    card_name=staged_card.name,
+                    card_face_name=staged_card_face.name,
+                    printing_uuid=staged_face_printing.uuid,
+                    side=staged_card_face.side,
+                    field_data=staged_face_printing.get_field_data(),
+                )
+
         # else:
         #     existing_printing = self.existing_card_printings[uuid]
         #     differences = self.get_card_printing_differences(
