@@ -28,7 +28,7 @@ class CardPrice(models.Model):
 
     class Meta:
         """
-        Meta information for CardPrintingLanguages
+        Meta information for CardLocalisations
         """
 
         unique_together = ("date", "printing", "price_type")

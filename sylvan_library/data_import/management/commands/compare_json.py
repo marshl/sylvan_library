@@ -16,7 +16,7 @@ from cards.models import (
     Card,
     CardLegality,
     CardPrinting,
-    CardPrintingLanguage,
+    CardLocalisation,
     CardRuling,
     Set,
 )
@@ -26,10 +26,8 @@ from data_import.staging import (
     StagedBlock,
     StagedSet,
     StagedLegality,
-    StagedCardPrintingLanguage,
-    StagedPhysicalCard,
+    StagedCardLocalisation,
     StagedCardPrinting,
-    StagedRuling,
 )
 
 logger = logging.getLogger("django")
@@ -89,7 +87,7 @@ class Command(BaseCommand):
     card_printings_parsed: typing.Set[str] = set()
     card_printings_to_delete: typing.Set[str] = set()
 
-    printed_languages_to_create: List[StagedCardPrintingLanguage] = []
+    printed_languages_to_create: List[StagedCardLocalisation] = []
     printed_languages_to_update: List[dict] = []
     physical_cards_to_create: List[StagedPhysicalCard] = []
 
@@ -251,7 +249,7 @@ class Command(BaseCommand):
         Processes the cards within a set dictionary
         :param set_data:  The MTGJSON set dictionary
         """
-        # Store which CardPrintingLanguages are new so PhysicalCards can be created for them
+        # Store which CardLocalisations are new so PhysicalCards can be created for them
         new_printlangs = []
         for card_data in set_data.get("cards", []):
             staged_card = self.process_card(card_data, False)
@@ -280,11 +278,11 @@ class Command(BaseCommand):
         self.process_physical_cards(new_printlangs)
 
     def process_physical_cards(
-        self, new_printlangs: List[StagedCardPrintingLanguage]
+        self, new_printlangs: List[StagedCardLocalisation]
     ) -> None:
         """
         Finds ne PhysicalCards to be created using a list of new printlangs
-        :param new_printlangs: The StagedCardPrintingLanguages that are going to be made for a set
+        :param new_printlangs: The StagedCardLocalisations that are going to be made for a set
         """
         for new_printlang in new_printlangs:
             # Ignore "C" side meld cards, we don't want a single PhysicalCard for A/B/C
@@ -577,7 +575,7 @@ class Command(BaseCommand):
         staged_set: StagedSet,
         card_data: dict,
         is_token: bool,
-    ) -> Tuple[StagedCardPrinting, List[StagedCardPrintingLanguage]]:
+    ) -> Tuple[StagedCardPrinting, List[StagedCardLocalisation]]:
         """
         Process a Card printed in a given set,
          returning the printings and printined languages that were found
@@ -585,7 +583,7 @@ class Command(BaseCommand):
         :param staged_set: The staged set data
         :param card_data: The data of the card
         :param is_token: Whether the card is a token or not
-        :return: A tuple containing the StagedCardPrinting and a list of StagedCardPrintingLanguages
+        :return: A tuple containing the StagedCardPrinting and a list of StagedCardLocalisations
         """
         staged_card_printing = StagedCardPrinting(
             staged_card.name, card_data, staged_set, for_token=is_token
@@ -634,7 +632,7 @@ class Command(BaseCommand):
         staged_card_printing: StagedCardPrinting,
         foreign_data: Dict[str, Any],
         card_data: Dict[str, Any],
-    ) -> StagedCardPrintingLanguage:
+    ) -> StagedCardLocalisation:
         """
         Processes card data nad returns the StagedCardPritningLanguage that would represent it
         :param staged_card_printing: The CardPrinting the printlang belongs to
@@ -642,7 +640,7 @@ class Command(BaseCommand):
         :param card_data: The JSON data dict
         :return:
         """
-        staged_card_printing_language = StagedCardPrintingLanguage(
+        staged_card_printing_language = StagedCardLocalisation(
             staged_card_printing, foreign_data, card_data
         )
 
@@ -670,13 +668,13 @@ class Command(BaseCommand):
 
     def get_existing_printed_language(
         self, uuid: str, language: str
-    ) -> Optional[CardPrintingLanguage]:
+    ) -> Optional[CardLocalisation]:
         """
-        Tried to find the existing CardPrintingLanguage for the given CardPrinting uuid/language
+        Tried to find the existing CardLocalisation for the given CardPrinting uuid/language
         combineation, if it exists (otherwise None)
         :param uuid: The uuid (json_id) of the CardPrinting
         :param language: The _name_ of the language ('English', not 'english')
-        :return: The existing CardPrintingLanguage if it exists, otherwise None
+        :return: The existing CardLocalisation if it exists, otherwise None
         """
         existing_print = self.existing_card_printings.get(uuid)
         if not existing_print:
@@ -690,16 +688,16 @@ class Command(BaseCommand):
 
     def get_card_printing_language_differences(
         self,
-        existing_printlang: CardPrintingLanguage,
-        staged_printlang: StagedCardPrintingLanguage,
+        existing_printlang: CardLocalisation,
+        staged_printlang: StagedCardLocalisation,
     ) -> Dict[str, Dict[str, Any]]:
         """
        Gets the differences between an existing printed language and one from the json
 
        Most of the time there won't be any differences, but this will be useful for adding in new
        fields that didn't exist before
-       :param existing_printlang: The existing CardPrintingLanguage object
-       :param staged_printlang: The json StagedCardPrintingLanguage object
+       :param existing_printlang: The existing CardLocalisation object
+       :param staged_printlang: The json StagedCardLocalisation object
        :return: The dict of differences between the two objects
        """
         result = self.get_object_differences(

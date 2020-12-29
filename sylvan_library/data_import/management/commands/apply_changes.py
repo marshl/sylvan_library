@@ -15,7 +15,7 @@ from cards.models import (
     CardImage,
     CardLegality,
     CardPrinting,
-    CardPrintingLanguage,
+    CardLocalisation,
     CardRuling,
     Colour,
     Format,
@@ -366,7 +366,7 @@ class Command(BaseCommand):
 
     def create_printed_languages(self) -> bool:
         """
-        Creates new CardPrintingLanguages
+        Creates new CardLocalisations
         returns: True if there were no errors, otherwise False
         """
         self.logger.info("Creating card printing languages")
@@ -374,7 +374,7 @@ class Command(BaseCommand):
             printlang_list = json.load(printlang_file, encoding="utf8")
 
         for printlang_data in printlang_list:
-            printed_language = CardPrintingLanguage()
+            printed_language = CardLocalisation()
             for field, value in printlang_data.items():
                 if field in ("set_code",):
                     continue
@@ -402,7 +402,7 @@ class Command(BaseCommand):
                     setattr(printed_language, field, value)
                 else:
                     raise NotImplementedError(
-                        f"Cannot update unrecognised field CardPrintingLanguage.{field}"
+                        f"Cannot update unrecognised field CardLocalisation.{field}"
                     )
 
             try:
@@ -410,7 +410,7 @@ class Command(BaseCommand):
                 printed_language.save()
             except ValidationError as ex:
                 self.logger.error(
-                    "Failed to validate CardPrintingLanguage %s: %s",
+                    "Failed to validate CardLocalisation %s: %s",
                     printed_language,
                     ex,
                 )
@@ -419,7 +419,7 @@ class Command(BaseCommand):
 
     def update_printed_languages(self) -> bool:
         """
-        Updates existing CardPrintingLanguages with any changes
+        Updates existing CardLocalisations with any changes
         returns: True if there were no errors, otherwise False
         """
         self.logger.info("Updating printed languages")
@@ -431,10 +431,10 @@ class Command(BaseCommand):
             language_name = printlang_data["language"]
 
             try:
-                printlang = CardPrintingLanguage.objects.get(
+                printlang = CardLocalisation.objects.get(
                     language__name=language_name, card_printing__json_id=uuid
                 )
-            except CardPrintingLanguage.DoesNotExist:
+            except CardLocalisation.DoesNotExist:
                 self.logger.error(
                     "Could not find card printing language for %s $s", uuid
                 )
@@ -445,7 +445,7 @@ class Command(BaseCommand):
                     setattr(printlang, field, change["to"])
                 else:
                     raise NotImplementedError(
-                        f"Cannot update unrecognised field CardPrintingLanguage.{field}"
+                        f"Cannot update unrecognised field CardLocalisation.{field}"
                     )
             printlang.full_clean()
             printlang.save()
@@ -470,7 +470,7 @@ class Command(BaseCommand):
 
             language = Language.objects.get(name=phys_data["language"])
             for printing_uid in phys_data["printing_uids"]:
-                printed_language = CardPrintingLanguage.objects.get(
+                printed_language = CardLocalisation.objects.get(
                     card_printing__json_id=printing_uid, language=language
                 )
                 printed_language.physical_cards.add(physical_card)

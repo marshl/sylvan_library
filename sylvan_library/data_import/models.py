@@ -68,25 +68,6 @@ class UpdateCardFace(models.Model):
         return name
 
 
-#
-#
-# class DeleteCardFace(models.Model):
-#     scryfall_oracle_id = models.CharField(max_length=36)
-#     name = models.CharField(max_length=200)
-#
-#     face_name = models.CharField(max_length=200)
-#     side = models.CharField(max_length=1, blank=True, null=True)
-#
-
-
-# class CreateCardPrinting(models.Model):
-#     card_scryfall_oracle_id = models.CharField(max_length=36)
-#     name = models.CharField(max_length=200)
-#     uuid = models.CharField(max_length=36)
-#
-#     field_data = models.JSONField()
-
-
 class UpdateCardPrinting(models.Model):
     update_mode = UPDATE_MODE_FIELD
     card_scryfall_oracle_id = models.CharField(max_length=36)
@@ -98,20 +79,6 @@ class UpdateCardPrinting(models.Model):
 
     def __str__(self) -> str:
         return f"{self.update_mode} {self.card_name} in {self.set_code} ({self.scryfall_id})"
-
-
-# class DeleteCardPrinting(models.Model):
-#     card_scryfall_oracle_id = models.CharField(max_length=36)
-#     card_name = models.CharField(max_length=200)
-#     uuid = models.CharField(max_length=36)
-
-
-# class CreateCardFacePrinting(models.Model):
-#     card_scryfall_oracle_id = models.CharField(max_length=36)
-#     card_name = models.CharField(max_length=200)
-#     printing_uuid = models.CharField(max_length=36)
-#     card_face_name = models.CharField(max_length=200)
-#     side = models.CharField(max_length=1, blank=True, null=True)
 
 
 class UpdateCardFacePrinting(models.Model):
@@ -128,10 +95,42 @@ class UpdateCardFacePrinting(models.Model):
         unique_together = ("printing_uuid", "side")
 
     def __str__(self) -> str:
-        name = f"{self.update_mode} {self.card_face_name} ({self.printing_uuid})"
+        name = f"{self.update_mode} face printing {self.card_face_name} ({self.printing_uuid})"
         if self.side:
             name += f" ({self.card_face_name} {self.side})"
         return name
+
+
+class UpdateCardLocalisation(models.Model):
+    """
+    Class for updating CardLocalisation models
+    """
+
+    update_mode = UPDATE_MODE_FIELD
+    language_code = models.CharField(max_length=100)
+    printing_scryfall_id = models.CharField(max_length=36)
+    card_name = models.CharField(max_length=200)
+
+    field_data = models.JSONField()
+
+    def __str__(self) -> str:
+        return f"{self.update_mode} localisation {self.language_code} {self.printing_scryfall_id} ({self.card_name})"
+
+    class Meta:
+        unique_together = ("language_code", "printing_scryfall_id")
+
+
+class UpdateCardFaceLocalisation(models.Model):
+    update_mode = UPDATE_MODE_FIELD
+    language_code = models.CharField(max_length=100)
+    printing_scryfall_id = models.CharField(max_length=36)
+    face_name = models.CharField(max_length=200)
+    side = models.CharField(max_length=1, null=True, blank=True)
+
+    field_data = models.JSONField()
+
+    def __str__(self) -> str:
+        return f"{self.update_mode} face localisation {self.printing_scryfall_id} ({self.face_name})"
 
 
 # class CreateSet(models.Model):

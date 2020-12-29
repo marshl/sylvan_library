@@ -6,7 +6,7 @@ import os
 from typing import Optional
 
 from django import template
-from cards.models import Card, CardPrinting, CardPrintingLanguage, Language
+from cards.models import Card, CardPrinting, CardLocalisation, Language
 
 # pylint: disable=invalid-name
 register = template.Library()
@@ -30,9 +30,9 @@ def get_default_image() -> str:
 
 
 @register.filter(name="card_printing_language_image_url")
-def card_printing_language_image_url(printed_language: CardPrintingLanguage) -> str:
+def card_printing_language_image_url(printed_language: CardLocalisation) -> str:
     """
-    Gets the image path for the given CardPrintingLanguage
+    Gets the image path for the given CardLocalisation
     :param printed_language: The printed language to get an image for
     :return: The relative image path
     """

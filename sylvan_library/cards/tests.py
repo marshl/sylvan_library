@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 from cards.models import (
     Card,
     CardPrinting,
-    CardPrintingLanguage,
+    CardLocalisation,
     Language,
     PhysicalCard,
     Rarity,
@@ -91,14 +91,14 @@ def create_test_language(name: str, code: str) -> Language:
 
 def create_test_card_printing_language(
     printing: CardPrinting, language: Language
-) -> CardPrintingLanguage:
+) -> CardLocalisation:
     """
-    Creates a dummy CardPrintingLanguage object
+    Creates a dummy CardLocalisation object
     :param printing: The printing to use
     :param language: The language to use
     :return:
     """
-    print_lang = CardPrintingLanguage()
+    print_lang = CardLocalisation()
     print_lang.card_printing = printing
     print_lang.language = language
     print_lang.card_name = printing.card.name
@@ -107,7 +107,7 @@ def create_test_card_printing_language(
     return print_lang
 
 
-def create_test_physical_card(printlang: CardPrintingLanguage) -> PhysicalCard:
+def create_test_physical_card(printlang: CardLocalisation) -> PhysicalCard:
     """
     Creates a dummy PhysicalCard object for the given printed language
     :param printlang:

@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 from cards.models import (
     Card,
     CardPrinting,
-    CardPrintingLanguage,
+    CardLocalisation,
     Language,
     PhysicalCard,
     Set,
@@ -82,10 +82,10 @@ class Command(BaseCommand):
         printing = CardPrinting.objects.filter(card=card, set=cardset).first()
         logger.info("CardPrinting ID: %s", printing.id)
 
-        printlang = CardPrintingLanguage.objects.get(
+        printlang = CardLocalisation.objects.get(
             card_printing=printing, language=Language.english()
         )
-        logger.info("CardPrintingLanguage ID: %s", printlang.id)
+        logger.info("CardLocalisation ID: %s", printlang.id)
 
         physcards = PhysicalCard.objects.filter(printed_languages=printlang)
 

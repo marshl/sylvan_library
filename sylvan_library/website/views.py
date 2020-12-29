@@ -21,7 +21,7 @@ from django.shortcuts import render, redirect
 from cards.models import (
     Card,
     CardPrinting,
-    CardPrintingLanguage,
+    CardLocalisation,
     Colour,
     Deck,
     DeckCard,
@@ -205,7 +205,7 @@ def ajax_change_card_ownership(request: WSGIRequest) -> HttpResponse:
     if not request.POST.get("count"):
         return JsonResponse({"result": False, "error": "Invalid count"})
 
-    # TODO: Card ownership on CardPrintingLanguage, not PhysicalCard
+    # TODO: Card ownership on CardLocalisation, not PhysicalCard
     # try:
     #     with transaction.atomic():
     #         change_count = int(request.POST["count"])
@@ -341,7 +341,7 @@ def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse
     ]
 
     printlang = (
-        CardPrintingLanguage.objects.filter(card_printing__card=card)
+        CardLocalisation.objects.filter(card_printing__card=card)
         .filter(multiverse_id__isnull=False)
         .filter(language=Language.english())
         .order_by("card_printing__set__release_date")

@@ -13,7 +13,7 @@ import requests
 
 from django.core.management.base import BaseCommand, OutputWrapper
 
-from cards.models import CardPrinting, CardPrintingLanguage, Language, CardImage
+from cards.models import CardPrinting, CardLocalisation, Language, CardImage
 
 logger = logging.getLogger("django")
 
@@ -164,7 +164,7 @@ class ImageDownloadThread(threading.Thread):
         while True:
             (printed_language_id, download_url, image_path) = self.download_queue.get()
 
-            printed_language = CardPrintingLanguage.objects.get(id=printed_language_id)
+            printed_language = CardLocalisation.objects.get(id=printed_language_id)
             stream = requests.get(download_url)
             try:
                 stream.raise_for_status()

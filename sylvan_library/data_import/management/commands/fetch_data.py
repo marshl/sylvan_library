@@ -71,23 +71,23 @@ class Command(BaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> None:
         self.logger.info("Downloading set files from %s", _paths.JSON_ZIP_DOWNLOAD_URL)
-        # self.download_file(_paths.JSON_ZIP_DOWNLOAD_URL, _paths.JSON_ZIP_PATH)
-        # self.logger.info("Extracting set files")
-        # json_zip_file = zipfile.ZipFile(_paths.JSON_ZIP_PATH)
-        # json_zip_file.extractall(_paths.SET_FOLDER)
-        #
-        # # Prettify the json files
-        # for set_file_path in self.get_json_files():
-        #     self.pretty_print_json_file(set_file_path)
-        #
-        # self.download_file(
-        #     _paths.ATOMIC_CARDS_DOWNLOAD_URL, _paths.ATOMIC_CARDS_ZIP_PATH
-        # )
-        # cards_zip_file = zipfile.ZipFile(_paths.ATOMIC_CARDS_ZIP_PATH)
-        # cards_zip_file.extractall(_paths.ATOMIC_CARDS_FOLDER)
-        # self.pretty_print_json_file(_paths.ATOMIC_CARDS_PATH)
+        self.download_file(_paths.JSON_ZIP_DOWNLOAD_URL, _paths.JSON_ZIP_PATH)
+        self.logger.info("Extracting set files")
+        json_zip_file = zipfile.ZipFile(_paths.JSON_ZIP_PATH)
+        json_zip_file.extractall(_paths.SET_FOLDER)
 
-        # self.download_file(_paths.TYPES_DOWNLOAD_URL, _paths.TYPES_ZIP_PATH)
+        # Prettify the json files
+        for set_file_path in self.get_json_files():
+            self.pretty_print_json_file(set_file_path)
+
+        self.download_file(
+            _paths.ATOMIC_CARDS_DOWNLOAD_URL, _paths.ATOMIC_CARDS_ZIP_PATH
+        )
+        cards_zip_file = zipfile.ZipFile(_paths.ATOMIC_CARDS_ZIP_PATH)
+        cards_zip_file.extractall(_paths.ATOMIC_CARDS_FOLDER)
+        self.pretty_print_json_file(_paths.ATOMIC_CARDS_PATH)
+
+        self.download_file(_paths.TYPES_DOWNLOAD_URL, _paths.TYPES_ZIP_PATH)
         types_zip_file = zipfile.ZipFile(_paths.TYPES_ZIP_PATH)
         types_zip_file.extractall(_paths.DOWNLOADS_FOLDER_PATH)
         self.pretty_print_json_file(_paths.TYPES_JSON_PATH)

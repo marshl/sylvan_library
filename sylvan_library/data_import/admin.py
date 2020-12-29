@@ -8,7 +8,10 @@ from data_import.models import (
     UpdateCardFace,
     UpdateCardRuling,
     UpdateCardLegality,
-    UpdateCardPrinting, UpdateCardFacePrinting,
+    UpdateCardPrinting,
+    UpdateCardFacePrinting,
+    UpdateCardLocalisation,
+    UpdateCardFaceLocalisation,
 )
 
 
@@ -58,4 +61,14 @@ class UpdateCardPrintingAdmin(admin.ModelAdmin):
 
 @admin.register(UpdateCardFacePrinting)
 class UpdateCardFacePrintingAdmin(admin.ModelAdmin):
-    search_fields = ["card_name"]
+    search_fields = ["card_name", "scryfall_id", "scryfall_oracle_id", "printing_uuid"]
+
+
+@admin.register(UpdateCardLocalisation)
+class UpdateCardLocalisationAdmin(admin.ModelAdmin):
+    search_fields = ["card_name", "printing_scryfall_id"]
+
+
+@admin.register(UpdateCardFaceLocalisation)
+class UpdateCardFaceLocalisation(admin.ModelAdmin):
+    search_fields = ["face_name", "face_printing_uuid"]

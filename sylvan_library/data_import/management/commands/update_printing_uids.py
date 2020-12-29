@@ -113,7 +113,7 @@ class Command(BaseCommand):
     def process_set_cards(self, set_data: Dict[str, Any]) -> None:
         """
         Processes all the cards within a set,
-        creating Cards, CardPrintings and CardPrintingLanguages
+        creating Cards, CardPrintings and CardLocalisations
         :param set_data: The JSON set data dict
         """
         for card_data in set_data.get("cards", []):

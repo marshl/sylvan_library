@@ -9,7 +9,15 @@ from typing import List, Optional, Dict, Any
 import arrow
 from django.db import models
 
-from cards.models import Card, Colour, Set, CardFace, CardPrinting, CardFacePrinting
+from cards.models import (
+    Card,
+    Colour,
+    Set,
+    CardFace,
+    CardPrinting,
+    CardFacePrinting,
+    CardLocalisation,
+)
 
 
 COLOUR_TO_SORT_KEY = {
@@ -562,83 +570,50 @@ class StagedBlock:
         self.release_date = release_date
 
 
-# pylint: disable=too-few-public-methods
-class StagedCardPrintingLanguage:
+class StagedCardLocalisation(StagedObject):
     """
-    Class for staging a CardPrintingLanguage record from MTGJSON
+    Class for staging a CardLocalisation record from MTGJSON
     """
 
     def __init__(
-        self,
-        staged_card_printing: StagedCardPrinting,
-        foreign_data: Dict[str, Any],
-        card_data: Dict[str, Any],
+        self, staged_card_printing: StagedCardPrinting, foreign_data: Dict[str, Any]
     ):
-        self.printing_uid = staged_card_printing.json_id
+        self.printing_scryfall_id = staged_card_printing.scryfall_id
+
+        self.language_name = foreign_data["language"]
+        self.card_name = foreign_data["name"]
+        self.flavour_text = foreign_data.get("flavorText")
+        self.multiverse_id = (
+            int(foreign_data["multiverseId"])
+            if "multiverseId" in foreign_data
+            else None
+        )
+        self.type = foreign_data.get("type")
+        self.text = foreign_data.get("text")
+
+    def get_field_data(self):
+        return self.get_all_fields(
+            fields_to_ignore={"printing_scryfall_id", "language_name", "name"}
+        )
+
+    def compare_with_existing_localisation(
+        self, existing_card_localisation: CardLocalisation
+    ):
+        return self.get_object_differences(
+            existing_card_localisation,
+            fields_to_ignore={"card_printing_id", "language_id"},
+        )
+
+
+class StagedCardFaceLocalisation(StagedObject):
+    def __init__(
+        self, staged_card_printing: StagedCardPrinting, foreign_data: Dict[str, Any]
+    ):
+        self.printing_scryfall_id = staged_card_printing.scryfall_id
 
         self.language = foreign_data["language"]
-        self.card_name = foreign_data.get("faceName", foreign_data["name"])
+        self.name = foreign_data.get("faceName", foreign_data["name"])
 
-        self.multiverse_id = foreign_data.get("multiverseId")
         self.text = foreign_data.get("text")
         self.type = foreign_data.get("type")
         self.flavour_text = foreign_data.get("flavorText")
-
-        self.has_other_names = (
-            "names" in card_data and card_data["layout"] != "double_faced_token"
-        )
-        self.other_names = (
-            [n for n in card_data["names"] if n != staged_card_printing.card_name]
-            if self.has_other_names
-            else []
-        )
-
-        self.base_name = card_data.get("faceName", card_data["name"])
-        if self.base_name in self.other_names:
-            self.other_names.remove(self.base_name)
-        self.layout = card_data["layout"]
-        self.side = card_data.get("side")
-        self.number = card_data.get("number")
-        self.set_code = staged_card_printing.set_code
-
-        self.is_new = False
-        self.has_physical_card = False
-
-
-class StagedPhysicalCard:
-    """
-    Class for staging a PhysicalCard record from MTGJSON
-    """
-
-    def __init__(self, printing_uuids: List[str], language_code: str, layout: str):
-        self.printing_uids = printing_uuids
-        self.language = language_code
-        self.layout = layout
-
-    def __str__(self) -> str:
-        return f"{'/'.join(self.printing_uids)} in {self.language} ({self.layout})"
-
-
-class StagedCardPrice:
-    """
-    The staging record for a CardPrice
-    """
-
-    def __init__(
-        self, printing_uuid: str, date_str: str, price: float, price_type: str
-    ):
-        self.printing_uuid = printing_uuid
-        self.date = date_str
-        self.price = price
-        if price_type == "paperFoil":
-            self.price_type = "paper_foil"
-        elif price_type == "paper":
-            self.price_type = "paper"
-        elif price_type == "mtgo":
-            self.price_type = "mtgo"
-        elif price_type == "mtgoFoil":
-            self.price_type = "mtgo_foil"
-        else:
-            raise Exception(
-                f"Unknown card price price type: {price_type} for {printing_uuid}"
-            )

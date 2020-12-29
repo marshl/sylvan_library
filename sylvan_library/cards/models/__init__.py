@@ -11,7 +11,6 @@ from cards.models.card import (
     Card,
     CardFace,
     CARD_LAYOUT_CHOICES,
-    CardPrintingLanguage,
     CardPrinting,
     UserOwnedCard,
     UserCardChange,
@@ -20,6 +19,7 @@ from cards.models.card import (
     CardSubtype,
     FrameEffect,
     CardFacePrinting,
+    CardLocalisation,
 )
 from cards.models.card_price import CardPrice
 from cards.models.colour import Colour
@@ -125,12 +125,12 @@ class Language(models.Model):
 
 class CardImage(models.Model):
     """
-    Model for a CardPrintingLanguage's image download status
+    Model for a CardLocalisation's image download status
     (in the future, this might even contain the image itself)
     """
 
     printed_language = models.OneToOneField(
-        "CardPrintingLanguage", related_name="image", on_delete=models.CASCADE
+        CardLocalisation, related_name="image", on_delete=models.CASCADE
     )
 
     downloaded = models.BooleanField()

@@ -12,7 +12,7 @@ from cards.models import (
     Card,
     CardLegality,
     CardPrinting,
-    CardPrintingLanguage,
+    CardLocalisation,
     CardRuling,
     CardTag,
     Colour,
@@ -75,7 +75,7 @@ class Command(BaseCommand):
         truncate_model(CardLegality)
         truncate_model(UserCardChange)
         truncate_model(UserOwnedCard)
-        truncate_model(CardPrintingLanguage)
+        truncate_model(CardLocalisation)
         truncate_model(CardFacePrinting)
         truncate_model(CardPrinting)
         truncate_model(CardFace)

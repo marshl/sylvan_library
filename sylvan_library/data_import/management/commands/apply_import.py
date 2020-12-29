@@ -26,6 +26,8 @@ from cards.models import (
     CardPrinting,
     CardFacePrinting,
     FrameEffect,
+    CardLocalisation,
+    Language,
 )
 from data_import.models import (
     UpdateBlock,
@@ -37,6 +39,7 @@ from data_import.models import (
     UpdateCardLegality,
     UpdateCardPrinting,
     UpdateCardFacePrinting,
+    UpdateCardLocalisation,
 )
 
 
@@ -77,6 +80,7 @@ class Command(BaseCommand):
                 or not self.update_card_legalities()
                 or not self.update_card_printings()
                 or not self.update_card_face_printings()
+                or not self.update_card_localisations()
             ):
                 raise Exception("Change application aborted")
 
@@ -137,7 +141,15 @@ class Command(BaseCommand):
             parent_set_code = set_to_create.field_data.get("parent_set_code")
             if parent_set_code:
                 set_obj = Set.objects.get(code=set_to_create.set_code)
-                set_obj.parent_set = Set.objects.get(code=parent_set_code)
+                try:
+                    set_obj.parent_set = Set.objects.get(code=parent_set_code)
+                except Set.DoesNotExist:
+                    self.logger.error(
+                        "Cannot find parent set %s of %s",
+                        parent_set_code,
+                        set_to_create,
+                    )
+                    raise
                 set_obj.full_clean()
                 set_obj.save()
 
@@ -327,7 +339,9 @@ class Command(BaseCommand):
         self.logger.info(
             "Updating %s card legalities", UpdateCardLegality.objects.count()
         )
-        format_map = {format_obj.code: format_obj for format_obj in Format.objects.all()}
+        format_map = {
+            format_obj.code: format_obj for format_obj in Format.objects.all()
+        }
         for update_card_legality in UpdateCardLegality.objects.all():
             try:
                 if update_card_legality.update_mode == UpdateMode.DELETE:
@@ -446,9 +460,7 @@ class Command(BaseCommand):
                 face_printing.full_clean()
                 face_printing.save()
             except ValidationError:
-                self.logger.error(
-                    "Failed to validate %s", update_card_face_printing
-                )
+                self.logger.error("Failed to validate %s", update_card_face_printing)
                 raise
 
             if "frame_effects" in update_card_face_printing.field_data:
@@ -458,6 +470,47 @@ class Command(BaseCommand):
                 face_printing.frame_effects.set(
                     FrameEffect.objects.filter(code__in=frame_effects)
                 )
-                print("!!!!")
+
+        return True
+
+    def update_card_localisations(self) -> bool:
+        self.logger.info(
+            "Updating %s card localisations", UpdateCardLocalisation.objects.count()
+        )
+        language_map = {language.name: language for language in Language.objects.all()}
+
+        for update_localisation in UpdateCardLocalisation.objects.all():
+            if update_localisation.update_mode == UpdateMode.CREATE:
+                localisation = CardLocalisation(
+                    language=language_map[update_localisation.language_code],
+                    card_printing=CardPrinting.objects.get(
+                        scryfall_id=update_localisation.printing_scryfall_id
+                    ),
+                )
+            elif update_localisation.update_mode == UpdateMode.UPDATE:
+                localisation = CardLocalisation.objects.get(
+                    language=language_map[update_localisation.language_code],
+                    card_printing__scryfall_id=update_localisation.printing_scryfall_id,
+                )
+            else:
+                raise Exception()
+
+            localisation.card_name = update_localisation.card_name
+            for field, value in update_localisation.field_data.items():
+                if update_localisation.update_mode == UpdateMode.UPDATE:
+                    value = value["to"]
+
+                if hasattr(localisation, field):
+                    setattr(localisation, field, value)
+                else:
+                    raise NotImplementedError(
+                        f"Cannot set unrecognised field CardLocalisation.{field}"
+                    )
+            try:
+                localisation.full_clean()
+                localisation.save()
+            except ValidationError:
+                self.logger.error("Failed to validate %s", update_localisation)
+                raise
 
         return True

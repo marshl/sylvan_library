@@ -10,7 +10,7 @@ from pytz import utc
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 
-from cards.models import Card, CardPrinting, CardPrintingLanguage
+from cards.models import Card, CardPrinting, CardLocalisation
 from cards.models import UserCardChange, Set, Language, PhysicalCard
 
 logger = logging.getLogger("django")
@@ -75,10 +75,10 @@ class Command(BaseCommand):
         printing = CardPrinting.objects.filter(card=card, set=cardset).first()
         logger.info("CardPrinting: %s", printing)
 
-        printlang = CardPrintingLanguage.objects.get(
+        printlang = CardLocalisation.objects.get(
             card_printing=printing, language=Language.english()
         )
-        logger.info("CardPrintingLanguage: %s", printlang)
+        logger.info("CardLocalisation: %s", printlang)
 
         physcards = PhysicalCard.objects.filter(printed_languages=printlang)
 

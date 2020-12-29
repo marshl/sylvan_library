@@ -15,7 +15,7 @@ from cards.models import (
     Block,
     Card,
     CardPrinting,
-    CardPrintingLanguage,
+    CardLocalisation,
     Language,
     PhysicalCard,
     Rarity,
@@ -163,13 +163,13 @@ class Command(BaseCommand):
         """
         Tests that every physical card has at least one printed language
         """
-        zero_count_printlangs = CardPrintingLanguage.objects.annotate(
+        zero_count_printlangs = CardLocalisation.objects.annotate(
             physcard_count=Count("physical_cards")
         ).filter(physcard_count=0)
 
         self.assert_true(
             zero_count_printlangs.count() == 0,
-            "Every CardPrintingLanguage should have at least one PhysicalCard",
+            "Every CardLocalisation should have at least one PhysicalCard",
         )
 
         zero_count_physcard = PhysicalCard.objects.annotate(
@@ -232,7 +232,7 @@ class Command(BaseCommand):
 
         image_url_map = {}
         for printed_language in (
-            CardPrintingLanguage.objects.select_related("card_printing__card")
+            CardLocalisation.objects.select_related("card_printing__card")
             .select_related("card_printing__set")
             .select_related("language")
             .all()

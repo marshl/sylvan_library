@@ -227,8 +227,12 @@ class CardFace(models.Model):
 
     types = models.ManyToManyField(CardType, related_name="card_faces")
 
-    subtypes = models.ManyToManyField(CardSubtype, related_name="card_faces", blank=True)
-    supertypes = models.ManyToManyField(CardSupertype, related_name="card_faces", blank=True)
+    subtypes = models.ManyToManyField(
+        CardSubtype, related_name="card_faces", blank=True
+    )
+    supertypes = models.ManyToManyField(
+        CardSupertype, related_name="card_faces", blank=True
+    )
 
     class Meta:
         unique_together = ("card", "side")
@@ -238,43 +242,6 @@ class CardFace(models.Model):
         if self.side:
             return f"{self.name} ({self.side})"
         return self.name
-
-
-#
-# class CardFaceType(models.Model):
-#     name = models.CharField(max_length=50)
-#     display_order = models.IntegerField()
-#
-#     card_face = models.ForeignKey(
-#         CardFace, on_delete=models.CASCADE, related_name="types"
-#     )
-#
-#     class Meta:
-#         unique_together = (("card_face", "display_order"), ("card_face", "name"))
-#
-#
-# class CardFaceSupertype(models.Model):
-#     name = models.CharField(max_length=50)
-#     display_order = models.IntegerField()
-#
-#     card_face = models.ForeignKey(
-#         CardFace, on_delete=models.CASCADE, related_name="supertypes"
-#     )
-#
-#     class Meta:
-#         unique_together = (("card_face", "name"), ("card_face", "display_order"))
-#
-#
-# class CardFaceSubtype(models.Model):
-#     name = models.CharField(max_length=50)
-#     display_order = models.IntegerField()
-#
-#     card_face = models.ForeignKey(
-#         CardFace, on_delete=models.CASCADE, related_name="subtypes"
-#     )
-#
-#     class Meta:
-#         unique_together = (("card_face", "name"), ("card_face", "display_order"))
 
 
 class CardPrinting(models.Model):
@@ -451,13 +418,15 @@ class CardFacePrinting(models.Model):
         CardPrinting, related_name="face_printings", on_delete=models.CASCADE
     )
 
-    frame_effects= models.ManyToManyField(FrameEffect, related_name="face_printings")
+    frame_effects = models.ManyToManyField(FrameEffect, related_name="face_printings")
 
     class Meta:
         unique_together = ("card_face", "card_printing")
 
     def __str__(self) -> str:
         return f"{self.card_face.name} face of {self.card_printing}"
+
+
 # class CardPrintingFaceFrameEffect(models.CharField):
 #     name = models.CharField(max_length=50)
 #     display_order = models.IntegerField()
@@ -473,32 +442,106 @@ class CardFacePrinting(models.Model):
 #         )
 
 
-class CardPrintingLanguage(models.Model):
+class CardLocalisation(models.Model):
     """
     Model for a card printed in a certain set of a certain language
     """
 
-    language: "Language" = models.ForeignKey(
+    language = models.ForeignKey(
         "Language", related_name="cards", on_delete=models.CASCADE
     )
+    card_printing = models.ForeignKey(
+        CardPrinting, related_name="localisations", on_delete=models.CASCADE
+    )
+
     card_name = models.CharField(max_length=200)
-    flavour_text = models.CharField(max_length=500, blank=True, null=True)
-    type = models.CharField(max_length=200, blank=True, null=True)
 
     # An integer most cards have which Wizards of the Coast uses as a card identifier.
     multiverse_id = models.IntegerField(blank=True, null=True)
-    text = models.CharField(max_length=1000, blank=True, null=True)
-
-    card_printing = models.ForeignKey(
-        CardPrinting, related_name="printed_languages", on_delete=models.CASCADE
-    )
 
     class Meta:
         """
-        Meta information for CardPrintingLanguages
+        Meta information for CardLocalisations
         """
 
-        unique_together = ("language", "card_name", "card_printing")
+        unique_together = ("language", "card_printing")
+
+    def __str__(self):
+        return f"{self.language} {self.card_printing}"
+
+    def get_image_path(self) -> Optional[str]:
+        """
+        Gets the relative file path of this prined language
+        :return:
+        """
+        if self.language.code is None:
+            return None
+        # Replace any non-wordy characters (like a star symbol) with s
+        image_name = re.sub(r"\W", "s", self.card_printing.number)
+        if self.card_printing.card.layout in (
+            "transform",
+            "double_faced_token",
+            "modal_dfc",
+        ):
+            image_name += "_" + self.card_printing.card.side
+
+        if self.card_printing.card.is_token:
+            image_name = "t" + image_name
+
+        return os.path.join(
+            "card_images",
+            self.language.code.lower(),
+            "_" + self.card_printing.set.code.lower(),
+            image_name + ".jpg",
+        )
+
+    def get_user_ownership_count(self, user: User, prefetched: bool = False) -> int:
+        """
+        Returns the total number of cards that given user owns of this printed language
+        :param user: The user who should own the card
+        :param prefetched: Whether to use prefetched data, or to get it from the database again
+        :return: The ownership total
+        """
+        if prefetched:
+            return sum(
+                ownership.count
+                for physical_card in self.physical_cards.all()
+                for ownership in physical_card.ownerships.all()
+                if ownership.owner == user
+            )
+
+        return self.physical_cards.aggregate(
+            card_count=Sum(
+                Case(
+                    When(ownerships__owner=user, then="ownerships__count"),
+                    output_field=IntegerField(),
+                    default=0,
+                )
+            )
+        )["card_count"]
+
+
+class CardFaceLocalisation(models.Model):
+
+    localisation = models.ForeignKey(
+        CardLocalisation, related_name="localised_faces", on_delete=models.CASCADE
+    )
+    card_printing_face = models.ForeignKey(
+        CardFacePrinting, related_name="localised_faces", on_delete=models.CASCADE
+    )
+
+    face_name = models.CharField(max_length=200)
+    flavour_text = models.CharField(max_length=500, blank=True, null=True)
+    type = models.CharField(max_length=200, blank=True, null=True)
+
+    text = models.CharField(max_length=1000, blank=True, null=True)
+
+    class Meta:
+        """
+        Meta information for CardLocalisations
+        """
+
+        unique_together = ("card_printing_face", "localisation")
 
     def __str__(self):
         return f"{self.language} {self.card_printing}"
@@ -561,8 +604,8 @@ class UserOwnedCard(models.Model):
     """
 
     count = models.PositiveIntegerField()
-    printing_language = models.ForeignKey(
-        CardPrintingLanguage, related_name="ownerships", on_delete=models.CASCADE
+    card_localisation = models.ForeignKey(
+        CardLocalisation, related_name="ownerships", on_delete=models.CASCADE
     )
     owner = models.ForeignKey(
         User, related_name="owned_cards", on_delete=models.CASCADE
@@ -573,10 +616,10 @@ class UserOwnedCard(models.Model):
         Meta information for the UserOwnedCard class
         """
 
-        unique_together = ("printing_language", "owner")
+        unique_together = ("card_localisation", "owner")
 
     def __str__(self):
-        return f"{self.owner} owns {self.count} of {self.printing_language}"
+        return f"{self.owner} owns {self.count} of {self.card_localisation}"
 
 
 class UserCardChange(models.Model):
@@ -588,7 +631,7 @@ class UserCardChange(models.Model):
     difference = models.IntegerField()
 
     printing_language = models.ForeignKey(
-        CardPrintingLanguage, related_name="user_changes", on_delete=models.CASCADE
+        CardLocalisation, related_name="user_changes", on_delete=models.CASCADE
     )
     owner = models.ForeignKey(
         User, related_name="card_changes", on_delete=models.CASCADE

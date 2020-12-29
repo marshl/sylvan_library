@@ -5,7 +5,7 @@ Module for custom template filters to get the image paths of different card mode
 from django import template
 from django.contrib.auth.models import User
 
-from cards.models import Card, CardPrinting, CardPrintingLanguage
+from cards.models import Card, CardPrinting, CardLocalisation
 
 register = template.Library()
 
@@ -34,7 +34,7 @@ def user_cardprinting_ownership_count(card_printing: CardPrinting, user: User) -
 
 @register.filter
 def user_printedlanguage_ownership_count(
-    printed_language: CardPrintingLanguage, user: User
+    printed_language: CardLocalisation, user: User
 ) -> int:
     """
     Returns the total number of cards that given user owns of the
