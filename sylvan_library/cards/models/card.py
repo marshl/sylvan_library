@@ -1,6 +1,7 @@
 """
 Module for Card related models
 """
+import datetime
 import os
 import random
 import re
@@ -469,7 +470,6 @@ class CardLocalisation(models.Model):
     def __str__(self):
         return f"{self.language} {self.card_printing}"
 
-
     def get_user_ownership_count(self, user: User, prefetched: bool = False) -> int:
         """
         Returns the total number of cards that given user owns of this printed language
@@ -494,6 +494,49 @@ class CardLocalisation(models.Model):
                 )
             )
         )["card_count"]
+
+    def apply_user_change(self, change_count: int, user: User) -> bool:
+        """
+        Applies a change of the number of cards a user owns (can add or subtract cards)
+        :param change_count: The number of cards that should be added/removed
+        :param user: The user that the cards should be added/removed to
+        :return: True if the change was successful, otherwise False
+        """
+        if user is None or change_count == 0:
+            return False
+
+        try:
+            existing_card = UserOwnedCard.objects.get(
+                card_localisation=self, owner=user
+            )
+            if change_count < 0 and abs(change_count) >= existing_card.count:
+                # If the count is below 1 than there is no point thinking that the user "owns"
+                # the card anymore, so just delete the record
+                change_count = -existing_card.count
+                existing_card.delete()
+            else:
+                existing_card.count += change_count
+                existing_card.clean()
+                existing_card.save()
+        except UserOwnedCard.DoesNotExist:
+            if change_count <= 0:
+                # You can't subtract cards when you don' have any
+                return False
+            new_card = UserOwnedCard(
+                count=change_count, owner=user, card_localisation=self
+            )
+            new_card.clean()
+            new_card.save()
+
+        change = UserCardChange(
+            card_localisation=self,
+            owner=user,
+            difference=change_count,
+            date=datetime.datetime.now(),
+        )
+        change.clean()
+        change.save()
+        return True
 
 
 class CardFaceLocalisation(models.Model):
@@ -605,7 +648,7 @@ class UserCardChange(models.Model):
     date = models.DateTimeField()
     difference = models.IntegerField()
 
-    printing_language = models.ForeignKey(
+    card_localisation = models.ForeignKey(
         CardLocalisation, related_name="user_changes", on_delete=models.CASCADE
     )
     owner = models.ForeignKey(
@@ -613,4 +656,4 @@ class UserCardChange(models.Model):
     )
 
     def __str__(self):
-        return f"{self.date} {self.difference} {self.printing_language}"
+        return f"{self.date} {self.difference} {self.card_localisation}"

@@ -2,7 +2,7 @@
 Unit tests for the cards module
 """
 import uuid
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 from django.test import TestCase
 from django.contrib.auth.models import User
@@ -12,19 +12,20 @@ from cards.models import (
     CardPrinting,
     CardLocalisation,
     Language,
-    PhysicalCard,
     Rarity,
     Set,
+    CardFace,
 )
 
 
-def create_test_card(fields: Dict[str, Any]) -> Card:
+def create_test_card(fields: Optional[Dict[str, Any]] = None) -> Card:
     """
     Creates a test card with fields from the given dict
     :param fields: The fields to populate
     :return: A card object
     """
     card = Card()
+    card.scryfall_oracle_id = uuid.uuid4()
     card.name = uuid.uuid1()
     card.cmc = 0
     card.num_power = 0
@@ -39,16 +40,34 @@ def create_test_card(fields: Dict[str, Any]) -> Card:
     card.layout = "normal"
     card.is_reserved = False
     card.is_token = False
+    card.converted_mana_cost = 0
 
-    for key, value in fields.items():
+    for key, value in (fields or {}).items():
+        assert hasattr(card, key)
         setattr(card, key, value)
-
-    if not card.display_name:
-        card.display_name = card.name
 
     card.full_clean()
     card.save()
     return card
+
+
+def create_test_card_face(
+    card: Card, fields: Optional[Dict[str, Any]] = None
+) -> CardFace:
+    card_face = CardFace(card=card)
+    card_face.name = uuid.uuid4()
+    card_face.converted_mana_cost = 0
+    card_face.colour_count = 0
+    card_face.colour_weight = 0
+    card_face.colour_sort_key = 0
+
+    for key, value in (fields or {}).items():
+        assert hasattr(card_face, key)
+        setattr(card_face, key, value)
+
+    card_face.full_clean()
+    card_face.save()
+    return card_face
 
 
 def create_test_card_printing(
@@ -62,6 +81,7 @@ def create_test_card_printing(
     :return: A test CardPrinting
     """
     printing = CardPrinting()
+    printing.scryfall_id = uuid.uuid4()
     printing.card = card
     printing.set = set_obj
     printing.rarity = create_test_rarity("Common", "C")
@@ -89,7 +109,7 @@ def create_test_language(name: str, code: str) -> Language:
     return lang
 
 
-def create_test_card_printing_language(
+def create_test_card_localisation(
     printing: CardPrinting, language: Language
 ) -> CardLocalisation:
     """
@@ -105,22 +125,6 @@ def create_test_card_printing_language(
     print_lang.full_clean()
     print_lang.save()
     return print_lang
-
-
-def create_test_physical_card(printlang: CardLocalisation) -> PhysicalCard:
-    """
-    Creates a dummy PhysicalCard object for the given printed language
-    :param printlang:
-    :return:
-    """
-    physcard = PhysicalCard()
-    physcard.layout = "normal"
-    physcard.full_clean()
-    physcard.save()
-    physcard.printed_languages.add(printlang)
-    physcard.full_clean()
-    physcard.save()
-    return physcard
 
 
 def create_test_set(name: str, setcode: str, fields: Dict[str, Any]) -> Set:
@@ -176,45 +180,44 @@ class CardOwnershipTestCase(TestCase):
         set_obj = create_test_set("Setty", "SET", {})
         printing = create_test_card_printing(card, set_obj, {})
         lang = create_test_language("English", "en")
-        printlang = create_test_card_printing_language(printing, lang)
-        self.physical_card = create_test_physical_card(printlang)
+        self.localisation = create_test_card_localisation(printing, lang)
 
     def test_add_card(self) -> None:
         """
         Tests that adding a card works
         """
-        self.physical_card.apply_user_change(5, self.user)
-        ownership = self.physical_card.ownerships.get(owner=self.user)
+        self.localisation.apply_user_change(5, self.user)
+        ownership = self.localisation.ownerships.get(owner=self.user)
         self.assertEqual(ownership.count, 5)
 
     def test_subtract_card(self) -> None:
         """
         Tests that adding a card and then subtracting from it works
         """
-        self.physical_card.apply_user_change(3, self.user)
-        ownership = self.physical_card.ownerships.get(owner=self.user)
+        self.localisation.apply_user_change(3, self.user)
+        ownership = self.localisation.ownerships.get(owner=self.user)
         self.assertEqual(ownership.count, 3)
-        self.physical_card.apply_user_change(-2, self.user)
-        ownership = self.physical_card.ownerships.get(owner=self.user)
+        self.localisation.apply_user_change(-2, self.user)
+        ownership = self.localisation.ownerships.get(owner=self.user)
         self.assertEqual(ownership.count, 1)
 
     def test_remove_card(self) -> None:
         """
         Tests that a card is removed if it is added and then subtracted from entirely
         """
-        self.physical_card.apply_user_change(3, self.user)
-        ownership = self.physical_card.ownerships.get(owner=self.user)
+        self.localisation.apply_user_change(3, self.user)
+        ownership = self.localisation.ownerships.get(owner=self.user)
         self.assertEqual(ownership.count, 3)
-        self.physical_card.apply_user_change(-3, self.user)
-        self.assertFalse(self.physical_card.ownerships.filter(owner=self.user).exists())
+        self.localisation.apply_user_change(-3, self.user)
+        self.assertFalse(self.localisation.ownerships.filter(owner=self.user).exists())
 
     def test_overremove_card(self) -> None:
         """
         Tests that a card is removed correctly if is added and then has a subtraction greater
         than the number that was added
         """
-        self.physical_card.apply_user_change(3, self.user)
-        ownership = self.physical_card.ownerships.get(owner=self.user)
+        self.localisation.apply_user_change(3, self.user)
+        ownership = self.localisation.ownerships.get(owner=self.user)
         self.assertEqual(ownership.count, 3)
-        self.physical_card.apply_user_change(-10, self.user)
-        self.assertFalse(self.physical_card.ownerships.filter(owner=self.user).exists())
+        self.localisation.apply_user_change(-10, self.user)
+        self.assertFalse(self.localisation.ownerships.filter(owner=self.user).exists())

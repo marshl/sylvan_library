@@ -90,9 +90,9 @@ class CardNameSortParam(CardSortParam):
         Gets the list of attributes to be sorted by
         """
         if search_mode == SearchMode.SEARCH_MODE_CARD:
-            return ["display_name", "name"]
+            return ["name"]
 
-        return ["card__display_name", "card__name"]
+        return ["card__name"]
 
 
 class CardPowerSortParam(CardSortParam):
@@ -105,8 +105,8 @@ class CardPowerSortParam(CardSortParam):
         Gets the list of attributes to be sorted by
         """
         if search_mode == SearchMode.SEARCH_MODE_CARD:
-            return ["num_power"]
-        return ["card__num_power"]
+            return ["faces__num_power"]
+        return ["card__faces__num_power"]
 
 
 class CardCmcSortParam(CardSortParam):
@@ -141,8 +141,8 @@ class CardColourSortParam(CardSortParam):
 
     def get_sort_keys(self, search_mode: SearchMode) -> List[str]:
         if search_mode == SearchMode.SEARCH_MODE_CARD:
-            return ["colour_sort_key"]
-        return ["card__colour_sort_key"]
+            return ["faces__colour_sort_key"]
+        return ["card__faces__colour_sort_key"]
 
 
 class CardColourWeightSortParam(CardSortParam):
@@ -152,5 +152,5 @@ class CardColourWeightSortParam(CardSortParam):
 
     def get_sort_keys(self, search_mode: SearchMode) -> list:
         if search_mode == SearchMode.SEARCH_MODE_CARD:
-            return ["cmc", "colour_sort_key", "colour_weight"]
-        return ["card__converted_mana_cost", "card__colour_sort_key", "card__colour_weight"]
+            return ["converted_mana_cost", "faces__colour_sort_key", "faces__colour_weight"]
+        return ["card__converted_mana_cost", "card__faces__colour_sort_key", "card__faces__colour_weight"]

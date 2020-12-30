@@ -167,7 +167,6 @@ class StagedCard(StagedObject):
         self.scryfall_oracle_id: str = card_data.get("identifiers", {}).get(
             "scryfallOracleId"
         )
-        assert self.scryfall_oracle_id, "Staged cards must have a scryfall oracle ID"
         self.name: str = card_data["name"]
         self.converted_mana_cost: float = float(card_data.get("convertedManaCost", 0.0))
         self.colour_identity: int = Colour.colour_codes_to_flags(
@@ -211,7 +210,6 @@ class StagedCardFace(StagedObject):
         self.scryfall_oracle_id: str = card_data.get("identifiers", {}).get(
             "scryfallOracleId"
         )
-        assert self.scryfall_oracle_id
 
         self.name: str = card_data.get("faceName", card_data["name"])
         self.side = card_data.get("side")

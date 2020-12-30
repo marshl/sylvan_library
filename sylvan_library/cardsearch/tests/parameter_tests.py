@@ -5,7 +5,8 @@ The module for searching tests
 from django.test import TestCase
 
 from cards.models import Set, CardPrinting
-from cards.tests import create_test_card, create_test_card_printing, create_test_set
+from cards.tests import create_test_card, create_test_card_printing, create_test_set, \
+    create_test_card_face
 from cardsearch.parameters import (
     AndParam,
     CardNameParam,
@@ -84,6 +85,8 @@ class CardNameParamTestCase(TestCase):
         self.assertIn(printing, CardPrinting.objects.filter(root_param.query()))
 
 
+
+
 class CardRulesParamTestCase(TestCase):
     """
     Tests for the card rules parameter
@@ -94,7 +97,8 @@ class CardRulesParamTestCase(TestCase):
         Tests that the rules param will match cards that have the exact text
         :return:
         """
-        card = create_test_card({"rules_text": "Flying"})
+        card = create_test_card()
+        create_test_card_face(card, {"rules_text": "Flying"})
         set_obj = create_test_set("Setty", "SET", {})
         printing = create_test_card_printing(card, set_obj, {})
         param = CardRulesTextParam("Flying")
@@ -104,7 +108,8 @@ class CardRulesParamTestCase(TestCase):
         """
         Tests that the rules param will match cards that contain the text
         """
-        card = create_test_card({"rules_text": "Double Strike"})
+        card = create_test_card()
+        create_test_card_face(card, {"rules_text": "Double strike"})
         set_obj = create_test_set("Setty", "SET", {})
         printing = create_test_card_printing(card, set_obj, {})
         param = CardRulesTextParam("strike")

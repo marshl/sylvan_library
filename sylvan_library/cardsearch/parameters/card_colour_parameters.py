@@ -20,7 +20,7 @@ class CardColourParam(CardSearchParam):
         self.card_colour = card_colour
 
     def query(self) -> Q:
-        return Q(card__colour_flags=self.card_colour)
+        return Q(card__face__colour_flags=self.card_colour)
 
     def get_pretty_str(self) -> str:
         verb = "isn't" if self.negated else "is"
@@ -48,7 +48,7 @@ class CardComplexColourParam(CardSearchParam):
         Gets the Q query object
         :return: The Q query object
         """
-        field = "card__colour_identity_flags" if self.identity else "card__colour_flags"
+        field = "card__faces__colour_identity" if self.identity else "card__faces__colour"
         colour_flags = colours_to_int_flags(self.colours)
         if self.operator == ">=":
             return (

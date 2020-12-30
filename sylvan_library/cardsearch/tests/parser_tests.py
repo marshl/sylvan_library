@@ -4,7 +4,12 @@ Tests for the parser (search parameter tests are elsewhere)
 from django.test import TestCase
 
 from cards.models import Card, Colour
-from cards.tests import create_test_card, create_test_set, create_test_card_printing
+from cards.tests import (
+    create_test_card,
+    create_test_set,
+    create_test_card_printing,
+    create_test_card_face,
+)
 from cardsearch.parameters import (
     AndParam,
     OrParam,
@@ -288,36 +293,36 @@ class ColourContainsTestCase(TestCase):
 
     def setUp(self) -> None:
         self.set_obj = create_test_set("Setty", "SET", {})
-        self.red_card = create_test_card({"colour_flags": Card.colour_flags.red})
+        self.red_card = create_test_card({"colour_flags": Colour.RED})
         self.red_card_printing = create_test_card_printing(
             self.red_card, self.set_obj, {}
         )
 
-        self.green_card = create_test_card({"colour_flags": Card.colour_flags.green})
+        self.green_card = create_test_card({"colour_flags": Colour.GREEN})
         self.green_card_printing = create_test_card_printing(
             self.green_card, self.set_obj, {}
         )
 
-        self.red_green_card = create_test_card(
-            {"colour_flags": Card.colour_flags.red | Card.colour_flags.green}
+        self.red_green_card = create_test_card()
+        create_test_card_face(
+            self.red_green_card, {"colour": Colour.RED | Colour.GREEN}
         )
         self.red_green_card_printing = create_test_card_printing(
             self.red_green_card, self.set_obj, {}
         )
 
-        self.red_green_black_card = create_test_card(
-            {
-                "colour_flags": Card.colour_flags.red
-                | Card.colour_flags.green
-                | Card.colour_flags.black
-            }
+        self.red_green_black_card = create_test_card()
+        create_test_card_face(
+            self.red_green_black_card,
+            {"colour": Colour.RED | Colour.GREEN | Colour.BLACK},
         )
+
         self.red_green_black_card_printing = create_test_card_printing(
             self.red_green_black_card, self.set_obj, {}
         )
 
         self.blue_red_card = create_test_card(
-            {"colour_flags": Card.colour_flags.blue | Card.colour_flags.red}
+            {"colour_flags": Colour.BLUE | Colour.RED}
         )
         self.blue_red_card_printing = create_test_card_printing(
             self.blue_red_card, self.set_obj, {}

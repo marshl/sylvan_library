@@ -23,7 +23,6 @@ class CardRulesTextParam(CardSearchParam):
         self.exact_match: bool = exact
         if self.card_rules.startswith("/") and self.card_rules.endswith("/"):
             self.regex_match: bool = True
-            # self.card_rules = "(?m)" + self.card_rules.strip("/")
             self.card_rules = self.card_rules.strip("/")
             if self.exact_match:
                 self.card_rules = "^" + self.card_rules + "$"
@@ -33,31 +32,31 @@ class CardRulesTextParam(CardSearchParam):
     def query(self) -> Q:
         if "~" not in self.card_rules:
             if self.regex_match:
-                query = Q(card__rules_text__iregex=self.card_rules)
+                query = Q(card__faces__rules_text__iregex=self.card_rules)
             elif self.exact_match:
-                query = Q(card__rules_text__iexact=self.card_rules)
+                query = Q(card__faces__rules_text__iexact=self.card_rules)
             else:
-                query = Q(card__rules_text__icontains=self.card_rules)
+                query = Q(card__faces__rules_text__icontains=self.card_rules)
             return ~query if self.negated else query
 
         chunks = [Value(c) for c in self.card_rules.split("~")]
         params = [F("card__name")] * (len(chunks) * 2 - 1)
         params[0::2] = chunks
         if self.regex_match:
-            query = Q(card__rules_text__iregex=Concat(*params))
+            query = Q(card__faces__rules_text__iregex=Concat(*params))
         elif self.exact_match:
-            query = Q(card__rules_text__iexact=Concat(*params))
+            query = Q(card__faces__rules_text__iexact=Concat(*params))
         else:
-            query = Q(card__rules_text__icontains=Concat(*params))
+            query = Q(card__faces__rules_text__icontains=Concat(*params))
 
         params = [Value("this spell")] * (len(chunks) * 2 - 1)
         params[0::2] = chunks
         if self.regex_match:
-            query |= Q(card__rules_text__iregex=Concat(*params))
+            query |= Q(card__faces__rules_text__iregex=Concat(*params))
         elif self.exact_match:
-            query |= Q(card__rules_text__iexact=Concat(*params))
+            query |= Q(card__faces__rules_text__iexact=Concat(*params))
         else:
-            query |= Q(card__rules_text__icontains=Concat(*params))
+            query |= Q(card__faces__rules_text__icontains=Concat(*params))
 
         return ~query if self.negated else query
 
