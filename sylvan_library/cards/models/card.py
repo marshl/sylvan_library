@@ -412,7 +412,7 @@ class CardFacePrinting(models.Model):
     watermark = models.CharField(max_length=100, blank=True, null=True)
 
     card_face = models.ForeignKey(
-        CardFace, related_name="card_printings", on_delete=models.CASCADE
+        CardFace, related_name="face_printings", on_delete=models.CASCADE
     )
     card_printing = models.ForeignKey(
         CardPrinting, related_name="face_printings", on_delete=models.CASCADE
@@ -469,31 +469,6 @@ class CardLocalisation(models.Model):
     def __str__(self):
         return f"{self.language} {self.card_printing}"
 
-    def get_image_path(self) -> Optional[str]:
-        """
-        Gets the relative file path of this prined language
-        :return:
-        """
-        if self.language.code is None:
-            return None
-        # Replace any non-wordy characters (like a star symbol) with s
-        image_name = re.sub(r"\W", "s", self.card_printing.number)
-        if self.card_printing.card.layout in (
-            "transform",
-            "double_faced_token",
-            "modal_dfc",
-        ):
-            image_name += "_" + self.card_printing.card.side
-
-        if self.card_printing.card.is_token:
-            image_name = "t" + image_name
-
-        return os.path.join(
-            "card_images",
-            self.language.code.lower(),
-            "_" + self.card_printing.set.code.lower(),
-            image_name + ".jpg",
-        )
 
     def get_user_ownership_count(self, user: User, prefetched: bool = False) -> int:
         """
@@ -551,24 +526,24 @@ class CardFaceLocalisation(models.Model):
         Gets the relative file path of this prined language
         :return:
         """
-        if self.language.code is None:
+        if self.localisation.language.code is None:
             return None
         # Replace any non-wordy characters (like a star symbol) with s
-        image_name = re.sub(r"\W", "s", self.card_printing.number)
-        if self.card_printing.card.layout in (
+        image_name = re.sub(r"\W", "s", self.localisation.card_printing.number)
+        if self.localisation.card_printing.card.layout in (
             "transform",
             "double_faced_token",
             "modal_dfc",
         ):
-            image_name += "_" + self.card_printing.card.side
+            image_name += "_" + self.card_printing_face.card_face.side
 
-        if self.card_printing.card.is_token:
+        if self.localisation.card_printing.card.is_token:
             image_name = "t" + image_name
 
         return os.path.join(
             "card_images",
-            self.language.code.lower(),
-            "_" + self.card_printing.set.code.lower(),
+            self.localisation.language.code.lower(),
+            "_" + self.localisation.card_printing.set.code.lower(),
             image_name + ".jpg",
         )
 

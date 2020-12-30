@@ -557,7 +557,7 @@ class Command(BaseCommand):
                         f"Cannot set unrecognised field CardFaceLocalisation.{field}"
                     )
             try:
-                # face_localisation.full_clean()
+                face_localisation.full_clean()
                 face_localisation.save()
             except ValidationError:
                 self.logger.error("Failed to validate %s", update_face_localisation)
