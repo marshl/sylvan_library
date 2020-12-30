@@ -125,7 +125,7 @@ class UpdateCardFaceLocalisation(models.Model):
     language_code = models.CharField(max_length=100)
     printing_scryfall_id = models.CharField(max_length=36)
     face_name = models.CharField(max_length=200)
-    side = models.CharField(max_length=1, null=True, blank=True)
+    face_printing_uuid = models.CharField(max_length=36)
 
     field_data = models.JSONField()
 

@@ -20,6 +20,7 @@ from cards.models.card import (
     FrameEffect,
     CardFacePrinting,
     CardLocalisation,
+    CardFaceLocalisation,
 )
 from cards.models.card_price import CardPrice
 from cards.models.colour import Colour

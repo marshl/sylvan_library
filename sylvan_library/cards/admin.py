@@ -17,6 +17,7 @@ from cards.models import (
     CardPrinting,
     CardFacePrinting,
     CardLocalisation,
+    CardFaceLocalisation,
 )
 
 
@@ -131,15 +132,22 @@ class CardFacePrintingAdmin(admin.ModelAdmin):
     form = CardFacePrintingModelForm
 
 
-class CardLocalisationModelForm(forms.ModelForm):
-    text = forms.CharField(widget=forms.Textarea)
-
-    class Meta:
-        model = CardLocalisation
-        exclude = []
-
-
 @admin.register(CardLocalisation)
 class CardLocalisationAdmin(admin.ModelAdmin):
     autocomplete_fields = ["card_printing"]
-    form = CardLocalisationModelForm
+    search_fields = ["card_name", "multiverse_id", "card_printing__scryfall_id"]
+
+
+class CardFaceLocalisationModelForm(forms.ModelForm):
+    text = forms.CharField(widget=forms.Textarea)
+    flavour_text = forms.CharField(widget=forms.Textarea)
+
+    class Meta:
+        model = CardFaceLocalisation
+        exclude = []
+
+
+@admin.register(CardFaceLocalisation)
+class CardFaceLocalisationAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["localisation", "card_printing_face"]
+    form = CardFaceLocalisationModelForm

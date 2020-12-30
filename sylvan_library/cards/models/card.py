@@ -544,7 +544,7 @@ class CardFaceLocalisation(models.Model):
         unique_together = ("card_printing_face", "localisation")
 
     def __str__(self):
-        return f"{self.language} {self.card_printing}"
+        return f"{self.face_name} {self.localisation} ({self.card_printing_face})"
 
     def get_image_path(self) -> Optional[str]:
         """

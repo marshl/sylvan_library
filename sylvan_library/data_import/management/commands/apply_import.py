@@ -28,6 +28,7 @@ from cards.models import (
     FrameEffect,
     CardLocalisation,
     Language,
+    CardFaceLocalisation,
 )
 from data_import.models import (
     UpdateBlock,
@@ -40,6 +41,7 @@ from data_import.models import (
     UpdateCardPrinting,
     UpdateCardFacePrinting,
     UpdateCardLocalisation,
+    UpdateCardFaceLocalisation,
 )
 
 
@@ -81,6 +83,7 @@ class Command(BaseCommand):
                 or not self.update_card_printings()
                 or not self.update_card_face_printings()
                 or not self.update_card_localisations()
+                or not self.update_card_face_localisations()
             ):
                 raise Exception("Change application aborted")
 
@@ -507,10 +510,57 @@ class Command(BaseCommand):
                         f"Cannot set unrecognised field CardLocalisation.{field}"
                     )
             try:
-                localisation.full_clean()
+                # localisation.full_clean()
                 localisation.save()
             except ValidationError:
                 self.logger.error("Failed to validate %s", update_localisation)
+                raise
+
+        return True
+
+    def update_card_face_localisations(self):
+        self.logger.info(
+            "Updating %s card face localisations",
+            UpdateCardFaceLocalisation.objects.count(),
+        )
+        language_map = {language.name: language for language in Language.objects.all()}
+
+        for update_face_localisation in UpdateCardFaceLocalisation.objects.all():
+            if update_face_localisation.update_mode == UpdateMode.CREATE:
+                face_localisation = CardFaceLocalisation(
+                    localisation=CardLocalisation.objects.get(
+                        card_printing__scryfall_id=update_face_localisation.printing_scryfall_id,
+                        language=language_map[update_face_localisation.language_code],
+                    ),
+                    card_printing_face=CardFacePrinting.objects.get(
+                        uuid=update_face_localisation.face_printing_uuid
+                    ),
+                )
+            elif update_face_localisation.update_mode == UpdateMode.UPDATE:
+                face_localisation = CardLocalisation.objects.get(
+                    localisation__card_printing__scryfall_id=update_face_localisation.printing_scryfall_id,
+                    language=language_map[update_face_localisation.language_code],
+                )
+            else:
+                raise Exception()
+
+            face_localisation.face_name = update_face_localisation.face_name
+            for field, value in update_face_localisation.field_data.items():
+                if update_face_localisation.update_mode == UpdateMode.UPDATE:
+                    value = value["to"]
+                if field in ('face_printing_uuid', ):
+                    continue
+                if hasattr(face_localisation, field):
+                    setattr(face_localisation, field, value)
+                else:
+                    raise NotImplementedError(
+                        f"Cannot set unrecognised field CardFaceLocalisation.{field}"
+                    )
+            try:
+                # face_localisation.full_clean()
+                face_localisation.save()
+            except ValidationError:
+                self.logger.error("Failed to validate %s", update_face_localisation)
                 raise
 
         return True

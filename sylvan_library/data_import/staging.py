@@ -17,8 +17,8 @@ from cards.models import (
     CardPrinting,
     CardFacePrinting,
     CardLocalisation,
+    CardFaceLocalisation,
 )
-
 
 COLOUR_TO_SORT_KEY = {
     Colour.COLOURLESS: 0,
@@ -582,18 +582,15 @@ class StagedCardLocalisation(StagedObject):
 
         self.language_name = foreign_data["language"]
         self.card_name = foreign_data["name"]
-        self.flavour_text = foreign_data.get("flavorText")
         self.multiverse_id = (
             int(foreign_data["multiverseId"])
             if "multiverseId" in foreign_data
             else None
         )
-        self.type = foreign_data.get("type")
-        self.text = foreign_data.get("text")
 
     def get_field_data(self):
         return self.get_all_fields(
-            fields_to_ignore={"printing_scryfall_id", "language_name", "name"}
+            fields_to_ignore={"printing_scryfall_id", "language_name"}
         )
 
     def compare_with_existing_localisation(
@@ -607,13 +604,30 @@ class StagedCardLocalisation(StagedObject):
 
 class StagedCardFaceLocalisation(StagedObject):
     def __init__(
-        self, staged_card_printing: StagedCardPrinting, foreign_data: Dict[str, Any]
+        self,
+        staged_card_printing: StagedCardPrinting,
+        staged_face_printing: StagedCardFacePrinting,
+        foreign_data: Dict[str, Any],
     ):
         self.printing_scryfall_id = staged_card_printing.scryfall_id
+        self.face_printing_uuid = staged_face_printing.uuid
 
-        self.language = foreign_data["language"]
-        self.name = foreign_data.get("faceName", foreign_data["name"])
+        self.language_name = foreign_data["language"]
+        self.face_name = foreign_data.get("faceName", foreign_data["name"])
 
         self.text = foreign_data.get("text")
         self.type = foreign_data.get("type")
         self.flavour_text = foreign_data.get("flavorText")
+
+    def get_field_data(self):
+        return self.get_all_fields(
+            fields_to_ignore={"printing_scryfall_id", "language_name"}
+        )
+
+    def compare_with_existing_face_localisation(
+        self, existing_face_localisation: CardFaceLocalisation
+    ):
+        return self.get_object_differences(
+            existing_face_localisation,
+            fields_to_ignore={"localisation_id", "card_printing_face_id"},
+        )
