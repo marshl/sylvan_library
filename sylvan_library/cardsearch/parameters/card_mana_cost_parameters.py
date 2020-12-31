@@ -137,7 +137,7 @@ class CardManaCostComplexParam(CardSearchParam):
 
             query &= Q(
                 **{
-                    "card__search_metadata__symbol_count_"
+                    "card__faces__search_metadata__symbol_count_"
                     + symbol.lower().replace("/", "_")
                     + OPERATOR_MAPPING[self.operator]: count
                 }
@@ -146,7 +146,7 @@ class CardManaCostComplexParam(CardSearchParam):
         if self.generic_mana:
             query &= Q(
                 **{
-                    "card__search_metadata__symbol_count_generic"
+                    "card__faces__search_metadata__symbol_count_generic"
                     + OPERATOR_MAPPING[self.operator]: self.generic_mana
                 }
             )
@@ -159,7 +159,7 @@ class CardManaCostComplexParam(CardSearchParam):
                     continue
                 query &= Q(
                     **{
-                        "card__search_metadata__symbol_count_"
+                        "card__faces__search_metadata__symbol_count_"
                         + symbol.lower().replace("/", "_"): 0
                     }
                 )
@@ -168,7 +168,7 @@ class CardManaCostComplexParam(CardSearchParam):
             if not self.generic_mana:
                 query &= Q(
                     **{
-                        "card__search_metadata__symbol_count_generic"
+                        "card__faces__search_metadata__symbol_count_generic"
                         + OPERATOR_MAPPING[self.operator]: 0
                     }
                 )

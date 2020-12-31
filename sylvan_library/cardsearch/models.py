@@ -4,18 +4,18 @@ hard/expensive to search for at run time
 """
 from django.db import models
 
-from cards.models import Card
+from cards.models import Card, CardFace
 
 
-class CardSearchMetadata(models.Model):
+class CardFaceSearchMetadata(models.Model):
     """
-    This object stores additional information a card that is used during searches.
-    This has a one to one relationship with a Card, and could be stored on the card itself,
+    This object stores additional information a card face that is used during searches.
+    This has a one to one relationship with a CardFace, and could be stored on the face itself,
     however it is probably better to reduce clutter on the main object where possible
     """
 
-    card = models.OneToOneField(
-        Card, on_delete=models.CASCADE, related_name="search_metadata"
+    card_face = models.OneToOneField(
+        CardFace, related_name="search_metadata", on_delete=models.CASCADE
     )
 
     rules_without_reminders = models.CharField(max_length=1000, blank=True, null=True)

@@ -127,7 +127,7 @@ class CardMulticolouredOnlyParam(CardSearchParam):
     """
 
     def query(self) -> Q:
-        return Q(card__colour_count__gt=1)
+        return Q(card__faces__colour_count__gte=2)
 
     def get_pretty_str(self) -> str:
         verb = "isn't" if self.negated else "is"

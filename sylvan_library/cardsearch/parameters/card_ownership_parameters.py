@@ -19,7 +19,7 @@ class CardOwnerParam(CardSearchParam):
         self.user = user
 
     def query(self) -> Q:
-        return Q(printed_languages__physical_cards__ownerships__owner=self.user)
+        return Q(localisations__ownerships__owner=self.user)
 
     def get_pretty_str(self) -> str:
         verb = "don't own" if self.negated else "own"
@@ -44,8 +44,8 @@ class CardOwnershipCountParam(CardNumericalParam):
             ownership_count=Sum(
                 Case(
                     When(
-                        printings__printed_languages__physical_cards__ownerships__owner=self.user,
-                        then="printings__printed_languages__physical_cards__ownerships__count",
+                        printings__localisations__ownerships__owner=self.user,
+                        then="printings__localisations__ownerships__count",
                     ),
                     output_field=IntegerField(),
                     default=0,

@@ -354,8 +354,12 @@ class CardPrinting(models.Model):
         But for Guild Kit printings, the guild symbol should be used instead
         :return:
         """
-        if self.set.code in ("GK1", "GK2") and self.watermark:
-            return self.watermark.lower()
+        if (
+            self.set.code in ("GK1", "GK2")
+            and self.face_printings.count() == 1
+            and self.face_printings.first().watermark
+        ):
+            return self.face_printings.first().watermark
 
         return self.set.keyrune_code.lower()
 

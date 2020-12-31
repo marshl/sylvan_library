@@ -16,7 +16,7 @@ class CardTypeParam(CardSearchParam):
         self.card_type = card_type
 
     def query(self) -> Q:
-        return Q(card__type__icontains=self.card_type)
+        return Q(card__face__types__name=self.card_type)
 
     def get_pretty_str(self) -> str:
         verb = "isn't" if self.negated else "is"
@@ -56,12 +56,12 @@ class CardGenericTypeParam(CardSearchParam):
         :return: The search Q object
         """
         if self.operator == "=":
-            result = Q(card__type__iexact=self.card_type) | Q(
-                card__subtype__iexact=self.card_type
+            result = Q(card__faces__types__name__iexact=self.card_type) | Q(
+                card__faces__subtypes__name__iexact=self.card_type
             )
         else:
-            result = Q(card__type__icontains=self.card_type) | Q(
-                card__subtype__icontains=self.card_type
+            result = Q(card__faces__types__name__icontains=self.card_type) | Q(
+                card__faces__subtypes__name__icontains=self.card_type
             )
         return ~result if self.negated else result
 

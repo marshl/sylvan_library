@@ -15,7 +15,7 @@ class Block(models.Model):
     release_date: datetime.date = models.DateField(blank=True, null=True)
 
     def __str__(self) -> str:
-        return self.name
+        return f"{self.name} block"
 
 
 class Format(models.Model):

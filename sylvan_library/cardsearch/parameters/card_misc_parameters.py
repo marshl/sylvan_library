@@ -12,7 +12,7 @@ class CardIsPhyrexianParam(CardSearchParam):
     """
 
     def query(self) -> Q:
-        query = Q(card__cost__icontains="/p") | Q(card__rules_text__icontains="/p")
+        query = Q(card__faces__mana_cost__icontains="/p") | Q(card__faces__rules_text__icontains="/p")
         return ~query if self.negated else query
 
     def get_pretty_str(self) -> str:
@@ -25,7 +25,7 @@ class CardHasWatermarkParam(CardSearchParam):
     """
 
     def query(self) -> Q:
-        return Q(watermark__isnull=self.negated)
+        return Q(face_printings__watermark__isnull=self.negated)
 
     def get_pretty_str(self) -> str:
         return "card " + ("doesn't have " if self.negated else "has") + " a watermark"
@@ -49,7 +49,7 @@ class CardHasColourIndicatorParam(CardSearchParam):
     """
 
     def query(self) -> Q:
-        query = Q(card__colour_indicator_flags=0)
+        query = Q(card__faces__colour_indicator=0)
         return query if self.negated else ~query
 
     def get_pretty_str(self) -> str:
@@ -66,7 +66,7 @@ class CardIsHybridParam(CardSearchParam):
     """
 
     def query(self) -> Q:
-        query = Q(card__cost__iregex=r"\/[wubrg]")
+        query = Q(card__faces__mana_cost__iregex=r"\/[wubrg]")
         return ~query if self.negated else query
 
     def get_pretty_str(self) -> str:

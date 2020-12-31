@@ -88,7 +88,7 @@ class CardProducesManaParam(CardSearchParam):
 
     def query(self) -> Q:
         if self.any_colour:
-            query = Q(card__rules_text__iregex=r"adds?\W")
+            query = Q(card__faces__rules_text__iregex=r"adds?\W")
             return ~query if self.negated else query
 
         included_colours: List[Q] = []
@@ -96,7 +96,7 @@ class CardProducesManaParam(CardSearchParam):
 
         for colour in Colour.objects.all():
             query_part = Q(
-                **{"card__search_metadata__produces_" + colour.symbol.lower(): True}
+                **{"card__faces__search_metadata__produces_" + colour.symbol.lower(): True}
             )
             included = colour in self.colours
 
@@ -140,7 +140,7 @@ class CardWatermarkParam(CardSearchParam):
         self.watermark = watermark
 
     def query(self) -> Q:
-        return Q(watermark__iexact=self.watermark)
+        return Q(face_printings__watermark__iexact=self.watermark)
 
     def get_pretty_str(self) -> str:
         return (

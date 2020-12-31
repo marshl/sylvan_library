@@ -15,7 +15,7 @@ class CardFlavourTextParam(CardSearchParam):
         self.flavour_text = flavour_text
 
     def query(self) -> Q:
-        query = Q(flavour_text__icontains=self.flavour_text)
+        query = Q(face_printings__flavour_text__icontains=self.flavour_text)
         return ~query if self.negated else query
 
     def get_pretty_str(self) -> str:
