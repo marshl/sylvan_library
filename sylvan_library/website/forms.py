@@ -22,26 +22,20 @@ from cards.models import (
     Language,
     Rarity,
     Set,
+    CardLocalisation,
 )
 from cardsearch.fieldsearch import FieldSearch
 from cardsearch.namesearch import NameSearch
 from cardsearch.parse_search import ParseSearch
 
 
-def get_physical_card_key_pair(
-    physical_card, printing: CardPrinting
-) -> Tuple[int, str]:
+def get_physical_card_key_pair(localisation: CardLocalisation) -> Tuple[int, str]:
     """
     Gets the ID and display name of th given PhysicalCard for the given CardPrinting
-    :param physical_card: The physical card the user can select from
-    :param printing: The printing of the physical card
+    :param localisation: The localisation the user can select from
     :return: A tuple of the physical card's ID and a display string
     """
-    # TODO: PhysicalCard
-    # return (
-    #     physical_card.id,
-    #     f"{physical_card.get_display_for_adding()} ({printing.number})",
-    # )
+    return (localisation.id, f"{localisation} ({localisation.card_printing.number})")
 
 
 class ChangeCardOwnershipForm(forms.Form):
@@ -50,41 +44,30 @@ class ChangeCardOwnershipForm(forms.Form):
     """
 
     count = forms.IntegerField()
-    printed_language = forms.ChoiceField(widget=forms.Select)
+    localisation = forms.ChoiceField(widget=forms.Select)
 
     def __init__(self, printing: CardPrinting):
         super().__init__()
-        if any(
-            pl
-            for pl in printing.printed_languages.all()
-            if pl.language_id == Language.english().id
-        ):
-            # Put the english print first as that is the most likely one that the user will add
-            english_print = next(
-                pl
-                for pl in printing.printed_languages.all()
-                if pl.language_id == Language.english().id
+        # Put the english print first as that is the most likely one that the user will add
+        english_localisation = next(
+            (
+                localisation
+                for localisation in printing.localisations.all()
+                if localisation.language_id == Language.english().id
             )
-            choices = [
-                get_physical_card_key_pair(physical_card, printing)
-                for physical_card in english_print.physical_cards.all()
-            ]
-            choices.extend(
-                [
-                    get_physical_card_key_pair(physical_card, printing)
-                    for lang in printing.printed_languages.all()
-                    for physical_card in lang.physical_cards.all()
-                    if lang.language_id != Language.english().id
-                ]
-            )
+        )
+        if english_localisation:
+            choices = [get_physical_card_key_pair(english_localisation)]
         else:
-            choices = [
-                get_physical_card_key_pair(physical_card, printing)
-                for lang in printing.printed_languages.all()
-                for physical_card in lang.physical_cards.all()
+            choices = []
+        choices.extend(
+            [
+                get_physical_card_key_pair(localisation)
+                for localisation in printing.localisations.all()
+                if localisation.language_id != Language.english().id
             ]
-
-        self.fields["printed_language"].choices = choices
+        )
+        self.fields["localisation"].choices = choices
 
 
 class SearchForm(forms.Form):

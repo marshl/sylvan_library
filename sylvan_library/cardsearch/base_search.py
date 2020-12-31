@@ -19,6 +19,7 @@ from cardsearch.parameters import (
 
 from cards.models import Card, CardPrinting, Set
 
+
 # pylint: disable=too-few-public-methods
 class SearchResult:
     """
@@ -140,13 +141,15 @@ class BaseSearch:
         Gets the queryset of the search
         :return: The search queryset
         """
-        queryset = CardPrinting.objects.filter(self.root_parameter.query()).distinct()
+        query = self.root_parameter.query()
+        queryset = CardPrinting.objects.filter(query).distinct()
         # TODO: Need to handle printing and card searches separately somehow
         queryset = Card.objects.filter(printings__in=queryset).distinct()
+        # print(str(queryset.query))
         # Add some default sort params to ensure stable ordering
         self.add_sort_param(CardNameSortParam())
-        self.add_sort_param(CardColourSortParam())
-        self.add_sort_param(CardPowerSortParam())
+        # self.add_sort_param(CardColourSortParam())
+        # self.add_sort_param(CardPowerSortParam())
 
         queryset = queryset.order_by(
             *[
@@ -169,16 +172,16 @@ class BaseSearch:
         :param page_size: The number of items per page
         """
         queryset = self.get_queryset()
+        print(str(queryset.query))
         self.paginator = Paginator(queryset, page_size)
         try:
             self.page = self.paginator.page(page_number)
         except EmptyPage:
             return
         cards = list(self.page)
-        prefetch_related_objects(
-            cards, "printings__printed_languages__physical_cards__ownerships"
-        )
-        prefetch_related_objects(cards, "printings__printed_languages__language")
+        prefetch_related_objects(cards, "printings__localisations__ownerships")
+        prefetch_related_objects(cards, "printings__localisations__language")
+        prefetch_related_objects(cards, "faces")
         prefetch_related_objects(cards, "printings__set")
         prefetch_related_objects(cards, "printings__rarity")
 

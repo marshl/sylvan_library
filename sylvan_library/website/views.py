@@ -181,12 +181,12 @@ def ajax_search_result_ownership(request: WSGIRequest, card_id: int) -> HttpResp
     card = Card.objects.get(id=card_id)
     ownerships = (
         UserOwnedCard.objects.filter(owner=request.user)
-        .filter(physical_card__printed_languages__card_printing__card__id=card_id)
-        .order_by("physical_card__printed_languages__card_printing__set__release_date")
+        .filter(card_localisation__card_printing__card__id=card_id)
+        .order_by("card_localisation__card_printing__set__release_date")
     )
     changes = (
         UserCardChange.objects.filter(owner=request.user)
-        .filter(physical_card__printed_languages__card_printing__card__id=card_id)
+        .filter(card_localisation__card_printing__card__id=card_id)
         .order_by("date")
     )
     return render(
@@ -205,16 +205,15 @@ def ajax_change_card_ownership(request: WSGIRequest) -> HttpResponse:
     if not request.POST.get("count"):
         return JsonResponse({"result": False, "error": "Invalid count"})
 
-    # TODO: Card ownership on CardLocalisation, not PhysicalCard
-    # try:
-    #     with transaction.atomic():
-    #         change_count = int(request.POST["count"])
-    #         physical_card_id = int(request.POST["printed_language"])
-    #         physical_card = PhysicalCard.objects.get(id=physical_card_id)
-    #         physical_card.apply_user_change(change_count, request.user)
-    #         return JsonResponse({"result": True})
-    # except PhysicalCard.DoesNotExist as ex:
-    #     return JsonResponse({"result": False, "error": str(ex)})
+    try:
+        with transaction.atomic():
+            change_count = int(request.POST["count"])
+            localisation_id = int(request.POST["localisation"])
+            localisation = CardLocalisation.objects.get(pk=localisation_id)
+            localisation.apply_user_change(change_count, request.user)
+            return JsonResponse({"result": True})
+    except CardLocalisation.DoesNotExist as ex:
+        return JsonResponse({"result": False, "error": str(ex)})
 
 
 def ajax_ownership_summary(request: WSGIRequest, card_id: int) -> HttpResponse:
@@ -255,7 +254,7 @@ def ajax_search_result_decks(request: WSGIRequest, card_id: int) -> HttpResponse
     card = Card.objects.get(pk=card_id)
     deck_cards = (
         DeckCard.objects.filter(deck__owner=request.user)
-        .filter(card__in=card.get_all_sides())
+        .filter(card=card)
         .order_by("-deck__date_created")
     )
     card_count = deck_cards.aggregate(card_count=Sum("count"))["card_count"]
@@ -275,54 +274,50 @@ def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse
     :param card_id: The ID of the Card
     :return: The link HTML
     """
-    card = Card.objects.get(pk=card_id)
-    linked_card_name = (
-        card.display_name if card.layout != "split" else card.get_linked_name()
-    )
-
+    card: Card = Card.objects.get(pk=card_id)
     links = [
         {
             "name": "Search on Channel Fireball",
             "url": "https://store.channelfireball.com/products/search?{}".format(
-                urllib.parse.urlencode({"q": card.display_name})
+                urllib.parse.urlencode({"q": card.name})
             ),
         },
         {
             "name": "TCGPlayer Decks",
             "url": "https://decks.tcgplayer.com/magic/deck/search?{}".format(
-                urllib.parse.urlencode({"contains": card.display_name, "page": 1})
+                urllib.parse.urlencode({"contains": card.name, "page": 1})
             ),
         },
         {
             "name": "Card Analysis on EDHREC",
             "url": "http://edhrec.com/route/?{}".format(
-                urllib.parse.urlencode({"cc": card.display_name})
+                urllib.parse.urlencode({"cc": card.faces.first().name})
             ),
         },
         {
             "name": "Search on DeckStats",
             "url": "https://deckstats.net/decks/search/?{}".format(
-                urllib.parse.urlencode({"search_cards[]": card.display_name})
+                urllib.parse.urlencode({"search_cards[]": card.name})
             ),
         },
         {
             "name": "MTGTop8 decks",
             "url": "http://mtgtop8.com/search?{}".format(
                 urllib.parse.urlencode(
-                    {"MD_check": 1, "SB_check": 1, "cards": linked_card_name}
+                    {"MD_check": 1, "SB_check": 1, "cards": card.faces.first().name}
                 )
             ),
         },
         {
             "name": "Search on Starcity Games",
             "url": "https://starcitygames.com/search/?{}".format(
-                urllib.parse.urlencode({"search_query": card.display_name})
+                urllib.parse.urlencode({"search_query": card.name})
             ),
         },
         {
             "name": "Search on Scryfall",
             "url": "https://scryfall.com/search?q={}".format(
-                urllib.parse.urlencode({"name": card.display_name})
+                urllib.parse.urlencode({"name": card.name})
             ),
         },
         {
@@ -331,29 +326,29 @@ def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse
                 urllib.parse.urlencode(
                     {
                         "search": "header",
-                        "filter[name]": f"{card.display_name} token"
-                        if card.is_token and "Emblem" not in card.type
-                        else card.display_name,
+                        "filter[name]": f"{card.name} token"
+                        if card.is_token
+                        else card.faces.first().name,
                     }
                 )
             ),
         },
     ]
 
-    printlang = (
+    localisation = (
         CardLocalisation.objects.filter(card_printing__card=card)
         .filter(multiverse_id__isnull=False)
         .filter(language=Language.english())
         .order_by("card_printing__set__release_date")
         .last()
     )
-    if printlang:
+    if localisation:
         links.insert(
             0,
             {
                 "name": "View on Gatherer",
                 "url": "https://gatherer.wizards.com/Pages/Card/Details.aspx?{}".format(
-                    urllib.parse.urlencode({"multiverseid": printlang.multiverse_id})
+                    urllib.parse.urlencode({"multiverseid": localisation.multiverse_id})
                 ),
             },
         )

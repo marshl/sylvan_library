@@ -19,5 +19,6 @@ def other_card_printing_side(card_printing: CardPrinting) -> CardPrinting:
     Note that this won't work consistently for cards with more than one other side
     (such as meld cards and Who/What/When/Where/Why)
     """
+    return card_printing
     other_card = card_printing.card.links.exclude(printings=card_printing).first()
     return other_card.printings.filter(set=card_printing.set).first()

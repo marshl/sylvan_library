@@ -16,7 +16,7 @@ class CardArtistParam(CardSearchParam):
         self.artist = artist
 
     def query(self) -> Q:
-        return Q(artist__icontains=self.artist)
+        return Q(face_printings__artist__icontains=self.artist)
 
     def get_pretty_str(self) -> str:
         return "artist " + ("isn't" if self.negated else "is") + " " + self.artist

@@ -100,9 +100,8 @@ class Card(models.Model):
             return sum(
                 ownership.count
                 for card_printing in self.printings.all()
-                for printed_language in card_printing.printed_languages.all()
-                for physical_card in printed_language.physical_cards.all()
-                for ownership in physical_card.ownerships.all()
+                for localisation in card_printing.localisations.all()
+                for ownership in localisation.ownerships.all()
                 if ownership.owner_id == user.id
             )
 
@@ -110,8 +109,8 @@ class Card(models.Model):
             card_count=Sum(
                 Case(
                     When(
-                        printed_languages__physical_cards__ownerships__owner=user,
-                        then="printed_languages__physical_cards__ownerships__count",
+                        localisations__ownerships__owner=user,
+                        then="localisations__ownerships__count",
                     ),
                     output_field=IntegerField(),
                     default=0,
@@ -370,19 +369,15 @@ class CardPrinting(models.Model):
         if prefetched:
             return sum(
                 ownership.count
-                for printed_language in self.printed_languages.all()
-                for physical_card in printed_language.physical_cards.all()
-                for ownership in physical_card.ownerships.all()
+                for localisation in self.localisations.all()
+                for ownership in localisation.ownerships.all()
                 if ownership.owner_id == user.id
             )
 
-        return self.printed_languages.aggregate(
+        return self.localisations.aggregate(
             card_count=Sum(
                 Case(
-                    When(
-                        physical_cards__ownerships__owner=user,
-                        then="physical_cards__ownerships__count",
-                    ),
+                    When(ownerships__owner=user, then="ownerships__count"),
                     output_field=IntegerField(),
                     default=0,
                 )
@@ -537,6 +532,9 @@ class CardLocalisation(models.Model):
         change.clean()
         change.save()
         return True
+
+    def get_image_path(self) -> str:
+        return self.localised_faces.first().get_image_path()
 
 
 class CardFaceLocalisation(models.Model):

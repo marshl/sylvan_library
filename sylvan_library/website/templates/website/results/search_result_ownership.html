@@ -7,22 +7,22 @@
             </span>
                 {% for ownership in ownerships.all %}
                     <div>
-                        <i class="ss ss-2x ss-{{ ownership.physical_card.printed_languages.first.card_printing.get_set_keyrune_code }}
+                        <i class="setIcon ss ss-2x ss-{{ ownership.card_localisation.card_printing.get_set_keyrune_code }}
                             {% if printing.set.code == 'TSB' %}
                                 ss-timeshifted
                             {% else %}
-                                ss-{{ ownership.physical_card.printed_languages.first.card_printing.rarity.name | lower }}
+                                ss-{{ ownership.card_localisation.card_printing.rarity.name | lower }}
                             {% endif %}"
                         ></i>
                         <span class="subtitle">
-                            {{ ownership.count }} {{ ownership.physical_card.get_simple_string }}
+                            {{ ownership.count }} {{ ownership.card_localisation }}
                         </span>
                         <br/>
                     </div>
                 {% endfor %}
             </div>
         {% else %}
-            <span class="subtitle">You don't own a {{ card.display_name }}
+            <span class="subtitle">You don't own {{ card.name }}
         {% endif %}
         {% if changes %}
             <span class="subtitle">
@@ -32,7 +32,7 @@
                 <div>
                     <span class="subtitle">
                         {% if change.difference > 0 %}+{% endif %}{{ change.difference }}
-                        {{ change.date }} {{ change.physical_card }}
+                        {{ change.date }} {{ change.card_localisation }}
                     </span>
                     <br/>
                 </div>

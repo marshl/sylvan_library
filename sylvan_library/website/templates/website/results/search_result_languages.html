@@ -1,13 +1,13 @@
 <div class="extraDetails">
-    {% if printing.printed_languages.exists %}
+    {% if printing.localisations.exists %}
         <div>
-            {% for printed_language in printing.printed_languages.all %}
+            {% for localisation in printing.localisations.all %}
                 <div>
                     <span class="subtitle">
-                        <b>{{ printed_language.language.name }}: </b>
+                        <b>{{ localisation.language.name }}: </b>
                     </span>
                     <span class="subtitle">
-                        {{ printed_language.card_name }}
+                        {{ localisation.card_name }}
                     </span>
                 </div>
             {% endfor %}
