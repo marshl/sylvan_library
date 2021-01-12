@@ -800,39 +800,6 @@ mana. Spend this mana only to cast the last card exiled with Ice Cauldron.""",
             "The collector numbers for Initiates of the Ebon Hand are incorrect",
         )
 
-    # def test_physical_cards(self) -> None:
-    #     """
-    #     Tests the properties of PhysicalCard objects
-    #     """
-    #     gisela = Card.objects.get(name="Gisela, the Broken Blade")
-    #     bruna = Card.objects.get(name="Bruna, the Fading Light")
-    #     brisela = Card.objects.get(name="Brisela, Voice of Nightmares")
-    #     emn = Set.objects.get(code="EMN")
-    #     english = Language.objects.get(name="English")
-    #
-    #     gisela_printlang = gisela.printings.get(set=emn).printed_languages.get(
-    #         language=english
-    #     )
-    #     bruna_printlang = bruna.printings.get(set=emn).printed_languages.get(
-    #         language=english
-    #     )
-    #     brisela_printlang = brisela.printings.get(set=emn).printed_languages.get(
-    #         language=english
-    #     )
-    #
-    #     self.assert_true(
-    #         gisela_printlang.physical_cards.count() == 1,
-    #         "Gisela should only have one physical card",
-    #     )
-    #     self.assert_true(
-    #         bruna_printlang.physical_cards.count() == 1,
-    #         "Bruna should only have one physical card",
-    #     )
-    #     self.assert_true(
-    #         brisela_printlang.physical_cards.count() == 2,
-    #         "Brisela should have two physical cards",
-    #     )
-
     def assert_card_exists(self, card_name: str):
         """
         Asserts that a card with the given name does exist

@@ -33,9 +33,9 @@
                     <div class="search-result-base-details" style="display:inline-block;">
                         <h2 class="search-result-title">
                             <a target="_blank">{{ face.name }}</a>
-                            {% if face.cost %}
+                            {% if face.mana_cost %}
                                 {{ face.mana_cost | replace_mana_symbols | shadowed | safe }}
-                                ({{ face.cmc | floatformat }})
+                                ({{ face.converted_mana_cost | floatformat }})
                             {% endif %}
 
                             {% if request.user.is_authenticated %}
@@ -44,22 +44,6 @@
                                 </span>
                             {% endif %}
                         </h2>
-                        {#                        {% if result.card.has_other_half %}#}
-                        {#                            <div class="subtitle">#}
-                        {#                                {% if result.card.has_other_half %}#}
-                        {#                                    Other half of#}
-                        {#                                {% elif result.card.layout == 'transform' %}#}
-                        {#                                    Transforms {% if result.card.side == 'a' %}into{% else %}from{% endif %}#}
-                        {#                                {% elif result.card.layout == 'meld' and result.card.side != 'c' %}#}
-                        {#                                    Melds into#}
-                        {#                                {% else %}#}
-                        {#                                    Melded from#}
-                        {#                                {% endif %}#}
-                        {#                                {% for link in result.card.links.all %}#}
-                        {#                                    {% include "website/card_link.html" with card=link card_name=link.name %}#}
-                        {#                                {% endfor %}#}
-                        {#                            </div>#}
-                        {#                        {% endif %}#}
                         <div style="display:inline-flex;" class="subtitle type-line">
                             <span>{{ face.type_line }}</span>
                         </div>

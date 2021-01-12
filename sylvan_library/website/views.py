@@ -434,12 +434,8 @@ def get_unused_cards(user: User):
         deck_cards__board="main",
     )
     users_cards = (
-        Card.objects.filter(
-            printings__printed_languages__physical_cards__ownerships__owner=user,
-            is_token=False,
-        )
-        .exclude(side="b")
-        .exclude(side="c")
+        Card.objects.filter(printings__localisations__ownerships__owner=user)
+        .filter(is_token=False)
         .distinct()
     )
     if not hasattr(user, "userprops"):
@@ -453,7 +449,7 @@ def get_unused_cards(user: User):
         {
             "card": card,
             "preferred_printing": card.printings.filter(
-                printed_languages__physical_cards__ownerships__owner=user
+                localisations__ownerships__owner=user
             )
             .order_by("set__release_date")
             .last(),
@@ -476,15 +472,13 @@ def get_unused_commanders(user: User):
     )
     users_commanders = (
         Card.objects.filter(
-            printings__printed_languages__physical_cards__ownerships__owner=user,
+            printings__localisations__ownerships__owner=user,
             is_token=False,
         )
         .filter(
-            (Q(type__contains="Legend") & Q(type__contains="Creature"))
-            | Q(rules_text__contains="can be your commander")
+            (Q(faces__types__name="Legend") & Q(faces__types__name="Creature"))
+            | Q(faces__rules_text__contains="can be your commander")
         )
-        .exclude(side="b")
-        .exclude(side="c")
         .distinct()
     )
     rand = random.Random(user.userprops.unused_cards_seed)
@@ -497,7 +491,7 @@ def get_unused_commanders(user: User):
         {
             "card": card,
             "preferred_printing": card.printings.filter(
-                printed_languages__physical_cards__ownerships__owner=user
+                localisations__ownerships__owner=user
             )
             .order_by("set__release_date")
             .last(),

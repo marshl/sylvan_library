@@ -37,10 +37,68 @@ class CardFaceInline(admin.TabularInline):
         return False
 
 
+class CardPrintingInline(admin.TabularInline):
+    model = CardPrinting
+    show_change_link = True
+    fields = ("scryfall_id", "set", "rarity", "number")
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+class CardFacePrintingInline(admin.TabularInline):
+    model = CardFacePrinting
+    show_change_link = True
+    fields = ("uuid", "card_face")
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+class CardLocalisationInline(admin.TabularInline):
+    model = CardLocalisation
+    show_change_link = True
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+class CardFaceLocalisationInline(admin.TabularInline):
+    model = CardFaceLocalisation
+    show_change_link = True
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(Card)
 class CardAdmin(admin.ModelAdmin):  # AdminChangeLinksMixin,
     search_fields = ["name"]
-    inlines = [CardFaceInline]
+    inlines = [CardFaceInline, CardPrintingInline]
 
 
 class CardFaceModelForm(forms.ModelForm):
@@ -114,6 +172,7 @@ class FormatAdmin(admin.ModelAdmin):
 class CardPrintingAdmin(admin.ModelAdmin):
     autocomplete_fields = ["card", "set"]
     search_fields = ["card__name", "scryfall_id"]
+    inlines = [CardFacePrintingInline, CardLocalisationInline]
 
 
 class CardFacePrintingModelForm(forms.ModelForm):
@@ -136,6 +195,7 @@ class CardFacePrintingAdmin(admin.ModelAdmin):
 class CardLocalisationAdmin(admin.ModelAdmin):
     autocomplete_fields = ["card_printing"]
     search_fields = ["card_name", "multiverse_id", "card_printing__scryfall_id"]
+    inlines = [CardFaceLocalisationInline]
 
 
 class CardFaceLocalisationModelForm(forms.ModelForm):

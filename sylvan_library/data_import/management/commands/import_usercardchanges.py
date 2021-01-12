@@ -3,15 +3,13 @@ The module for the import_usercardchanges command
 """
 
 import logging
-
 from datetime import datetime
+
+from django.contrib.auth.models import User
+from django.core.management.base import BaseCommand
 from pytz import utc
 
-from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
-
-from cards.models import Card, CardPrinting, CardLocalisation
-from cards.models import UserCardChange, Set, Language, PhysicalCard
+from cards.models import Card, CardPrinting, CardLocalisation, UserCardChange, Set, Language
 
 logger = logging.getLogger("django")
 
@@ -80,16 +78,14 @@ class Command(BaseCommand):
         )
         logger.info("CardLocalisation: %s", printlang)
 
-        physcards = PhysicalCard.objects.filter(printed_languages=printlang)
-
         if UserCardChange.objects.filter(
-            physical_card__in=physcards, owner=self.user, date=date, difference=number
+            card_localisation__in=printlang.localisations, owner=self.user, date=date, difference=number
         ).exists():
             logger.info("Other half of this card already has been added")
             return
 
-        for phys in physcards:
+        for localisation in printlang.localisations:
             user_card = UserCardChange(
-                physical_card=phys, difference=number, owner=self.user, date=date
+                localisation=localisation, difference=number, owner=self.user, date=date
             )
             user_card.save()

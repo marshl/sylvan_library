@@ -2,6 +2,7 @@
 Models for deck objects
 """
 import datetime
+import re
 from typing import List, Dict
 
 from django.contrib.auth.models import User
@@ -9,7 +10,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Sum, Avg, Q
 
-from cards.models.card import Card
+from cards.models.card import Card, CardType
 from cards.models.colour import Colour
 from cards.models.rarity import Rarity
 
@@ -56,20 +57,18 @@ class Deck(models.Model):
         ("oathbreaker", "Oathbreaker"),
     )
 
-    date_created: datetime.datetime = models.DateField()
-    last_modified: datetime.datetime = models.DateField(auto_now=True)
-    name: str = models.CharField(max_length=200)
-    subtitle: str = models.CharField(max_length=200, blank=True, null=True)
-    description: str = models.TextField(null=True, blank=True)
-    owner: User = models.ForeignKey(
-        User, related_name="decks", on_delete=models.CASCADE
-    )
-    format: str = models.CharField(max_length=50, choices=FORMAT_CHOICES)
-    exclude_colours: List[Colour] = models.ManyToManyField(
+    date_created = models.DateField()
+    last_modified = models.DateField(auto_now=True)
+    name = models.CharField(max_length=200)
+    subtitle = models.CharField(max_length=200, blank=True, null=True)
+    description = models.TextField(null=True, blank=True)
+    owner = models.ForeignKey(User, related_name="decks", on_delete=models.CASCADE)
+    format = models.CharField(max_length=50, choices=FORMAT_CHOICES)
+    exclude_colours = models.ManyToManyField(
         Colour, related_name="exclude_from_decks", blank=True
     )
-    is_prototype: bool = models.BooleanField(default=False)
-    is_private: bool = models.BooleanField(default=False)
+    is_prototype = models.BooleanField(default=False)
+    is_private = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return self.name
@@ -107,21 +106,21 @@ class Deck(models.Model):
         """
         board_cards = self.cards.filter(board="main")
         commanders = board_cards.filter(is_commander=True)
-        lands = board_cards.filter(card__type__contains="Land")
+        lands = board_cards.filter(card__faces__types__name="Land")
         creatures = board_cards.exclude(id__in=lands | commanders).filter(
-            card__type__contains="Creature"
+            card__faces__types__name="Creature"
         )
-        instants = board_cards.filter(card__type__contains="Instant")
-        sorceries = board_cards.filter(card__type__contains="Sorcery")
+        instants = board_cards.filter(card__faces__types__name="Instant")
+        sorceries = board_cards.filter(card__faces__types__name="Sorcery")
         enchantments = board_cards.exclude(
             id__in=lands | creatures | commanders
-        ).filter(card__type__contains="Enchantment")
+        ).filter(card__faces__types__name="Enchantment")
         artifacts = board_cards.exclude(
             id__in=lands | creatures | enchantments | commanders
-        ).filter(card__type__contains="Artifact")
-        planeswalkers = board_cards.filter(card__type__contains="Planeswalker").exclude(
-            id__in=commanders
-        )
+        ).filter(card__faces__types__name="Artifact")
+        planeswalkers = board_cards.filter(
+            card__faces__types__name="Planeswalker"
+        ).exclude(id__in=commanders)
         other = board_cards.exclude(
             id__in=commanders
             | lands
@@ -151,18 +150,26 @@ class Deck(models.Model):
         :return: A list of counts from white  to colourless (colorus without any symbols will still
         be included)
         """
-        land_cards = self.cards.filter(board="main", card__type__contains="Land")
-        modal_dfc_cards = self.cards.filter(board="main", card__layout="modal_dfc")
+        land_type = CardType.objects.get(name="Land")
+        deck_cards = list(
+            self.cards.filter(board="main").prefetch_related("card__faces__types")
+        )
         result = {}
         for colour in Colour.objects.exclude(
             id__in=self.exclude_colours.all()
         ).order_by("display_order"):
             symbol_regex = ":.*?add[^\n]*?{" + colour.symbol + "}"
-            count = (
-                land_cards.filter(card__rules_text__iregex=symbol_regex)
-                | modal_dfc_cards.filter(card__links__rules_text__iregex=symbol_regex)
-            ).aggregate(sum=Sum("count"))["sum"] or 0
-
+            count = sum(
+                [
+                    deck_card.count
+                    for deck_card in deck_cards
+                    for card_face in deck_card.card.faces.all()
+                    for card_type in card_face.types.all()
+                    if card_face.rules_text
+                    and card_type == land_type
+                    and re.search(symbol_regex, card_face.rules_text, re.IGNORECASE)
+                ]
+            )
             if count > 0:
                 result[colour.symbol] = count
 
@@ -174,14 +181,18 @@ class Deck(models.Model):
         :return: A list of counts from white to colourless (colorus without any symbols will still
         be included)
         """
-        cards = self.cards.filter(board="main", card__cost__isnull=False)
+        deck_cards = list(
+            self.cards.filter(board="main").prefetch_related("card__faces")
+        )
         result = {}
         for colour in Colour.objects.exclude(
             id__in=self.exclude_colours.all()
         ).order_by("display_order"):
             count = sum(
-                deck_card.card.cost.count(colour.symbol) * deck_card.count
-                for deck_card in cards
+                card_face.mana_cost.count(colour.symbol) * deck_card.count
+                for deck_card in deck_cards
+                for card_face in deck_card.card.faces.all()
+                if card_face.mana_cost
             )
             if count > 0:
                 result[colour.symbol] = count
@@ -262,9 +273,9 @@ class Deck(models.Model):
         # We can exclude basic land and cards that you can have any number of (i.e. Relentless Rats)
         overcount_cards = (
             self.cards.exclude(count__lte=limit)
-            .exclude(card__type__contains="Basic")
+            .exclude(card__faces__supertypes__name="Basic")
             .exclude(
-                card__rules_text__icontains="A deck can have any number of cards named"
+                card__faces__rules_text__icontains="A deck can have any number of cards named"
             )
         )
         if overcount_cards.exists():
@@ -288,13 +299,13 @@ class Deck(models.Model):
             )
 
         if commanders.count() != 1:
-            if commanders.exclude(card__rules_text__icontains="partner").exists():
+            if commanders.exclude(card__faces__rules_text__icontains="partner").exists():
                 raise ValidationError(
                     f"A commander deck can only have multiple commanders if they have partner"
                 )
 
         if validate_type:
-            if commanders.exclude(card__type__contains=validate_type).exists():
+            if commanders.exclude(card__faces__types__name=validate_type).exists():
                 raise ValidationError(
                     f"A commander deck should have a legend as the commander"
                 )
@@ -353,13 +364,11 @@ class DeckCard(models.Model):
         ("acquire", "Acquire"),
     )
 
-    count: int = models.IntegerField()
-    card: Card = models.ForeignKey(
-        Card, related_name="deck_cards", on_delete=models.CASCADE
-    )
-    deck: Deck = models.ForeignKey(Deck, related_name="cards", on_delete=models.CASCADE)
-    board: str = models.CharField(max_length=20, choices=BOARD_CHOICES, default="main")
-    is_commander: bool = models.BooleanField(default=False)
+    count = models.IntegerField()
+    card = models.ForeignKey(Card, related_name="deck_cards", on_delete=models.CASCADE)
+    deck = models.ForeignKey(Deck, related_name="cards", on_delete=models.CASCADE)
+    board = models.CharField(max_length=20, choices=BOARD_CHOICES, default="main")
+    is_commander = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.card} in {self.deck}"

@@ -13,7 +13,6 @@ from cards.models import (
     CardPrinting,
     CardLocalisation,
     Language,
-    PhysicalCard,
     Set,
     UserOwnedCard,
 )
@@ -82,21 +81,15 @@ class Command(BaseCommand):
         printing = CardPrinting.objects.filter(card=card, set=cardset).first()
         logger.info("CardPrinting ID: %s", printing.id)
 
-        printlang = CardLocalisation.objects.get(
+        localisation = CardLocalisation.objects.get(
             card_printing=printing, language=Language.english()
         )
-        logger.info("CardLocalisation ID: %s", printlang.id)
-
-        physcards = PhysicalCard.objects.filter(printed_languages=printlang)
+        logger.info("CardLocalisation ID: %s", localisation.id)
 
         existing_rec = UserOwnedCard.objects.filter(
-            physical_card__in=physcards, owner=self.user
+            card_locaisation=localisation, owner=self.user
         )
         if existing_rec.exists():
-            if card.links.exists():
-                logger.info("Other half of this card already has been added")
-                return
-
             existing_rec = existing_rec.first()
             result = query_yes_no(
                 f"{existing_rec} already exists, do you want to add to it?"
@@ -107,6 +100,6 @@ class Command(BaseCommand):
 
             return
 
-        for phys in physcards:
-            usercard = UserOwnedCard(physical_card=phys, count=count, owner=self.user)
-            usercard.save()
+        usercard = UserOwnedCard(card_localisation=localisation, count=count, owner=self.user)
+        usercard.full_clean()
+        usercard.save()

@@ -43,7 +43,7 @@ def deck_owner_preferred_card(deck_card: DeckCard) -> CardPrinting:
     try:
         return (
             deck_card.card.printings.filter(
-                printed_languages__physical_cards__ownerships__owner=deck_card.deck.owner
+                localisations__ownerships__owner=deck_card.deck.owner
             )
             .order_by("set__release_date")
             .last()

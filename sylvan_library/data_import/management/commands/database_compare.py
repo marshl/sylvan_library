@@ -487,17 +487,18 @@ class Command(BaseCommand):
         )
 
         foreign_data_list = card_data.get("foreignData", [])
-        english_data = {
-            "language": "English",
-            "name": card_data.get("name"),
-            "text": card_data.get("text"),
-            "type": card_data.get("type"),
-        }
-        if "faceName" in card_data:
-            english_data["faceName"] = card_data["faceName"]
-        if "multiverseId" in card_data["identifiers"]:
-            english_data["multiverseId"] = card_data["identifiers"]["multiverseId"]
-        foreign_data_list.append(english_data)
+        if not card_data.get('isForeignOnly', False):
+            english_data = {
+                "language": "English",
+                "name": card_data.get("name"),
+                "text": card_data.get("text"),
+                "type": card_data.get("type"),
+            }
+            if "faceName" in card_data:
+                english_data["faceName"] = card_data["faceName"]
+            if "multiverseId" in card_data["identifiers"]:
+                english_data["multiverseId"] = card_data["identifiers"]["multiverseId"]
+            foreign_data_list.append(english_data)
 
         for foreign_data in foreign_data_list:
             staged_localisation = StagedCardLocalisation(
@@ -507,9 +508,6 @@ class Command(BaseCommand):
                 staged_card_printing.scryfall_id,
                 staged_localisation.language_name,
             )
-            if tuple_key in self.card_localisations_parsed:
-                continue
-            self.card_localisations_parsed.add(tuple_key)
 
             existing_localisation: Optional[CardLocalisation] = next(
                 (
@@ -518,28 +516,31 @@ class Command(BaseCommand):
                     if localisation.language.name == staged_localisation.language_name
                 ),
                 None,
-            )
+            ) if existing_printing else None
 
-            if not existing_localisation:
-                UpdateCardLocalisation.objects.create(
-                    update_mode=UpdateMode.CREATE,
-                    language_code=staged_localisation.language_name,
-                    printing_scryfall_id=staged_card_printing.scryfall_id,
-                    card_name=staged_localisation.card_name,
-                    field_data=staged_localisation.get_field_data(),
-                )
-            else:
-                differences = staged_localisation.compare_with_existing_localisation(
-                    existing_localisation
-                )
-                if differences:
+            if tuple_key not in self.card_localisations_parsed:
+                self.card_localisations_parsed.add(tuple_key)
+
+                if not existing_localisation:
                     UpdateCardLocalisation.objects.create(
-                        update_mode=UpdateMode.UPDATE,
+                        update_mode=UpdateMode.CREATE,
                         language_code=staged_localisation.language_name,
                         printing_scryfall_id=staged_card_printing.scryfall_id,
                         card_name=staged_localisation.card_name,
-                        field_data=differences,
+                        field_data=staged_localisation.get_field_data(),
                     )
+                else:
+                    differences = staged_localisation.compare_with_existing_localisation(
+                        existing_localisation
+                    )
+                    if differences:
+                        UpdateCardLocalisation.objects.create(
+                            update_mode=UpdateMode.UPDATE,
+                            language_code=staged_localisation.language_name,
+                            printing_scryfall_id=staged_card_printing.scryfall_id,
+                            card_name=staged_localisation.card_name,
+                            field_data=differences,
+                        )
 
             existing_localised_face = (
                 None
@@ -599,6 +600,7 @@ class Command(BaseCommand):
         self.log_single_stat("card printing", UpdateCardPrinting)
         self.log_single_stat("card printing face", UpdateCardFacePrinting)
         self.log_single_stat("card localisation", UpdateCardLocalisation)
+        self.log_single_stat("card face localisation", UpdateCardFaceLocalisation)
         self.log_single_stat("legality", UpdateCardLegality)
         self.log_single_stat("ruling", UpdateCardRuling)
         logger.info("Completed in %ss", time.time() - self.start_time)

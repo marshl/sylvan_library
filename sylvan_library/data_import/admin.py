@@ -70,5 +70,5 @@ class UpdateCardLocalisationAdmin(admin.ModelAdmin):
 
 
 @admin.register(UpdateCardFaceLocalisation)
-class UpdateCardFaceLocalisation(admin.ModelAdmin):
-    search_fields = ["face_name", "face_printing_uuid"]
+class UpdateCardFaceLocalisationAdmin(admin.ModelAdmin):
+    search_fields = ["face_name", "face_printing_uuid", "update_mode"]
