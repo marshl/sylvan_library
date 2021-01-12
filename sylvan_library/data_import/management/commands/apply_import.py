@@ -3,7 +3,7 @@ Module for the apply_import command
 """
 import logging
 import math
-from typing import Any
+from typing import Any, Dict, Optional
 
 import typing
 from django.core.exceptions import ValidationError
@@ -55,6 +55,10 @@ class Command(BaseCommand):
         "including creating cards, set and rarities\n"
     )
 
+    cached_languages: Optional[Dict[str, Language]] = None
+    scryfall_oracle_id_to_card_id: Dict[str, int] = None
+    scryfall_id_to_card_printing_id: Dict[str, int] = None
+
     def __init__(self, stdout=None, stderr=None, no_color=False):
         self.logger = logging.getLogger("django")
         super().__init__(stdout=stdout, stderr=stderr, no_color=no_color)
@@ -75,7 +79,6 @@ class Command(BaseCommand):
             if (
                 not self.update_blocks()
                 or not self.update_sets()
-                or not self.create_new_cards()
                 or not self.update_cards()
                 or not self.update_card_faces()
                 or not self.update_card_rulings()
@@ -86,6 +89,40 @@ class Command(BaseCommand):
                 or not self.update_card_face_localisations()
             ):
                 raise Exception("Change application aborted")
+
+    def get_language(self, language_name: str) -> Language:
+        if not self.cached_languages:
+            self.cached_languages = {
+                language.name: language for language in Language.objects.all()
+            }
+        return self.cached_languages[language_name]
+
+    def get_card_id(self, scryfall_oracle_id: str) -> int:
+        if not self.scryfall_oracle_id_to_card_id:
+            self.scryfall_oracle_id_to_card_id = {
+                c[1]: c[0] for c in Card.objects.values_list("id", "scryfall_oracle_id")
+            }
+
+        card_id = self.scryfall_oracle_id_to_card_id.get(scryfall_oracle_id)
+        if card_id:
+            return card_id
+        card = Card.objects.get(scryfall_oracle_id=scryfall_oracle_id)
+        self.scryfall_oracle_id_to_card_id[scryfall_oracle_id] = card.id
+        return card.id
+
+    def get_card_printing_id(self, scryfall_id: str) -> int:
+        if not self.scryfall_id_to_card_printing_id:
+            self.scryfall_id_to_card_printing_id = {
+                c[1]: c[0]
+                for c in CardPrinting.objects.values_list("id", "scryfall_id")
+            }
+        card_printing_id = self.scryfall_id_to_card_printing_id.get(scryfall_id)
+        if card_printing_id:
+            return card_printing_id
+
+        card_printing = CardPrinting.objects.get(scryfall_id=scryfall_id)
+        self.scryfall_id_to_card_printing_id[scryfall_id] = card_printing.id
+        return card_printing.id
 
     def update_blocks(self) -> bool:
         """
@@ -113,6 +150,7 @@ class Command(BaseCommand):
                 set_obj.code = set_to_create.set_code
             else:
                 set_obj = Set.objects.get(code=set_to_create.set_code)
+
             for field, value in set_to_create.field_data.items():
                 if set_to_create.update_mode == UpdateMode.UPDATE:
                     value = value.get("to")
@@ -137,7 +175,6 @@ class Command(BaseCommand):
                         f"Cannot update unrecognised field Set.{field} with value {value} for {set_to_create}"
                     )
 
-            set_obj.full_clean()
             set_obj.save()
 
         for set_to_create in UpdateSet.objects.filter(update_mode=UpdateMode.CREATE):
@@ -153,31 +190,7 @@ class Command(BaseCommand):
                         set_to_create,
                     )
                     raise
-                set_obj.full_clean()
                 set_obj.save()
-
-        return True
-
-    def create_new_cards(self) -> bool:
-        self.logger.info("Creating cards")
-
-        for card_to_create in UpdateCard.objects.filter(update_mode=UpdateMode.CREATE):
-
-            card = Card(
-                scryfall_oracle_id=card_to_create.scryfall_oracle_id,
-                name=card_to_create.name,
-            )
-            for field, value in card_to_create.field_data.items():
-                if hasattr(card, field):
-                    setattr(card, field, value)
-                elif field in ("generic_mana_count",):
-                    continue
-                else:
-                    raise NotImplementedError(
-                        f"Cannot set unrecognised field Card.{field}"
-                    )
-            card.full_clean()
-            card.save()
 
         return True
 
@@ -187,25 +200,28 @@ class Command(BaseCommand):
                 returns: True if there were no errors, otherwise False
                 """
         self.logger.info("Updating %s cards", UpdateCard.objects.count())
-        for card_to_update in UpdateCard.objects.filter(
-            update_mode=UpdateMode.UPDATE
-        ).all():
-            try:
+        card_to_update: UpdateCard
+        for card_to_update in UpdateCard.objects.all():
+            if card_to_update.update_mode == UpdateMode.CREATE:
+                card = Card(
+                    scryfall_oracle_id=card_to_update.scryfall_oracle_id,
+                    name=card_to_update.name,
+                )
+            else:
                 card = Card.objects.get(
                     scryfall_oracle_id=card_to_update.scryfall_oracle_id
                 )
-            except Card.DoesNotExist:
-                self.logger.error("Could not find card %s", card_to_update)
-                raise
 
-            for field, change in card_to_update.field_data.items():
+            for field, value in card_to_update.field_data.items():
+                if card_to_update.update_mode == UpdateMode.UPDATE:
+                    value = value["to"]
+
                 if hasattr(card, field):
-                    setattr(card, field, change["to"])
+                    setattr(card, field, value)
                 else:
                     raise NotImplementedError(
                         f"Cannot update unrecognised field Card.{field}"
                     )
-            card.full_clean()
             card.save()
         return True
 
@@ -213,21 +229,9 @@ class Command(BaseCommand):
         self.logger.info("Creating %s card faces", UpdateCardFace.objects.count())
 
         for card_face_update in UpdateCardFace.objects.filter():
-            # try:
-            #     card = Card.objects.get(
-            #         scryfall_oracle_id=card_face_update.scryfall_oracle_id
-            #     )
-            # except Card.DoesNotExist:
-            #     self.logger.error(
-            #         f"Cannot find Card {card_face_update.scryfall_oracle_id} for face {card_face_update}"
-            #     )
-            #     raise
-
             if card_face_update.update_mode == UpdateMode.CREATE:
                 card_face = CardFace(
-                    card=Card.objects.get(
-                        scryfall_oracle_id=card_face_update.scryfall_oracle_id
-                    ),
+                    card_id=self.get_card_id(card_face_update.scryfall_oracle_id),
                     side=card_face_update.side,
                 )
             elif card_face_update.update_mode == UpdateMode.UPDATE:
@@ -236,7 +240,7 @@ class Command(BaseCommand):
                     side=card_face_update.side,
                 )
             else:
-                raise Exception()  # TODO: Proper exception class
+                raise ValueError()
 
             for field, value in card_face_update.field_data.items():
                 if card_face_update.update_mode == UpdateMode.UPDATE:
@@ -254,7 +258,6 @@ class Command(BaseCommand):
                     value = math.inf
                 setattr(card_face, field, value)
             try:
-                card_face.full_clean()
                 card_face.save()
             except ValidationError:
                 self.logger.exception("Could not {}", card_face_update)
@@ -300,13 +303,9 @@ class Command(BaseCommand):
         else:
             new_types = card_face_to_create.field_data.get(type_key, [])
 
-        # old_types = list(getattr(card_face, type_key).values_list('name', flat=True))
         for old_type in getattr(card_face, type_key).all():
             if old_type.name not in new_types:
                 getattr(card_face, type_key).remove(old_type)
-        # for card_face_type in getattr(card_face, type_key).all():
-        # if card_face_type.name not in new_types:
-        # card_face_type.delete()
 
         for type_str in new_types:
             try:
@@ -326,9 +325,7 @@ class Command(BaseCommand):
                 ).delete()
             elif update_card_ruling.update_mode == UpdateMode.CREATE:
                 CardRuling.objects.create(
-                    card=Card.objects.get(
-                        scryfall_oracle_id=update_card_ruling.scryfall_oracle_id
-                    ),
+                    card_id=self.get_card_id(update_card_ruling.scryfall_oracle_id),
                     text=update_card_ruling.ruling_text,
                     date=update_card_ruling.ruling_date,
                 )
@@ -357,8 +354,8 @@ class Command(BaseCommand):
                         raise Exception(f"No legality found for {update_card_legality}")
                 elif update_card_legality.update_mode == UpdateMode.CREATE:
                     CardLegality.objects.create(
-                        card=Card.objects.get(
-                            scryfall_oracle_id=update_card_legality.scryfall_oracle_id
+                        card_id=self.get_card_id(
+                            update_card_legality.scryfall_oracle_id
                         ),
                         format=format_map[update_card_legality.format_name],
                         restriction=update_card_legality.restriction,
@@ -369,7 +366,6 @@ class Command(BaseCommand):
                         format__code=update_card_legality.format_name,
                     )
                     existing_legality.restriction = update_card_legality.restriction
-                    existing_legality.full_clean()
                     existing_legality.save()
             except Format.DoesNotExist:
                 self.logger.error(
@@ -387,11 +383,12 @@ class Command(BaseCommand):
         )
         set_map = {set_obj.code: set_obj for set_obj in Set.objects.all()}
         rarity_map = {rarity.name.lower(): rarity for rarity in Rarity.objects.all()}
+        update_card_printing: UpdateCardPrinting
         for update_card_printing in UpdateCardPrinting.objects.all():
             if update_card_printing.update_mode == UpdateMode.CREATE:
                 printing = CardPrinting(
-                    card=Card.objects.get(
-                        scryfall_oracle_id=update_card_printing.card_scryfall_oracle_id
+                    card_id=self.get_card_id(
+                        update_card_printing.card_scryfall_oracle_id
                     ),
                     scryfall_id=update_card_printing.scryfall_id,
                     set=set_map[update_card_printing.set_code],
@@ -420,7 +417,6 @@ class Command(BaseCommand):
                     raise NotImplementedError(
                         f"Cannot set unrecognised field CardPrinting.{field}"
                     )
-            printing.full_clean()
             printing.save()
         return True
 
@@ -430,7 +426,7 @@ class Command(BaseCommand):
         )
         for update_card_face_printing in UpdateCardFacePrinting.objects.all():
             if update_card_face_printing.update_mode == UpdateMode.CREATE:
-                printing = CardPrinting.objects.select_related("card").get(
+                printing = CardPrinting.objects.get(
                     scryfall_id=update_card_face_printing.scryfall_id
                 )
                 face_printing = CardFacePrinting(
@@ -460,7 +456,6 @@ class Command(BaseCommand):
                     )
 
             try:
-                face_printing.full_clean()
                 face_printing.save()
             except ValidationError:
                 self.logger.error("Failed to validate %s", update_card_face_printing)
@@ -480,19 +475,18 @@ class Command(BaseCommand):
         self.logger.info(
             "Updating %s card localisations", UpdateCardLocalisation.objects.count()
         )
-        language_map = {language.name: language for language in Language.objects.all()}
 
         for update_localisation in UpdateCardLocalisation.objects.all():
             if update_localisation.update_mode == UpdateMode.CREATE:
                 localisation = CardLocalisation(
-                    language=language_map[update_localisation.language_code],
-                    card_printing=CardPrinting.objects.get(
-                        scryfall_id=update_localisation.printing_scryfall_id
+                    language=self.get_language(update_localisation.language_code),
+                    card_printing_id=self.get_card_printing_id(
+                        update_localisation.printing_scryfall_id
                     ),
                 )
             elif update_localisation.update_mode == UpdateMode.UPDATE:
                 localisation = CardLocalisation.objects.get(
-                    language=language_map[update_localisation.language_code],
+                    language=self.get_language(update_localisation.language_code),
                     card_printing__scryfall_id=update_localisation.printing_scryfall_id,
                 )
             else:
@@ -510,7 +504,6 @@ class Command(BaseCommand):
                         f"Cannot set unrecognised field CardLocalisation.{field}"
                     )
             try:
-                # localisation.full_clean()
                 localisation.save()
             except ValidationError:
                 self.logger.error("Failed to validate %s", update_localisation)
@@ -523,33 +516,35 @@ class Command(BaseCommand):
             "Updating %s card face localisations",
             UpdateCardFaceLocalisation.objects.count(),
         )
-        language_map = {language.name: language for language in Language.objects.all()}
 
         for update_face_localisation in UpdateCardFaceLocalisation.objects.all():
+            localisation = CardLocalisation.objects.get(
+                card_printing__scryfall_id=update_face_localisation.printing_scryfall_id,
+                language=self.get_language(update_face_localisation.language_code),
+            )
+            card_printing_face = CardFacePrinting.objects.get(
+                uuid=update_face_localisation.face_printing_uuid
+            )
+
             if update_face_localisation.update_mode == UpdateMode.CREATE:
                 face_localisation = CardFaceLocalisation(
-                    localisation=CardLocalisation.objects.get(
-                        card_printing__scryfall_id=update_face_localisation.printing_scryfall_id,
-                        language=language_map[update_face_localisation.language_code],
-                    ),
-                    card_printing_face=CardFacePrinting.objects.get(
-                        uuid=update_face_localisation.face_printing_uuid
-                    ),
+                    localisation=localisation, card_printing_face=card_printing_face
                 )
             elif update_face_localisation.update_mode == UpdateMode.UPDATE:
-                face_localisation = CardLocalisation.objects.get(
-                    localisation__card_printing__scryfall_id=update_face_localisation.printing_scryfall_id,
-                    language=language_map[update_face_localisation.language_code],
+                face_localisation = CardFaceLocalisation.objects.get(
+                    localisation=localisation, card_printing_face=card_printing_face
                 )
             else:
                 raise Exception()
 
             face_localisation.face_name = update_face_localisation.face_name
             for field, value in update_face_localisation.field_data.items():
+                if field in ("face_printing_uuid",):
+                    continue
+
                 if update_face_localisation.update_mode == UpdateMode.UPDATE:
                     value = value["to"]
-                if field in ('face_printing_uuid', ):
-                    continue
+
                 if hasattr(face_localisation, field):
                     setattr(face_localisation, field, value)
                 else:
@@ -557,7 +552,6 @@ class Command(BaseCommand):
                         f"Cannot set unrecognised field CardFaceLocalisation.{field}"
                     )
             try:
-                face_localisation.full_clean()
                 face_localisation.save()
             except ValidationError:
                 self.logger.error("Failed to validate %s", update_face_localisation)
