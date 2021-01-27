@@ -4,7 +4,7 @@ Card ownership parameters
 from django.contrib.auth.models import User
 from django.db.models import Sum, Case, When, IntegerField, Q
 
-from cards.models import Card
+from cards.models import Card, CardPrinting
 from .base_parameters import CardSearchParam
 from .base_parameters import OPERATOR_MAPPING, CardNumericalParam
 
@@ -40,6 +40,15 @@ class CardOwnershipCountParam(CardNumericalParam):
         Gets the Q query object
         :return: The Q object
         """
+        annotated_result = CardPrinting.objects.annotate(
+            ownership_count=Sum(
+                "localisations__ownerships__count",
+                filter=Q(localisations__ownerships__owner=self.user),
+            )
+        )
+        kwargs = {f"ownership_count{OPERATOR_MAPPING[self.operator]}": self.number}
+        query = Q(**kwargs)
+        return Q(id__in=annotated_result.filter(query))
         annotated_result = Card.objects.annotate(
             ownership_count=Sum(
                 Case(
