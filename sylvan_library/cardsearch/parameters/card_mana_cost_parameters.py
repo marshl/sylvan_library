@@ -174,7 +174,7 @@ class CardManaCostComplexParam(CardSearchParam):
                     }
                 )
 
-        return query
+        return ~query if self.negated else query
 
     def get_pretty_str(self) -> str:
         """
