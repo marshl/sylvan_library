@@ -320,7 +320,7 @@ class Command(BaseCommand):
         for update_card_ruling in UpdateCardRuling.objects.all():
             if update_card_ruling.update_mode == UpdateMode.DELETE:
                 CardRuling.objects.filter(
-                    scryfall_oracle_id=update_card_ruling.scryfall_oracle_id,
+                    card__scryfall_oracle_id=update_card_ruling.scryfall_oracle_id,
                     text=update_card_ruling.ruling_text,
                 ).delete()
             elif update_card_ruling.update_mode == UpdateMode.CREATE:
