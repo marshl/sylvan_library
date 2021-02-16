@@ -74,5 +74,9 @@
   {
     "name": "Full Art",
     "code": "fullart"
+  },
+  {
+    "name": "Snow",
+    "code": "snow"
   }
 ]
