@@ -1,31 +1,30 @@
 """
-Module for the update_printing_uids command
+Module for the update_prices command
 """
 import datetime
 import logging
-import queue
-import threading
-import time
+import os
 import typing
 import zipfile
+from collections import defaultdict
 from typing import Any
 
+import arrow
 import ijson
 from django.core.management.base import BaseCommand
-from django.db import transaction
-from django.db.models import Max
+from django.db import transaction, connection
 
 import _paths
 from cards.models import CardPrice
-from cards.models import CardPrinting, CardFacePrinting
-from data_import.management.commands import get_all_set_data
+from data_import.management.commands import download_file, pretty_print_json_file
+from sylvan_library.conf import settings
 
 logger = logging.getLogger("django")
 
 
 class Command(BaseCommand):
     """
-    Command for updating the UIDs of card printings that changed in the json
+    Command for updating card prices from the MTGJSON price files
     """
 
     help = (
@@ -34,614 +33,153 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args: Any, **options: Any) -> None:
+        with transaction.atomic():
+            self.download_prices()
+            self.update_prices()
+            self.set_most_recent_prices()
 
-        # self.download_prices()
+    def update_prices(self):
+        start_of_week = arrow.get().floor("week").date()
+        logger.info("Querying DB for most recent prices")
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+SELECT
+card_printing.id,
+face_printing.uuid,
+most_recent_price.date
+FROM cards_cardprinting card_printing
+JOIN cards_cardfaceprinting face_printing
+ON face_printing.card_printing_id = card_printing.id
+LEFT JOIN cards_cardprice most_recent_price
+ON most_recent_price.card_printing_id = card_printing.id
+AND most_recent_price.is_latest = TRUE
+"""
+            )
+            recent_price_map = {
+                uuid: (printing_id, most_recent_date)
+                for printing_id, uuid, most_recent_date in cursor.fetchall()
+            }
 
-        price_update_queue = queue.Queue()
-
-        for i in range(0, 10):
-            logger.info("Starting thread %s", i)
-            thread = ImageDownloadThread(i, price_update_queue)
-            thread.setDaemon(True)
-            thread.start()
-
-        # start = time.time()
-        update_count = 0
+        logger.info("Updating prices")
+        # We need to check which printings we've already done in case there are two faces
+        # and therefore two price rows the same printing and we don't want to duplicate the prices
+        updated_printings = set()
         with open(_paths.PRICES_JSON_PATH, "r", encoding="utf8") as prices_file:
             cards = ijson.kvitems(prices_file, "data")
             for uuid, price_data in cards:
-                # update_card_prices(uuid, price_data)
-                # update_count += 1
-                # if update_count % 100 == 0:
-                #     print(
-                #     "Updated {}: {} per second".format(
-                #         update_count, update_count / (time.time() - start)
-                #     )
-                # )
-                update_count += 1
-                price_update_queue.put((uuid, price_data))
-                if update_count % 1000 == 0:
-                    while price_update_queue.qsize() > 1000:
-                        logger.info("Queue is full, waiting...")
-                        time.sleep(0.1)
+                if uuid not in recent_price_map:
+                    logger.warning("No printing found for %s", uuid)
+                    continue
 
-        price_update_queue.join()
+                printing_id, most_recent_price = recent_price_map[uuid]
+
+                if printing_id in updated_printings:
+                    logger.info("Already updated %s. Skipping...", uuid)
+                    continue
+
+                logger.info("Updating prices for %s", uuid)
+                apply_printing_prices(
+                    start_of_week, price_data, printing_id, most_recent_price
+                )
+                updated_printings.add(printing_id)
+                if len(updated_printings) > 10000:
+                    break # TODO
+
+    def set_most_recent_prices(self):
+        logger.info("Setting most recent prices")
+        CardPrice.objects.all().update(is_latest=False)
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+UPDATE cards_cardprice
+SET is_latest = true
+WHERE id IN (
+    SELECT id
+    FROM (
+      SELECT cardprice.*,
+      RANK() OVER (PARTITION BY card_printing_id ORDER BY date DESC) rnk
+      FROM cards_cardprice cardprice
+    ) ranked_prices
+    WHERE rnk = 1
+)
+"""
+            )
 
     def download_prices(self):
-        # download_file(_paths.PRICES_ZIP_DOWNLOAD_URL, _paths.PRICES_ZIP_PATH)
+        logger.info("Checking for up-to-date price files")
+        if os.path.isfile(_paths.PRICES_JSON_PATH):
+            with open(_paths.PRICES_JSON_PATH, "r", encoding="utf8") as prices_file:
+                meta = ijson.items(prices_file, "meta")
+                meta_data = next(meta)
+                date = arrow.get(meta_data["date"])
+                if date <= arrow.utcnow().floor("day"):
+                    logger.info(
+                        "Price files are up to date, no need to download them again"
+                    )
+                    return
+        logger.info("Downloading prices")
+        download_file(_paths.PRICES_ZIP_DOWNLOAD_URL, _paths.PRICES_ZIP_PATH)
         prices_zip_file = zipfile.ZipFile(_paths.PRICES_ZIP_PATH)
         prices_zip_file.extractall(_paths.IMPORT_FOLDER_PATH)
-        # if settings.DEBUG:
-        #     pretty_print_json_file(_paths.PRICES_JSON_PATH)
+        if settings.DEBUG:
+            pretty_print_json_file(_paths.PRICES_JSON_PATH)
 
 
-class ImageDownloadThread(threading.Thread):
-    """
-    The thread object for downloading a card image
-    """
+PAPER_FOIL = (True, True)
+MTGO_FOIL = (True, False)
+PAPER = (False, True)
+MTGO = (False, False)
 
-    def __init__(self, thread_number: int, update_queue: queue.Queue):
-        threading.Thread.__init__(self)
-        self.thread_number = thread_number
-        self.update_queue = update_queue
+def apply_printing_prices(
+    start_of_week: datetime.date,
+    card_data: dict,
+    printing_id: int,
+    most_recent_price: typing.Optional[datetime.date],
+) -> None:
+    prices = defaultdict(lambda: defaultdict(list))
+    for stock_type, stock_data in card_data.items():
+        is_paper = stock_type == "paper"
+        # We don't care about different stores, so just the data from every store and average it
+        for store_name, store_data in stock_data.items():
+            if store_data.get("currency") != "USD":
+                continue
 
-    def run(self):
-        while True:
-            (printing_uid, price_data) = self.update_queue.get()
-            update_card_prices(printing_uid, card_data=price_data)
-            self.update_queue.task_done()
+            retail_data = store_data.get("retail", {})
+            for foil_type, foil_data in retail_data.items():
+                is_foil = foil_type != "normal"
+                for price_date_str, price_value in foil_data.items():
+                    # Round down the nearest week
+                    price_date = arrow.get(price_date_str).floor("week").date()
+                    if price_date >= start_of_week:
+                        continue
 
+                    if (
+                        most_recent_price is not None
+                        and price_date <= most_recent_price
+                    ):
+                        continue
 
-def update_card_prices(uuid: str, card_data: dict) -> None:
-    try:
-        # face = CardFacePrinting.objects.get(uuid=uuid)
-        # card_printing = face.card_printing
-        card_printing = CardPrinting.objects.get(face_printings__uuid=uuid)
-    except CardPrinting.DoesNotExist:
-        logger.warning(f"Could not find card {uuid}")
-        return
-
-    today = datetime.datetime.utcnow().date()
-
-    latest_price_for_card: CardPrice = CardPrice.objects.filter(
-        printing=card_printing
-    ).order_by("-date").first()
-    if latest_price_for_card:
-        latest_price_date = latest_price_for_card.date
-        if latest_price_date >= today:
-            return
-    else:
-        latest_price_date = None
+                    prices[price_date][(is_foil, is_paper)].append(price_value)
 
     new_prices = []
+    for price_date, stock_types in prices.items():
+        new_price = CardPrice(card_printing_id=printing_id, date=price_date)
+        if PAPER in stock_types:
+            new_price.paper_value = sum(stock_types[PAPER]) / len(stock_types[PAPER])
 
-    logger.info("Creating prices for %s", card_printing)
+        if PAPER_FOIL in stock_types:
+            new_price.paper_foil_value = sum(stock_types[PAPER_FOIL]) / len(
+                stock_types[PAPER_FOIL]
+            )
 
-    for stock_type, stock_data in card_data.items():
-        for store_name, store_data in stock_data.items():
-            currency = store_data.get("currency")
-            for retail_type, retail_data in [
-                ("retail", store_data.get("retail", {})),
-                ("buylist", store_data.get("buylist", {})),
-            ]:
-                for foil_type, foil_data in retail_data.items():
-                    is_foil = foil_type == "foil"
-                    for price_date_str, price_value in foil_data.items():
-                        price_date = time.strptime(price_date_str, '%Y-%m-%d')
-                        if price_date.date().weekday() != 0:
-                            continue
+        if MTGO in stock_types:
+            new_price.mtgo_value = sum(stock_types[MTGO]) / len(stock_types[MTGO])
 
-                        if latest_price_date and price_date <= str(latest_price_date):
-                            continue
-                        new_prices.append(
-                            CardPrice(
-                                printing_id=card_printing.id,
-                                price=price_value,
-                                date=price_date,
-                                stock_type=stock_type,
-                                foil=is_foil,
-                                currency=currency,
-                                store=store_name,
-                                retail_type=retail_type,
-                            )
-                        )
+        if MTGO_FOIL in stock_types:
+            new_price.mtgo_foil_value = sum(stock_types[MTGO_FOIL]) / len(
+                stock_types[MTGO_FOIL]
+            )
+        new_prices.append(new_price)
 
     CardPrice.objects.bulk_create(new_prices)
-
-    # return created, skipped
-
-
-"""
-{
-    "mtgo": {
-        "cardhoarder": {
-            "currency": "USD",
-            "retail": {
-                "foil": {
-                    "2020-10-08": Decimal("0.01"),
-                    "2020-10-09": Decimal("0.01"),
-                    "2020-10-10": Decimal("0.01"),
-                    "2020-10-11": Decimal("0.01"),
-                    "2020-10-12": Decimal("0.01"),
-                    "2020-10-13": Decimal("0.01"),
-                    "2020-10-14": Decimal("0.01"),
-                    "2020-10-15": Decimal("0.01"),
-                    "2020-10-16": Decimal("0.01"),
-                    "2020-10-17": Decimal("0.01"),
-                    "2020-10-18": Decimal("0.01"),
-                    "2020-10-19": Decimal("0.01"),
-                    "2020-10-20": Decimal("0.01"),
-                    "2020-10-21": Decimal("0.01"),
-                    "2020-10-22": Decimal("0.01"),
-                    "2020-10-23": Decimal("0.01"),
-                    "2020-10-24": Decimal("0.02"),
-                    "2020-10-25": Decimal("0.02"),
-                    "2020-10-26": Decimal("0.02"),
-                    "2020-10-27": Decimal("0.02"),
-                    "2020-10-28": Decimal("0.02"),
-                    "2020-10-29": Decimal("0.02"),
-                    "2020-10-30": Decimal("0.02"),
-                    "2020-10-31": Decimal("0.02"),
-                    "2020-11-01": Decimal("0.02"),
-                    "2020-11-02": Decimal("0.02"),
-                    "2020-11-03": Decimal("0.02"),
-                    "2020-11-04": Decimal("0.02"),
-                    "2020-11-05": Decimal("0.02"),
-                    "2020-11-06": Decimal("0.02"),
-                    "2020-12-15": Decimal("0.02"),
-                    "2020-12-16": Decimal("0.02"),
-                    "2020-12-17": Decimal("0.02"),
-                    "2020-12-18": Decimal("0.02"),
-                    "2020-12-19": Decimal("0.02"),
-                    "2020-12-20": Decimal("0.02"),
-                    "2021-01-04": Decimal("0.02"),
-                    "2021-01-05": Decimal("0.02"),
-                    "2021-01-06": Decimal("0.02"),
-                    "2021-01-08": Decimal("0.02"),
-                },
-                "normal": {
-                    "2020-10-08": Decimal("0.02"),
-                    "2020-10-09": Decimal("0.02"),
-                    "2020-10-10": Decimal("0.02"),
-                    "2020-10-11": Decimal("0.02"),
-                    "2020-10-12": Decimal("0.02"),
-                    "2020-10-13": Decimal("0.02"),
-                    "2020-10-14": Decimal("0.02"),
-                    "2020-10-15": Decimal("0.02"),
-                    "2020-10-16": Decimal("0.02"),
-                    "2020-10-17": Decimal("0.02"),
-                    "2020-10-18": Decimal("0.02"),
-                    "2020-10-19": Decimal("0.02"),
-                    "2020-10-20": Decimal("0.02"),
-                    "2020-10-21": Decimal("0.02"),
-                    "2020-10-22": Decimal("0.02"),
-                    "2020-10-23": Decimal("0.02"),
-                    "2020-10-24": Decimal("0.02"),
-                    "2020-10-25": Decimal("0.02"),
-                    "2020-10-26": Decimal("0.02"),
-                    "2020-10-27": Decimal("0.02"),
-                    "2020-10-28": Decimal("0.02"),
-                    "2020-10-29": Decimal("0.02"),
-                    "2020-10-30": Decimal("0.02"),
-                    "2020-10-31": Decimal("0.02"),
-                    "2020-11-01": Decimal("0.02"),
-                    "2020-11-02": Decimal("0.02"),
-                    "2020-11-03": Decimal("0.02"),
-                    "2020-11-04": Decimal("0.02"),
-                    "2020-11-05": Decimal("0.02"),
-                    "2020-11-06": Decimal("0.02"),
-                    "2020-12-15": Decimal("0.02"),
-                    "2020-12-16": Decimal("0.02"),
-                    "2020-12-17": Decimal("0.02"),
-                    "2020-12-18": Decimal("0.02"),
-                    "2020-12-19": Decimal("0.02"),
-                    "2020-12-20": Decimal("0.02"),
-                    "2021-01-04": Decimal("0.02"),
-                    "2021-01-05": Decimal("0.02"),
-                    "2021-01-06": Decimal("0.02"),
-                    "2021-01-08": Decimal("0.02"),
-                },
-            },
-        }
-    },
-    "paper": {
-        "cardkingdom": {
-            "buylist": {
-                "foil": {
-                    "2020-10-08": Decimal("0.06"),
-                    "2020-10-09": Decimal("0.06"),
-                    "2020-10-10": Decimal("0.06"),
-                    "2020-10-11": Decimal("0.06"),
-                    "2020-10-12": Decimal("0.06"),
-                    "2020-10-13": Decimal("0.06"),
-                    "2020-10-14": Decimal("0.06"),
-                    "2020-10-15": Decimal("0.06"),
-                    "2020-10-16": Decimal("0.06"),
-                    "2020-10-17": Decimal("0.08"),
-                    "2020-10-18": Decimal("0.08"),
-                    "2020-10-19": Decimal("0.08"),
-                    "2020-10-20": Decimal("0.08"),
-                    "2020-10-21": Decimal("0.06"),
-                    "2020-10-22": Decimal("0.06"),
-                    "2020-10-23": Decimal("0.06"),
-                    "2020-10-24": Decimal("0.06"),
-                    "2020-10-25": Decimal("0.06"),
-                    "2020-10-26": Decimal("0.06"),
-                    "2020-10-27": Decimal("0.06"),
-                    "2020-10-28": Decimal("0.06"),
-                    "2020-10-29": Decimal("0.1"),
-                    "2020-10-30": Decimal("0.1"),
-                    "2020-10-31": Decimal("0.1"),
-                    "2020-11-01": Decimal("0.13"),
-                    "2020-11-02": Decimal("0.13"),
-                    "2020-11-03": Decimal("0.13"),
-                    "2020-11-04": Decimal("0.13"),
-                    "2020-11-05": Decimal("0.13"),
-                    "2020-11-06": Decimal("0.13"),
-                    "2020-12-15": Decimal("0.16"),
-                    "2020-12-16": Decimal("0.16"),
-                    "2020-12-17": Decimal("0.16"),
-                    "2020-12-18": Decimal("0.16"),
-                    "2020-12-19": Decimal("0.16"),
-                    "2020-12-20": Decimal("0.16"),
-                    "2021-01-04": Decimal("0.16"),
-                    "2021-01-05": Decimal("0.16"),
-                    "2021-01-06": Decimal("0.16"),
-                    "2021-01-08": Decimal("0.16"),
-                },
-                "normal": {
-                    "2020-10-08": Decimal("0.05"),
-                    "2020-10-09": Decimal("0.05"),
-                    "2020-10-10": Decimal("0.05"),
-                    "2020-10-11": Decimal("0.05"),
-                    "2020-10-12": Decimal("0.05"),
-                    "2020-10-13": Decimal("0.05"),
-                    "2020-10-14": Decimal("0.05"),
-                    "2020-10-15": Decimal("0.05"),
-                    "2020-10-16": Decimal("0.05"),
-                    "2020-10-17": Decimal("0.05"),
-                    "2020-10-18": Decimal("0.05"),
-                    "2020-10-19": Decimal("0.05"),
-                    "2020-10-20": Decimal("0.05"),
-                    "2020-10-21": Decimal("0.05"),
-                    "2020-10-22": Decimal("0.05"),
-                    "2020-10-23": Decimal("0.05"),
-                    "2020-10-24": Decimal("0.05"),
-                    "2020-10-25": Decimal("0.05"),
-                    "2020-10-26": Decimal("0.05"),
-                    "2020-10-27": Decimal("0.05"),
-                    "2020-10-28": Decimal("0.05"),
-                    "2020-10-29": Decimal("0.05"),
-                    "2020-10-30": Decimal("0.05"),
-                    "2020-10-31": Decimal("0.05"),
-                    "2020-11-01": Decimal("0.05"),
-                    "2020-11-02": Decimal("0.05"),
-                    "2020-11-03": Decimal("0.05"),
-                    "2020-11-04": Decimal("0.05"),
-                    "2020-11-05": Decimal("0.05"),
-                    "2020-11-06": Decimal("0.05"),
-                    "2020-12-15": Decimal("0.05"),
-                    "2020-12-16": Decimal("0.05"),
-                    "2020-12-17": Decimal("0.05"),
-                    "2020-12-18": Decimal("0.05"),
-                    "2020-12-19": Decimal("0.05"),
-                    "2020-12-20": Decimal("0.05"),
-                    "2021-01-04": Decimal("0.05"),
-                    "2021-01-05": Decimal("0.05"),
-                    "2021-01-06": Decimal("0.05"),
-                    "2021-01-08": Decimal("0.05"),
-                },
-            },
-            "currency": "USD",
-            "retail": {
-                "foil": {
-                    "2020-10-08": Decimal("0.35"),
-                    "2020-10-09": Decimal("0.35"),
-                    "2020-10-10": Decimal("0.35"),
-                    "2020-10-11": Decimal("0.35"),
-                    "2020-10-12": Decimal("0.35"),
-                    "2020-10-13": Decimal("0.35"),
-                    "2020-10-14": Decimal("0.35"),
-                    "2020-10-15": Decimal("0.35"),
-                    "2020-10-16": Decimal("0.35"),
-                    "2020-10-17": Decimal("0.39"),
-                    "2020-10-18": Decimal("0.39"),
-                    "2020-10-19": Decimal("0.39"),
-                    "2020-10-20": Decimal("0.39"),
-                    "2020-10-21": Decimal("0.39"),
-                    "2020-10-22": Decimal("0.39"),
-                    "2020-10-23": Decimal("0.39"),
-                    "2020-10-24": Decimal("0.39"),
-                    "2020-10-25": Decimal("0.39"),
-                    "2020-10-26": Decimal("0.39"),
-                    "2020-10-27": Decimal("0.39"),
-                    "2020-10-28": Decimal("0.39"),
-                    "2020-10-29": Decimal("0.39"),
-                    "2020-10-30": Decimal("0.39"),
-                    "2020-10-31": Decimal("0.39"),
-                    "2020-11-01": Decimal("0.49"),
-                    "2020-11-02": Decimal("0.49"),
-                    "2020-11-03": Decimal("0.49"),
-                    "2020-11-04": Decimal("0.49"),
-                    "2020-11-05": Decimal("0.49"),
-                    "2020-11-06": Decimal("0.49"),
-                    "2020-12-15": Decimal("0.79"),
-                    "2020-12-16": Decimal("0.79"),
-                    "2020-12-17": Decimal("0.79"),
-                    "2020-12-18": Decimal("0.79"),
-                    "2020-12-19": Decimal("0.79"),
-                    "2020-12-20": Decimal("0.79"),
-                    "2021-01-04": Decimal("0.79"),
-                    "2021-01-05": Decimal("0.79"),
-                    "2021-01-06": Decimal("0.79"),
-                    "2021-01-08": Decimal("0.79"),
-                },
-                "normal": {
-                    "2020-10-08": Decimal("0.25"),
-                    "2020-10-09": Decimal("0.25"),
-                    "2020-10-10": Decimal("0.25"),
-                    "2020-10-11": Decimal("0.25"),
-                    "2020-10-12": Decimal("0.25"),
-                    "2020-10-13": Decimal("0.25"),
-                    "2020-10-14": Decimal("0.25"),
-                    "2020-10-15": Decimal("0.25"),
-                    "2020-10-16": Decimal("0.25"),
-                    "2020-10-17": Decimal("0.25"),
-                    "2020-10-18": Decimal("0.25"),
-                    "2020-10-19": Decimal("0.25"),
-                    "2020-10-20": Decimal("0.25"),
-                    "2020-10-21": Decimal("0.25"),
-                    "2020-10-22": Decimal("0.25"),
-                    "2020-10-23": Decimal("0.25"),
-                    "2020-10-24": Decimal("0.25"),
-                    "2020-10-25": Decimal("0.25"),
-                    "2020-10-26": Decimal("0.25"),
-                    "2020-10-27": Decimal("0.25"),
-                    "2020-10-28": Decimal("0.25"),
-                    "2020-10-29": Decimal("0.25"),
-                    "2020-10-30": Decimal("0.25"),
-                    "2020-10-31": Decimal("0.25"),
-                    "2020-11-01": Decimal("0.25"),
-                    "2020-11-02": Decimal("0.25"),
-                    "2020-11-03": Decimal("0.25"),
-                    "2020-11-04": Decimal("0.25"),
-                    "2020-11-05": Decimal("0.25"),
-                    "2020-11-06": Decimal("0.25"),
-                    "2020-12-15": Decimal("0.25"),
-                    "2020-12-16": Decimal("0.25"),
-                    "2020-12-17": Decimal("0.25"),
-                    "2020-12-18": Decimal("0.25"),
-                    "2020-12-19": Decimal("0.25"),
-                    "2020-12-20": Decimal("0.25"),
-                    "2021-01-04": Decimal("0.25"),
-                    "2021-01-05": Decimal("0.25"),
-                    "2021-01-06": Decimal("0.25"),
-                    "2021-01-08": Decimal("0.25"),
-                },
-            },
-        },
-        "cardmarket": {
-            "currency": "EUR",
-            "retail": {
-                "foil": {
-                    "2020-10-08": Decimal("0.5"),
-                    "2020-10-09": Decimal("0.5"),
-                    "2020-10-10": Decimal("0.5"),
-                    "2020-10-11": Decimal("0.5"),
-                    "2020-10-12": Decimal("0.5"),
-                    "2020-10-13": Decimal("0.5"),
-                    "2020-10-14": Decimal("0.5"),
-                    "2020-10-15": Decimal("0.5"),
-                    "2020-10-16": Decimal("0.5"),
-                    "2020-10-17": Decimal("0.5"),
-                    "2020-10-18": Decimal("0.5"),
-                    "2020-10-19": Decimal("0.5"),
-                    "2020-10-20": Decimal("0.5"),
-                    "2020-10-21": Decimal("0.5"),
-                    "2020-10-22": Decimal("0.5"),
-                    "2020-10-23": Decimal("0.5"),
-                    "2020-10-24": Decimal("0.5"),
-                    "2020-10-25": Decimal("0.5"),
-                    "2020-10-26": Decimal("0.5"),
-                    "2020-10-27": Decimal("0.5"),
-                    "2020-10-28": Decimal("0.5"),
-                    "2020-10-29": Decimal("0.5"),
-                    "2020-10-30": Decimal("0.5"),
-                    "2020-10-31": Decimal("0.5"),
-                    "2020-11-01": Decimal("0.5"),
-                    "2020-11-02": Decimal("0.5"),
-                    "2020-11-03": Decimal("0.5"),
-                    "2020-11-04": Decimal("0.39"),
-                    "2020-11-05": Decimal("0.39"),
-                    "2020-11-06": Decimal("0.39"),
-                    "2020-12-15": Decimal("0.2"),
-                    "2020-12-16": Decimal("0.2"),
-                    "2020-12-17": Decimal("0.2"),
-                    "2020-12-18": Decimal("0.2"),
-                    "2020-12-19": Decimal("0.2"),
-                    "2020-12-20": Decimal("0.2"),
-                    "2021-01-04": Decimal("0.2"),
-                    "2021-01-05": Decimal("0.2"),
-                    "2021-01-06": Decimal("0.2"),
-                    "2021-01-08": Decimal("0.2"),
-                },
-                "normal": {
-                    "2020-10-08": Decimal("0.15"),
-                    "2020-10-09": Decimal("0.15"),
-                    "2020-10-10": Decimal("0.15"),
-                    "2020-10-11": Decimal("0.25"),
-                    "2020-10-12": Decimal("0.25"),
-                    "2020-10-13": Decimal("0.25"),
-                    "2020-10-14": Decimal("0.08"),
-                    "2020-10-15": Decimal("0.55"),
-                    "2020-10-16": Decimal("0.1"),
-                    "2020-10-17": Decimal("0.03"),
-                    "2020-10-18": Decimal("0.03"),
-                    "2020-10-19": Decimal("0.15"),
-                    "2020-10-20": Decimal("0.15"),
-                    "2020-10-21": Decimal("0.49"),
-                    "2020-10-22": Decimal("0.02"),
-                    "2020-10-23": Decimal("0.02"),
-                    "2020-10-24": Decimal("0.02"),
-                    "2020-10-25": Decimal("0.04"),
-                    "2020-10-26": Decimal("0.04"),
-                    "2020-10-27": Decimal("0.04"),
-                    "2020-10-28": Decimal("0.2"),
-                    "2020-10-29": Decimal("0.2"),
-                    "2020-10-30": Decimal("0.02"),
-                    "2020-10-31": Decimal("0.12"),
-                    "2020-11-01": Decimal("0.1"),
-                    "2020-11-02": Decimal("0.1"),
-                    "2020-11-03": Decimal("0.1"),
-                    "2020-11-04": Decimal("0.05"),
-                    "2020-11-05": Decimal("0.02"),
-                    "2020-11-06": Decimal("0.13"),
-                    "2020-12-15": Decimal("0.25"),
-                    "2020-12-16": Decimal("0.25"),
-                    "2020-12-17": Decimal("0.25"),
-                    "2020-12-18": Decimal("0.12"),
-                    "2020-12-19": Decimal("0.12"),
-                    "2020-12-20": Decimal("0.12"),
-                    "2021-01-04": Decimal("0.05"),
-                    "2021-01-05": Decimal("0.02"),
-                    "2021-01-06": Decimal("0.02"),
-                    "2021-01-08": Decimal("0.02"),
-                },
-            },
-        },
-        "tcgplayer": {
-            "buylist": {
-                "foil": {
-                    "2020-10-08": Decimal("0.01"),
-                    "2020-10-09": Decimal("0.01"),
-                    "2020-10-10": Decimal("0.05"),
-                    "2020-10-11": Decimal("0.05"),
-                    "2020-10-12": Decimal("0.05"),
-                    "2020-10-13": Decimal("0.01"),
-                    "2020-10-14": Decimal("0.02"),
-                    "2020-10-15": Decimal("0.03"),
-                    "2020-10-16": Decimal("0.03"),
-                    "2020-10-17": Decimal("0.02"),
-                    "2020-10-18": Decimal("0.02"),
-                    "2020-10-19": Decimal("0.03"),
-                    "2020-10-20": Decimal("0.01"),
-                    "2020-10-21": Decimal("0.01"),
-                    "2020-10-22": Decimal("0.01"),
-                    "2020-10-23": Decimal("0.01"),
-                    "2020-10-24": Decimal("0.01"),
-                    "2020-10-25": Decimal("0.01"),
-                    "2020-10-26": Decimal("0.01"),
-                    "2020-10-27": Decimal("0.01"),
-                    "2020-10-28": Decimal("0.01"),
-                    "2020-10-29": Decimal("0.01"),
-                    "2020-10-30": Decimal("0.01"),
-                    "2020-10-31": Decimal("0.01"),
-                    "2020-11-01": Decimal("0.01"),
-                    "2020-11-02": Decimal("0.01"),
-                    "2020-11-03": Decimal("0.01"),
-                    "2020-11-04": Decimal("0.01"),
-                    "2020-11-05": Decimal("0.02"),
-                    "2020-11-06": Decimal("0.02"),
-                    "2020-12-15": Decimal("0.06"),
-                    "2020-12-16": Decimal("0.06"),
-                    "2020-12-17": Decimal("0.06"),
-                    "2020-12-18": Decimal("0.06"),
-                    "2020-12-19": Decimal("0.06"),
-                    "2020-12-20": Decimal("0.06"),
-                    "2021-01-04": Decimal("0.05"),
-                    "2021-01-05": Decimal("0.06"),
-                    "2021-01-06": Decimal("0.06"),
-                    "2021-01-08": Decimal("0.09"),
-                }
-            },
-            "currency": "USD",
-            "retail": {
-                "foil": {
-                    "2020-10-08": Decimal("0.53"),
-                    "2020-10-09": Decimal("0.53"),
-                    "2020-10-10": Decimal("0.53"),
-                    "2020-10-11": Decimal("0.53"),
-                    "2020-10-12": Decimal("0.53"),
-                    "2020-10-13": Decimal("0.53"),
-                    "2020-10-14": Decimal("0.53"),
-                    "2020-10-15": Decimal("0.53"),
-                    "2020-10-16": Decimal("0.53"),
-                    "2020-10-17": Decimal("0.53"),
-                    "2020-10-18": Decimal("0.53"),
-                    "2020-10-19": Decimal("0.53"),
-                    "2020-10-20": Decimal("0.53"),
-                    "2020-10-21": Decimal("0.53"),
-                    "2020-10-22": Decimal("0.53"),
-                    "2020-10-23": Decimal("0.53"),
-                    "2020-10-24": Decimal("0.53"),
-                    "2020-10-25": Decimal("0.52"),
-                    "2020-10-26": Decimal("0.52"),
-                    "2020-10-27": Decimal("0.52"),
-                    "2020-10-28": Decimal("0.52"),
-                    "2020-10-29": Decimal("0.52"),
-                    "2020-10-30": Decimal("0.52"),
-                    "2020-10-31": Decimal("0.52"),
-                    "2020-11-01": Decimal("0.51"),
-                    "2020-11-02": Decimal("0.51"),
-                    "2020-11-03": Decimal("0.51"),
-                    "2020-11-04": Decimal("0.51"),
-                    "2020-11-05": Decimal("0.51"),
-                    "2020-11-06": Decimal("0.51"),
-                    "2020-12-15": Decimal("0.55"),
-                    "2020-12-16": Decimal("0.55"),
-                    "2020-12-17": Decimal("0.55"),
-                    "2020-12-18": Decimal("0.55"),
-                    "2020-12-19": Decimal("0.55"),
-                    "2020-12-20": Decimal("0.55"),
-                    "2021-01-04": Decimal("0.55"),
-                    "2021-01-05": Decimal("0.55"),
-                    "2021-01-06": Decimal("0.55"),
-                    "2021-01-08": Decimal("0.55"),
-                },
-                "normal": {
-                    "2020-10-08": Decimal("0.17"),
-                    "2020-10-09": Decimal("0.17"),
-                    "2020-10-10": Decimal("0.17"),
-                    "2020-10-11": Decimal("0.17"),
-                    "2020-10-12": Decimal("0.17"),
-                    "2020-10-13": Decimal("0.17"),
-                    "2020-10-14": Decimal("0.17"),
-                    "2020-10-15": Decimal("0.17"),
-                    "2020-10-16": Decimal("0.16"),
-                    "2020-10-17": Decimal("0.16"),
-                    "2020-10-18": Decimal("0.16"),
-                    "2020-10-19": Decimal("0.16"),
-                    "2020-10-20": Decimal("0.17"),
-                    "2020-10-21": Decimal("0.17"),
-                    "2020-10-22": Decimal("0.17"),
-                    "2020-10-23": Decimal("0.17"),
-                    "2020-10-24": Decimal("0.17"),
-                    "2020-10-25": Decimal("0.17"),
-                    "2020-10-26": Decimal("0.17"),
-                    "2020-10-27": Decimal("0.17"),
-                    "2020-10-28": Decimal("0.17"),
-                    "2020-10-29": Decimal("0.17"),
-                    "2020-10-30": Decimal("0.17"),
-                    "2020-10-31": Decimal("0.17"),
-                    "2020-11-01": Decimal("0.17"),
-                    "2020-11-02": Decimal("0.17"),
-                    "2020-11-03": Decimal("0.17"),
-                    "2020-11-04": Decimal("0.17"),
-                    "2020-11-05": Decimal("0.17"),
-                    "2020-11-06": Decimal("0.17"),
-                    "2020-12-15": Decimal("0.17"),
-                    "2020-12-16": Decimal("0.17"),
-                    "2020-12-17": Decimal("0.17"),
-                    "2020-12-18": Decimal("0.17"),
-                    "2020-12-19": Decimal("0.17"),
-                    "2020-12-20": Decimal("0.17"),
-                    "2021-01-04": Decimal("0.17"),
-                    "2021-01-05": Decimal("0.17"),
-                    "2021-01-06": Decimal("0.17"),
-                    "2021-01-08": Decimal("0.17"),
-                },
-            },
-        },
-    },
-}
-"""
