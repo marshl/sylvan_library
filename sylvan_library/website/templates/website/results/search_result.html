@@ -34,7 +34,9 @@
                         <h2 class="search-result-title">
                             <a target="_blank">{{ face.name }}</a>
                             {% if face.mana_cost %}
+                                <span class="search-result-mana-cost">
                                 {{ face.mana_cost | replace_mana_symbols | shadowed | safe }}
+                                </span>
                                 ({{ face.converted_mana_cost | floatformat }})
                             {% endif %}
 
