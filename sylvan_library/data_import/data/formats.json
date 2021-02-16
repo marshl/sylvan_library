@@ -58,5 +58,13 @@
   {
     "code": "pioneer",
     "name": "Pioneer"
+  },
+  {
+    "code": "premodern",
+    "name": "Pre-modern"
+  },
+  {
+    "code": "gladiator",
+    "name": "Gladiator"
   }
 ]
