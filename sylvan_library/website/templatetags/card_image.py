@@ -62,7 +62,7 @@ def card_printing_image_url(card_printing: CardPrinting) -> str:
         return path
 
     for localisations in card_printing.localisations.all():
-        path = localisations.localised_faces.first().get_image_path()
+        path = localisations.localised_faces.all()[0].get_image_path()
         if does_image_exist(path):
             return path
 
