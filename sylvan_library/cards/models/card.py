@@ -354,12 +354,10 @@ class CardPrinting(models.Model):
         But for Guild Kit printings, the guild symbol should be used instead
         :return:
         """
-        if (
-            self.set.code in ("GK1", "GK2")
-            and self.face_printings.count() == 1
-            and self.face_printings.first().watermark
-        ):
-            return self.face_printings.first().watermark
+        if self.set.code in ("GK1", "GK2") and len(self.face_printings.all()) == 1:
+            first_face = self.face_printings.all()[0]
+            if first_face.watermark:
+                return first_face.watermark
 
         return self.set.keyrune_code.lower()
 
@@ -538,7 +536,7 @@ class CardLocalisation(models.Model):
         return True
 
     def get_image_path(self) -> str:
-        return self.localised_faces.first().get_image_path()
+        return self.localised_faces.all()[0].get_image_path()
 
 
 class CardFaceLocalisation(models.Model):
