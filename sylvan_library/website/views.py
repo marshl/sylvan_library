@@ -366,21 +366,10 @@ def ajax_search_result_prices(
     :return: The price HTML
     """
     printing = CardPrinting.objects.get(pk=card_printing_id)
-    price_dict = defaultdict(list)
-    for price in printing.prices.all():
-        price_dict[price.price_type].append(price)
-
-    results = {}
-    for price_type, prices in price_dict.items():
-        results[price_type] = {
-            "prices": sorted(prices, key=lambda x: x.date, reverse=True),
-            "name": prices[0].get_price_type_display(),
-        }
-
     return render(
         request,
         "website/results/search_result_prices.html",
-        {"prices": results, "printing": printing},
+        {"printing": printing},
     )
 
 
@@ -394,18 +383,18 @@ def ajax_search_result_price_json(
     :return: The pricing data for the printing
     """
     printing = CardPrinting.objects.get(pk=card_printing_id)
-    prices = printing.prices.order_by("date").all()
+    prices = list(printing.prices.order_by("date").all())
+
     result = {
-        price_type: {
-            "label": price_type,
-            "currency": "tickets" if price_type.startswith("mtgo") else "dollars",
+        "paper": {
+            "label": "paper",
+            "currency": "dollars",
             "prices": [
-                {"date": price.date.isoformat(), "value": price.price}
-                for price in prices.all()
-                if price.price_type == price_type
+                {"date": price.date.isoformat(), "value": price.paper_value}
+                for price in prices
+                if price.paper_value
             ],
         }
-        for price_type in set(price.price_type for price in prices.all())
     }
     return JsonResponse(result)
 
@@ -472,8 +461,7 @@ def get_unused_commanders(user: User):
     )
     users_commanders = (
         Card.objects.filter(
-            printings__localisations__ownerships__owner=user,
-            is_token=False,
+            printings__localisations__ownerships__owner=user, is_token=False
         )
         .filter(
             (Q(faces__types__name="Legend") & Q(faces__types__name="Creature"))

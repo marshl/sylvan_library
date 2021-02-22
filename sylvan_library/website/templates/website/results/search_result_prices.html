@@ -1,23 +1,22 @@
 {% load currency %}
 {% load static %}
 <div class="extraDetails">
-    {% for price_type, price_dict in prices.items %}
-        <span class="subtitle">
-            <b>{{ price_dict.name }}: </b> {{ price_dict.prices.0 }}
-        </span>
-        <br/>
-        {% for price in price_dict.prices %}
-            <span class="subtitle" style="display: none;">
-                {{ price.date }}
-                {{ price }}
-                <br/>
-            </span>
-        {% endfor %}
-    {% endfor %}
-
-    {% if not prices %}
-        No price data for this printing.
+    {% if not printing.latest_price %}
+    <span class="subtitle">No price data for this printing</span>
     {% else %}
+        <span class="subtitle">
+            <b>Paper: </b> {{ printing.latest_price.paper_value }}
+        </span>
+        <span class="subtitle">
+            <b>Paper Foil: </b> {{ printing.latest_price.paper_foil_value }}
+        </span>
+
+        <span class="subtitle">
+            <b>MTGO: </b> {{ printing.latest_price.mtgo_value }}
+        </span>
+        <span class="subtitle">
+            <b>MTGO Foil: </b> {{ printing.latest_price.mtgo_foil_value }}
+        </span>
         <div>
             <canvas class="js-result-price-chart" height="75px" data-printing-id="{{ printing.id }}"></canvas>
         </div>
