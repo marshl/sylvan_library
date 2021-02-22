@@ -343,38 +343,33 @@ class Command(BaseCommand):
             format_obj.code: format_obj for format_obj in Format.objects.all()
         }
         for update_card_legality in UpdateCardLegality.objects.all():
-            try:
-                if update_card_legality.update_mode == UpdateMode.DELETE:
-                    deletions, _ = CardLegality.objects.filter(
-                        card__scryfall_oracle_id=update_card_legality.scryfall_oracle_id,
-                        format__code=update_card_legality.format_name,
-                    ).delete()
-
-                    if deletions == 0:
-                        raise Exception(f"No legality found for {update_card_legality}")
-                elif update_card_legality.update_mode == UpdateMode.CREATE:
-                    CardLegality.objects.create(
-                        card_id=self.get_card_id(
-                            update_card_legality.scryfall_oracle_id
-                        ),
-                        format=format_map[update_card_legality.format_name],
-                        restriction=update_card_legality.restriction,
-                    )
-                elif update_card_legality.update_mode == UpdateMode.UPDATE:
-                    existing_legality = CardLegality.objects.get(
-                        card__scryfall_oracle_id=update_card_legality.scryfall_oracle_id,
-                        format__code=update_card_legality.format_name,
-                    )
-                    existing_legality.restriction = update_card_legality.restriction
-                    existing_legality.save()
-            except Format.DoesNotExist:
-                self.logger.error(
-                    "Could not find format %s for %s",
-                    update_card_legality.format_name,
-                    update_card_legality,
+            if update_card_legality.format_name not in format_map:
+                raise ValueError(
+                    f'Could not find format "{update_card_legality.format_name}" for {update_card_legality}'
                 )
-                raise
 
+            if update_card_legality.update_mode == UpdateMode.DELETE:
+                deletions, _ = CardLegality.objects.filter(
+                    card__scryfall_oracle_id=update_card_legality.scryfall_oracle_id,
+                    format__code=update_card_legality.format_name,
+                ).delete()
+
+                if deletions == 0:
+                    raise Exception(f"No legality found for {update_card_legality}")
+
+            elif update_card_legality.update_mode == UpdateMode.CREATE:
+                CardLegality.objects.create(
+                    card_id=self.get_card_id(update_card_legality.scryfall_oracle_id),
+                    format=format_map[update_card_legality.format_name],
+                    restriction=update_card_legality.restriction,
+                )
+            elif update_card_legality.update_mode == UpdateMode.UPDATE:
+                existing_legality = CardLegality.objects.get(
+                    card__scryfall_oracle_id=update_card_legality.scryfall_oracle_id,
+                    format__code=update_card_legality.format_name,
+                )
+                existing_legality.restriction = update_card_legality.restriction
+                existing_legality.save()
         return True
 
     def update_card_printings(self) -> bool:
@@ -437,11 +432,22 @@ class Command(BaseCommand):
                     ),
                 )
             elif update_card_face_printing.update_mode == UpdateMode.UPDATE:
-                face_printing = CardFacePrinting.objects.get(
-                    uuid=update_card_face_printing.printing_uuid
-                )
+                try:
+                    face_printing = CardFacePrinting.objects.get(
+                        uuid=update_card_face_printing.printing_uuid
+                    )
+                except CardFacePrinting.DoesNotExist:
+                    logging.error(
+                        f"Could not find card printing %s fpr %s",
+                        update_card_face_printing.printing_uuid,
+                        update_card_face_printing,
+                    )
+                    raise ValueError(
+                        f"Could not find card printing {update_card_face_printing.printing_uuid} fpr {update_card_face_printing}"
+                    )
             else:
                 continue
+
             for field, value in update_card_face_printing.field_data.items():
                 if update_card_face_printing.update_mode == UpdateMode.UPDATE:
                     value = value["to"]
@@ -522,9 +528,19 @@ class Command(BaseCommand):
                 card_printing__scryfall_id=update_face_localisation.printing_scryfall_id,
                 language=self.get_language(update_face_localisation.language_code),
             )
-            card_printing_face = CardFacePrinting.objects.get(
-                uuid=update_face_localisation.face_printing_uuid
-            )
+            try:
+                card_printing_face = CardFacePrinting.objects.get(
+                    uuid=update_face_localisation.face_printing_uuid
+                )
+            except CardFacePrinting.DoesNotExist:
+                logging.error(
+                    "Could not find CardFacePrinting with uuid %s for %s",
+                    update_face_localisation.face_printing_uuid,
+                    update_face_localisation,
+                )
+                raise ValueError(
+                    f"Could not find CardFacePrinting with uuid {update_face_localisation.face_printing_uuid} for {update_face_localisation}"
+                )
 
             if update_face_localisation.update_mode == UpdateMode.CREATE:
                 face_localisation = CardFaceLocalisation(
