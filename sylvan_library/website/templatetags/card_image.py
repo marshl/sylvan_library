@@ -51,6 +51,8 @@ def card_printing_image_url(card_printing: CardPrinting) -> str:
     :param card_printing: The card printing to get the image for
     :return: The relative image path
     """
+    if card_printing is None:
+        return None
     printed_language = next(
         pl
         for pl in card_printing.printed_languages.all()
