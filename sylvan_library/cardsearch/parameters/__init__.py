@@ -47,6 +47,8 @@ from .card_rules_text_parameter import (
 from .card_set_parameters import CardSetParam, CardBlockParam
 from .card_type_parameters import CardGenericTypeParam, CardSubtypeParam, CardTypeParam
 
+from .card_price_parameters import CardPriceParam
+
 
 class SearchMode(Enum):
     SEARCH_MODE_CARD = "SEARCH_MODE_CARD"
@@ -109,6 +111,20 @@ class CardPowerSortParam(CardSortParam):
         return ["card__faces__num_power"]
 
 
+class CardPriceSortParam(CardSortParam):
+    """
+    THe sort parameter for a card's latest price
+    """
+
+    def get_sort_keys(self, search_mode: SearchMode) -> list:
+        """
+        Gets the list of attributes to be sorted by
+        """
+        if search_mode == SearchMode.SEARCH_MODE_CARD:
+            return ["printings__latest_price__paper_value"]
+        return ["latest_price__paper_value"]
+
+
 class CardCmcSortParam(CardSortParam):
     """
     THe sort parameter for a card's converted mana cost
@@ -152,5 +168,13 @@ class CardColourWeightSortParam(CardSortParam):
 
     def get_sort_keys(self, search_mode: SearchMode) -> list:
         if search_mode == SearchMode.SEARCH_MODE_CARD:
-            return ["converted_mana_cost", "faces__colour_sort_key", "faces__colour_weight"]
-        return ["card__converted_mana_cost", "card__faces__colour_sort_key", "card__faces__colour_weight"]
+            return [
+                "converted_mana_cost",
+                "faces__colour_sort_key",
+                "faces__colour_weight",
+            ]
+        return [
+            "card__converted_mana_cost",
+            "card__faces__colour_sort_key",
+            "card__faces__colour_weight",
+        ]

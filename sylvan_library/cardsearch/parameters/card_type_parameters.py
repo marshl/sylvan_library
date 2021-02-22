@@ -56,12 +56,16 @@ class CardGenericTypeParam(CardSearchParam):
         :return: The search Q object
         """
         if self.operator == "=":
-            result = Q(card__faces__types__name__iexact=self.card_type) | Q(
-                card__faces__subtypes__name__iexact=self.card_type
+            result = (
+                Q(card__faces__types__name__iexact=self.card_type)
+                | Q(card__faces__subtypes__name__iexact=self.card_type)
+                | Q(card__faces__supertypes__name__iexact=self.card_type)
             )
         else:
-            result = Q(card__faces__types__name__icontains=self.card_type) | Q(
-                card__faces__subtypes__name__icontains=self.card_type
+            result = (
+                Q(card__faces__types__name__icontains=self.card_type)
+                | Q(card__faces__subtypes__name__icontains=self.card_type)
+                | Q(card__faces__supertypes__name__icontains=self.card_type)
             )
         return ~result if self.negated else result
 

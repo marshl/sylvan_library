@@ -45,6 +45,8 @@ from cardsearch.parameters import (
     CardSortParam,
     CardWatermarkParam,
     CardColourSortParam,
+    CardPriceParam,
+    CardPriceSortParam,
 )
 from .base_parser import Parser, ParseError
 
@@ -403,6 +405,11 @@ def parse_colour_identity_param(
     )
 
 
+@param_parser(name="price", keywords=["price"], operators=["<", "<=", ">=", ">"])
+def parse_price_param(param_args: ParameterArgs) -> CardPriceParam:
+    return CardPriceParam(number=float(param_args.text), operator=param_args.operator)
+
+
 @param_parser(
     name="ownership",
     keywords=["have", "own"],
@@ -498,6 +505,8 @@ def parse_sort_order_param(param_args: ParameterArgs) -> CardSortParam:
         param = CardPowerSortParam()
     elif param_args.text in ("color", "colour"):
         param = CardColourSortParam()
+    elif param_args.text == "price":
+        param = CardPriceSortParam()
     else:
         raise ValueError(f"Unknown sort parameter {param_args.text}")
 
