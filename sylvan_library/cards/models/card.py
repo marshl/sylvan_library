@@ -267,6 +267,13 @@ class CardPrinting(models.Model):
     rarity = models.ForeignKey(
         Rarity, related_name="printings", on_delete=models.CASCADE
     )
+    latest_price = models.ForeignKey(
+        "CardPrice",
+        related_name="latest_printing",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+    )
 
     # If the card is in a duel deck product, can be a (left) or b (right).
     duel_deck_side = models.CharField(max_length=1, blank=True, null=True)

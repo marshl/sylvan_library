@@ -18,6 +18,7 @@ from cards.models import (
     CardFacePrinting,
     CardLocalisation,
     CardFaceLocalisation,
+    CardPrice,
 )
 
 
@@ -211,3 +212,9 @@ class CardFaceLocalisationModelForm(forms.ModelForm):
 class CardFaceLocalisationAdmin(admin.ModelAdmin):
     autocomplete_fields = ["localisation", "card_printing_face"]
     form = CardFaceLocalisationModelForm
+
+
+@admin.register(CardPrice)
+class CardPriceAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["card_printing"]
+    search_fields = ["card_printing"]

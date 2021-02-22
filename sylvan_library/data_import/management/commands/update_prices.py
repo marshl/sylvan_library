@@ -33,13 +33,17 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args: Any, **options: Any) -> None:
-        with transaction.atomic():
-            self.download_prices()
-            self.update_prices()
-            self.set_most_recent_prices()
-
-    def update_prices(self):
+        # We want to get the average for a weeks prices into a single lump
+        # So the latest date that can be considered is the start of this week
+        # The data for that week will be lumped into the date of the start of the previous week
         start_of_week = arrow.get().floor("week").date()
+        with transaction.atomic():
+            self.download_prices(start_of_week)
+            self.update_prices(start_of_week)
+            self.set_latest_prices()
+
+    def update_prices(self, start_of_week: datetime.date):
+
         logger.info("Querying DB for most recent prices")
         with connection.cursor() as cursor:
             cursor.execute(
@@ -47,13 +51,12 @@ class Command(BaseCommand):
 SELECT
 card_printing.id,
 face_printing.uuid,
-most_recent_price.date
+latest_price.date
 FROM cards_cardprinting card_printing
 JOIN cards_cardfaceprinting face_printing
 ON face_printing.card_printing_id = card_printing.id
-LEFT JOIN cards_cardprice most_recent_price
-ON most_recent_price.card_printing_id = card_printing.id
-AND most_recent_price.is_latest = TRUE
+LEFT JOIN cards_cardprice latest_price
+ON latest_price.id = card_printing.latest_price_id
 """
             )
             recent_price_map = {
@@ -72,7 +75,7 @@ AND most_recent_price.is_latest = TRUE
                     logger.warning("No printing found for %s", uuid)
                     continue
 
-                printing_id, most_recent_price = recent_price_map[uuid]
+                printing_id, latest_price = recent_price_map[uuid]
 
                 if printing_id in updated_printings:
                     logger.info("Already updated %s. Skipping...", uuid)
@@ -80,49 +83,50 @@ AND most_recent_price.is_latest = TRUE
 
                 logger.info("Updating prices for %s", uuid)
                 apply_printing_prices(
-                    start_of_week, price_data, printing_id, most_recent_price
+                    start_of_week, price_data, printing_id, latest_price
                 )
                 updated_printings.add(printing_id)
-                if len(updated_printings) > 10000:
-                    break # TODO
 
-    def set_most_recent_prices(self):
-        logger.info("Setting most recent prices")
-        CardPrice.objects.all().update(is_latest=False)
+    def set_latest_prices(self):
+        logger.info("Setting latest prices")
         with connection.cursor() as cursor:
             cursor.execute(
                 """
-UPDATE cards_cardprice
-SET is_latest = true
-WHERE id IN (
-    SELECT id
+UPDATE cards_cardprinting 
+SET latest_price_id = latest_price.id
+FROM (
+    SELECT *
     FROM (
-      SELECT cardprice.*,
-      RANK() OVER (PARTITION BY card_printing_id ORDER BY date DESC) rnk
-      FROM cards_cardprice cardprice
+        SELECT cardprice.*,
+        RANK() OVER (PARTITION BY card_printing_id ORDER BY date DESC) rnk
+        FROM cards_cardprice cardprice
     ) ranked_prices
     WHERE rnk = 1
-)
+) latest_price
+WHERE latest_price.card_printing_id = cards_cardprinting.id
 """
             )
 
-    def download_prices(self):
+    def download_prices(self, start_of_week: datetime.date):
         logger.info("Checking for up-to-date price files")
         if os.path.isfile(_paths.PRICES_JSON_PATH):
             with open(_paths.PRICES_JSON_PATH, "r", encoding="utf8") as prices_file:
                 meta = ijson.items(prices_file, "meta")
                 meta_data = next(meta)
-                date = arrow.get(meta_data["date"])
-                if date <= arrow.utcnow().floor("day"):
+                date = arrow.get(meta_data["date"]).date()
+                if date >= arrow.get(start_of_week).shift(weeks=-11).date():
                     logger.info(
                         "Price files are up to date, no need to download them again"
                     )
                     return
         logger.info("Downloading prices")
         download_file(_paths.PRICES_ZIP_DOWNLOAD_URL, _paths.PRICES_ZIP_PATH)
+
+        logger.info("Extracting price file")
         prices_zip_file = zipfile.ZipFile(_paths.PRICES_ZIP_PATH)
         prices_zip_file.extractall(_paths.IMPORT_FOLDER_PATH)
         if settings.DEBUG:
+            logger.info("Pretty printing price file")
             pretty_print_json_file(_paths.PRICES_JSON_PATH)
 
 
@@ -131,11 +135,12 @@ MTGO_FOIL = (True, False)
 PAPER = (False, True)
 MTGO = (False, False)
 
+
 def apply_printing_prices(
     start_of_week: datetime.date,
     card_data: dict,
     printing_id: int,
-    most_recent_price: typing.Optional[datetime.date],
+    latest_price_date: typing.Optional[datetime.date],
 ) -> None:
     prices = defaultdict(lambda: defaultdict(list))
     for stock_type, stock_data in card_data.items():
@@ -149,14 +154,15 @@ def apply_printing_prices(
             for foil_type, foil_data in retail_data.items():
                 is_foil = foil_type != "normal"
                 for price_date_str, price_value in foil_data.items():
+                    price_date = datetime.date.fromisoformat(price_date_str)
                     # Round down the nearest week
-                    price_date = arrow.get(price_date_str).floor("week").date()
+                    price_date -= datetime.timedelta(days=price_date.weekday())
                     if price_date >= start_of_week:
                         continue
 
                     if (
-                        most_recent_price is not None
-                        and price_date <= most_recent_price
+                        latest_price_date is not None
+                        and price_date <= latest_price_date
                     ):
                         continue
 

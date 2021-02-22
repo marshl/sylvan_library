@@ -31,11 +31,12 @@ class CardPrice(models.Model):
         max_digits=10, decimal_places=2, null=True, blank=True
     )
 
-    is_latest = models.BooleanField(default=False)
-
     class Meta:
         """
         Meta information for CardPrice
         """
 
         unique_together = ("date", "card_printing")
+
+    def __str__(self):
+        return f"Price of {self.card_printing} on {self.date}"
