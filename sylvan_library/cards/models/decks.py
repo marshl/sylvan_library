@@ -110,8 +110,11 @@ class Deck(models.Model):
         creatures = board_cards.exclude(id__in=lands | commanders).filter(
             card__faces__types__name="Creature"
         )
+        # Some split cards can be both instants and sorceries, prefer instant over sorcery
         instants = board_cards.filter(card__faces__types__name="Instant")
-        sorceries = board_cards.filter(card__faces__types__name="Sorcery")
+        sorceries = board_cards.filter(card__faces__types__name="Sorcery").exclude(
+            id__in=instants
+        )
         enchantments = board_cards.exclude(
             id__in=lands | creatures | commanders
         ).filter(card__faces__types__name="Enchantment")
@@ -133,15 +136,17 @@ class Deck(models.Model):
         )
 
         return {
-            "Commander" if commanders.count() == 1 else "Commanders": commanders,
-            "Lands": lands,
-            "Creatures": creatures,
-            "Instants": instants,
-            "Sorceries": sorceries,
-            "Artifacts": artifacts,
-            "Enchantments": enchantments,
-            "Planeswalkers": planeswalkers,
-            "Other": other,
+            "Commander"
+            if commanders.count() == 1
+            else "Commanders": commanders.distinct(),
+            "Lands": lands.distinct(),
+            "Creatures": creatures.distinct(),
+            "Instants": instants.distinct(),
+            "Sorceries": sorceries.distinct(),
+            "Artifacts": artifacts.distinct(),
+            "Enchantments": enchantments.distinct(),
+            "Planeswalkers": planeswalkers.distinct(),
+            "Other": other.distinct(),
         }
 
     def get_land_symbol_counts(self) -> Dict[str, int]:
@@ -299,7 +304,9 @@ class Deck(models.Model):
             )
 
         if commanders.count() != 1:
-            if commanders.exclude(card__faces__rules_text__icontains="partner").exists():
+            if commanders.exclude(
+                card__faces__rules_text__icontains="partner"
+            ).exists():
                 raise ValidationError(
                     f"A commander deck can only have multiple commanders if they have partner"
                 )
@@ -380,23 +387,13 @@ class DeckCard(models.Model):
 
         ordering = ["card__converted_mana_cost", "card__name"]
 
-    def get_card_name(self) -> str:
-        """
-        Gets the name of the card. For most cards this will be the same as the name of the card,
-        but split cards combine the names of both halves together
-        :return:  The display name of the card
-        """
-        if self.card.layout in ("split", "aftermath"):
-            return " // ".join(c.name for c in self.card.get_all_sides())
-        return self.card.name
-
     def as_deck_text(self) -> str:
         """
         Converts this card to how it should appear in board text of the DeckForm
         :return: The text representation version of the card for use in the DeckForm
         """
 
-        result = f"{self.count}x {self.get_card_name()}"
+        result = f"{self.count}x {self.card.name}"
         if self.is_commander:
             result += " *CMDR*"
         return result

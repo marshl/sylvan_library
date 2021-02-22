@@ -5,17 +5,16 @@ import datetime
 import os
 import random
 import re
-from typing import List, Optional
+from typing import Optional
 
 from bitfield import BitField
-
-from cards.models.rarity import Rarity
-from cards.models.sets import Set
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Sum, IntegerField, Case, When
 
 from cards.models.colour import Colour
+from cards.models.rarity import Rarity
+from cards.models.sets import Set
 
 CARD_LAYOUT_CHOICES = (
     ("normal", "Normal"),
@@ -117,23 +116,6 @@ class Card(models.Model):
                 )
             )
         )["card_count"]
-
-    def get_all_sides(self, sort: bool = False) -> List["Card"]:
-        """
-        Gets a list of all the sides of this card, including the front
-        :return: A list of all the sides in side order
-        """
-        results = Card.objects.filter(pk=self.id) | self.links.order_by("side")
-        if sort:
-            return results.order_by("side")
-        return results
-
-    def get_linked_name(self, delimiter: str = " / "):
-        """
-        Gets all the names of this card joined together with the given delimiter
-        :return: THe names of this card joined together (.e.g Assault / Battery)
-        """
-        return delimiter.join(s.display_name for s in self.get_all_sides(sort=True))
 
     @property
     def is_wide(self) -> bool:
