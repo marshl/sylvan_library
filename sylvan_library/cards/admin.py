@@ -22,6 +22,22 @@ from cards.models import (
 )
 
 
+class SetInline(admin.TabularInline):
+    model = Set
+
+    show_change_link = True
+    fields = ("code", "name", "type", "release_date")
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
 class CardFaceInline(admin.TabularInline):
     # Assume Image model has foreign key to Post
     model = CardFace
@@ -41,7 +57,7 @@ class CardFaceInline(admin.TabularInline):
 class CardPrintingInline(admin.TabularInline):
     model = CardPrinting
     show_change_link = True
-    fields = ("scryfall_id", "set", "rarity", "number")
+    fields = ("card", "scryfall_id", "set", "rarity", "number")
 
     def has_change_permission(self, request, obj=None):
         return False
@@ -56,7 +72,7 @@ class CardPrintingInline(admin.TabularInline):
 class CardFacePrintingInline(admin.TabularInline):
     model = CardFacePrinting
     show_change_link = True
-    fields = ("uuid", "card_face")
+    fields = ("uuid", "card_face", "card_printing")
 
     def has_change_permission(self, request, obj=None):
         return False
@@ -116,16 +132,19 @@ class CardFaceAdmin(admin.ModelAdmin):
     search_fields = ["name"]
     form = CardFaceModelForm
     formfield_overrides = {BitField: {"widget": BitFieldCheckboxSelectMultiple}}
+    inlines = [CardFacePrintingInline]
 
 
 @admin.register(Block)
 class BlockAdmin(admin.ModelAdmin):
-    pass
+    inlines = [SetInline]
+    list_display = ("__str__", "release_date")
 
 
 @admin.register(Set)
 class SetAdmin(admin.ModelAdmin):
     search_fields = ["name", "code"]
+    inlines = [CardPrintingInline]
 
 
 @admin.register(CardType)
@@ -171,8 +190,9 @@ class FormatAdmin(admin.ModelAdmin):
 
 @admin.register(CardPrinting)
 class CardPrintingAdmin(admin.ModelAdmin):
-    autocomplete_fields = ["card", "set"]
+    autocomplete_fields = ["card", "set", "latest_price"]
     search_fields = ["card__name", "scryfall_id"]
+    # readonly_fields = ["latest_price"]
     inlines = [CardFacePrintingInline, CardLocalisationInline]
 
 
@@ -190,6 +210,7 @@ class CardFacePrintingAdmin(admin.ModelAdmin):
     autocomplete_fields = ["card_face", "card_printing"]
     search_fields = ["card_face__card__name"]
     form = CardFacePrintingModelForm
+    inlines = [CardFaceLocalisationInline]
 
 
 @admin.register(CardLocalisation)
