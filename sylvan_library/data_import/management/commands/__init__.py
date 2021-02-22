@@ -68,7 +68,7 @@ def download_file(url: str, destination_path: str):
     response = requests.get(url, stream=True)
     total_length = response.headers.get("content-length")
     logger.info(
-        "Writing json data to file %s: %s bytes", _paths.JSON_ZIP_PATH, total_length
+        "Writing json data to file %s: %s bytes", destination_path, total_length
     )
     with open(destination_path, "wb") as output:
         if total_length is None:  # no content length header
