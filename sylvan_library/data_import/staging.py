@@ -477,7 +477,7 @@ class StagedCardPrinting(StagedObject):
         :return: The dict of differences between the two objects
         """
         differences = self.get_object_differences(
-            existing_printing, {"id", "set_id", "rarity_id", "card_id"}
+            existing_printing, {"id", "set_id", "rarity_id", "card_id", "latest_price_id"}
         )
         if self.rarity.lower() != existing_printing.rarity.name.lower():
             differences["rarity"] = {
@@ -518,7 +518,7 @@ class StagedCardFacePrinting(StagedObject):
     ):
         differences = self.get_object_differences(
             existing_face_printing,
-            {"frame_effects", "card_face_id", "card_printing_id"},
+            {"uuid", "frame_effects", "card_face_id", "card_printing_id"},
         )
         old_frame_effects = [
             frame_effect.code
