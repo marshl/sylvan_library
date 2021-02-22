@@ -179,8 +179,10 @@ class BaseSearch:
         except EmptyPage:
             return
         cards = list(self.page)
+        prefetch_related_objects(cards, "printings__face_printings")
         prefetch_related_objects(cards, "printings__localisations__ownerships")
         prefetch_related_objects(cards, "printings__localisations__language")
+        prefetch_related_objects(cards, "printings__localisations__localised_faces")
         prefetch_related_objects(cards, "faces")
         prefetch_related_objects(cards, "printings__set")
         prefetch_related_objects(cards, "printings__rarity")
