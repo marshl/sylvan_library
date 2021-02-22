@@ -133,8 +133,12 @@ class Command(BaseCommand):
                 magic_card_market_id=set_data.get("magic_card_market_id"),
                 magic_card_market_name=set_data.get("magic_card_market_name"),
             )
-            set_obj.full_clean()
-            set_obj.save()
+            try:
+                set_obj.full_clean()
+                set_obj.save()
+            except ValidationError as ex:
+                logging.exception("Could not create %s", set_obj)
+                raise
         return True
 
     def update_sets(self) -> bool:
