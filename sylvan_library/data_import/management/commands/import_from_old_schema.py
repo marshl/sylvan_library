@@ -3,6 +3,7 @@ import logging
 import psycopg2
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandParser
+from django.db import transaction
 
 from _query import query_yes_no
 from cards.models import (
@@ -41,16 +42,16 @@ class Command(BaseCommand):
         connection = self.get_database_connection(
             dbname=options["dbname"], user=options["user"], password=options["password"]
         )
+        with transaction.atomic():
+            self.import_users(connection)
 
-        # self.import_users(connection)
-        #
-        # self.import_user_owned_cards(
-        #     connection, remove_existing=options["remove_existing"]
-        # )
-        # self.import_user_card_changes(
-        #     connection, remove_existing=options["remove_existing"]
-        # )
-        self.import_decks(connection, remove_existing=options["remove_existing"])
+            self.import_user_owned_cards(
+                connection, remove_existing=options["remove_existing"]
+            )
+            self.import_user_card_changes(
+                connection, remove_existing=options["remove_existing"]
+            )
+            self.import_decks(connection, remove_existing=options["remove_existing"])
         connection.close()
 
     def get_database_connection(
