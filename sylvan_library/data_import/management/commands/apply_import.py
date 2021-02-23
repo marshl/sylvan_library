@@ -311,7 +311,7 @@ class Command(BaseCommand):
             try:
                 type_obj = type_model.objects.get(name=type_str)
             except type_model.DoesNotExist:
-                type_obj = type_model.objects.create(name=type_str)
+                type_obj = type_model.objects.create(name=type_str, automatically_created=True)
                 self.logger.warning("Created %s %s", type_key, type_str)
             getattr(card_face, type_key).add(type_obj)
 

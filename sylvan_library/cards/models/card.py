@@ -158,6 +158,8 @@ class Card(models.Model):
 
 class CardType(models.Model):
     name = models.CharField(max_length=50, unique=True)
+    # Types that aren't listed in the MTGJSON type files are "automatically created"
+    automatically_created = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return self.name
@@ -165,6 +167,8 @@ class CardType(models.Model):
 
 class CardSupertype(models.Model):
     name = models.CharField(max_length=50, unique=True)
+    # Types that aren't listed in the MTGJSON type files are "automatically created"
+    automatically_created = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return self.name
@@ -172,13 +176,14 @@ class CardSupertype(models.Model):
 
 class CardSubtype(models.Model):
     name = models.CharField(max_length=50, unique=True)
+    # Types that aren't listed in the MTGJSON type files are "automatically created"
+    automatically_created = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return self.name
 
 
 class CardFace(models.Model):
-
     card = models.ForeignKey(Card, related_name="faces", on_delete=models.CASCADE)
     side = models.CharField(max_length=1, blank=True, null=True)
 
