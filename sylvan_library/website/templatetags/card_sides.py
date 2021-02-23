@@ -21,4 +21,6 @@ def other_card_printing_side(card_printing: CardPrinting) -> CardPrinting:
     """
     return card_printing
     other_card = card_printing.card.links.exclude(printings=card_printing).first()
+    if other_card is None:
+        return None
     return other_card.printings.filter(set=card_printing.set).first()

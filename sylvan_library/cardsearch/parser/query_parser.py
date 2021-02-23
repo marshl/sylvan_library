@@ -262,11 +262,31 @@ def parse_block_param(param_args: ParameterArgs) -> CardBlockParam:
     :return: The set parameter
     """
     try:
-        card_block = Block.objects.get(name__icontains=param_args.text)
-    except Block.DoesNotExist:
-        raise ValueError(f'Unknown block "{param_args.text}"')
-    except Block.MultipleObjectsReturned:
-        raise ValueError(f'Multiple blocks match "{param_args.text}"')
+        card_block = Block.objects.get(name__iexact=param_args.text)
+        return CardBlockParam(card_block)
+    except (Block.DoesNotExist, Block.MultipleObjectsReturned):
+        pass
+
+    card_set = None
+    card_block = None
+    try:
+        card_set = Set.objects.get(code__iexact=param_args.text)
+    except Set.DoesNotExist:
+        try:
+            card_set = Set.objects.get(name__icontains=param_args.text)
+        except (Set.DoesNotExist, Set.MultipleObjectsReturned):
+            pass
+
+    if card_set and card_set.block:
+        card_block = card_set.block
+
+    if not card_block:
+        try:
+            card_block = Block.objects.get(name__icontains=param_args.text)
+        except Block.DoesNotExist:
+            raise ValueError(f'Unknown block "{param_args.text}"')
+        except Block.MultipleObjectsReturned:
+            raise ValueError(f'Multiple blocks match "{param_args.text}"')
 
     return CardBlockParam(card_block)
 
@@ -434,6 +454,9 @@ def parse_ownership_param(param_args: ParameterArgs) -> CardOwnershipCountParam:
         count = int(param_args.text)
     except (ValueError, TypeError):
         raise ValueError(f'Cannot parse number "{param_args.text}"')
+
+    if param_args.operator == ":":
+        param_args.operator = ">="
 
     return CardOwnershipCountParam(param_args.context_user, param_args.operator, count)
 
