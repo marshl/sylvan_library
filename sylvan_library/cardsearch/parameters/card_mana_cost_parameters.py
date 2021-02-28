@@ -203,7 +203,7 @@ class CardColourCountParam(CardNumericalParam):
         args = (
             self.get_args("card__colour_identity_count")
             if self.identity
-            else self.get_args("card__colour_count")
+            else self.get_args("card__faces__colour_count")
         )
         return Q(**args)
 
