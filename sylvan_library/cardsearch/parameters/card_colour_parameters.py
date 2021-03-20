@@ -78,7 +78,7 @@ class CardComplexColourParam(CardSearchParam):
                     exclude &= ~Q(**{field: colour.bit_value})
 
             if self.identity:
-                include |= Q(card__colour_identity_flags=0)
+                include |= Q(card__colour_identity=0)
 
             if self.operator == "<":
                 result = include & exclude & ~Q(**{field: colour_flags})
