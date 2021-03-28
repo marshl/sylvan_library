@@ -242,7 +242,7 @@ class Deck(models.Model):
         """
         if self.format in ("edh", "dual_commander", "1v1_commander"):
             self.validate_card_limit(1)
-            self.validate_commander("Legend")
+            self.validate_commander("Legendary")
             self.validate_size(100)
             self.validate_board_limit("side", 0)
 
@@ -253,7 +253,7 @@ class Deck(models.Model):
         if self.format == "brawl":
             self.validate_card_limit(1)
             self.validate_size(60)
-            self.validate_commander("Legend")
+            self.validate_commander("Legendary")
 
         if self.format in (
             "standard",
@@ -312,7 +312,7 @@ class Deck(models.Model):
                 )
 
         if validate_type:
-            if commanders.exclude(card__faces__types__name=validate_type).exists():
+            if commanders.exclude(card__faces__supertypes__name=validate_type).exists():
                 raise ValidationError(
                     f"A commander deck should have a legend as the commander"
                 )
