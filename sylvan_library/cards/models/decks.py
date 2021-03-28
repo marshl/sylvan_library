@@ -113,7 +113,7 @@ class Deck(models.Model):
         # Some split cards can be both instants and sorceries, prefer instant over sorcery
         instants = board_cards.filter(card__faces__types__name="Instant")
         sorceries = board_cards.filter(card__faces__types__name="Sorcery").exclude(
-            id__in=instants
+            id__in=instants | creatures
         )
         enchantments = board_cards.exclude(
             id__in=lands | creatures | commanders
