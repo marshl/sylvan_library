@@ -59,7 +59,7 @@ class Command(BaseCommand):
         )
         decks = Deck.objects.filter(
             owner=owner  # date_created__lte=date(1998, 1, 1)
-        ).prefetch_related("cards__card__printings__set")
+        ).prefetch_related("cards__card__printings__set", "cards__card__faces")
         dates = self.get_dates(decks)
         rows = self.get_rarity_ratio_rows(dates, decks, options["exclude_lands"])
         dataframe = self.generate_dataframe(dates, rows)
@@ -171,7 +171,7 @@ class Command(BaseCommand):
             if exclude_lands and "Land" in deck_card.card.type:
                 continue
 
-            if "Basic" in deck_card.card.type:
+            if "Basic" in deck_card.card.faces.all()[0].type_line:
                 counts["L"] += deck_card.count
             else:
                 closest_printing = None
