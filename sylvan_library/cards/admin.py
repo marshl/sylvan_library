@@ -197,8 +197,8 @@ class CardPrintingAdmin(admin.ModelAdmin):
 
 
 class CardFacePrintingModelForm(forms.ModelForm):
-    flavour_text = forms.CharField(widget=forms.Textarea)
-    original_text = forms.CharField(widget=forms.Textarea)
+    flavour_text = forms.CharField(widget=forms.Textarea, required=False)
+    original_text = forms.CharField(widget=forms.Textarea, required=False)
 
     class Meta:
         model = CardFacePrinting
