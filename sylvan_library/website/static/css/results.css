@@ -295,6 +295,10 @@
     box-shadow: inset 0 0 0 20px #bfbfbf;
 }
 
+.setIcon.S:hover, .setIcon.clicked.S {
+    box-shadow: inset 0 0 0 20px #c09ac5  ;
+}
+
 .setIcon:hover {
     background-color: #d3d3d3;
 }
