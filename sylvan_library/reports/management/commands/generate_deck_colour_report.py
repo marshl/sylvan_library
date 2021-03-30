@@ -68,8 +68,8 @@ class Command(BaseCommand):
             for colour in self.colours:
                 cards = (
                     DeckCard.objects.filter(deck__in=date_decks)
-                    .filter(card__colour_flags=colour.bit_value)
-                    .exclude(card__type__contains="Land")
+                    .filter(card__colour_identity=colour.bit_value)
+                    .exclude(card__faces__types__name="Land")
                 )
                 row[colour.symbol] = cards.aggregate(Sum("count"))["count__sum"] or 0
             rows[created_date] = row
