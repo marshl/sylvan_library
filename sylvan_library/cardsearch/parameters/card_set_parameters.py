@@ -17,6 +17,8 @@ class CardSetParam(CardSearchParam):
         self.set_obj: Set = set_obj
 
     def query(self) -> Q:
+        if self.negated:
+            return ~Q(set=self.set_obj)
         return Q(set=self.set_obj)
 
     def get_pretty_str(self) -> str:
@@ -33,6 +35,8 @@ class CardBlockParam(CardSearchParam):
         self.block_obj = block_obj
 
     def query(self) -> Q:
+        if self.negated:
+            return ~Q(set__block=self.block_obj)
         return Q(set__block=self.block_obj)
 
     def get_pretty_str(self) -> str:
