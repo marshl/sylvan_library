@@ -114,9 +114,9 @@ WHERE latest_price.card_printing_id = cards_cardprinting.id
                 meta = ijson.items(prices_file, "meta")
                 meta_data = next(meta)
                 date = arrow.get(meta_data["date"]).date()
-                if date >= arrow.get(start_of_week).shift(weeks=-11).date():
+                if date >= arrow.get(start_of_week).shift(weeks=-1).date():
                     logger.info(
-                        "Price files are up to date, no need to download them again"
+                        "The price file are up to date, no need to download them again"
                     )
                     return
         logger.info("Downloading prices")
@@ -125,9 +125,6 @@ WHERE latest_price.card_printing_id = cards_cardprinting.id
         logger.info("Extracting price file")
         prices_zip_file = zipfile.ZipFile(_paths.PRICES_ZIP_PATH)
         prices_zip_file.extractall(_paths.IMPORT_FOLDER_PATH)
-        if settings.DEBUG:
-            logger.info("Pretty printing price file")
-            pretty_print_json_file(_paths.PRICES_JSON_PATH)
 
 
 PAPER_FOIL = (True, True)
