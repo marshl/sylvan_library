@@ -32,11 +32,7 @@ def get_all_set_data(
             continue
 
         set_code = os.path.basename(set_file_path).split(".")[0].strip("_")
-        if (
-            set_codes
-            and set_code not in set_codes
-            or set_code in ("PPRE", "PREL", "MZNR")
-        ):
+        if set_codes and set_code not in set_codes or set_code in ("MZNR",):
             continue
 
         with open(set_file_path, "r", encoding="utf8") as set_file:
