@@ -367,9 +367,7 @@ def ajax_search_result_prices(
     """
     printing = CardPrinting.objects.get(pk=card_printing_id)
     return render(
-        request,
-        "website/results/search_result_prices.html",
-        {"printing": printing},
+        request, "website/results/search_result_prices.html", {"printing": printing}
     )
 
 
@@ -464,7 +462,7 @@ def get_unused_commanders(user: User):
             printings__localisations__ownerships__owner=user, is_token=False
         )
         .filter(
-            (Q(faces__types__name="Legend") & Q(faces__types__name="Creature"))
+            (Q(faces__supertypes__name="Legendary") & Q(faces__types__name="Creature"))
             | Q(faces__rules_text__contains="can be your commander")
         )
         .distinct()
