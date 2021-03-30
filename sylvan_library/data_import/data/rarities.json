@@ -18,5 +18,15 @@
     "symbol": "M",
     "name": "Mythic",
     "display_order": 40
+  },
+  {
+    "symbol": "S",
+    "name": "Special",
+    "display_order": 50
+  },
+  {
+    "symbol": "B",
+    "name": "Bonus",
+    "display_order": 60
   }
 ]
