@@ -72,7 +72,7 @@ class CardPrintingInline(admin.TabularInline):
 class CardFacePrintingInline(admin.TabularInline):
     model = CardFacePrinting
     show_change_link = True
-    fields = ("uuid", "card_face", "card_printing")
+    fields = ("uuid", "card_face", "card_printing", "frame_effects")
 
     def has_change_permission(self, request, obj=None):
         return False
