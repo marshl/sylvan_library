@@ -22,20 +22,10 @@ from cards.models import (
     Language,
     Rarity,
     Set,
-    CardLocalisation,
 )
 from cardsearch.fieldsearch import FieldSearch
 from cardsearch.namesearch import NameSearch
 from cardsearch.parse_search import ParseSearch
-
-
-def get_physical_card_key_pair(localisation: CardLocalisation) -> Tuple[int, str]:
-    """
-    Gets the ID and display name of th given PhysicalCard for the given CardPrinting
-    :param localisation: The localisation the user can select from
-    :return: A tuple of the physical card's ID and a display string
-    """
-    return (localisation.id, f"{localisation} ({localisation.card_printing.number})")
 
 
 class ChangeCardOwnershipForm(forms.Form):
@@ -57,12 +47,12 @@ class ChangeCardOwnershipForm(forms.Form):
             )
         )
         if english_localisation:
-            choices = [get_physical_card_key_pair(english_localisation)]
+            choices = [(english_localisation.id, str(english_localisation))]
         else:
             choices = []
         choices.extend(
             [
-                get_physical_card_key_pair(localisation)
+                (localisation.id, str(localisation))
                 for localisation in printing.localisations.all()
                 if localisation.language_id != Language.english().id
             ]
@@ -527,8 +517,8 @@ class DeckForm(forms.ModelForm):
         # Two-sided cards should always be stored as the front-facing card
         # This even includes cards like Fire // Ice (which will be stored as Fire)
         # However the DeckCard will be displayed as "Fire // Ice"
-        if card.layout in ("flip", "split", "transform") and card.side == "b":
-            card = card.links.get(side="a")
+        # if card.layout in ("flip", "split", "transform") and card.side == "b":
+        #     card = card.links.get(side="a")
 
         # Related to the above rule, it doesn't make sense to put a back half of a meld card in
         if card.layout == "meld" and card.side == "c":
