@@ -410,7 +410,9 @@ class CardFacePrinting(models.Model):
         CardPrinting, related_name="face_printings", on_delete=models.CASCADE
     )
 
-    frame_effects = models.ManyToManyField(FrameEffect, related_name="face_printings")
+    frame_effects = models.ManyToManyField(
+        FrameEffect, related_name="face_printings", blank=True
+    )
 
     class Meta:
         unique_together = ("card_face", "card_printing")
@@ -565,6 +567,7 @@ class CardFaceLocalisation(models.Model):
         """
         if self.localisation.language.code is None:
             return None
+
         # Replace any non-wordy characters (like a star symbol) with s
         image_name = re.sub(r"\W", "s", self.localisation.card_printing.number)
         if self.localisation.card_printing.card.layout in (
