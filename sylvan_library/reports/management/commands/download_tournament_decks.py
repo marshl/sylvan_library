@@ -14,7 +14,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from bs4 import BeautifulSoup
 
-from cards.models import Card, Deck, DeckCard, User
+from cards.models import Card, Deck, DeckCard, User, CardFace
 
 
 class Command(BaseCommand):
@@ -199,7 +199,12 @@ class Command(BaseCommand):
         except Card.DoesNotExist:
             print(f"Couldn't find card {card_name}. Testing split card")
             first_name = card_name.split("/")[0].strip()
-            card = Card.objects.get(name=first_name, is_token=False)
+            # card = Card.objects.get(name=first_name, is_token=False)
+            card_faces = CardFace.objects.filter(name=first_name).exclude(
+                card__layout="art_series"
+            )
+            assert card_faces.count() == 1
+            card = card_faces.first().card
 
         if matches["sb"]:
             deck_card.board = "side"
