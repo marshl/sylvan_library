@@ -311,7 +311,9 @@ class Command(BaseCommand):
             try:
                 type_obj = type_model.objects.get(name=type_str)
             except type_model.DoesNotExist:
-                type_obj = type_model.objects.create(name=type_str, automatically_created=True)
+                type_obj = type_model.objects.create(
+                    name=type_str, automatically_created=True
+                )
                 self.logger.warning("Created %s %s", type_key, type_str)
             getattr(card_face, type_key).add(type_obj)
 
@@ -405,7 +407,12 @@ class Command(BaseCommand):
                     continue
 
                 if field == "rarity":
-                    printing.rarity = rarity_map.get(value.lower())
+                    try:
+                        printing.rarity = rarity_map[value.lower()]
+                    except KeyError:
+                        raise ValueError(
+                            f'Unknown rarity "{value}" for {update_card_printing}'
+                        )
                 elif hasattr(printing, field):
                     setattr(printing, field, value)
                 else:
