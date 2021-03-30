@@ -56,7 +56,7 @@ class UpdateCardLegalityAdmin(admin.ModelAdmin):
 
 @admin.register(UpdateCardPrinting)
 class UpdateCardPrintingAdmin(admin.ModelAdmin):
-    search_fields = ["card_name"]
+    search_fields = ["card_name", "card_scryfall_oracle_id", "scryfall_id"]
 
 
 @admin.register(UpdateCardFacePrinting)
