@@ -19,6 +19,8 @@ from cards.models import (
     CardLocalisation,
     CardFaceLocalisation,
     CardPrice,
+    Deck,
+    DeckCard,
 )
 
 
@@ -239,3 +241,24 @@ class CardFaceLocalisationAdmin(admin.ModelAdmin):
 class CardPriceAdmin(admin.ModelAdmin):
     autocomplete_fields = ["card_printing"]
     search_fields = ["card_printing"]
+
+
+class DeckCardInline(admin.TabularInline):
+    model = DeckCard
+
+    show_change_link = True
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(Deck)
+class DeckAdmin(admin.ModelAdmin):
+    search_fields = ["name", "cards__card__name"]
+    inlines = [DeckCardInline]
