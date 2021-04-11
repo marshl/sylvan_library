@@ -58,21 +58,6 @@ def and_group_queries(q_objects: List[Q]) -> Q:
     return reduce(lambda a, b: a & b, q_objects)
 
 
-def validate_colour_flags(colours: int) -> None:
-    """
-    Validates that the given colour flags do exist
-    :param colours: The colours to validate
-    """
-    assert colours >= 0
-    assert colours <= (
-        Card.colour_flags.white
-        | Card.colour_flags.blue
-        | Card.colour_flags.black
-        | Card.colour_flags.red
-        | Card.colour_flags.green
-    )
-
-
 class CardSearchParam:
     """
     The base search parameter class
