@@ -47,6 +47,7 @@ from cardsearch.parameters import (
     CardColourSortParam,
     CardPriceParam,
     CardPriceSortParam,
+    CardLayoutParameter,
 )
 from .base_parser import Parser, ParseError
 
@@ -510,6 +511,16 @@ def parse_artist_param(param_args: ParameterArgs) -> CardArtistParam:
     :return: The created artist parameter
     """
     return CardArtistParam(param_args.text)
+
+
+@param_parser(name="layout", keywords=["layout"], operators=[":", "="])
+def parse_layout_parameter(param_args: ParameterArgs) -> CardLayoutParameter:
+    """
+    Creates a layout parameter from the given operator and text
+    :param param_args: The parameter arguments
+    :return: The created layout parameter
+    """
+    return CardLayoutParameter(param_args.text)
 
 
 @param_parser(name="order", keywords=["order", "sort"], operators=[":", "="])

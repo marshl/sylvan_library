@@ -21,6 +21,7 @@ from .card_mana_cost_parameters import (
     CardColourCountParam,
 )
 from .card_misc_parameters import (
+    CardLayoutParameter,
     CardIsReprintParam,
     CardHasWatermarkParam,
     CardIsPhyrexianParam,
