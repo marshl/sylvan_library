@@ -13,13 +13,13 @@ register = template.Library()
 
 
 @register.filter(name="deck_group_count")
-def deck_card_group_count(cards: QuerySet) -> int:
+def deck_card_group_count(cards: List[DeckCard]) -> int:
     """
     Gets the total number of cards in the given list of deck cards
     :param cards: A QuerySet of DeckCards
     :return: The total number of cards
     """
-    return int(cards.aggregate(sum=Sum("count"))["sum"])
+    return sum(card.count for card in cards)
 
 
 @register.filter(name="board_cards")

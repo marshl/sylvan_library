@@ -3,6 +3,7 @@ Models for deck objects
 """
 import datetime
 import re
+from collections import defaultdict
 from typing import List, Dict
 
 from django.contrib.auth.models import User
@@ -99,41 +100,21 @@ class Deck(models.Model):
         )
         return int(land_cards.aggregate(sum=Sum("count"))["sum"])
 
-    def get_card_groups(self) -> Dict[str, List["DeckCard"]]:
+    def get_card_groups(self) -> List[dict]:
         """
         Gets the cards in this deck divided into type groups
         :return: A dict of the names of the groups to the groups of cards
         """
-        board_cards = self.cards.filter(board="main")
-        commanders = board_cards.filter(is_commander=True)
-        lands = board_cards.filter(card__faces__types__name="Land")
-        creatures = board_cards.exclude(id__in=lands | commanders).filter(
-            card__faces__types__name="Creature"
-        )
-        # Some split cards can be both instants and sorceries, prefer instant over sorcery
-        instants = board_cards.filter(card__faces__types__name="Instant")
-        sorceries = board_cards.filter(card__faces__types__name="Sorcery").exclude(
-            id__in=instants | creatures
-        )
-        enchantments = board_cards.exclude(
-            id__in=lands | creatures | commanders
-        ).filter(card__faces__types__name="Enchantment")
-        artifacts = board_cards.exclude(
-            id__in=lands | creatures | enchantments | commanders
-        ).filter(card__faces__types__name="Artifact")
-        planeswalkers = board_cards.filter(
-            card__faces__types__name="Planeswalker"
-        ).exclude(id__in=commanders)
-        other = board_cards.exclude(
-            id__in=commanders
-            | lands
-            | creatures
-            | instants
-            | sorceries
-            | artifacts
-            | enchantments
-            | planeswalkers
-        )
+        board_cards = list(self.cards.filter(board="main"))
+        groups = defaultdict(list)
+        for deck_card in board_cards:
+            if deck_card.is_commander:
+                groups["commander"].append(deck_card)
+                continue
+
+            if deck_card.card.is_land(only_land=True):
+                groups["land"].append(deck_card)
+                continue
 
         return {
             "Commander"

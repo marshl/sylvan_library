@@ -343,12 +343,13 @@ class DeckForm(forms.ModelForm):
         Populates the text values of all the boards
         """
         self.fields["main_board"].initial = ""
-        for group_name, cards in self.instance.get_card_groups().items():
-            if not cards:
+        for card_group in self.instance.get_card_groups():
+            if not card_group["cards"]:
                 continue
-            self.fields["main_board"].initial += group_name + "\n"
+
+            self.fields["main_board"].initial += card_group["name"] + "\n"
             self.fields["main_board"].initial += (
-                "\n".join(card.as_deck_text() for card in cards) + "\n\n"
+                "\n".join(card.as_deck_text() for card in card_group["cards"]) + "\n\n"
             )
 
         for board_key in ["side", "maybe", "acquire"]:
