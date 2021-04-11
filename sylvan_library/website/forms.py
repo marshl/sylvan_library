@@ -483,12 +483,6 @@ class DeckForm(forms.ModelForm):
         ):
             return None
 
-        # If they enter a card name like "Fire // Ice", then use Fire (a DeckCard is tied to a
-        # single Card object, so the first half of split/flip/transform cards should be used
-        if "//" in card_name:
-            names = card_name.split("/")
-            card_name = names[0].strip()
-
         try:
             # We have to ignore tokens, as otherwise Earthshaker Khenra would return two results
             # But you shouldn't be putting tokens in a deck anyway
