@@ -147,13 +147,18 @@ class Card(models.Model):
             "modal_dfc",
         )
 
-    @property
-    def is_land(self) -> bool:
+    def is_land(self, only_land: bool = False) -> bool:
         """
         Returns whether or not this is a land card
         :return: True if this is a land card, otherwise False
         """
-        return "Land" in self.type
+        generator = (
+            any(_type.name == "Land" for _type in face.types.all())
+            for face in self.faces.all()
+        )
+        if only_land:
+            return all(generator)
+        return any(generator)
 
 
 class CardType(models.Model):

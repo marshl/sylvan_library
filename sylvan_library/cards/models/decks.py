@@ -96,8 +96,8 @@ class Deck(models.Model):
         """
         main_cards = self.cards.filter(board="main")
         land_cards = main_cards.filter(
-            Q(card__type__contains="Land") | Q(card__layout="modal_dfc")
-        )
+            Q(card__faces__types__name="Land") | Q(card__layout="modal_dfc")
+        ).distinct()
         return int(land_cards.aggregate(sum=Sum("count"))["sum"])
 
     def get_card_groups(self) -> List[dict]:
@@ -116,19 +116,85 @@ class Deck(models.Model):
                 groups["land"].append(deck_card)
                 continue
 
-        return {
-            "Commander"
-            if commanders.count() == 1
-            else "Commanders": commanders.distinct(),
-            "Lands": lands.distinct(),
-            "Creatures": creatures.distinct(),
-            "Instants": instants.distinct(),
-            "Sorceries": sorceries.distinct(),
-            "Artifacts": artifacts.distinct(),
-            "Enchantments": enchantments.distinct(),
-            "Planeswalkers": planeswalkers.distinct(),
-            "Other": other.distinct(),
-        }
+            first_face_types = [
+                _type.name for _type in deck_card.card.faces.first().types.all()
+            ]
+
+            if "Creature" in first_face_types:
+                groups["creature"].append(deck_card)
+                continue
+
+            if "Instant" in first_face_types:
+                groups["instant"].append(deck_card)
+                continue
+
+            if "Sorcery" in first_face_types:
+                groups["sorcery"].append(deck_card)
+                continue
+
+            if "Enchantment" in first_face_types:
+                groups["enchantment"].append(deck_card)
+                continue
+
+            if "Artifact" in first_face_types:
+                groups["artifact"].append(deck_card)
+                continue
+
+            if "Planeswalker" in first_face_types:
+                groups["planeswalker"].append(deck_card)
+                continue
+
+            groups["other"].append(deck_card)
+
+        return [
+            {
+                "name": "Commander"
+                if len(groups.get("commander", [])) == 1
+                else "Commanders",
+                "cards": groups.get("commander", []),
+            },
+            {
+                "name": "Land" if len(groups.get("land", [])) == 1 else "Lands",
+                "cards": groups.get("land", []),
+            },
+            {
+                "name": "Creature"
+                if len(groups.get("creature", [])) == 1
+                else "Creatures",
+                "cards": groups.get("creature", []),
+            },
+            {
+                "name": "Instant"
+                if len(groups.get("instant", [])) == 1
+                else "Instants",
+                "cards": groups.get("instant", []),
+            },
+            {
+                "name": "Sorcery"
+                if len(groups.get("sorcery", [])) == 1
+                else "Sorceries",
+                "cards": groups.get("sorcery", []),
+            },
+            {
+                "name": "Artifact"
+                if len(groups.get("artifact", [])) == 1
+                else "Artifacts",
+                "cards": groups.get("artifact", []),
+            },
+            {
+                "name": "Enchantment"
+                if len(groups.get("enchantment", [])) == 1
+                else "Enchantments",
+                "cards": groups.get("enchantment", []),
+            },
+            {
+                "name": "Planeswalker"
+                if len(groups.get("planeswalker", [])) == 1
+                else "Planeswalkers",
+                "cards": groups.get("planeswalker", []),
+            },
+            {"name": "Other", "cards": groups.get("other", [])},
+        ]
 
     def get_land_symbol_counts(self) -> Dict[str, int]:
         """
@@ -385,4 +451,7 @@ class DeckCard(models.Model):
         Gets whether this card is a companion for the deck
         :return: A boolean
         """
-        return self.board == "side" and "Companion" in self.card.rules_text
+        return (
+            self.board == "side"
+            and self.card.faces.filter(rules_text__contains="Companion — ").exists()
+        )
