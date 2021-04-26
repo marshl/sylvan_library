@@ -21,6 +21,7 @@ from cards.models.card import (
     CardFacePrinting,
     CardLocalisation,
     CardFaceLocalisation,
+    CardImage,
 )
 from cards.models.card_price import CardPrice
 from cards.models.colour import Colour
@@ -122,19 +123,6 @@ class Language(models.Model):
             Language.ENGLISH = Language.objects.get(name="English")
 
         return Language.ENGLISH
-
-
-class CardImage(models.Model):
-    """
-    Model for a CardLocalisation's image download status
-    (in the future, this might even contain the image itself)
-    """
-
-    printed_language = models.OneToOneField(
-        CardLocalisation, related_name="image", on_delete=models.CASCADE
-    )
-
-    downloaded = models.BooleanField()
 
 
 class UserProps(models.Model):

@@ -448,7 +448,6 @@ class StagedCardPrinting(StagedObject):
         )
 
         self.scryfall_id = identifiers.get("scryfallId")
-        self.scryfall_illustration_id = identifiers.get("scryfallIllustrationId")
 
         self.mtg_arena_id = (
             int(identifiers.get("mtgArenaId")) if "mtgArenaId" in identifiers else None
@@ -477,7 +476,8 @@ class StagedCardPrinting(StagedObject):
         :return: The dict of differences between the two objects
         """
         differences = self.get_object_differences(
-            existing_printing, {"id", "set_id", "rarity_id", "card_id", "latest_price_id"}
+            existing_printing,
+            {"id", "set_id", "rarity_id", "card_id", "latest_price_id"},
         )
         if self.rarity.lower() != existing_printing.rarity.name.lower():
             differences["rarity"] = {
@@ -510,6 +510,9 @@ class StagedCardFacePrinting(StagedObject):
         self.watermark = card_data.get("watermark")
         self.frame_effects = card_data.get("frameEffects", [])
 
+        identifiers = card_data.get("identifiers", {})
+        self.scryfall_illustration_id = identifiers.get("scryfallIllustrationId")
+
     def get_field_data(self):
         return self.get_all_fields(fields_to_ignore={"uuid"})
 
@@ -518,7 +521,12 @@ class StagedCardFacePrinting(StagedObject):
     ):
         differences = self.get_object_differences(
             existing_face_printing,
-            {"uuid", "frame_effects", "card_face_id", "card_printing_id"},
+            fields_to_ignore={
+                "uuid",
+                "frame_effects",
+                "card_face_id",
+                "card_printing_id",
+            },
         )
         old_frame_effects = [
             frame_effect.code
@@ -627,5 +635,5 @@ class StagedCardFaceLocalisation(StagedObject):
     ):
         return self.get_object_differences(
             existing_face_localisation,
-            fields_to_ignore={"localisation_id", "card_printing_face_id"},
+            fields_to_ignore={"localisation_id", "card_printing_face_id", "image_id"},
         )

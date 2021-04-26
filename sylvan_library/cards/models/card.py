@@ -242,7 +242,6 @@ class CardPrinting(models.Model):
     """
 
     scryfall_id = models.CharField(max_length=36, unique=True)
-    scryfall_illustration_id = models.CharField(max_length=36, blank=True, null=True)
     number = models.CharField(max_length=10, blank=True, null=True)
     numerical_number = models.IntegerField(blank=True, null=True)
 
@@ -400,6 +399,7 @@ class CardFacePrinting(models.Model):
     flavour_text = models.CharField(max_length=500, blank=True, null=True)
 
     artist = models.CharField(max_length=100, blank=True, null=True)
+    scryfall_illustration_id = models.CharField(max_length=36, blank=True, null=True)
 
     # Text on the card as originally printed.
     original_text = models.CharField(max_length=1000, blank=True, null=True)
@@ -540,6 +540,16 @@ class CardLocalisation(models.Model):
         return self.localised_faces.all()[0].get_image_path()
 
 
+class CardImage(models.Model):
+    """
+    Model for a CardLocalisation's image download status
+    (in the future, this might even contain the image itself)
+    """
+
+    scryfall_image_url = models.URLField(unique=True)
+    file_path = models.FilePathField(blank=True, null=True, unique=True)
+
+
 class CardFaceLocalisation(models.Model):
 
     localisation = models.ForeignKey(
@@ -555,6 +565,12 @@ class CardFaceLocalisation(models.Model):
 
     text = models.CharField(max_length=1000, blank=True, null=True)
 
+    # Multiple CardFaceLocalisations can share the same image (split cards)
+    # Transform cards will have one per side
+    image = models.ForeignKey(
+        CardImage, blank=True, null=True, on_delete=models.SET_NULL
+    )
+
     class Meta:
         """
         Meta information for CardLocalisations
@@ -563,34 +579,38 @@ class CardFaceLocalisation(models.Model):
         unique_together = ("card_printing_face", "localisation")
 
     def __str__(self):
-        return f"{self.face_name} {self.localisation} ({self.card_printing_face})"
+        return f"{self.face_name} {self.localisation}"
 
+    # def get_image_path(self) -> Optional[str]:
+    #     """
+    #     Gets the relative file path of this prined language
+    #     :return:
+    #     """
+    #     if self.localisation.language.code is None:
+    #         return None
+    #
+    #     # Replace any non-wordy characters (like a star symbol) with s
+    #     image_name = re.sub(r"\W", "s", self.localisation.card_printing.number)
+    #     if self.localisation.card_printing.card.layout in (
+    #         "transform",
+    #         "double_faced_token",
+    #         "modal_dfc",
+    #     ):
+    #         image_name += "_" + self.card_printing_face.card_face.side
+    #
+    #     if self.localisation.card_printing.card.is_token:
+    #         image_name = "t" + image_name
+    #
+    #     return os.path.join(
+    #         "card_images",
+    #         self.localisation.language.code.lower(),
+    #         "_" + self.localisation.card_printing.set.code.lower(),
+    #         image_name + ".jpg",
+    #     )
     def get_image_path(self) -> Optional[str]:
-        """
-        Gets the relative file path of this prined language
-        :return:
-        """
-        if self.localisation.language.code is None:
+        if not self.image or not self.image.file_path:
             return None
-
-        # Replace any non-wordy characters (like a star symbol) with s
-        image_name = re.sub(r"\W", "s", self.localisation.card_printing.number)
-        if self.localisation.card_printing.card.layout in (
-            "transform",
-            "double_faced_token",
-            "modal_dfc",
-        ):
-            image_name += "_" + self.card_printing_face.card_face.side
-
-        if self.localisation.card_printing.card.is_token:
-            image_name = "t" + image_name
-
-        return os.path.join(
-            "card_images",
-            self.localisation.language.code.lower(),
-            "_" + self.localisation.card_printing.set.code.lower(),
-            image_name + ".jpg",
-        )
+        return self.image.file_path
 
     def get_user_ownership_count(self, user: User, prefetched: bool = False) -> int:
         """
