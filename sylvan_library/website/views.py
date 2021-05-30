@@ -326,9 +326,11 @@ def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse
                 urllib.parse.urlencode(
                     {
                         "search": "header",
-                        "filter[name]": f"{card.name} token"
-                        if card.is_token
-                        else card.faces.first().name,
+                        "filter[name]": f'"{card.faces.first().name}"'
+                        if not card.is_token
+                        else f'"Emblem ({card.name.replace(" Emblem", "")})"'
+                        if card.faces.filter(types__name="Emblem").exists()
+                        else f'"{card.name} token"',
                     }
                 )
             ),
