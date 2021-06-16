@@ -1,5 +1,3 @@
-from bitfield import BitField
-from bitfield.forms import BitFieldCheckboxSelectMultiple
 from django import forms
 from django.contrib import admin
 
@@ -133,7 +131,6 @@ class CardFaceAdmin(admin.ModelAdmin):
     autocomplete_fields = ["card", "subtypes", "types", "supertypes"]
     search_fields = ["name"]
     form = CardFaceModelForm
-    formfield_overrides = {BitField: {"widget": BitFieldCheckboxSelectMultiple}}
     inlines = [CardFacePrintingInline]
 
 
