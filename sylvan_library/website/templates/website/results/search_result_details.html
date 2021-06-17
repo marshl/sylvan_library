@@ -13,6 +13,16 @@
         {% endif %}
         <div>
             <span class="subtitle">
+                <b>Artist: </b>
+            </span>
+            <div class="subtitle" style="display:inline-flex;">
+                <a href="{% url 'website:name_search' %}?query_string=artist:'{{ printing.face_printings.first.artist }}'">
+                    {{ printing.face_printings.first.artist }}
+                </a>
+            </div>
+            <br/>
+
+            <span class="subtitle">
                 <b>Set: </b>
             </span>
             <div class="subtitle" style="display:inline-flex;">
