@@ -4,7 +4,6 @@ Module for custom template filters to get the image paths of different card mode
 from typing import List
 
 from django import template
-from django.db.models import QuerySet, Sum
 
 from cards.models import Deck, DeckCard, CardPrinting
 
