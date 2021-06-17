@@ -6,7 +6,15 @@ import os
 from typing import Optional
 
 from django import template
-from cards.models import Card, CardPrinting, CardLocalisation, Language
+
+from cards.models import (
+    Card,
+    CardPrinting,
+    CardLocalisation,
+    Language,
+    CardFacePrinting,
+    CardFaceLocalisation,
+)
 
 # pylint: disable=invalid-name
 register = template.Library()
@@ -23,7 +31,7 @@ def does_image_exist(path: Optional[str]) -> bool:
 
 def get_default_image() -> str:
     """
-    Gets the oath of the default iimage to use if one can't be found
+    Gets the oath of the default image to use if one can't be found
     :return: A path to an image in the static folder
     """
     return "card_back.jpg"
@@ -44,6 +52,31 @@ def card_printing_language_image_url(printed_language: CardLocalisation) -> str:
     return path
 
 
+@register.filter(name="card_face_printing_image_url")
+def card_face_printing_image_url(card_face_printing: CardFacePrinting) -> str:
+    """
+    Gets the image URL of the given CardFacePrinting
+    :param card_face_printing: The CardFacePrinting to get the image URL for
+    :return: The image URL
+    """
+    assert isinstance(card_face_printing, CardFacePrinting)
+    face_localisation: CardFaceLocalisation = next(
+        face_localisation
+        for face_localisation in card_face_printing.localised_faces.all()
+        if face_localisation.localisation.language_id == Language.english().id
+    )
+    path = face_localisation.get_image_path()
+    if does_image_exist(path):
+        return path
+
+    for face_localisation in card_face_printing.localised_faces.all():
+        path = face_localisation.get_image_path()
+        if does_image_exist(path):
+            return path
+
+    return get_default_image()
+
+
 @register.filter(name="card_printing_image_url")
 def card_printing_image_url(card_printing: CardPrinting) -> str:
     """
@@ -51,18 +84,18 @@ def card_printing_image_url(card_printing: CardPrinting) -> str:
     :param card_printing: The card printing to get the image for
     :return: The relative image path
     """
-    localisations = next(
+    localisation: CardLocalisation = next(
         localisation
         for localisation in card_printing.localisations.all()
         if localisation.language_id == Language.english().id
     )
 
-    path = localisations.get_image_path()
+    path = localisation.get_image_path()
     if does_image_exist(path):
         return path
 
-    for localisations in card_printing.localisations.all():
-        path = localisations.localised_faces.all()[0].get_image_path()
+    for localisation in card_printing.localisations.all():
+        path = localisation.localised_faces.all()[0].get_image_path()
         if does_image_exist(path):
             return path
 

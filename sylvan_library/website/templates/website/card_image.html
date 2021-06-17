@@ -1,19 +1,15 @@
 {% load card_image %}
-{% load card_sides %}
 {% load static %}
 
 {% block content %}
-    <img class="card-image js-card-result-image side-front
+    {% for face_printing in printing.face_printings.all %}
+        <img class="card-image
+        js-card-result-image
+        {% if forloop.first %}side-front{% else %}side-back{% endif %}
                 layout-{{ printing.card.layout }}
                 {% if printing.card.is_wide %}wide{% endif %}
-                {% if printing.card.is_double_faced and printing.card.side != 'c' %}flipping{% endif %}"
-         src="{% static printing|card_printing_image_url|safe %}" alt="{{ printing.card.display_name }}"
-         width="100"/>
-    {% if printing.card.is_double_faced and printing.card.side != 'c' %}
-        {% with printing|other_printing_side as other_side %}
-            <img class="card-image side-back js-card-result-image layout-{{ printing.card.layout }} flipping"
-                 src="{% static other_side|card_printing_image_url|safe %}" alt="{{ other_side.card.display_name }}"
-                 width="100"/>
-        {% endwith %}
-    {% endif %}
+                {% if printing.card.is_double_faced %}flipping{% endif %}"
+             src="{% static face_printing|card_face_printing_image_url|safe %}" alt="{{ printing.card.display_name }}"
+             width="100"/>
+    {% endfor %}
 {% endblock %}
