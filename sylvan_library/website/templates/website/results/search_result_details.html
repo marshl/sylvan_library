@@ -26,7 +26,9 @@
                 <b>Set: </b>
             </span>
             <div class="subtitle" style="display:inline-flex;">
-                {{ printing.set.name }}
+                <a href="{% url 'website:name_search' %}?query_string=set:{{ printing.set.code }}">
+                    {{ printing.set.name }}
+                </a>
             </div>
             <br/>
             <span class="subtitle">
