@@ -6,10 +6,11 @@
   "dependencies": {
     "chart.js": "^2.9.3",
     "font-awesome": "^4.7.0",
-    "jquery": "^3.5.1",
+    "jquery": "^3.6.0",
     "jquery-ui-dist": "^1.12.1",
     "js-cookie": "^2.2.1",
     "keyrune": "^3.7.2",
-    "mana-font": "^1.10.0"
+    "mana-font": "^1.10.0",
+    "moment": "^2.29.1"
   }
 }
