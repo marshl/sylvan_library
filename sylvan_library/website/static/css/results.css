@@ -183,8 +183,8 @@
 }
 
 
-.add-card-count-input {
-    width: 25px;
+.add-card-count-input input{
+    width: 10em;
 }
 
 .subtitle.banned {
