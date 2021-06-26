@@ -251,7 +251,8 @@ class SetParser:
         existing_printings = {
             printing.scryfall_id: printing
             for printing in CardPrinting.objects.filter(
-                card__scryfall_oracle_id__in=staged_set.scryfall_oracle_ids
+                card__scryfall_oracle_id__in=staged_set.scryfall_oracle_ids,
+                set__code=staged_set.code,
             )
             .prefetch_related(
                 "face_printings__frame_effects",
