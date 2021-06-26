@@ -75,8 +75,8 @@ class Command(BaseCommand):
             UpdateSet.objects.all().delete()
             UpdateCard.objects.all().delete()
             UpdateCardFace.objects.all().delete()
-            UpdateCardRuling.objects.all().delete()
-            UpdateCardLegality.objects.all().delete()
+            # UpdateCardRuling.objects.all().delete()
+            # UpdateCardLegality.objects.all().delete()
             UpdateCardPrinting.objects.all().delete()
             UpdateCardFacePrinting.objects.all().delete()
             UpdateCardLocalisation.objects.all().delete()
@@ -119,8 +119,8 @@ class Command(BaseCommand):
         self.log_single_stat("card printing face", UpdateCardFacePrinting)
         self.log_single_stat("card localisation", UpdateCardLocalisation)
         self.log_single_stat("card face localisation", UpdateCardFaceLocalisation)
-        self.log_single_stat("legality", UpdateCardLegality)
-        self.log_single_stat("ruling", UpdateCardRuling)
+        # self.log_single_stat("legality", UpdateCardLegality)
+        # self.log_single_stat("ruling", UpdateCardRuling)
         logger.info("Completed in %ss", time.time() - self.start_time)
 
 
@@ -153,8 +153,8 @@ class SetParser:
         self.face_printings_to_update: List[UpdateCardFacePrinting] = []
         self.localisations_to_update: List[UpdateCardLocalisation] = []
         self.face_localisations_to_update: List[UpdateCardFaceLocalisation] = []
-        self.rulings_to_update: List[UpdateCardRuling] = []
-        self.legalities_to_update: List[UpdateCardLegality] = []
+        # self.rulings_to_update: List[UpdateCardRuling] = []
+        # self.legalities_to_update: List[UpdateCardLegality] = []
 
     def bulk_create_updates(self):
         UpdateSet.objects.bulk_create(self.sets_to_update)
@@ -167,8 +167,8 @@ class SetParser:
         UpdateCardFaceLocalisation.objects.bulk_create(
             self.face_localisations_to_update
         )
-        UpdateCardRuling.objects.bulk_create(self.rulings_to_update)
-        UpdateCardLegality.objects.bulk_create(self.legalities_to_update)
+        # UpdateCardRuling.objects.bulk_create(self.rulings_to_update)
+        # UpdateCardLegality.objects.bulk_create(self.legalities_to_update)
 
     def parse_set_data(self):
         """
@@ -334,8 +334,8 @@ class SetParser:
 
         self.cards_parsed.add(staged_card.scryfall_oracle_id)
 
-        self.process_card_rulings(staged_card, existing_card=existing_card)
-        self.process_card_legalities(staged_card, existing_card=existing_card)
+        # self.process_card_rulings(staged_card, existing_card=existing_card)
+        # self.process_card_legalities(staged_card, existing_card=existing_card)
 
         if existing_card:
             differences = staged_card.compare_with_card(existing_card)
@@ -406,104 +406,104 @@ class SetParser:
                 )
             )
 
-    def process_card_rulings(
-        self, staged_card: StagedCard, existing_card: Optional[Card] = None
-    ) -> None:
-        """
-        Finds CardRulings of the given StagedCard to create or delete
-        :param staged_card: The StagedCard to find rulings for
-        :param existing_card:
-        """
-        # Use prefetched rulings to save performance
-        existing_rulings = list(existing_card.rulings.all()) if existing_card else []
-        for ruling in staged_card.rulings:
-            if not any(
-                True
-                for existing_ruling in existing_rulings
-                if existing_ruling.text == ruling["text"]
-            ):
-                self.rulings_to_update.append(
-                    UpdateCardRuling(
-                        update_mode=UpdateMode.CREATE,
-                        card_name=staged_card.name,
-                        scryfall_oracle_id=staged_card.scryfall_oracle_id,
-                        ruling_date=ruling["date"],
-                        ruling_text=ruling["text"],
-                    )
-                )
-
-        # For every existing ruling, it if isn't contained in the list of rulings,
-        # then mark it for deletion
-        for existing_ruling in existing_rulings:
-            if not any(
-                True
-                for ruling in staged_card.rulings
-                if ruling["text"] == existing_ruling.text
-            ):
-                self.rulings_to_update.append(
-                    UpdateCardRuling(
-                        update_mode=UpdateMode.DELETE,
-                        card_name=staged_card.name,
-                        scryfall_oracle_id=staged_card.scryfall_oracle_id,
-                        ruling_date=existing_ruling.date,
-                        ruling_text=existing_ruling.text,
-                    )
-                )
-
-    def process_card_legalities(
-        self, staged_card: StagedCard, existing_card: Optional[Card] = None
-    ) -> None:
-        """
-        Find CardLegalities for a card to update, create or delete
-        :param existing_card:
-        :param staged_card: The StagedCard to find legalities for
-        """
-        # Use prefetched legalities to improve performance
-        existing_legalities = (
-            list(existing_card.legalities.all()) if existing_card else []
-        )
-        for format_str, restriction in staged_card.legalities.items():
-            if not any(
-                True
-                for existing_legality in existing_legalities
-                if existing_legality.format.code == format_str
-            ):
-                self.legalities_to_update.append(
-                    UpdateCardLegality(
-                        update_mode=UpdateMode.CREATE,
-                        card_name=staged_card.name,
-                        scryfall_oracle_id=staged_card.scryfall_oracle_id,
-                        format_name=format_str,
-                        restriction=restriction,
-                    )
-                )
-
-        for old_legality in existing_legalities:
-            if old_legality.format.code not in staged_card.legalities:
-                self.legalities_to_update.append(
-                    UpdateCardLegality(
-                        update_mode=UpdateMode.DELETE,
-                        card_name=staged_card.name,
-                        scryfall_oracle_id=staged_card.scryfall_oracle_id,
-                        format_name=old_legality.format.code,
-                        restriction=old_legality.restriction,
-                    )
-                )
-
-            # Legalities to update
-            elif (
-                staged_card.legalities[old_legality.format.code]
-                != old_legality.restriction
-            ):
-                self.legalities_to_update.append(
-                    UpdateCardLegality(
-                        update_mode=UpdateMode.UPDATE,
-                        card_name=staged_card.name,
-                        scryfall_oracle_id=staged_card.scryfall_oracle_id,
-                        format_name=old_legality.format.code,
-                        restriction=staged_card.legalities[old_legality.format.code],
-                    )
-                )
+    # def process_card_rulings(
+    #     self, staged_card: StagedCard, existing_card: Optional[Card] = None
+    # ) -> None:
+    #     """
+    #     Finds CardRulings of the given StagedCard to create or delete
+    #     :param staged_card: The StagedCard to find rulings for
+    #     :param existing_card:
+    #     """
+    #     # Use prefetched rulings to save performance
+    #     existing_rulings = list(existing_card.rulings.all()) if existing_card else []
+    #     for ruling in staged_card.rulings:
+    #         if not any(
+    #             True
+    #             for existing_ruling in existing_rulings
+    #             if existing_ruling.text == ruling["text"]
+    #         ):
+    #             self.rulings_to_update.append(
+    #                 UpdateCardRuling(
+    #                     update_mode=UpdateMode.CREATE,
+    #                     card_name=staged_card.name,
+    #                     scryfall_oracle_id=staged_card.scryfall_oracle_id,
+    #                     ruling_date=ruling["date"],
+    #                     ruling_text=ruling["text"],
+    #                 )
+    #             )
+    #
+    #     # For every existing ruling, it if isn't contained in the list of rulings,
+    #     # then mark it for deletion
+    #     for existing_ruling in existing_rulings:
+    #         if not any(
+    #             True
+    #             for ruling in staged_card.rulings
+    #             if ruling["text"] == existing_ruling.text
+    #         ):
+    #             self.rulings_to_update.append(
+    #                 UpdateCardRuling(
+    #                     update_mode=UpdateMode.DELETE,
+    #                     card_name=staged_card.name,
+    #                     scryfall_oracle_id=staged_card.scryfall_oracle_id,
+    #                     ruling_date=existing_ruling.date,
+    #                     ruling_text=existing_ruling.text,
+    #                 )
+    #             )
+    #
+    # def process_card_legalities(
+    #     self, staged_card: StagedCard, existing_card: Optional[Card] = None
+    # ) -> None:
+    #     """
+    #     Find CardLegalities for a card to update, create or delete
+    #     :param existing_card:
+    #     :param staged_card: The StagedCard to find legalities for
+    #     """
+    #     # Use prefetched legalities to improve performance
+    #     existing_legalities = (
+    #         list(existing_card.legalities.all()) if existing_card else []
+    #     )
+    #     for format_str, restriction in staged_card.legalities.items():
+    #         if not any(
+    #             True
+    #             for existing_legality in existing_legalities
+    #             if existing_legality.format.code == format_str
+    #         ):
+    #             self.legalities_to_update.append(
+    #                 UpdateCardLegality(
+    #                     update_mode=UpdateMode.CREATE,
+    #                     card_name=staged_card.name,
+    #                     scryfall_oracle_id=staged_card.scryfall_oracle_id,
+    #                     format_name=format_str,
+    #                     restriction=restriction,
+    #                 )
+    #             )
+    #
+    #     for old_legality in existing_legalities:
+    #         if old_legality.format.code not in staged_card.legalities:
+    #             self.legalities_to_update.append(
+    #                 UpdateCardLegality(
+    #                     update_mode=UpdateMode.DELETE,
+    #                     card_name=staged_card.name,
+    #                     scryfall_oracle_id=staged_card.scryfall_oracle_id,
+    #                     format_name=old_legality.format.code,
+    #                     restriction=old_legality.restriction,
+    #                 )
+    #             )
+    #
+    #         # Legalities to update
+    #         elif (
+    #             staged_card.legalities[old_legality.format.code]
+    #             != old_legality.restriction
+    #         ):
+    #             self.legalities_to_update.append(
+    #                 UpdateCardLegality(
+    #                     update_mode=UpdateMode.UPDATE,
+    #                     card_name=staged_card.name,
+    #                     scryfall_oracle_id=staged_card.scryfall_oracle_id,
+    #                     format_name=old_legality.format.code,
+    #                     restriction=staged_card.legalities[old_legality.format.code],
+    #                 )
+    #             )
 
     def process_card_printing(
         self,
@@ -554,51 +554,53 @@ class SetParser:
                             field_data=differences,
                         )
                     )
-        if staged_face_printing.uuid not in self.card_face_printings_parsed:
-            self.card_face_printings_parsed.add(staged_face_printing.uuid)
-            existing_face_printing = (
-                next(
-                    (
-                        face_printing
-                        for face_printing in existing_printing.face_printings.all()
-                        if face_printing.card_face.side == staged_card_face.side
-                    ),
-                    None,
-                )
-                if existing_printing
-                else None
-            )
+        if staged_face_printing.uuid in self.card_face_printings_parsed:
+            return
 
-            if existing_face_printing:
-                differences = staged_face_printing.compare_with_existing_face_printing(
-                    existing_face_printing
-                )
-                if differences:
-                    self.face_printings_to_update.append(
-                        UpdateCardFacePrinting(
-                            update_mode=UpdateMode.UPDATE,
-                            scryfall_id=staged_card_printing.scryfall_id,
-                            scryfall_oracle_id=staged_card.scryfall_oracle_id,
-                            card_name=staged_card.name,
-                            card_face_name=staged_card_face.name,
-                            printing_uuid=staged_face_printing.uuid,
-                            side=staged_card_face.side,
-                            field_data=differences,
-                        )
-                    )
-            else:
+        self.card_face_printings_parsed.add(staged_face_printing.uuid)
+        existing_face_printing = (
+            next(
+                (
+                    face_printing
+                    for face_printing in existing_printing.face_printings.all()
+                    if face_printing.card_face.side == staged_card_face.side
+                ),
+                None,
+            )
+            if existing_printing
+            else None
+        )
+
+        if existing_face_printing:
+            differences = staged_face_printing.compare_with_existing_face_printing(
+                existing_face_printing
+            )
+            if differences:
                 self.face_printings_to_update.append(
                     UpdateCardFacePrinting(
-                        update_mode=UpdateMode.CREATE,
+                        update_mode=UpdateMode.UPDATE,
                         scryfall_id=staged_card_printing.scryfall_id,
                         scryfall_oracle_id=staged_card.scryfall_oracle_id,
                         card_name=staged_card.name,
                         card_face_name=staged_card_face.name,
                         printing_uuid=staged_face_printing.uuid,
                         side=staged_card_face.side,
-                        field_data=staged_face_printing.get_field_data(),
+                        field_data=differences,
                     )
                 )
+        else:
+            self.face_printings_to_update.append(
+                UpdateCardFacePrinting(
+                    update_mode=UpdateMode.CREATE,
+                    scryfall_id=staged_card_printing.scryfall_id,
+                    scryfall_oracle_id=staged_card.scryfall_oracle_id,
+                    card_name=staged_card.name,
+                    card_face_name=staged_card_face.name,
+                    printing_uuid=staged_face_printing.uuid,
+                    side=staged_card_face.side,
+                    field_data=staged_face_printing.get_field_data(),
+                )
+            )
 
     def process_card_localisations(
         self,
@@ -621,6 +623,7 @@ class SetParser:
 
         foreign_data_list = card_data.get("foreignData", [])
         if not card_data.get("isForeignOnly", False):
+            # Fake the english language version from normal data
             english_data = {
                 "language": "English",
                 "name": card_data.get("name"),
@@ -634,91 +637,108 @@ class SetParser:
             foreign_data_list.append(english_data)
 
         for foreign_data in foreign_data_list:
-            staged_localisation = StagedCardLocalisation(
-                staged_card_printing, foreign_data
+            self.parse_foreign_data(
+                foreign_data,
+                staged_card_printing,
+                staged_face_printing,
+                existing_printing,
             )
-            tuple_key = (
-                staged_card_printing.scryfall_id,
-                staged_localisation.language_name,
-            )
 
-            existing_localisation: Optional[CardLocalisation] = next(
-                (
-                    localisation
-                    for localisation in existing_printing.localisations.all()
-                    if localisation.language.name == staged_localisation.language_name
-                ),
-                None,
-            ) if existing_printing else None
+    def parse_foreign_data(
+        self,
+        foreign_data: dict,
+        staged_card_printing: StagedCardPrinting,
+        staged_face_printing: StagedCardFacePrinting,
+        existing_printing: Optional[CardPrinting],
+    ):
+        """
 
-            if tuple_key not in self.card_localisations_parsed:
-                self.card_localisations_parsed.add(tuple_key)
+        :param foreign_data:
+        :param staged_card_printing:
+        :param staged_face_printing:
+        :param existing_printing:
+        :return:
+        """
+        staged_localisation = StagedCardLocalisation(staged_card_printing, foreign_data)
 
-                if not existing_localisation:
+        existing_localisations: List[CardLocalisation] = [
+            localisation
+            for localisation in existing_printing.localisations.all()
+            if localisation.language.name == staged_localisation.language_name
+        ] if existing_printing else []
+        assert len(existing_localisations) <= 1
+
+        localisation_key = (
+            staged_card_printing.scryfall_id,
+            staged_localisation.language_name,
+        )
+
+        if localisation_key not in self.card_localisations_parsed:
+            self.card_localisations_parsed.add(localisation_key)
+
+            if not existing_localisations:
+                self.localisations_to_update.append(
+                    UpdateCardLocalisation(
+                        update_mode=UpdateMode.CREATE,
+                        language_code=staged_localisation.language_name,
+                        printing_scryfall_id=staged_card_printing.scryfall_id,
+                        card_name=staged_localisation.card_name,
+                        field_data=staged_localisation.get_field_data(),
+                    )
+                )
+            else:
+                differences = staged_localisation.compare_with_existing_localisation(
+                    existing_localisations[0]
+                )
+                if differences:
                     self.localisations_to_update.append(
                         UpdateCardLocalisation(
-                            update_mode=UpdateMode.CREATE,
+                            update_mode=UpdateMode.UPDATE,
                             language_code=staged_localisation.language_name,
                             printing_scryfall_id=staged_card_printing.scryfall_id,
                             card_name=staged_localisation.card_name,
-                            field_data=staged_localisation.get_field_data(),
+                            field_data=differences,
                         )
                     )
-                else:
-                    differences = staged_localisation.compare_with_existing_localisation(
-                        existing_localisation
-                    )
-                    if differences:
-                        self.localisations_to_update.append(
-                            UpdateCardLocalisation(
-                                update_mode=UpdateMode.UPDATE,
-                                language_code=staged_localisation.language_name,
-                                printing_scryfall_id=staged_card_printing.scryfall_id,
-                                card_name=staged_localisation.card_name,
-                                field_data=differences,
-                            )
-                        )
 
-            existing_localised_face = (
-                None
-                if not existing_localisation
-                else next(
-                    (
-                        localised_face
-                        for localised_face in existing_localisation.localised_faces.all()
-                        if localised_face.card_printing_face.uuid
-                        == staged_face_printing.uuid
-                    ),
-                    None,
+        existing_localised_faces = (
+            [
+                localised_face
+                for localised_face in existing_localisations[0].localised_faces.all()
+                if localised_face.card_printing_face.uuid == staged_face_printing.uuid
+            ]
+            if existing_localisations
+            else []
+        )
+        assert len(existing_localised_faces) <= 1
+        staged_localised_face = StagedCardFaceLocalisation(
+            staged_card_printing, staged_face_printing, foreign_data
+        )
+
+        if not existing_localised_faces:
+            self.face_localisations_to_update.append(
+                UpdateCardFaceLocalisation(
+                    update_mode=UpdateMode.CREATE,
+                    language_code=staged_localised_face.language_name,
+                    printing_scryfall_id=staged_card_printing.scryfall_id,
+                    face_name=staged_localised_face.face_name,
+                    face_printing_uuid=staged_localised_face.face_printing_uuid,
+                    field_data=staged_localised_face.get_field_data(),
                 )
             )
-            staged_localised_face = StagedCardFaceLocalisation(
-                staged_card_printing, staged_face_printing, foreign_data
+        else:
+            existing_localised_face = existing_localised_faces[0]
+            differences = staged_localised_face.compare_with_existing_face_localisation(
+                existing_localised_face
             )
-
-            if not existing_localised_face:
+            if differences:
                 self.face_localisations_to_update.append(
                     UpdateCardFaceLocalisation(
-                        update_mode=UpdateMode.CREATE,
+                        update_mode=UpdateMode.UPDATE,
                         language_code=staged_localised_face.language_name,
                         printing_scryfall_id=staged_card_printing.scryfall_id,
                         face_name=staged_localised_face.face_name,
                         face_printing_uuid=staged_localised_face.face_printing_uuid,
-                        field_data=staged_localised_face.get_field_data(),
+                        field_data=differences,
                     )
                 )
-            else:
-                differences = staged_localised_face.compare_with_existing_face_localisation(
-                    existing_localised_face
-                )
-                if differences:
-                    self.face_localisations_to_update.append(
-                        UpdateCardFaceLocalisation(
-                            update_mode=UpdateMode.UPDATE,
-                            language_code=staged_localised_face.language_name,
-                            printing_scryfall_id=staged_card_printing.scryfall_id,
-                            face_name=staged_localised_face.face_name,
-                            face_printing_uuid=staged_localised_face.face_printing_uuid,
-                            field_data=differences,
-                        )
-                    )
