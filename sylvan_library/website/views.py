@@ -326,11 +326,7 @@ def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse
                 urllib.parse.urlencode(
                     {
                         "search": "header",
-                        "filter[name]": f'"{card.faces.first().name}"'
-                        if not card.is_token
-                        else f'"Emblem ({card.name.replace(" Emblem", "")})"'
-                        if card.faces.filter(types__name="Emblem").exists()
-                        else f'"{card.name} token"',
+                        "filter[name]": f'"{get_website_card_filter(card, "Card Kingdom")}"',
                     }
                 )
             ),
@@ -356,6 +352,19 @@ def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse
         )
 
     return render(request, "website/results/search_result_links.html", {"links": links})
+
+
+def get_website_card_filter(card: Card, website: str) -> str:
+    if website == "Card Kingdom":
+        if not card.is_token:
+            if card.layout in ("aftermath", "split"):
+                face_names = [f.name for f in card.faces.all()]
+                return " // ".join(face_names)
+            return card.faces.first().name
+        if card.faces.filter(types__name="Emblem").exists():
+            return f'Emblem ({card.name.replace(" Emblem", "")})'
+        return f"{card.name} token"
+    return ""
 
 
 def ajax_search_result_prices(
