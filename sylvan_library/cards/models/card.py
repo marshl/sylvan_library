@@ -421,24 +421,10 @@ class CardFacePrinting(models.Model):
 
     class Meta:
         unique_together = ("card_face", "card_printing")
+        ordering = ("card_face__side",)
 
     def __str__(self) -> str:
         return f"{self.card_face.name} face of {self.card_printing}"
-
-
-# class CardPrintingFaceFrameEffect(models.CharField):
-#     name = models.CharField(max_length=50)
-#     display_order = models.IntegerField()
-#
-#     card_printing_face = models.ForeignKey(
-#         CardFacePrinting, on_delete=models.CASCADE, related_name="frame_effects"
-#     )
-#
-#     class Meta:
-#         unique_together = (
-#             ("card_printing_face", "name"),
-#             ("card_printing_face", "display_order"),
-#         )
 
 
 class CardLocalisation(models.Model):
