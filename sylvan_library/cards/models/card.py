@@ -454,31 +454,6 @@ class CardLocalisation(models.Model):
     def __str__(self):
         return f"{self.language} {self.card_printing}"
 
-    def get_user_ownership_count(self, user: User, prefetched: bool = False) -> int:
-        """
-        Returns the total number of cards that given user owns of this printed language
-        :param user: The user who should own the card
-        :param prefetched: Whether to use prefetched data, or to get it from the database again
-        :return: The ownership total
-        """
-        if prefetched:
-            return sum(
-                ownership.count
-                for physical_card in self.physical_cards.all()
-                for ownership in physical_card.ownerships.all()
-                if ownership.owner == user
-            )
-
-        return self.physical_cards.aggregate(
-            card_count=Sum(
-                Case(
-                    When(ownerships__owner=user, then="ownerships__count"),
-                    output_field=IntegerField(),
-                    default=0,
-                )
-            )
-        )["card_count"]
-
     def apply_user_change(self, change_count: int, user: User) -> bool:
         """
         Applies a change of the number of cards a user owns (can add or subtract cards)
@@ -597,31 +572,6 @@ class CardFaceLocalisation(models.Model):
         if not self.image or not self.image.file_path:
             return None
         return self.image.file_path
-
-    def get_user_ownership_count(self, user: User, prefetched: bool = False) -> int:
-        """
-        Returns the total number of cards that given user owns of this printed language
-        :param user: The user who should own the card
-        :param prefetched: Whether to use prefetched data, or to get it from the database again
-        :return: The ownership total
-        """
-        if prefetched:
-            return sum(
-                ownership.count
-                for physical_card in self.physical_cards.all()
-                for ownership in physical_card.ownerships.all()
-                if ownership.owner == user
-            )
-
-        return self.physical_cards.aggregate(
-            card_count=Sum(
-                Case(
-                    When(ownerships__owner=user, then="ownerships__count"),
-                    output_field=IntegerField(),
-                    default=0,
-                )
-            )
-        )["card_count"]
 
 
 class UserOwnedCard(models.Model):
