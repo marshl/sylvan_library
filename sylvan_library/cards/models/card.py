@@ -542,32 +542,6 @@ class CardFaceLocalisation(models.Model):
     def __str__(self):
         return f"{self.face_name} {self.localisation}"
 
-    # def get_image_path(self) -> Optional[str]:
-    #     """
-    #     Gets the relative file path of this prined language
-    #     :return:
-    #     """
-    #     if self.localisation.language.code is None:
-    #         return None
-    #
-    #     # Replace any non-wordy characters (like a star symbol) with s
-    #     image_name = re.sub(r"\W", "s", self.localisation.card_printing.number)
-    #     if self.localisation.card_printing.card.layout in (
-    #         "transform",
-    #         "double_faced_token",
-    #         "modal_dfc",
-    #     ):
-    #         image_name += "_" + self.card_printing_face.card_face.side
-    #
-    #     if self.localisation.card_printing.card.is_token:
-    #         image_name = "t" + image_name
-    #
-    #     return os.path.join(
-    #         "card_images",
-    #         self.localisation.language.code.lower(),
-    #         "_" + self.localisation.card_printing.set.code.lower(),
-    #         image_name + ".jpg",
-    #     )
     def get_image_path(self) -> Optional[str]:
         if not self.image or not self.image.file_path:
             return None
