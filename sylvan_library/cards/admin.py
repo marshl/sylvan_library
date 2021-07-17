@@ -144,6 +144,7 @@ class BlockAdmin(admin.ModelAdmin):
 class SetAdmin(admin.ModelAdmin):
     search_fields = ["name", "code"]
     inlines = [CardPrintingInline]
+    list_display = ["name", "code", "release_date", "type"]
 
 
 @admin.register(CardType)
@@ -207,7 +208,7 @@ class CardFacePrintingModelForm(forms.ModelForm):
 @admin.register(CardFacePrinting)
 class CardFacePrintingAdmin(admin.ModelAdmin):
     autocomplete_fields = ["card_face", "card_printing"]
-    search_fields = ["card_face__card__name"]
+    search_fields = ["card_face__card__name", "uuid", "scryfall_illustration_id"]
     form = CardFacePrintingModelForm
     inlines = [CardFaceLocalisationInline]
 
