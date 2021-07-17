@@ -3,6 +3,7 @@ Card type parameters
 """
 from django.db.models.query import Q
 
+from cards.models import CardType, CardSubtype, CardSupertype, CardFacePrinting, Card
 from .base_parameters import CardSearchParam
 
 
@@ -72,6 +73,49 @@ class CardGenericTypeParam(CardSearchParam):
         result = Q(card__in=Card.objects.filter(face_filter))
 
         return ~result if self.negated else result
+
+    def get_pretty_str(self) -> str:
+        """
+        Returns a human readable version of this parameter
+        (and all sub parameters for those with children)
+        :return: The pretty version of this parameter
+        """
+        if self.negated:
+            if self.operator == "=":
+                inclusion = "don't match"
+            else:
+                inclusion = "exclude"
+        else:
+            if self.operator == "=":
+                inclusion = "match"
+            else:
+                inclusion = "include"
+        return f'the card types {inclusion} "{self.card_type}"'
+
+
+class CardOriginalTypeParam(CardSearchParam):
+    def __init__(self, card_type: str, operator: str):
+        super().__init__()
+        self.card_type = card_type
+        self.operator = operator
+
+    def query(self) -> Q:
+        """
+        Gets the query object
+        :return: The search Q object
+        """
+        if self.negated:
+            return ~Q(
+                face_printings__in=CardFacePrinting.objects.filter(
+                    Q(original_type__isnull=True)
+                    | Q(original_type__icontains=self.card_type)
+                )
+            )
+        return Q(
+            face_printings__in=CardFacePrinting.objects.filter(
+                original_type__icontains=self.card_type
+            )
+        )
 
     def get_pretty_str(self) -> str:
         """

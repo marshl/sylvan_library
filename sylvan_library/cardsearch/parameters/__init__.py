@@ -47,7 +47,12 @@ from .card_rules_text_parameter import (
     CardWatermarkParam,
 )
 from .card_set_parameters import CardSetParam, CardBlockParam
-from .card_type_parameters import CardGenericTypeParam, CardSubtypeParam, CardTypeParam
+from .card_type_parameters import (
+    CardGenericTypeParam,
+    CardSubtypeParam,
+    CardTypeParam,
+    CardOriginalTypeParam,
+)
 
 from .card_price_parameters import CardPriceParam
 

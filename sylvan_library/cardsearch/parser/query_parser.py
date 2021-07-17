@@ -24,6 +24,7 @@ from cardsearch.parameters import (
     CardComplexColourParam,
     CardFlavourTextParam,
     CardGenericTypeParam,
+    CardOriginalTypeParam,
     CardHasColourIndicatorParam,
     CardHasWatermarkParam,
     CardIsHybridParam,
@@ -219,6 +220,16 @@ def parse_type_param(param_args: ParameterArgs) -> CardGenericTypeParam:
     :return: The card type parameter
     """
     return CardGenericTypeParam(param_args.text, param_args.operator)
+
+
+@param_parser(name="original type", keywords=["ot"], operators=[":", "="])
+def parse_original_type_param(param_args: ParameterArgs) -> CardGenericTypeParam:
+    """
+    Parses a card type parameter
+    :param param_args: The parameter arguments
+    :return: The card type parameter
+    """
+    return CardOriginalTypeParam(param_args.text, param_args.operator)
 
 
 @param_parser(name="set", keywords=["s", "set"], operators=[":", "="])
