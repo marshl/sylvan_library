@@ -27,6 +27,7 @@ from .card_misc_parameters import (
     CardIsPhyrexianParam,
     CardHasColourIndicatorParam,
     CardIsHybridParam,
+    CardIsCommanderParam,
 )
 from .card_name_parameters import CardNameParam
 from .card_ownership_parameters import (

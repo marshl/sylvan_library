@@ -48,6 +48,7 @@ from cardsearch.parameters import (
     CardPriceParam,
     CardPriceSortParam,
     CardLayoutParameter,
+    CardIsCommanderParam,
 )
 from .base_parser import Parser, ParseError
 
@@ -325,6 +326,8 @@ def parse_is_param(param_args: ParameterArgs) -> CardSearchParam:
         param = CardMulticolouredOnlyParam()
     elif param_args.text == "token":
         param = CardGenericTypeParam("token", param_args.operator)
+    elif param_args.text in ("commander", "general"):
+        param = CardIsCommanderParam()
     else:
         raise ValueError(f'Unknown parameter "{param_args.keyword}:{param_args.text}"')
 
