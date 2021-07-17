@@ -137,7 +137,7 @@ class CardCmcSortParam(CardSortParam):
         Gets the list of attributes to be sorted by
         """
         if search_mode == SearchMode.SEARCH_MODE_CARD:
-            return ["cmc", "colour_weight"]
+            return ["converted_mana_cost", "faces__colour_weight"]
         return ["card__converted_mana_cost", "card__colour_weight"]
 
 
