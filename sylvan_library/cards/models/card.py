@@ -538,6 +538,7 @@ class CardFaceLocalisation(models.Model):
         """
 
         unique_together = ("card_printing_face", "localisation")
+        ordering = ("card_printing_face__card_face__side",)
 
     def __str__(self):
         return f"{self.localisation} ({self.face_name})"
