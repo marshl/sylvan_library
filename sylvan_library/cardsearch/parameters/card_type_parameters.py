@@ -56,17 +56,21 @@ class CardGenericTypeParam(CardSearchParam):
         :return: The search Q object
         """
         if self.operator == "=":
-            result = (
-                Q(card__faces__types__name__iexact=self.card_type)
-                | Q(card__faces__subtypes__name__iexact=self.card_type)
-                | Q(card__faces__supertypes__name__iexact=self.card_type)
-            )
+            types = CardType.objects.filter(name__iexact=self.card_type)
+            subtypes = CardSubtype.objects.filter(name__iexact=self.card_type)
+            supertypes = CardSupertype.objects.filter(name__iexact=self.card_type)
         else:
-            result = (
-                Q(card__faces__types__name__icontains=self.card_type)
-                | Q(card__faces__subtypes__name__icontains=self.card_type)
-                | Q(card__faces__supertypes__name__icontains=self.card_type)
-            )
+            types = CardType.objects.filter(name__icontains=self.card_type)
+            subtypes = CardSubtype.objects.filter(name__icontains=self.card_type)
+            supertypes = CardSupertype.objects.filter(name__icontains=self.card_type)
+
+        face_filter = (
+            Q(faces__types__in=types)
+            | Q(faces__subtypes__in=subtypes)
+            | Q(faces__supertypes__in=supertypes)
+        )
+        result = Q(card__in=Card.objects.filter(face_filter))
+
         return ~result if self.negated else result
 
     def get_pretty_str(self) -> str:
