@@ -18,6 +18,9 @@ from cards.models import Language, CardImage, Set, CardFaceLocalisation
 logger = logging.getLogger("django")
 
 
+SCRYFALL_API_SLEEP_SECONDS = 0.5
+
+
 class Command(BaseCommand):
     """
     The command for download card images from gatherer
@@ -71,124 +74,148 @@ class Command(BaseCommand):
 
         english = Language.objects.get(code="en")
         for card_set in sets.order_by("release_date").all():
-            self.get_images_for_set(card_set, [english])
+            get_images_for_set(card_set, [english])
 
-        self.download_images()
+        download_images(self.root_dir)
 
-    def download_images(self):
-        for card_image in CardImage.objects.filter(file_path__isnull=True):
-            try:
-                stream = requests.get(card_image.scryfall_image_url)
-                stream.raise_for_status()
-            except requests.exceptions.HTTPError as err:
-                logger.exception(
-                    "\t%s: Could not download %s (%s): %s",
-                    card_image.scryfall_image_url,
-                )
-                raise
-            url_path = urlparse(card_image.scryfall_image_url).path
-            url_parts = url_path.split("/")
-            if "normal" not in url_parts:
-                raise ValueError(f"Invalid image URL {card_image.scryfall_image_url}")
 
-            url_parts = url_parts[url_parts.index("normal") :]
-
-            image_path = os.path.join("card_images", *url_parts)
-            download_path = os.path.join(self.root_dir, image_path)
-            os.makedirs(os.path.dirname(download_path), exist_ok=True)
-            logger.info(
-                "Downloading %s to %s", card_image.scryfall_image_url, download_path
-            )
-            with open(download_path, "wb") as output:
-                output.write(stream.content)
-                card_image.file_path = image_path
-                card_image.save()
-
-    def get_images_for_set(self, card_set: Set, languages: List[Language]):
-        logger.info("Parsing set %s", card_set)
-        faces_missing_images = (
-            CardFaceLocalisation.objects.filter(
-                localisation__card_printing__set=card_set
-            )
-            .filter(localisation__language__in=languages)
-            .filter(image__isnull=True)
-        )
-
-        if not faces_missing_images.exists():
-            logger.info("No missing images in %s", card_set)
-            return
-
-        # if card_set.type == "token" and card_set.parent_set:
-        #     card_data = get_scryfall_cards("t" + card_set.parent_set.code.lower())
-        # else:
+def download_images(root_dir: str) -> None:
+    """
+    Downloads images into the given directory
+    :param root_dir: The path to the directory where the images should be placed
+    """
+    for card_image in CardImage.objects.filter(file_path__isnull=True):
         try:
-            card_data = get_scryfall_cards(card_set.code)
-        except HTTPError:
-            logger.warning("Could not get cards for %s", card_set)
-            time.sleep(5)
-            return
-
-        for scryfall_card in card_data:
-            scryfall_id = scryfall_card["id"]
-            matching_faces = faces_missing_images.filter(
-                card_printing_face__card_printing__scryfall_id=scryfall_id
+            stream = requests.get(card_image.scryfall_image_url)
+            stream.raise_for_status()
+        except requests.HTTPError:
+            logger.exception(
+                "Could not download %s for %s",
+                card_image.scryfall_image_url,
+                card_image,
             )
-            if not matching_faces.exists():
-                continue
+            raise
 
-            if "image_uris" in scryfall_card:
-                image_url = scryfall_card["image_uris"]["normal"]
+        url_path = urlparse(card_image.scryfall_image_url).path
+        url_parts = url_path.split("/")
+        if "normal" not in url_parts:
+            raise ValueError(f"Invalid image URL {card_image.scryfall_image_url}")
+
+        url_parts = url_parts[url_parts.index("normal") :]
+
+        image_rel_path = os.path.join("card_images", *url_parts)
+        full_download_path = os.path.join(root_dir, image_rel_path)
+        logger.info(
+            "Downloading %s to %s", card_image.scryfall_image_url, full_download_path
+        )
+        os.makedirs(os.path.dirname(full_download_path), exist_ok=True)
+        with open(full_download_path, "wb") as output:
+            output.write(stream.content)
+            card_image.file_path = image_rel_path
+            card_image.save()
+
+
+def get_images_for_set(card_set: Set, languages: List[Language]) -> None:
+    """
+    Gets the images for
+    :param card_set:
+    :param languages:
+    :return:
+    """
+    logger.info("Checking set %s", card_set)
+    faces_missing_images = (
+        CardFaceLocalisation.objects.filter(localisation__card_printing__set=card_set)
+        .filter(localisation__language__in=languages)
+        .filter(image__isnull=True)
+    )
+
+    if not faces_missing_images.exists():
+        logger.info("No missing images in %s", card_set)
+        return
+
+    try:
+        card_data = get_scryfall_cards(card_set.code)
+    except HTTPError:
+        logger.warning("Could not get cards for %s", card_set)
+        return
+
+    for scryfall_card in card_data:
+        scryfall_id = scryfall_card["id"]
+        matching_faces = faces_missing_images.filter(
+            card_printing_face__card_printing__scryfall_id=scryfall_id
+        )
+        if not matching_faces.exists():
+            continue
+
+        if "image_uris" in scryfall_card:
+            image_url = scryfall_card["image_uris"]["normal"]
+            image_url = image_url.split("?")[0]
+            logger.info(
+                "Setting %s to have image %s",
+                " & ".join(str(m) for m in matching_faces.all()),
+                image_url,
+            )
+            with transaction.atomic():
+                new_image, _ = CardImage.objects.get_or_create(
+                    scryfall_image_url=image_url
+                )
+                matching_faces.update(image=new_image)
+
+        elif "card_faces" in scryfall_card:
+            for scryfall_face in scryfall_card["card_faces"]:
+                matching_face = matching_faces.filter(
+                    card_printing_face__scryfall_illustration_id=scryfall_face[
+                        "illustration_id"
+                    ]
+                ).filter(image__isnull=True)
+                if not matching_face.exists():
+                    continue
+                image_url = scryfall_face["image_uris"]["normal"]
+                assert matching_face.all()
                 logger.info(
                     "Setting %s to have image %s",
-                    " & ".join(str(m) for m in matching_faces.all()),
+                    " & ".join(str(m) for m in matching_face.all()),
                     image_url,
                 )
+
                 with transaction.atomic():
                     new_image = CardImage.objects.create(scryfall_image_url=image_url)
-                    matching_faces.update(image=new_image)
+                    matching_face.update(image=new_image)
+        else:
+            raise ValueError(f"Unhandled card type: {scryfall_card}")
 
-            elif "card_faces" in scryfall_card:
-                for scryfall_face in scryfall_card["card_faces"]:
-                    matching_face = matching_faces.filter(
-                        card_printing_face__scryfall_illustration_id=scryfall_face[
-                            "illustration_id"
-                        ]
-                    ).filter(image__isnull=True)
-                    if not matching_face.exists():
-                        continue
-                    image_url = scryfall_face["image_uris"]["normal"]
-                    assert matching_face.all()
-                    logger.info(
-                        "Setting %s to have image %s",
-                        " & ".join(str(m) for m in matching_face.all()),
-                        image_url,
-                    )
-
-                    with transaction.atomic():
-                        new_image = CardImage.objects.create(
-                            scryfall_image_url=image_url
-                        )
-                        matching_face.update(image=new_image)
-            else:
-                raise Exception("???")
-        # raise Exception()
-
-        time.sleep(5)
-
-        return
+    if faces_missing_images.filter(image__isnull=True):
+        logger.warning(
+            "Did not end up finding images for the following cards: %s",
+            ", ".join(str(face) for face in faces_missing_images),
+        )
 
 
 def get_scryfall_set(set_code: str) -> dict:
-    response = requests.get(f"https://api.scryfall.com/sets/{set_code}")
+    """
+    Gets a Set from the Scryfall API (and waits a bit to be nice)
+    :param set_code: The code of the set to get the data for
+    :return: The set JSON
+    """
+    url = f"https://api.scryfall.com/sets/{set_code}"
+    logger.info("Getting set data from %s", url)
+    response = requests.get(url)
     response.raise_for_status()
+    time.sleep(SCRYFALL_API_SLEEP_SECONDS)
     return response.json()
 
 
 def get_scryfall_cards(set_code: str) -> list:
+    """
+    Gets tne cards from the scryfall API for the given set
+    :param set_code: The setcode to get teh cards for
+    :return: The cards
+    """
     set_info = get_scryfall_set(set_code)
-    search_uri = set_info["search_uri"]
+    search_uri = set_info["search_uri"] + "&include_extras=true&include_variations=true"
     cards = []
     while True:
+        logger.info("Searching for cards %s", search_uri)
         response = requests.get(search_uri)
         response.raise_for_status()
         response_json = response.json()
@@ -197,4 +224,5 @@ def get_scryfall_cards(set_code: str) -> list:
             break
 
         search_uri = response_json["next_page"]
+        time.sleep(SCRYFALL_API_SLEEP_SECONDS)
     return cards
