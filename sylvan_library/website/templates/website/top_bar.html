@@ -13,6 +13,7 @@
                     <input type="submit" style="display: none;">
                 </form>
             </div>
+                <a class="action-button" href="{% url 'website:set_list' %}">All Sets</a>
             {% if not request.user.is_authenticated %}
                 <a class="action-button" href="{% url 'admin:login' %}">Login</a>
                 <a class="action-button" href="{% url 'admin:login' %}">Sign Up</a>

@@ -1,0 +1,16 @@
+{% extends 'website/base.html' %}
+{% load static %}
+{% block content %}
+    <div class="results-page">
+        <table class="set-table">
+            <tr>
+                <th>Name</th>
+                <th>Size</th>
+                <th>Release Date</th>
+            </tr>
+            {% for card_set in set_tree %}
+                {% include "website/set_row.html" with card_set=card_set %}
+            {% endfor %}
+        </table>
+    </div>
+{% endblock %}

@@ -327,3 +327,18 @@
 .subtitle.pow-tuff {
     font-weight: bold;
 }
+
+.set-row {
+}
+
+.set-row-2>td:first-child{
+    padding-left: 1.5em;
+}
+
+.set-row-3>td:first-child{
+    padding-left: 3em;
+}
+
+.set-row-4>td:first-child{
+    padding-left: 4.5em;
+}

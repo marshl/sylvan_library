@@ -1,0 +1,16 @@
+{% block content %}
+    <tr class="set-row set-row-{{ card_set.depth }}">
+        <td>
+            <div class="subtitle" style="display:inline-flex;">
+                <a href="{% url 'website:name_search' %}?query_string=set:{{ card_set.code }}">
+                    {{ card_set.name }}
+                </a>
+            </div>
+        </td>
+        <td>{{ card_set.size }}</td>
+        <td>{{ card_set.release_date }}</td>
+    </tr>
+    {% for child_set in card_set.child_sets %}
+        {% include "website/set_row.html" with card_set=child_set %}
+    {% endfor %}
+{% endblock %}
