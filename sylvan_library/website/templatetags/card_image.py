@@ -1,11 +1,12 @@
 """
 Module for custom template filters to get the image paths of different card models
 """
-
+import logging
 import os
 from typing import Optional
 
 from django import template
+from django.contrib.staticfiles import finders
 
 from cards.models import (
     Card,
@@ -16,6 +17,8 @@ from cards.models import (
     CardFaceLocalisation,
 )
 
+logger = logging.getLogger("django")
+
 # pylint: disable=invalid-name
 register = template.Library()
 
@@ -23,10 +26,10 @@ register = template.Library()
 def does_image_exist(path: Optional[str]) -> bool:
     """
     Returns whether the given image path exists or not
-    :param path:  The path of the image
-    :return:  True if the image file exists, otherwise False
+    :param path: The path of the image
+    :return: True if the image file exists, otherwise False
     """
-    return path is not None and os.path.exists(os.path.join("website", "static", path))
+    return path and bool(finders.find(path))
 
 
 def get_default_image() -> str:
