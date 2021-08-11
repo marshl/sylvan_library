@@ -1,6 +1,7 @@
 """
 Card power, toughness and loyalty parameters
 """
+from django.db.models import F
 from django.db.models.query import Q
 
 from .base_parameters import CardNumericalParam
@@ -30,6 +31,8 @@ class CardNumToughnessParam(CardNumericalParam):
         return Q(**args) & Q(card__faces__toughness__isnull=False)
 
     def get_pretty_str(self) -> str:
+        if isinstance(self.number, F):
+            return f"the toughness {self.operator} "
         return f"the toughness {self.operator} {self.number}"
 
 
