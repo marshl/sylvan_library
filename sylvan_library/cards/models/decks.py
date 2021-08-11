@@ -153,10 +153,7 @@ class Deck(models.Model):
                 else "Commanders",
                 "cards": groups.get("commander", []),
             },
-            {
-                "name": "Land" if len(groups.get("land", [])) == 1 else "Lands",
-                "cards": groups.get("land", []),
-            },
+            {"name": "Lands", "cards": groups.get("land", [])},
             {
                 "name": "Creature"
                 if len(groups.get("creature", [])) == 1
