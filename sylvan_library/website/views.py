@@ -582,11 +582,17 @@ def deck_view(request: WSGIRequest, deck_id: int) -> HttpResponse:
     """
     if not isinstance(request.user, User) or request.user.is_anonymous:
         return redirect("website:index")
+
     try:
         deck = Deck.objects.get(id=deck_id, owner=request.user)
     except Deck.DoesNotExist:
         return redirect("website:decks")
-    return render(request, "website/decks/deck_view.html", {"deck": deck})
+
+    return render(
+        request,
+        "website/decks/deck_view.html",
+        {"deck": deck, "page_title": f"{deck.name or 'View Deck'} - Sylvan Library"},
+    )
 
 
 def deck_edit(request: WSGIRequest, deck_id: int) -> HttpResponse:
@@ -630,7 +636,7 @@ def deck_edit(request: WSGIRequest, deck_id: int) -> HttpResponse:
     else:
         deck_form = DeckForm(instance=deck)
         deck_form.populate_boards()
-    return render(request, "website/decks/deck_edit.html", {"deck_form": deck_form})
+    return render(request, "website/decks/deck_edit.html", {"deck_form": deck_form, "page_title": f"Edit {deck.name or 'new deck'} - Sylvan Library"})
 
 
 def deck_create(request: WSGIRequest) -> HttpResponse:
