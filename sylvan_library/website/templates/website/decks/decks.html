@@ -37,9 +37,9 @@
                             {% if deck.description %}
                                 <h3 class="subtitle">
                                     {% if deck.description|length > 200 %}
-                                        {{ deck.description|slice:"0:200" }}...
+                                        {{ deck.description|safe|slice:"0:200" }}...
                                     {% else %}
-                                        {{ deck.description }}
+                                        {{ deck.description|safe }}
                                     {% endif %}
                                 </h3>
                             {% endif %}
