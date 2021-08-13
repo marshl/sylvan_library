@@ -81,13 +81,13 @@ def parse_numeric_parameter(
         raise ValueError(f"Cannot use {operator} operator for {param_name} search")
 
     if text in ("toughness", "tough", "tou"):
-        return F("card__num_toughness")
+        return F("card__faces__num_toughness")
 
     if text in ("power", "pow"):
-        return F("card__num_power")
+        return F("card__faces__num_power")
 
     if text in ("loyalty", "loy"):
-        return F("card__num_loyalty")
+        return F("card__faces__num_loyalty")
 
     if text in ("cmc", "cost"):
         return F("card__converted_mana_cost")
@@ -579,7 +579,9 @@ class CardQueryParser(Parser):
                 continue
 
             for param_keyword in func.param_keywords:
-                assert param_keyword not in self.parser_dict
+                assert (
+                    param_keyword not in self.parser_dict
+                ), f'Keyword "{param_keyword}" already taken by "{self.parser_dict[param_keyword]}"'
                 self.parser_dict[param_keyword] = func
 
     def start(self) -> CardSearchParam:

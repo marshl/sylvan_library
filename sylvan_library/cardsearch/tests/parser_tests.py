@@ -336,7 +336,7 @@ class ColourContainsTestCase(TestCase):
 
     def test_name_match(self) -> None:
         """
-        Tests that a colour name parameter matches
+        Test colour match
         """
         self.parse_search.query_string = "color:rg"
         self.parse_search.build_parameters()
