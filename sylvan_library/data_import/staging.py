@@ -344,8 +344,9 @@ class StagedSet(StagedObject):
     """
 
     def __init__(self, set_data: dict, for_token: bool):
+        self.set_data = set_data
         self.base_set_size: int = set_data["baseSetSize"]
-        self.block: str = set_data.get("block")
+        self.block_name: str = set_data.get("block")
         self.code: str = set_data["code"]
         self.is_foil_only: bool = set_data["isFoilOnly"]
         self.is_foreign_only: bool = set_data.get("isForeignOnly", False)
@@ -360,32 +361,41 @@ class StagedSet(StagedObject):
         self.tcg_player_group_id: str = set_data.get("tcg_player_group_id")
         self.total_set_size: int = set_data["totalSetSize"]
         self.type: str = set_data["type"]
-        self.parent_set_code = set_data.get("parentCode")
-
-        if for_token:
+        self.parent_set_code: str = set_data.get("parentCode")
+        self.is_token_set: bool = for_token
+        if self.is_token_set:
             self.code = "T" + self.code
             self.name += " Tokens"
             self.parent_set_code = set_data["code"]
             self.type = "token"
             self.total_set_size = self.base_set_size = len(set_data["tokens"])
 
-        self.scryfall_oracle_ids: List[str] = [
-            card["identifiers"]["scryfallOracleId"]
-            for card in set_data.get("cards", []) + set_data.get("tokens", [])
-        ]
+    def get_cards(self):
+        if self.is_token_set:
+            return self.set_data.get("tokens") or self.set_data.get("cards", [])
+        return self.set_data.get("cards", [])
+
+    def get_scryfall_oracle_ids(self):
+        return [card["identifiers"]["scryfallOracleId"] for card in self.get_cards()]
 
     def compare_with_set(self, existing_set: Set):
 
         differences = self.get_object_differences(
             existing_set,
-            fields_to_ignore={"id", "release_date", "parent_set_id", "block_id"},
+            fields_to_ignore={
+                "id",
+                "release_date",
+                "parent_set_id",
+                "block_id",
+                "set_data",
+            },
         )
-        if (not existing_set.block and self.block) or (
-            existing_set.block and existing_set.block.name != self.block
+        if (not existing_set.block and self.block_name) or (
+            existing_set.block and existing_set.block.name != self.block_name
         ):
             differences["block"] = {
                 "from": existing_set.block.name if existing_set.block else None,
-                "to": self.block,
+                "to": self.block_name,
             }
 
         if existing_set.release_date != self.release_date:
@@ -396,7 +406,7 @@ class StagedSet(StagedObject):
         return differences
 
     def get_field_data(self):
-        return self.get_all_fields(fields_to_ignore={"scryfall_oracle_ids"})
+        return self.get_all_fields(fields_to_ignore={"set_data"})
 
 
 # pylint: disable=too-many-instance-attributes
@@ -405,7 +415,7 @@ class StagedCardPrinting(StagedObject):
     Class for staging a CardPrinting record from MTGJSON
     """
 
-    def __init__(self, card_data: dict, staged_set: StagedSet):
+    def __init__(self, card_data: dict, set_code: str):
         self.card_name = card_data["name"]
         self.scryfall_id = card_data["identifiers"]["scryfallId"]
 
@@ -453,10 +463,8 @@ class StagedCardPrinting(StagedObject):
             int(identifiers.get("mtgArenaId")) if "mtgArenaId" in identifiers else None
         )
 
-        self.set_code = staged_set.code
+        self.set_code = set_code
         self.tcg_player_product_id = identifiers.get("tcgPlayerProductId")
-
-        self.is_new = False
 
     @property
     def numerical_number(self) -> Optional[int]:
@@ -522,7 +530,9 @@ class StagedCardFacePrinting(StagedObject):
         differences = self.get_object_differences(
             existing_face_printing,
             fields_to_ignore={
-                "uuid",
+                # "uuid",
+                "scryfall_id",  # annotation
+                "face_side",  # annotation
                 "frame_effects",
                 "card_face_id",
                 "card_printing_id",
@@ -604,7 +614,11 @@ class StagedCardLocalisation(StagedObject):
     ):
         return self.get_object_differences(
             existing_card_localisation,
-            fields_to_ignore={"card_printing_id", "language_id"},
+            fields_to_ignore={
+                "card_printing_id",
+                "language_id",
+                "scryfall_id",  # annotation
+            },
         )
 
 
@@ -635,5 +649,11 @@ class StagedCardFaceLocalisation(StagedObject):
     ):
         return self.get_object_differences(
             existing_face_localisation,
-            fields_to_ignore={"localisation_id", "card_printing_face_id", "image_id"},
+            fields_to_ignore={
+                "scryfall_id",  # annotation
+                "face_side",  # annotation
+                "localisation_id",
+                "card_printing_face_id",
+                "image_id",
+            },
         )

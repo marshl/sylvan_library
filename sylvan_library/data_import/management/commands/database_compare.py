@@ -8,8 +8,18 @@ from typing import List, Optional, Dict, Tuple
 
 from django.core.management.base import BaseCommand
 from django.db import transaction, models
+from django.db.models import F
 
-from cards.models import Block, Card, CardPrinting, Set, CardLocalisation
+from cards.models import (
+    Block,
+    Card,
+    CardPrinting,
+    Set,
+    CardLocalisation,
+    CardFacePrinting,
+    CardFace,
+    CardFaceLocalisation,
+)
 from data_import.management.commands import get_all_set_data
 from data_import.models import (
     UpdateSet,
@@ -17,8 +27,6 @@ from data_import.models import (
     UpdateBlock,
     UpdateMode,
     UpdateCardFace,
-    UpdateCardRuling,
-    UpdateCardLegality,
     UpdateCardPrinting,
     UpdateCardFacePrinting,
     UpdateCardLocalisation,
@@ -84,7 +92,7 @@ class Command(BaseCommand):
 
             for set_data in get_all_set_data(options.get("set_codes")):
                 logger.info("Parsing set %s (%s)", set_data["code"], set_data["name"])
-                set_parser = SetParser(
+                set_file_parser = SetFileParser(
                     set_data,
                     cards_parsed=self.cards_parsed,
                     card_faces_parsed=self.card_faces_parsed,
@@ -92,8 +100,7 @@ class Command(BaseCommand):
                     card_face_printings_parsed=self.card_face_printings_parsed,
                     card_localisations_parsed=self.card_localisations_parsed,
                 )
-                set_parser.parse_set_data()
-                set_parser.bulk_create_updates()
+                set_file_parser.parse_set_file()
         self.log_stats()
 
     def log_single_stat(
@@ -124,7 +131,7 @@ class Command(BaseCommand):
         logger.info("Completed in %ss", time.time() - self.start_time)
 
 
-class SetParser:
+class SetFileParser:
     def __init__(
         self,
         set_data: dict,
@@ -145,6 +152,32 @@ class SetParser:
             Tuple[str, str]
         ] = card_localisations_parsed
 
+    def parse_set_file(self):
+        """
+        Parses a set dict and checks for updates/creates/deletes to be done
+        """
+        set_parser = SetParser(
+            staged_set=StagedSet(self.set_data, for_token=False), set_file_parser=self
+        )
+        set_parser.parse_set_data()
+        set_parser.bulk_create_updates()
+
+        # If the set has tokens, and isn't a dedicated token set, then create a separate set just
+        # for the tokens of that set
+        if self.set_data.get("tokens") and self.set_data.get("type") != "token":
+            set_parser = SetParser(
+                staged_set=StagedSet(self.set_data, for_token=True),
+                set_file_parser=self,
+            )
+            set_parser.parse_set_data()
+            set_parser.bulk_create_updates()
+
+
+class SetParser:
+    def __init__(self, staged_set: StagedSet, set_file_parser: SetFileParser):
+        self.staged_set = staged_set
+        self.set_file_parser = set_file_parser
+
         self.sets_to_update: List[UpdateSet] = []
         self.blocks_to_update: List[UpdateBlock] = []
         self.cards_to_update: List[UpdateCard] = []
@@ -155,6 +188,116 @@ class SetParser:
         self.face_localisations_to_update: List[UpdateCardFaceLocalisation] = []
         # self.rulings_to_update: List[UpdateCardRuling] = []
         # self.legalities_to_update: List[UpdateCardLegality] = []
+
+        self.existing_cards = {
+            card.scryfall_oracle_id: card
+            for card in Card.objects.filter(
+                scryfall_oracle_id__in=staged_set.get_scryfall_oracle_ids()
+            )
+            # .prefetch_related(
+            #     "faces__subtypes",
+            #     "faces__supertypes",
+            #     "faces__types",
+            #     # "rulings",
+            #     # "legalities__format",
+            # )
+            .all()
+        }
+
+        self.existing_card_faces = {
+            (face.scryfall_oracle_id, face.side): face
+            for face in CardFace.objects.filter(
+                card__scryfall_oracle_id__in=self.existing_cards.keys()
+            )
+            .annotate(scryfall_oracle_id=F("card__scryfall_oracle_id"))
+            .prefetch_related("subtypes", "supertypes", "types")
+        }
+
+        self.existing_printings = {
+            printing.scryfall_id: printing
+            for printing in CardPrinting.objects.filter(
+                card__scryfall_oracle_id__in=staged_set.get_scryfall_oracle_ids(),
+                set__code=staged_set.code,
+            ).prefetch_related(
+                # "face_printings__frame_effects",
+                # "face_printings__card_face",
+                "rarity",
+                # "localisations__language",
+                # "localisations__localised_faces__card_printing_face",
+            )
+        }
+
+        self.existing_face_printings = {
+            (face_printing.scryfall_id, face_printing.face_side): face_printing
+            for face_printing in CardFacePrinting.objects.filter(
+                card_printing__scryfall_id__in=self.existing_printings.keys()
+            )
+            .annotate(
+                scryfall_id=F("card_printing__scryfall_id"),
+                face_side=F("card_face__side"),
+            )
+            .prefetch_related("frame_effects")
+        }
+
+        self.existing_localisations = {
+            (localisation.scryfall_id, localisation.language_name): localisation
+            for localisation in CardLocalisation.objects.filter(
+                card_printing__scryfall_id__in=self.existing_printings.keys()
+            )
+            .annotate(
+                language_name=F("language__name"),
+                scryfall_id=F("card_printing__scryfall_id"),
+            )
+            # .prefetch_related("localised_faces")
+        }
+
+        self.existing_face_localisations = {
+            (
+                face_localisation.scryfall_id,
+                face_localisation.language_name,
+                face_localisation.face_side,
+            ): face_localisation
+            for face_localisation in CardFaceLocalisation.objects.filter(
+                localisation__card_printing__scryfall_id__in=self.existing_printings.keys()
+            ).annotate(
+                scryfall_id=F("localisation__card_printing__scryfall_id"),
+                language_name=F("localisation__language__name"),
+                face_side=F("card_printing_face__card_face__side"),
+            )
+        }
+
+    def get_existing_card(self, scryfall_oracle_id: str) -> Optional[Card]:
+        assert scryfall_oracle_id
+        return self.existing_cards.get(scryfall_oracle_id)
+
+    def get_existing_card_face(
+        self, scryfall_oracle_id: str, side: Optional[str]
+    ) -> Optional[CardFace]:
+        assert scryfall_oracle_id
+        return self.existing_card_faces.get((scryfall_oracle_id, side))
+
+    def get_existing_printing(self, scryfall_id: str) -> Optional[CardPrinting]:
+        assert scryfall_id
+        return self.existing_printings.get(scryfall_id)
+
+    def get_existing_face_printing(
+        self, scryfall_id: str, face_side: Optional[str]
+    ) -> Optional[CardFacePrinting]:
+        assert scryfall_id
+        return self.existing_face_printings.get((scryfall_id, face_side))
+
+    def get_existing_localisation(
+        self, scryfall_id: str, language_name: str
+    ) -> Optional[CardLocalisation]:
+        assert scryfall_id and language_name
+        return self.existing_localisations.get((scryfall_id, language_name))
+
+    def get_existing_face_localisaiton(
+        self, scryfall_id: str, language_name: str, face_side: str
+    ) -> Optional[CardFaceLocalisation]:
+        return self.existing_face_localisations.get(
+            (scryfall_id, language_name, face_side)
+        )
 
     def bulk_create_updates(self):
         UpdateSet.objects.bulk_create(self.sets_to_update)
@@ -174,169 +317,95 @@ class SetParser:
         """
         Parses a set dict and checks for updates/creates/deletes to be done
         """
-        sets = [StagedSet(self.set_data, for_token=False)]
-        # If the set has tokens, and isn't a dedicated token set, then create a separate set just
-        # for the tokens of that set
-        if self.set_data.get("tokens") and self.set_data.get("type") != "token":
-            sets.append(StagedSet(self.set_data, for_token=True))
-
-        for staged_set in sets:
-            if Set.objects.filter(code=staged_set.code).exists():
-                existing_set = Set.objects.get(code=staged_set.code)
-                set_differences = staged_set.compare_with_set(existing_set)
-                if set_differences:
-                    self.sets_to_update.append(
-                        UpdateSet(
-                            update_mode=UpdateMode.UPDATE,
-                            set_code=staged_set.code,
-                            field_data=set_differences,
-                        )
-                    )
-
-            elif not UpdateSet.objects.filter(set_code=staged_set.code).exists():
+        if Set.objects.filter(code=self.staged_set.code).exists():
+            existing_set = Set.objects.get(code=self.staged_set.code)
+            set_differences = self.staged_set.compare_with_set(existing_set)
+            if set_differences:
                 self.sets_to_update.append(
                     UpdateSet(
-                        update_mode=UpdateMode.CREATE,
-                        set_code=staged_set.code,
-                        field_data=staged_set.get_field_data(),
+                        update_mode=UpdateMode.UPDATE,
+                        set_code=self.staged_set.code,
+                        field_data=set_differences,
                     )
                 )
 
-            if (
-                staged_set.block
-                and not Block.objects.filter(name=staged_set.block).exists()
-            ):
-                try:
-                    existing_block_update = UpdateBlock.objects.get(
-                        name=staged_set.block
-                    )
-                    if existing_block_update.release_date > staged_set.release_date:
-                        existing_block_update.release_date = staged_set.release_date
-                        existing_block_update.save()
-                except UpdateBlock.DoesNotExist:
-                    self.blocks_to_update.append(
-                        UpdateBlock(
-                            update_mode=UpdateMode.CREATE,
-                            name=staged_set.block,
-                            release_date=staged_set.release_date,
-                        )
-                    )
+        elif not UpdateSet.objects.filter(set_code=self.staged_set.code).exists():
+            self.sets_to_update.append(
+                UpdateSet(
+                    update_mode=UpdateMode.CREATE,
+                    set_code=self.staged_set.code,
+                    field_data=self.staged_set.get_field_data(),
+                )
+            )
 
-        # return sets[0], sets[1] if len(sets) > 1 else None
-        self.process_set_cards(sets[0], sets[1] if len(sets) > 1 else None)
+        if (
+            self.staged_set.block_name
+            and not Block.objects.filter(name=self.staged_set.block_name).exists()
+        ):
+            try:
+                existing_block_update = UpdateBlock.objects.get(
+                    name=self.staged_set.block_name
+                )
+                if existing_block_update.release_date > self.staged_set.release_date:
+                    existing_block_update.release_date = self.staged_set.release_date
+                    existing_block_update.save()
+            except UpdateBlock.DoesNotExist:
+                self.blocks_to_update.append(
+                    UpdateBlock(
+                        update_mode=UpdateMode.CREATE,
+                        name=self.staged_set.block_name,
+                        release_date=self.staged_set.release_date,
+                    )
+                )
 
-    def process_set_cards(
-        self, staged_set: StagedSet, staged_token_set: Optional[StagedSet] = None
-    ) -> None:
+        self.process_set_cards()
+
+    def process_set_cards(self,) -> None:
         """
         Processes the cards within a set dictionary
-        :param staged_set:
-        :param staged_token_set:
         """
 
-        existing_cards = {
-            card.scryfall_oracle_id: card
-            for card in Card.objects.filter(
-                scryfall_oracle_id__in=staged_set.scryfall_oracle_ids
-            )
-            .prefetch_related(
-                "faces__subtypes",
-                "faces__supertypes",
-                "faces__types",
-                # "rulings",
-                # "legalities__format",
-            )
-            .all()
-        }
-        existing_printings = {
-            printing.scryfall_id: printing
-            for printing in CardPrinting.objects.filter(
-                card__scryfall_oracle_id__in=staged_set.scryfall_oracle_ids,
-                set__code=staged_set.code,
-            )
-            .prefetch_related(
-                "face_printings__frame_effects",
-                "face_printings__card_face",
-                "rarity",
-                "localisations__language",
-                "localisations__localised_faces__card_printing_face",
-            )
-            .all()
-        }
+        for card_data in self.staged_set.get_cards():
+            self.process_all_card_data(card_data)
 
-        for card_data in self.set_data.get("cards", []):
-            self.process_all_card_data(
-                card_data,
-                staged_set,
-                existing_cards,
-                existing_printings,
-                is_token=False,
-            )
-
-        for card_data in self.set_data.get("tokens", []):
-            # For tokens, prefer the corresponding token set.
-            # However some sets are themselves token sets, so in those cases, use the actual set
-            self.process_all_card_data(
-                card_data,
-                staged_token_set or staged_set,
-                existing_cards,
-                existing_printings,
-                is_token=True,
-            )
-
-    def process_all_card_data(
-        self,
-        card_data: dict,
-        staged_set: StagedSet,
-        existing_cards: Dict[str, Card],
-        existing_printings: Dict[str, CardPrinting],
-        is_token: bool,
-    ):
-        staged_card = StagedCard(card_data, is_token=is_token)
+    def process_all_card_data(self, card_data: dict):
+        staged_card = StagedCard(card_data, is_token=self.staged_set.is_token_set)
         staged_card_face = StagedCardFace(card_data)
-        staged_card_printing = StagedCardPrinting(card_data, staged_set)
+        staged_card_printing = StagedCardPrinting(card_data, self.staged_set.code)
         staged_face_printing = StagedCardFacePrinting(card_data)
 
-        existing_card = existing_cards.get(staged_card.scryfall_oracle_id)
-
-        self.process_card(staged_card, existing_card=existing_card)
-        self.process_card_faces(staged_card, staged_card_face, existing_card)
+        self.process_card(staged_card)
+        self.process_card_faces(staged_card, staged_card_face)
 
         self.process_card_printing(
             staged_card=staged_card,
             staged_card_face=staged_card_face,
             staged_card_printing=staged_card_printing,
             staged_face_printing=staged_face_printing,
-            staged_set=staged_set,
-            existing_printings=existing_printings,
         )
 
         self.process_card_localisations(
             card_data=card_data,
+            staged_card_face=staged_card_face,
             staged_card_printing=staged_card_printing,
             staged_face_printing=staged_face_printing,
-            existing_printings=existing_printings,
         )
 
-    def process_card(
-        self, staged_card: StagedCard, existing_card: Optional[Card]
-    ) -> None:
+    def process_card(self, staged_card: StagedCard) -> None:
         """
         Parses the given card data dict and returns a new or existing StagedCard
         :param staged_card:
-        :param existing_card:
-        (tokens include emblems, World Championship Bios, checklist cards, etc.)
         :return: A StagedCard that represents the json card
         """
 
-        if staged_card.scryfall_oracle_id in self.cards_parsed:
+        if staged_card.scryfall_oracle_id in self.set_file_parser.cards_parsed:
             return
 
-        self.cards_parsed.add(staged_card.scryfall_oracle_id)
+        self.set_file_parser.cards_parsed.add(staged_card.scryfall_oracle_id)
 
         # self.process_card_rulings(staged_card, existing_card=existing_card)
         # self.process_card_legalities(staged_card, existing_card=existing_card)
-
+        existing_card = self.get_existing_card(staged_card.scryfall_oracle_id)
         if existing_card:
             differences = staged_card.compare_with_card(existing_card)
             if differences:
@@ -359,26 +428,23 @@ class SetParser:
             )
 
     def process_card_faces(
-        self,
-        staged_card,
-        staged_card_face: StagedCardFace,
-        existing_card: Optional[Card],
+        self, staged_card: StagedCard, staged_card_face: StagedCardFace
     ) -> None:
-        existing_card_face = (
-            next(
-                face
-                for face in existing_card.faces.all()
-                if face.side == staged_card_face.side
-            )
-            if existing_card
-            else None
+        """
+
+        :param staged_card:
+        :param staged_card_face:
+        :return:
+        """
+        existing_card_face = self.get_existing_card_face(
+            staged_card.scryfall_oracle_id, staged_card_face.side
         )
         face_tuple = (staged_card_face.scryfall_oracle_id, staged_card_face.side)
 
-        if face_tuple in self.card_faces_parsed:
+        if face_tuple in self.set_file_parser.card_faces_parsed:
             return
 
-        self.card_faces_parsed.add(face_tuple)
+        self.set_file_parser.card_faces_parsed.add(face_tuple)
         if existing_card_face:
             face_differences = staged_card_face.get_card_face_differences(
                 existing_card_face
@@ -511,8 +577,6 @@ class SetParser:
         staged_card_face: StagedCardFace,
         staged_card_printing: StagedCardPrinting,
         staged_face_printing: StagedCardFacePrinting,
-        staged_set: StagedSet,
-        existing_printings: Dict[str, CardPrinting],
     ) -> None:
         """
         Process a Card printed in a given set,
@@ -521,13 +585,17 @@ class SetParser:
         :param staged_card_face:
         :param staged_card_printing:
         :param staged_face_printing:
-        :param staged_set: The staged set data
-        :param existing_printings:
         :return: A tuple containing the StagedCardPrinting and a list of StagedCardLocalisations
         """
-        existing_printing = existing_printings.get(staged_card_printing.scryfall_id)
-        if staged_card_printing.scryfall_id not in self.card_printings_parsed:
-            self.card_printings_parsed.add(staged_card_printing.scryfall_id)
+        # existing_printing = existing_printings.get(staged_card_printing.scryfall_id)
+        existing_printing = self.get_existing_printing(staged_card_printing.scryfall_id)
+        if (
+            staged_card_printing.scryfall_id
+            not in self.set_file_parser.card_printings_parsed
+        ):
+            self.set_file_parser.card_printings_parsed.add(
+                staged_card_printing.scryfall_id
+            )
             if not existing_printing:
                 self.printings_to_update.append(
                     UpdateCardPrinting(
@@ -535,7 +603,7 @@ class SetParser:
                         card_scryfall_oracle_id=staged_card.scryfall_oracle_id,
                         card_name=staged_card.name,
                         scryfall_id=staged_card_printing.scryfall_id,
-                        set_code=staged_set.code,
+                        set_code=self.staged_set.code,
                         field_data=staged_card_printing.get_field_data(),
                     )
                 )
@@ -550,25 +618,16 @@ class SetParser:
                             card_scryfall_oracle_id=staged_card.scryfall_oracle_id,
                             card_name=staged_card.name,
                             scryfall_id=staged_card_printing.scryfall_id,
-                            set_code=staged_set.code,
+                            set_code=self.staged_set.code,
                             field_data=differences,
                         )
                     )
-        if staged_face_printing.uuid in self.card_face_printings_parsed:
+        if staged_face_printing.uuid in self.set_file_parser.card_face_printings_parsed:
             return
 
-        self.card_face_printings_parsed.add(staged_face_printing.uuid)
-        existing_face_printing = (
-            next(
-                (
-                    face_printing
-                    for face_printing in existing_printing.face_printings.all()
-                    if face_printing.card_face.side == staged_card_face.side
-                ),
-                None,
-            )
-            if existing_printing
-            else None
+        self.set_file_parser.card_face_printings_parsed.add(staged_face_printing.uuid)
+        existing_face_printing = self.get_existing_face_printing(
+            staged_card_printing.scryfall_id, face_side=staged_card_face.side
         )
 
         if existing_face_printing:
@@ -605,21 +664,18 @@ class SetParser:
     def process_card_localisations(
         self,
         card_data: dict,
+        staged_card_face: StagedCardFace,
         staged_card_printing: StagedCardPrinting,
         staged_face_printing: StagedCardFacePrinting,
-        existing_printings: Dict[str, CardPrinting],
     ) -> None:
         """
 
-        :param staged_face_printing:
         :param card_data:
+        :param staged_card_face:
         :param staged_card_printing:
-        :param existing_printings: A dict of scryfall_ids to CardPrintings
+        :param staged_face_printing:
         :return:
         """
-        existing_printing: Optional[CardPrinting] = existing_printings.get(
-            staged_card_printing.scryfall_id
-        )
 
         foreign_data_list = card_data.get("foreignData", [])
         if not card_data.get("isForeignOnly", False):
@@ -639,44 +695,41 @@ class SetParser:
         for foreign_data in foreign_data_list:
             self.parse_foreign_data(
                 foreign_data,
+                staged_card_face,
                 staged_card_printing,
                 staged_face_printing,
-                existing_printing,
             )
 
     def parse_foreign_data(
         self,
         foreign_data: dict,
+        staged_card_face: StagedCardFace,
         staged_card_printing: StagedCardPrinting,
         staged_face_printing: StagedCardFacePrinting,
-        existing_printing: Optional[CardPrinting],
     ):
         """
 
         :param foreign_data:
+        :param staged_card_face:
         :param staged_card_printing:
         :param staged_face_printing:
-        :param existing_printing:
         :return:
         """
         staged_localisation = StagedCardLocalisation(staged_card_printing, foreign_data)
-
-        existing_localisations: List[CardLocalisation] = [
-            localisation
-            for localisation in existing_printing.localisations.all()
-            if localisation.language.name == staged_localisation.language_name
-        ] if existing_printing else []
-        assert len(existing_localisations) <= 1
 
         localisation_key = (
             staged_card_printing.scryfall_id,
             staged_localisation.language_name,
         )
+        existing_localisation = self.get_existing_localisation(
+            staged_card_printing.scryfall_id,
+            language_name=staged_localisation.language_name,
+        )
 
-        if localisation_key not in self.card_localisations_parsed:
-            self.card_localisations_parsed.add(localisation_key)
+        if localisation_key not in self.set_file_parser.card_localisations_parsed:
+            self.set_file_parser.card_localisations_parsed.add(localisation_key)
 
-            if not existing_localisations:
+            if not existing_localisation:
                 self.localisations_to_update.append(
                     UpdateCardLocalisation(
                         update_mode=UpdateMode.CREATE,
@@ -688,7 +741,7 @@ class SetParser:
                 )
             else:
                 differences = staged_localisation.compare_with_existing_localisation(
-                    existing_localisations[0]
+                    existing_localisation
                 )
                 if differences:
                     self.localisations_to_update.append(
@@ -701,21 +754,17 @@ class SetParser:
                         )
                     )
 
-        existing_localised_faces = (
-            [
-                localised_face
-                for localised_face in existing_localisations[0].localised_faces.all()
-                if localised_face.card_printing_face.uuid == staged_face_printing.uuid
-            ]
-            if existing_localisations
-            else []
+        existing_face_localisation = self.get_existing_face_localisaiton(
+            staged_card_printing.scryfall_id,
+            language_name=staged_localisation.language_name,
+            face_side=staged_card_face.side,
         )
-        assert len(existing_localised_faces) <= 1
+
         staged_localised_face = StagedCardFaceLocalisation(
             staged_card_printing, staged_face_printing, foreign_data
         )
 
-        if not existing_localised_faces:
+        if not existing_face_localisation:
             self.face_localisations_to_update.append(
                 UpdateCardFaceLocalisation(
                     update_mode=UpdateMode.CREATE,
@@ -727,9 +776,8 @@ class SetParser:
                 )
             )
         else:
-            existing_localised_face = existing_localised_faces[0]
             differences = staged_localised_face.compare_with_existing_face_localisation(
-                existing_localised_face
+                existing_face_localisation
             )
             if differences:
                 self.face_localisations_to_update.append(
