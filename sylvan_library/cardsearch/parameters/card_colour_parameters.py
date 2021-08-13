@@ -50,19 +50,19 @@ class CardComplexColourParam(CardSearchParam):
         """
         field = "card__colour_identity" if self.identity else "card__faces__colour"
         colour_flags = colours_to_int_flags(self.colours)
-        if self.operator == ">=":
-            return (
-                ~Q(**{field: colour_flags})
-                if self.negated
-                else Q(**{field: colour_flags})
-            )
+        # if self.operator == ">=":
+        #     return (
+        #         ~Q(**{field: colour_flags})
+        #         if self.negated
+        #         else Q(**{field: colour_flags})
+        #     )
 
-        if self.operator == ">" or self.operator == "=":
+        if self.operator == ">" or self.operator == "=" or self.operator == ">=":
             result = Q(**{field: colour_flags})
             exclude = Q()
 
             for colour in Colour.objects.exclude(symbol="C"):
-                if not colour in self.colours:
+                if colour not in self.colours:
                     exclude |= Q(**{field: colour.bit_value})
             if exclude:
                 result &= exclude if self.operator == ">" else ~exclude
