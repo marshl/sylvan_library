@@ -22,7 +22,8 @@ class CreateBlockAdmin(admin.ModelAdmin):
 
 @admin.register(UpdateSet)
 class UpdateSetAdmin(admin.ModelAdmin):
-    pass
+    search_fields = ["field_data"]
+    list_filter = ["update_mode"]
 
 
 @admin.register(UpdateCard)
@@ -56,7 +57,7 @@ class UpdateCardLegalityAdmin(admin.ModelAdmin):
 
 @admin.register(UpdateCardPrinting)
 class UpdateCardPrintingAdmin(admin.ModelAdmin):
-    search_fields = ["card_name", "card_scryfall_oracle_id", "scryfall_id"]
+    search_fields = ["card_name", "card_scryfall_oracle_id", "scryfall_id", "set_code"]
 
 
 @admin.register(UpdateCardFacePrinting)
@@ -71,4 +72,9 @@ class UpdateCardLocalisationAdmin(admin.ModelAdmin):
 
 @admin.register(UpdateCardFaceLocalisation)
 class UpdateCardFaceLocalisationAdmin(admin.ModelAdmin):
-    search_fields = ["face_name", "face_printing_uuid", "update_mode"]
+    search_fields = [
+        "face_name",
+        "face_printing_uuid",
+        "update_mode",
+        "printing_scryfall_id",
+    ]
