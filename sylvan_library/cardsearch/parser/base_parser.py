@@ -2,6 +2,7 @@
 Module for the base recursive descent parser
 """
 
+import re
 from abc import ABC
 from typing import List, Optional, Any, Dict, Tuple
 
@@ -97,6 +98,30 @@ class Parser(ABC):
                 index += 1
         self.cache[chars] = result
         return result
+
+    def pattern(self, pattern: str) -> str:
+        """
+        Attempts to parse a single char
+        :param chars: The list of potential characters to parse
+        :return: The character that was parsed
+        """
+        if self.pos >= self.len:
+            raise ParseError(
+                self.pos,
+                f"Expected %s but got end of string", pattern
+            )
+
+        next_char = self.text[self.pos + 1]
+        if re.match(pattern, next_char):
+            self.pos += 1
+            return next_char
+
+        raise ParseError(
+            self.pos + 1,
+            f"Expected %s but got %s",
+            pattern,
+            next_char,
+        )
 
     def char(self, chars: Optional[str] = None) -> str:
         """
@@ -205,6 +230,13 @@ class Parser(ABC):
         """
         try:
             return self.char(chars)
+        except ParseError:
+            return None
+
+
+    def maybe_pattern(self, pattern: str) -> Optional[str]:
+        try:
+            return self.pattern(pattern)
         except ParseError:
             return None
 
