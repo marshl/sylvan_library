@@ -679,7 +679,7 @@ class CardQueryParser(Parser):
         """
         parameter_type = self.match("param_type")
         operator = self.match("operator")
-        parameter_value = self.match("quoted_string", "unquoted")
+        parameter_value = self.match("quoted_string", "unquoted_complex")
         return self.parse_param(parameter_type, operator, parameter_value)
 
     def quoted_name_parameter(self) -> CardSearchParam:
@@ -711,8 +711,8 @@ class CardQueryParser(Parser):
         Attempts to parse a parameter that is just an unquoted string
         :return: The name parameter
         """
-        parameter_value = self.match("unquoted")
-        if parameter_value in ("or", "and"):
+        parameter_value = self.match("unquoted_complex")
+        if parameter_value and parameter_value.lower() in ("or", "and"):
             raise ParseError(
                 self.pos + 1,
                 'Expected a parameter but got "%s" instead',
@@ -775,10 +775,22 @@ class CardQueryParser(Parser):
         :return: The contents of the unquoted string
         """
         acceptable_chars = "0-9A-Za-z!$%&*+.,/;<=>?^_`|~{}[]/:'\\-"
+        # acceptable_chars = r"\S"
         chars = [self.char(acceptable_chars)]
 
         while True:
             char = self.maybe_char(acceptable_chars)
+            if char is None:
+                break
+            chars.append(char)
+
+        return "".join(chars).rstrip(" \t")
+
+    def unquoted_complex(self) -> Union[str, float]:
+        pattern = r"[^\s()]"
+        chars = [self.pattern(pattern)]
+        while True:
+            char = self.maybe_pattern(pattern)
             if char is None:
                 break
             chars.append(char)
