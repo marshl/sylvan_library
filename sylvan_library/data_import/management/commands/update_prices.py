@@ -36,7 +36,7 @@ class Command(BaseCommand):
         # We want to get the average for a weeks prices into a single lump
         # So the latest date that can be considered is the start of this week
         # The data for that week will be lumped into the date of the start of the previous week
-        start_of_week = arrow.get().floor("week").date()
+        start_of_week = arrow.utcnow().floor("week").date()
         with transaction.atomic():
             self.download_prices(start_of_week)
             self.update_prices(start_of_week)
