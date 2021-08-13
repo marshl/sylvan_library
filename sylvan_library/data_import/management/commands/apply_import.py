@@ -8,7 +8,7 @@ from typing import Any, Dict, Optional
 import typing
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandParser
-from django.db import transaction, models
+from django.db import transaction, models, IntegrityError
 
 from cards.models import (
     Block,
@@ -154,10 +154,10 @@ class Command(BaseCommand):
             for field, value in set_to_create.field_data.items():
                 if set_to_create.update_mode == UpdateMode.UPDATE:
                     value = value.get("to")
-                if field in ("parent_set_code",):
+                if field in ("parent_set_code","is_token_set"):
                     continue
 
-                if field == "block":
+                if field == "block_name":
                     if not value:
                         set_obj.block = None
                     else:
@@ -391,11 +391,20 @@ class Command(BaseCommand):
                     set=set_map[update_card_printing.set_code],
                 )
             elif update_card_printing.update_mode == UpdateMode.UPDATE:
-                printing = CardPrinting.objects.get(
-                    card__scryfall_oracle_id=update_card_printing.card_scryfall_oracle_id,
-                    set__code=update_card_printing.set_code,
-                    scryfall_id=update_card_printing.scryfall_id,
-                )
+                try:
+                    printing = CardPrinting.objects.get(
+                        card__scryfall_oracle_id=update_card_printing.card_scryfall_oracle_id,
+                        set__code=update_card_printing.set_code,
+                        scryfall_id=update_card_printing.scryfall_id,
+                    )
+                except CardPrinting.DoesNotExist:
+                    logging.error(
+                        "Could not find printing %s in %s with scryfall_id %s",
+                        update_card_printing.card_scryfall_oracle_id,
+                        update_card_printing.set_code,
+                        update_card_printing.scryfall_id,
+                    )
+                    raise
             else:
                 raise Exception
 
@@ -419,14 +428,20 @@ class Command(BaseCommand):
                     raise NotImplementedError(
                         f"Cannot set unrecognised field CardPrinting.{field}"
                     )
-            printing.save()
+            try:
+                printing.save()
+            except IntegrityError:
+                self.logger.exception("Failed to created %s", update_card_printing)
+                raise
         return True
 
     def update_card_face_printings(self) -> bool:
         self.logger.info(
             "Updating %s card face printings", UpdateCardFacePrinting.objects.count()
         )
-        for update_card_face_printing in UpdateCardFacePrinting.objects.all():
+        updates = list(UpdateCardFacePrinting.objects.filter(update_mode=UpdateMode.UPDATE))
+        creates = list(UpdateCardFacePrinting.objects.filter(update_mode=UpdateMode.CREATE))
+        for update_card_face_printing in updates + creates:
             if update_card_face_printing.update_mode == UpdateMode.CREATE:
                 printing = CardPrinting.objects.get(
                     scryfall_id=update_card_face_printing.scryfall_id
@@ -441,17 +456,18 @@ class Command(BaseCommand):
             elif update_card_face_printing.update_mode == UpdateMode.UPDATE:
                 try:
                     face_printing = CardFacePrinting.objects.get(
-                        uuid=update_card_face_printing.printing_uuid
+                        # uuid=update_card_face_printing.printing_uuid
+                        card_printing__scryfall_id=update_card_face_printing.scryfall_id,
+                        card_face__card__scryfall_oracle_id=update_card_face_printing.scryfall_oracle_id,
+                        card_face__side=update_card_face_printing.side,
                     )
                 except CardFacePrinting.DoesNotExist:
                     logging.error(
-                        f"Could not find card printing %s fpr %s",
+                        f"Could not find card printing %s for %s",
                         update_card_face_printing.printing_uuid,
                         update_card_face_printing,
                     )
-                    raise ValueError(
-                        f"Could not find card printing {update_card_face_printing.printing_uuid} fpr {update_card_face_printing}"
-                    )
+                    raise
             else:
                 continue
 
@@ -470,7 +486,7 @@ class Command(BaseCommand):
 
             try:
                 face_printing.save()
-            except ValidationError:
+            except (ValidationError, IntegrityError):
                 self.logger.error("Failed to validate %s", update_card_face_printing)
                 raise
 
@@ -576,7 +592,7 @@ class Command(BaseCommand):
                     )
             try:
                 face_localisation.save()
-            except ValidationError:
+            except (ValidationError, IntegrityError):
                 self.logger.error("Failed to validate %s", update_face_localisation)
                 raise
 
