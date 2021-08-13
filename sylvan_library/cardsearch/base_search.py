@@ -9,8 +9,6 @@ from django.db.models import prefetch_related_objects, QuerySet
 from cardsearch.parameters import (
     CardSortParam,
     CardNameSortParam,
-    CardColourSortParam,
-    CardPowerSortParam,
     AndParam,
     OrParam,
     BranchParam,
@@ -29,8 +27,8 @@ class SearchResult:
     def __init__(
         self,
         card: Card,
-        selected_printing: CardPrinting = None,
-        selected_set: Set = None,
+        selected_printing: Optional[CardPrinting] = None,
+        selected_set: Optional[Set] = None,
     ):
         self.card = card
         self.selected_printing = selected_printing
@@ -42,7 +40,7 @@ class SearchResult:
 
         if self.card and not self.selected_printing:
             sorted_printings = sorted(
-                self.card.printings.all(), key=lambda x: x.set.release_date
+                self.card.printings.all(), key=lambda x: (x.set.release_date, -x.numerical_number)
             )
             # Prefer non-promotional cards if possible
             non_promo_prints = [p for p in sorted_printings if p.set.type != "promo"]
@@ -56,20 +54,6 @@ class SearchResult:
             or self.card is None
             or self.selected_printing in self.card.printings.all()
         )
-
-    def is_planeswalker(self) -> bool:
-        """
-        Returns true if this card result is a planeswalker card
-        :return: True if this result is a planeswalker, otherwise False
-        """
-        return self.card.type and "Planeswalker" in self.card.type
-
-    def is_saga(self) -> bool:
-        """
-        Returns true if this card result is an Enchantment - Saga
-        :return: True if this result is a saga, otherwise False
-        """
-        return bool(self.card.subtype and "Saga" in self.card.subtype)
 
     def can_rotate(self) -> bool:
         """
@@ -142,10 +126,11 @@ class BaseSearch:
         :return: The search queryset
         """
         query = self.root_parameter.query()
+        print(query)
         queryset = CardPrinting.objects.filter(query).distinct()
+        print(str(queryset.query))
         # TODO: Need to handle printing and card searches separately somehow
         queryset = Card.objects.filter(printings__in=queryset).distinct()
-        # print(str(queryset.query))
         # Add some default sort params to ensure stable ordering
         self.add_sort_param(CardNameSortParam())
         # self.add_sort_param(CardColourSortParam())
@@ -165,7 +150,7 @@ class BaseSearch:
         queryset = Card.objects.filter(printings__in=queryset)  # .distinct()
         # queryset = queryset.select_related("card")
 
-    def search(self, page_number: int = 1, page_size: int = 25) -> None:
+    def search(self, page_number: int = 1, page_size: int = 100) -> None:
         """
         Runs the search for this search and constructs
         :param page_number: The result page
@@ -179,10 +164,12 @@ class BaseSearch:
         except EmptyPage:
             return
         cards = list(self.page)
-        prefetch_related_objects(cards, "printings__face_printings")
+        # prefetch_related_objects(cards, "printings__face_printings")
         prefetch_related_objects(cards, "printings__localisations__ownerships")
         prefetch_related_objects(cards, "printings__localisations__language")
-        prefetch_related_objects(cards, "printings__localisations__localised_faces")
+        prefetch_related_objects(cards, "printings__localisations__localised_faces__image")
+        prefetch_related_objects(cards, "printings__face_printings__localised_faces__image")
+        prefetch_related_objects(cards, "printings__face_printings__localised_faces__localisation")
         prefetch_related_objects(cards, "faces")
         prefetch_related_objects(cards, "printings__set")
         prefetch_related_objects(cards, "printings__rarity")
