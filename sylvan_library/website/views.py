@@ -74,7 +74,7 @@ def name_search(request: WSGIRequest) -> HttpResponse:
             "page_buttons": get_page_buttons(
                 search.paginator, query_form.get_page_number(), 3
             ),
-            "page_title": "Sylvan Library - " + search.get_pretty_str(),
+            "page_title": search.query_string + " - Sylvan Library",
             "pretty_query_message": search.get_pretty_str(),
             "error_message": search.error_message,
         },
