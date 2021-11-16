@@ -31,7 +31,6 @@ from cards.models import (
     UserProps,
 )
 from website.forms import (
-    FieldSearchForm,
     QuerySearchForm,
     ChangeCardOwnershipForm,
     DeckForm,
@@ -59,14 +58,12 @@ def name_search(request: WSGIRequest) -> HttpResponse:
     """
     query_form = QuerySearchForm(request.GET)
     query_form.user = request.user
-    search_form = FieldSearchForm()
     search = query_form.get_search()
     return render(
         request,
         "website/simple_search.html",
         {
             "query_form": query_form,
-            "form": search_form,
             "results": search.results,
             "result_count": search.paginator.count,
             "page": search.page,

@@ -9,7 +9,6 @@ from .base_parameters import OrParam, AndParam, CardSearchParam, BranchParam
 from .card_artist_parameters import CardArtistParam
 from .card_colour_parameters import (
     CardComplexColourParam,
-    CardColourParam,
     CardColourIdentityParam,
     CardMulticolouredOnlyParam,
 )

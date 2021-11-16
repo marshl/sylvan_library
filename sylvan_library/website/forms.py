@@ -5,26 +5,13 @@ import re
 from typing import Dict, Optional, List, Tuple, Any
 
 from django import forms
-from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
 from django.db.models import Func, Value, F
-from django.forms import BoundField
 from django_select2.forms import Select2MultipleWidget
-
 from tinymce.widgets import TinyMCE
 
-from cards.models import (
-    Card,
-    CardPrinting,
-    Colour,
-    Deck,
-    DeckCard,
-    Language,
-    Rarity,
-    Set,
-)
-from cardsearch.fieldsearch import FieldSearch
-from cardsearch.namesearch import NameSearch
+from cards.models import Card, CardPrinting, Deck, DeckCard, Language
 from cardsearch.parse_search import ParseSearch
 
 
@@ -76,26 +63,6 @@ class SearchForm(forms.Form):
             return 1
 
 
-class NameSearchForm(SearchForm):
-    """
-    The search form for searching only by the card's name
-    """
-
-    card_name = forms.CharField(required=False)
-
-    def get_search(self) -> NameSearch:
-        """
-        Gets the search object using the data from this form
-        :return:
-        """
-        self.full_clean()
-        search = NameSearch()
-        search.card_name = self.data.get("card_name")
-        search.build_parameters()
-        search.search(self.get_page_number())
-        return search
-
-
 class QuerySearchForm(SearchForm):
     """
     The search form for searching by a query string
@@ -116,159 +83,6 @@ class QuerySearchForm(SearchForm):
 
         search = ParseSearch(self.user)
         search.query_string = self.data.get("query_string")
-        search.build_parameters()
-        search.search(self.get_page_number())
-        return search
-
-
-class FieldSearchForm(SearchForm):
-    """
-    The primary search form
-    """
-
-    card_name = forms.CharField(required=False)
-    rules_text = forms.CharField(required=False)
-    flavour_text = forms.CharField(required=False)
-    type_text = forms.CharField(required=False)
-    subtype_text = forms.CharField(required=False)
-    mana_cost_text = forms.CharField(required=False)
-
-    min_cmc = forms.IntegerField(required=False)
-    max_cmc = forms.IntegerField(required=False)
-
-    min_power = forms.IntegerField(required=False)
-    max_power = forms.IntegerField(required=False)
-
-    min_toughness = forms.IntegerField(required=False)
-    max_toughness = forms.IntegerField(required=False)
-
-    exclude_colours = forms.BooleanField(required=False)
-    match_colours = forms.BooleanField(required=False)
-
-    exclude_colourids = forms.BooleanField(required=False)
-    match_colourids = forms.BooleanField(required=False)
-
-    match_rarity = forms.BooleanField(required=False)
-
-    match_sets = forms.BooleanField(required=False)
-    sets = forms.ModelMultipleChoiceField(
-        queryset=Set.objects.all().order_by("-release_date"),
-        widget=Select2MultipleWidget,
-        required=False,
-    )
-
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-
-        for colour in Colour.objects.all().order_by("display_order"):
-            self.fields["colour_" + colour.symbol.lower()] = forms.BooleanField(
-                required=False
-            )
-            self.fields["colourid_" + colour.symbol.lower()] = forms.BooleanField(
-                required=False
-            )
-
-        for rarity in Rarity.objects.all().order_by("display_order"):
-            self.fields["rarity_" + rarity.symbol.lower()] = forms.BooleanField(
-                required=False
-            )
-
-    def colour_fields(self) -> dict:
-        """
-        Gets all the colour fields
-        :return:
-        """
-        return {
-            colour.symbol.lower(): self["colour_" + colour.symbol.lower()]
-            for colour in Colour.objects.all().order_by("display_order")
-        }
-
-    def colourid_fields(self) -> Dict[str, BoundField]:
-        """
-        Gets all the colour identity fields
-        :return: A dictionary of fields
-        """
-        return {
-            colour.symbol.lower(): self["colourid_" + colour.symbol.lower()]
-            for colour in Colour.objects.all().order_by("display_order")
-        }
-
-    def is_colour_enabled(self) -> bool:
-        """
-        Gets whether any colour fields are  currently enabled
-        :return: True if any colour fields are enabled ,otherwise False
-        """
-        return any(field.data for symbol, field in self.colour_fields().items())
-
-    def is_colourid_enabled(self) -> bool:
-        """
-        Gets whether any colour identity fields are currently enabled
-        :return: TTrue if any colour identity fields are enabled, otherwise Talse
-        """
-        return any(field.data for symbol, field in self.colourid_fields().items())
-
-    def rarity_fields(self) -> dict:
-        """
-        Gets a dictionary of the rarity fields
-        :return:
-        """
-        return {
-            r.symbol.lower(): self["rarity_" + r.symbol.lower()]
-            for r in Rarity.objects.all().order_by("display_order")
-        }
-
-    def is_rarity_enabled(self) -> bool:
-        """
-        Gets whether any rarity fields are currently enabled
-        :return: True if any rarity fields are set, otherwise False
-        """
-        return any(field.data for key, field in self.rarity_fields().items())
-
-    def get_field_search(self) -> FieldSearch:
-        """
-        Generates a search object using the contents of this form
-        :return: A populated FieldSearch
-        """
-        self.full_clean()
-
-        search: FieldSearch = FieldSearch()
-        search.card_name = self.data.get("card_name")
-        search.rules_text = self.data.get("rules_text")
-        search.flavour_text = self.data.get("flavour_text")
-        search.type_text = self.data.get("type_text")
-        search.subtype_text = self.data.get("subtype_text")
-        search.mana_cost = self.data.get("mana_cost_text")
-
-        search.min_cmc = self.cleaned_data.get("min_cmc")
-        search.max_cmc = self.cleaned_data.get("max_cmc")
-        search.min_power = self.cleaned_data.get("min_power")
-        search.max_power = self.cleaned_data.get("max_power")
-        search.min_toughness = self.cleaned_data.get("min_toughness")
-        search.max_toughness = self.cleaned_data.get("max_toughness")
-
-        for colour in Colour.objects.all():
-            if self.data.get("colour_" + colour.symbol.lower()):
-                search.colours.append(colour.bit_value)
-
-            if self.data.get("colourid_" + colour.symbol.lower()):
-                search.colour_identities.append(colour.bit_value)
-
-        search.exclude_unselected_colours = bool(self.data.get("exclude_colours"))
-        search.match_colours_exactly = bool(self.data.get("match_colours"))
-        search.exclude_unselected_colour_identities = bool(
-            self.data.get("exclude_colourids")
-        )
-        search.match_colour_identities_exactly = bool(self.data.get("match_colourids"))
-
-        for rarity in Rarity.objects.all():
-            if self.data.get("rarity_" + rarity.symbol.lower()):
-                search.rarities.append(rarity)
-
-        search.match_rarities_exactly = bool(self.data.get("match_rarity"))
-
-        search.match_sets_exactly = bool(self.cleaned_data.get("match_sets"))
-        search.sets = self.cleaned_data.get("sets")
-
         search.build_parameters()
         search.search(self.get_page_number())
         return search
