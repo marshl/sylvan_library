@@ -6,7 +6,6 @@ import logging
 import random
 import urllib.parse
 import urllib.request
-from collections import defaultdict
 from typing import Dict, Any, List
 
 from django.contrib.auth.models import User
@@ -765,6 +764,13 @@ def set_list(request: WSGIRequest):
 
 
 def serialise_set(card_set: Set, all_sets: List[Set], depth: int):
+    """
+    Serialises the data for a single set
+    :param card_set:
+    :param all_sets:
+    :param depth:
+    :return:
+    """
     return {
         "name": card_set.name,
         "code": card_set.code,

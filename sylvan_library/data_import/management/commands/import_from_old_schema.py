@@ -61,6 +61,11 @@ class Command(BaseCommand):
         return conn
 
     def import_users(self, connection: psycopg2._psycopg.connection):
+        """
+        Imports User objects from the given postgres connection
+        :param connection:
+        :return:
+        """
         cur = connection.cursor()
         cur.execute("SELECT username, date_joined FROM auth_user")
         for username, date_joined in cur.fetchall():
@@ -77,8 +82,8 @@ class Command(BaseCommand):
 
         cur.execute(
             """
-SELECT 
-DISTINCT(auth_user.username) 
+SELECT
+DISTINCT(auth_user.username)
 FROM cards_userownedcard user_owned_card
 JOIN auth_user
 ON auth_user.id = user_owned_card.owner_id
@@ -98,13 +103,13 @@ ON auth_user.id = user_owned_card.owner_id
 
         cur.execute(
             """
-SELECT 
-card.name, 
-user_owned_card.count, 
-cards_set.code, 
-auth_user.username, 
-cards_language.name, 
-cardprinting.scryfall_id, 
+SELECT
+card.name,
+user_owned_card.count,
+cards_set.code,
+auth_user.username,
+cards_language.name,
+cardprinting.scryfall_id,
 cardprinting.json_id AS face_uuid
 FROM cards_userownedcard user_owned_card
 JOIN auth_user
@@ -160,8 +165,8 @@ ORDER BY user_owned_card.id ASC
 
         cur.execute(
             """
-SELECT 
-DISTINCT auth_user.username  
+SELECT
+DISTINCT auth_user.username
 FROM cards_usercardchange user_card_change
 JOIN auth_user
 ON auth_user.id = user_card_change.owner_id
@@ -183,14 +188,14 @@ ON auth_user.id = user_card_change.owner_id
 
         cur.execute(
             """
-SELECT 
-card.name, 
-user_card_change.difference, 
+SELECT
+card.name,
+user_card_change.difference,
 user_card_change.date,
-cards_set.code, 
-auth_user.username, 
-cards_language.name, 
-cardprinting.scryfall_id, 
+cards_set.code,
+auth_user.username,
+cards_language.name,
+cardprinting.scryfall_id,
 cardprinting.json_id AS face_uuid
 FROM cards_usercardchange user_card_change
 JOIN auth_user
@@ -243,6 +248,12 @@ ORDER BY user_card_change.id ASC
     def get_card_localisation(
         self, scryfall_id: str, language_name: str
     ) -> CardLocalisation:
+        """
+        Gets the card localisation (a card in a set of a language) given a scryfall id and language
+        :param scryfall_id: The scryfall ID to get
+        :param language_name: The name of the language of the localisation
+        :return: The localisation that matches
+        """
         printing = CardPrinting.objects.get(scryfall_id=scryfall_id)
         localisation = CardLocalisation.objects.get(
             language__name=language_name, card_printing=printing
@@ -253,8 +264,8 @@ ORDER BY user_card_change.id ASC
         cur = connection.cursor()
         cur.execute(
             """
-SELECT 
-DISTINCT auth_user.username  
+SELECT
+DISTINCT auth_user.username
 FROM cards_deck
 JOIN auth_user
 ON auth_user.id = cards_deck.owner_id
@@ -274,16 +285,16 @@ ON auth_user.id = cards_deck.owner_id
 
         cur.execute(
             """
-SELECT 
-cards_deck.id, 
-date_created, 
-last_modified, 
-name, 
-auth_user.username, 
-description, 
-format, 
-subtitle, 
-is_private, 
+SELECT
+cards_deck.id,
+date_created,
+last_modified,
+name,
+auth_user.username,
+description,
+format,
+subtitle,
+is_private,
 is_prototype
 FROM cards_deck
 JOIN auth_user ON auth_user.id = cards_deck.owner_id

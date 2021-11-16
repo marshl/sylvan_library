@@ -61,6 +61,12 @@ class Command(BaseCommand):
     def get_colour_ratio_rows(
         self, dates: List[date], decks: QuerySet
     ) -> Dict[date, Dict[str, int]]:
+        """
+        Gets the rows of the ratios of each colour
+        :param dates: The dates
+        :param decks: The query set of decks
+        :return:
+        """
         rows = {}
         for created_date in dates:
             date_decks = decks.filter(date_created=created_date)

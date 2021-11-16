@@ -2,7 +2,6 @@
 Module for custom template filters to get the image paths of different card models
 """
 import logging
-import os
 from typing import Optional
 
 from django import template

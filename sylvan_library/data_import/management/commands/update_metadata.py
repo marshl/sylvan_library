@@ -178,6 +178,9 @@ class Command(BaseCommand):
                 self.increment_created("CardType")
 
     def update_frame_effects(self) -> None:
+        """
+        Updates all changes to frame effects
+        """
         logger.info("Updating frame effects")
         frame_effects = import_json(_paths.FRAME_EFFECT_JSON_PATH)
         for frame_effect in frame_effects:

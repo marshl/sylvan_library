@@ -79,6 +79,11 @@ class Command(BaseCommand):
     def generate_dataframe(
         self, rows: Dict[datetime.date, Dict[str, int]]
     ) -> pd.DataFrame:
+        """
+        Gets the dataframe from the given rows of dates to ownership counts
+        :param rows:
+        :return:
+        """
         dataframe = pd.DataFrame.from_dict(rows).transpose()
         dataframe = dataframe.divide(dataframe.sum(axis=1), axis=0)
         dataframe.index = pd.to_datetime(dataframe.index)

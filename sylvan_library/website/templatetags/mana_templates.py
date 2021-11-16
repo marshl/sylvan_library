@@ -140,7 +140,7 @@ def replace_mana_symbols(text: str, scale: Optional[str] = None) -> str:
 
         classes.append(f"ms-{symbol}")
         if symbol not in ("e", "chaos"):
-            classes.append(f"ms-cost")
+            classes.append("ms-cost")
 
         return '<i class="' + " ".join(classes) + '"></i>'
 

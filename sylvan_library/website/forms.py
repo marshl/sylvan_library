@@ -488,7 +488,7 @@ class DeckForm(forms.ModelForm):
             # We have to ignore tokens, as otherwise Earthshaker Khenra would return two results
             # But you shouldn't be putting tokens in a deck anyway
             card = Card.objects.get(name__iexact=card_name, is_token=False)
-        except Card.DoesNotExist:
+        except Card.DoesNotExist as ex:
             stripped_name = re.sub(r"\W", "", card_name)
             card_matches = Card.objects.annotate(
                 short_name=Func(
@@ -502,7 +502,7 @@ class DeckForm(forms.ModelForm):
             if card_matches.count() == 1:
                 card = card_matches.first()
             else:
-                raise ValidationError(f'Unknown card "{card_name}"')
+                raise ValidationError(f'Unknown card "{card_name}"') from ex
 
         if card.layout in ("scheme", "planar", "vanguard", "emblem"):
             raise ValidationError(
