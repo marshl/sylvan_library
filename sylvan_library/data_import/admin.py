@@ -28,12 +28,14 @@ class UpdateSetAdmin(admin.ModelAdmin):
 
 @admin.register(UpdateCard)
 class UpdateCardAdmin(admin.ModelAdmin):
+    list_filter = ["update_mode"]
     pass
 
 
 @admin.register(UpdateCardFace)
 class UpdateCardFaceAdmin(admin.ModelAdmin):
     search_fields = ["face_name"]
+    list_filter = ["update_mode"]
 
 
 class UpdateCardRulingModelForm(forms.ModelForm):
@@ -78,3 +80,4 @@ class UpdateCardFaceLocalisationAdmin(admin.ModelAdmin):
         "update_mode",
         "printing_scryfall_id",
     ]
+    list_filter = ["update_mode", "language_code"]
