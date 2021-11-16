@@ -191,7 +191,7 @@ class StagedCard(StagedObject):
         )
 
         if self.colour_identity != int(existing_card.colour_identity):
-            differences["colour_identity_flags"] = {
+            differences["colour_identity"] = {
                 "from": int(existing_card.colour_identity),
                 "to": self.colour_identity,
             }
@@ -393,7 +393,7 @@ class StagedSet(StagedObject):
         if (not existing_set.block and self.block_name) or (
             existing_set.block and existing_set.block.name != self.block_name
         ):
-            differences["block"] = {
+            differences["block_name"] = {
                 "from": existing_set.block.name if existing_set.block else None,
                 "to": self.block_name,
             }
