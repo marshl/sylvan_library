@@ -300,7 +300,7 @@ class Command(BaseCommand):
         self.assert_card_face_cost_eq("Progenitus", "{W}{W}{U}{U}{B}{B}{R}{R}{G}{G}")
 
         # Lands
-        self.assert_card_face_cost_eq("Forest", None)
+        self.assert_card_face_cost_eq("Temple of the False God", None)
         self.assert_card_face_cost_eq("Dryad Arbor", None)
 
         # Monocoloured hybrid card
@@ -480,7 +480,7 @@ class Command(BaseCommand):
         self.assert_card_face_colour_count_eq("Birds of Paradise", 1)
         self.assert_card_face_colour_count_eq("Edgewalker", 2)
         self.assert_card_face_colour_count_eq("Naya Hushblade", 3)
-        self.assert_card_face_colour_count_eq("Swamp", 0)
+        self.assert_card_face_colour_count_eq("Temple of the False God", 0)
         self.assert_card_face_colour_count_eq("Ornithopter", 0)
         self.assert_card_face_colour_count_eq("Glint-Eye Nephilim", 4)
         self.assert_card_face_colour_count_eq("Cromat", 5)
@@ -675,7 +675,7 @@ class Command(BaseCommand):
         """
         self.assert_card_face_rules_eq("Grizzly Bears", None)
         self.assert_card_face_rules_eq("Elite Vanguard", None)
-        self.assert_card_face_rules_eq("Forest", "({T}: Add {G}.)")
+        # self.assert_card_face_rules_eq("Forest", "({T}: Add {G}.)")
         self.assert_card_face_rules_eq("Snow-Covered Swamp", "({T}: Add {B}.)")
 
         self.assert_card_face_rules_eq("Air Elemental", "Flying")
