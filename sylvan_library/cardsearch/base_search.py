@@ -150,7 +150,7 @@ class BaseSearch:
         queryset = Card.objects.filter(printings__in=queryset)  # .distinct()
         # queryset = queryset.select_related("card")
 
-    def search(self, page_number: int = 1, page_size: int = 100) -> None:
+    def search(self, page_number: int = 1, page_size: int = 25) -> None:
         """
         Runs the search for this search and constructs
         :param page_number: The result page
