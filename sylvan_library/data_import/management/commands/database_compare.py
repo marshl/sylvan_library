@@ -289,10 +289,16 @@ class SetParser:
     def get_existing_localisation(
         self, scryfall_id: str, language_name: str
     ) -> Optional[CardLocalisation]:
+        """
+        Gets the existing card localisation that matches the given scryfall ID and language name
+        :param scryfall_id: The scryfall ID of the localisation's  printing
+        :param language_name: The name of the localisation's language
+        :return: The localisation (if it exists)
+        """
         assert scryfall_id and language_name
         return self.existing_localisations.get((scryfall_id, language_name))
 
-    def get_existing_face_localisaiton(
+    def get_existing_face_localisation(
         self, scryfall_id: str, language_name: str, face_side: str
     ) -> Optional[CardFaceLocalisation]:
         return self.existing_face_localisations.get(
@@ -754,7 +760,7 @@ class SetParser:
                         )
                     )
 
-        existing_face_localisation = self.get_existing_face_localisaiton(
+        existing_face_localisation = self.get_existing_face_localisation(
             staged_card_printing.scryfall_id,
             language_name=staged_localisation.language_name,
             face_side=staged_card_face.side,
