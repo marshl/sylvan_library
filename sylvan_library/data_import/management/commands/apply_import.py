@@ -8,7 +8,7 @@ from typing import Any, Dict, Optional
 import typing
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandParser
-from django.db import transaction, models, IntegrityError
+from django.db import transaction, models, IntegrityError, DataError
 
 from cards.models import (
     Block,
@@ -154,7 +154,7 @@ class Command(BaseCommand):
             for field, value in set_to_create.field_data.items():
                 if set_to_create.update_mode == UpdateMode.UPDATE:
                     value = value.get("to")
-                if field in ("parent_set_code","is_token_set"):
+                if field in ("parent_set_code", "is_token_set"):
                     continue
 
                 if field == "block_name":
@@ -172,7 +172,8 @@ class Command(BaseCommand):
                     setattr(set_obj, field, value)
                 else:
                     raise NotImplementedError(
-                        f"Cannot update unrecognised field Set.{field} with value {value} for {set_to_create}"
+                        "Cannot update unrecognised field Set."
+                        f"{field} with value {value} for {set_to_create}"
                     )
 
             set_obj.save()
@@ -259,7 +260,7 @@ class Command(BaseCommand):
                 setattr(card_face, field, value)
             try:
                 card_face.save()
-            except ValidationError:
+            except (ValidationError, DataError):
                 self.logger.exception("Could not {}", card_face_update)
                 raise
 
@@ -439,8 +440,12 @@ class Command(BaseCommand):
         self.logger.info(
             "Updating %s card face printings", UpdateCardFacePrinting.objects.count()
         )
-        updates = list(UpdateCardFacePrinting.objects.filter(update_mode=UpdateMode.UPDATE))
-        creates = list(UpdateCardFacePrinting.objects.filter(update_mode=UpdateMode.CREATE))
+        updates = list(
+            UpdateCardFacePrinting.objects.filter(update_mode=UpdateMode.UPDATE)
+        )
+        creates = list(
+            UpdateCardFacePrinting.objects.filter(update_mode=UpdateMode.CREATE)
+        )
         for update_card_face_printing in updates + creates:
             if update_card_face_printing.update_mode == UpdateMode.CREATE:
                 printing = CardPrinting.objects.get(
@@ -555,7 +560,7 @@ class Command(BaseCommand):
                 card_printing_face = CardFacePrinting.objects.get(
                     uuid=update_face_localisation.face_printing_uuid
                 )
-            except CardFacePrinting.DoesNotExist:
+            except CardFacePrinting.DoesNotExist as ex:
                 logging.error(
                     "Could not find CardFacePrinting with uuid %s for %s",
                     update_face_localisation.face_printing_uuid,
@@ -563,7 +568,7 @@ class Command(BaseCommand):
                 )
                 raise ValueError(
                     f"Could not find CardFacePrinting with uuid {update_face_localisation.face_printing_uuid} for {update_face_localisation}"
-                )
+                ) from ex
 
             if update_face_localisation.update_mode == UpdateMode.CREATE:
                 face_localisation = CardFaceLocalisation(
