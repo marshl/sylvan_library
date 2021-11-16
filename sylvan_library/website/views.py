@@ -468,16 +468,19 @@ def get_unused_commanders(user: User):
         deck_cards__deck__is_prototype=False,
         deck_cards__is_commander=True,
     )
-    users_commanders = (
-        Card.objects.filter(
-            printings__localisations__ownerships__owner=user, is_token=False
-        )
+    commander_cards = (
+        Card.objects.filter(is_token=False)
+        .filter(Q(faces__side__isnull=True) | Q(faces__side="a"))
         .filter(
             (Q(faces__supertypes__name="Legendary") & Q(faces__types__name="Creature"))
             | Q(faces__rules_text__contains="can be your commander")
         )
         .distinct()
     )
+
+    users_commanders = Card.objects.filter(
+        printings__localisations__ownerships__owner=user, id__in=commander_cards
+    ).distinct()
     rand = random.Random(user.userprops.unused_cards_seed)
     unused_cards = list(
         users_commanders.exclude(id__in=users_deck_cards).order_by("id")
@@ -636,7 +639,14 @@ def deck_edit(request: WSGIRequest, deck_id: int) -> HttpResponse:
     else:
         deck_form = DeckForm(instance=deck)
         deck_form.populate_boards()
-    return render(request, "website/decks/deck_edit.html", {"deck_form": deck_form, "page_title": f"Edit {deck.name or 'new deck'} - Sylvan Library"})
+    return render(
+        request,
+        "website/decks/deck_edit.html",
+        {
+            "deck_form": deck_form,
+            "page_title": f"Edit {deck.name or 'new deck'} - Sylvan Library",
+        },
+    )
 
 
 def deck_create(request: WSGIRequest) -> HttpResponse:
