@@ -42,8 +42,13 @@ def get_all_set_data(
         with open(set_file_path, "r", encoding="utf8") as set_file:
             set_data = json.load(set_file, encoding="utf8").get("data")
 
-        if set_data.get("isPreview") or set_data.get("isPartialPreview"):
+        if (
+            set_data.get("isPreview")
+            or set_data.get("isPartialPreview")
+            or set_data.get("name").endswith("Minigames")
+        ):
             continue
+
         set_list.append(
             {"path": set_file_path, "date": set_data.get("releaseDate", str(date.max))}
         )
@@ -74,11 +79,11 @@ def download_file(url: str, destination_path: str):
         if total_length is None:  # no content length header
             output.write(response.content)
         else:
-            dl = 0
+            data_length = 0
             total_length = int(total_length)
             for data in response.iter_content(chunk_size=4096):
-                dl += len(data)
+                data_length += len(data)
                 output.write(data)
-                done = int(50 * dl / total_length)
+                done = int(50 * data_length / total_length)
                 sys.stdout.write("\r[%s%s]" % ("=" * done, " " * (50 - done)))
                 sys.stdout.flush()
