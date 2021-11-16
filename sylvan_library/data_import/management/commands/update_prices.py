@@ -123,8 +123,8 @@ WHERE latest_price.card_printing_id = cards_cardprinting.id
         download_file(_paths.PRICES_ZIP_DOWNLOAD_URL, _paths.PRICES_ZIP_PATH)
 
         logger.info("Extracting price file")
-        prices_zip_file = zipfile.ZipFile(_paths.PRICES_ZIP_PATH)
-        prices_zip_file.extractall(_paths.IMPORT_FOLDER_PATH)
+        with zipfile.ZipFile(_paths.PRICES_ZIP_PATH) as prices_zip_file:
+            prices_zip_file.extractall(_paths.IMPORT_FOLDER_PATH)
 
 
 PAPER_FOIL = (True, True)

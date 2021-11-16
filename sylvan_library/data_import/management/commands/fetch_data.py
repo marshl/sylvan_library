@@ -41,8 +41,8 @@ class Command(BaseCommand):
         logger.info("Downloading set files from %s", _paths.JSON_ZIP_DOWNLOAD_URL)
         download_file(_paths.JSON_ZIP_DOWNLOAD_URL, _paths.JSON_ZIP_PATH)
         logger.info("Extracting set files")
-        json_zip_file = zipfile.ZipFile(_paths.JSON_ZIP_PATH)
-        json_zip_file.extractall(_paths.SET_FOLDER)
+        with zipfile.ZipFile(_paths.JSON_ZIP_PATH) as json_zip_file:
+            json_zip_file.extractall(_paths.SET_FOLDER)
 
         # Prettify the json files
         for set_file_path in self.get_json_files():
