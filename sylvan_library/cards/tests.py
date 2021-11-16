@@ -71,7 +71,7 @@ def create_test_card_face(
 
 
 def create_test_card_printing(
-    card: Card, set_obj: Set, fields: Dict[str, Any]
+    card: Card, set_obj: Set, fields: Optional[Dict[str, Any]] = None
 ) -> CardPrinting:
     """
     Creates a test CardPrinting object with values set to passed fields
@@ -86,11 +86,12 @@ def create_test_card_printing(
     printing.set = set_obj
     printing.rarity = create_test_rarity("Common", "C")
     printing.is_starter = False
-    printing.is_timeshifted = fields.get("is_timeshifted", False)
+    printing.is_timeshifted = fields.get("is_timeshifted", False) if fields else False
     printing.json_id = uuid.uuid4()
 
-    for key, value in fields.items():
-        printing.__dict__[key] = value
+    if fields:
+        for key, value in fields.items():
+            printing.__dict__[key] = value
 
     printing.save()
     return printing

@@ -293,17 +293,19 @@ class ColourContainsTestCase(TestCase):
 
     def setUp(self) -> None:
         self.set_obj = create_test_set("Setty", "SET", {})
-        self.red_card = create_test_card({"colour_flags": Colour.RED})
+        self.red_card = create_test_card({"name": "Red Card"})
+        create_test_card_face(self.red_card, {"colour": Colour.RED})
         self.red_card_printing = create_test_card_printing(
             self.red_card, self.set_obj, {}
         )
 
-        self.green_card = create_test_card({"colour_flags": Colour.GREEN})
+        self.green_card = create_test_card({"name": "Green Card"})
+        create_test_card_face(self.green_card, {"colour": Colour.GREEN})
         self.green_card_printing = create_test_card_printing(
             self.green_card, self.set_obj, {}
         )
 
-        self.red_green_card = create_test_card()
+        self.red_green_card = create_test_card({"name": "Red/Green Card"})
         create_test_card_face(
             self.red_green_card, {"colour": Colour.RED | Colour.GREEN}
         )
@@ -311,7 +313,7 @@ class ColourContainsTestCase(TestCase):
             self.red_green_card, self.set_obj, {}
         )
 
-        self.red_green_black_card = create_test_card()
+        self.red_green_black_card = create_test_card({"name": "Red/Black/Green Card"})
         create_test_card_face(
             self.red_green_black_card,
             {"colour": Colour.RED | Colour.GREEN | Colour.BLACK},
@@ -321,9 +323,8 @@ class ColourContainsTestCase(TestCase):
             self.red_green_black_card, self.set_obj, {}
         )
 
-        self.blue_red_card = create_test_card(
-            {"colour_flags": Colour.BLUE | Colour.RED}
-        )
+        self.blue_red_card = create_test_card({"name": "Blue/Red Card"})
+        create_test_card_face(self.blue_red_card, {"colour": Colour.BLUE | Colour.RED})
         self.blue_red_card_printing = create_test_card_printing(
             self.blue_red_card, self.set_obj, {}
         )
