@@ -95,9 +95,11 @@ class Deck(models.Model):
         :return: The total number of lands as an int
         """
         main_cards = self.cards.filter(board="main")
-        land_cards = main_cards.filter(
-            Q(card__faces__types__name="Land") | Q(card__layout="modal_dfc")
-        ).distinct()
+        land_cards = (
+            main_cards.filter(card__faces__types__name="Land")
+            .filter(Q(card__faces__side__isnull=True) | Q(card__layout="modal_dfc"))
+            .distinct()
+        )
         return int(land_cards.aggregate(sum=Sum("count"))["sum"])
 
     def get_card_groups(self) -> List[dict]:
