@@ -21,6 +21,7 @@
     <script src="{% static "node_modules/js-cookie/src/js.cookie.js" %}" type="text/javascript"></script>
     <script src="{% static "node_modules/moment/moment.js" %}" type="text/javascript"></script>
     <script src="{% static "node_modules/chart.js/dist/Chart.min.js" %}" type="text/javascript"></script>
+    <script src="{% static "node_modules/tinymce/tinymce.js" %}" type="text/javascript"></script>
     <script src="{% static "js/script.js" %}" type="text/javascript"></script>
     <script>
         let IS_LOGGED_IN = {% if request.user.is_authenticated %} true {% else %} false {% endif %};

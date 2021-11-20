@@ -9,8 +9,9 @@
     "jquery": "^3.6.0",
     "jquery-ui-dist": "^1.12.1",
     "js-cookie": "^2.2.1",
-    "keyrune": "^3.8.3",
+    "keyrune": "^3.8.4",
     "mana-font": "^1.14.0",
-    "moment": "^2.29.1"
+    "moment": "^2.29.1",
+    "tinymce": "^5.5.0"
   }
 }

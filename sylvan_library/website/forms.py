@@ -116,7 +116,7 @@ class DeckForm(forms.ModelForm):
 
         widgets = {
             "exclude_colours": Select2MultipleWidget,
-            "description": TinyMCE(mce_attrs={"theme": "advanced"}),
+            "description": TinyMCE(),
         }
         fields = [
             "date_created",
