@@ -97,6 +97,7 @@ class CardIsCommanderParam(CardSearchParam):
         query = (
             Q(card__faces__supertypes__name="Legendary")
             & Q(card__faces__types__name="Creature")
+            & ~Q(card__faces__types__name="Token")
         ) | Q(card__faces__rules_text__contains="can be your commander")
         return ~query if self.negated else query
 
