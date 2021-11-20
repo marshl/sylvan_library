@@ -243,8 +243,7 @@ class SetParser:
             (localisation.scryfall_id, localisation.language_name): localisation
             for localisation in CardLocalisation.objects.filter(
                 card_printing__scryfall_id__in=self.existing_printings.keys()
-            )
-            .annotate(
+            ).annotate(
                 language_name=F("language__name"),
                 scryfall_id=F("card_printing__scryfall_id"),
             )

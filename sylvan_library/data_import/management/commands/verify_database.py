@@ -182,13 +182,7 @@ class Command(BaseCommand):
     def test_minimum_faces(self) -> None:
         low_count_cards = (
             Card.objects.filter(
-                layout__in=(
-                    "split",
-                    "flip",
-                    "transform",
-                    "adventure",
-                    "modal_dfc",
-                )
+                layout__in=("split", "flip", "transform", "adventure", "modal_dfc")
             )
             .annotate(face_count=Count("faces"))
             .exclude(face_count__gte=2)

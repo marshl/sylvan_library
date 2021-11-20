@@ -61,7 +61,7 @@ class Command(BaseCommand):
     help = "Delete all records from all tables without dropping the tables"
 
     def handle(self, *args: Any, **options: Any) -> None:
-        db_name = connection.cursor().db.settings_dict.get('NAME')
+        db_name = connection.cursor().db.settings_dict.get("NAME")
         confirm = _query.query_yes_no(
             f"Are you sure you want to delete all data in the database {db_name}?", "no"
         )

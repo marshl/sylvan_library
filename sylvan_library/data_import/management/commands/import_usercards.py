@@ -100,6 +100,8 @@ class Command(BaseCommand):
 
             return
 
-        usercard = UserOwnedCard(card_localisation=localisation, count=count, owner=self.user)
+        usercard = UserOwnedCard(
+            card_localisation=localisation, count=count, owner=self.user
+        )
         usercard.full_clean()
         usercard.save()

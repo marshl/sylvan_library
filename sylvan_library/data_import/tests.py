@@ -67,7 +67,9 @@ class StagedCardTestCase(TestCase):
         staged_card_face = StagedCardFace(
             {"name": "test", "type": "Token Legendary Creature — Monkey"}
         )
-        self.assertEqual("Token Legendary Creature — Monkey", staged_card_face.type_line)
+        self.assertEqual(
+            "Token Legendary Creature — Monkey", staged_card_face.type_line
+        )
 
     def test_token_subtype(self) -> None:
         """
@@ -76,4 +78,6 @@ class StagedCardTestCase(TestCase):
         staged_card_face = StagedCardFace(
             {"name": "test", "type": "Token Legendary Creature — Monkey"}
         )
-        self.assertEqual("Token Legendary Creature — Monkey", staged_card_face.type_line)
+        self.assertEqual(
+            "Token Legendary Creature — Monkey", staged_card_face.type_line
+        )

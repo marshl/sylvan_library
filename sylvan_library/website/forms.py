@@ -114,10 +114,7 @@ class DeckForm(forms.ModelForm):
     class Meta:
         model = Deck
 
-        widgets = {
-            "exclude_colours": Select2MultipleWidget,
-            "description": TinyMCE(),
-        }
+        widgets = {"exclude_colours": Select2MultipleWidget, "description": TinyMCE()}
         fields = [
             "date_created",
             "name",

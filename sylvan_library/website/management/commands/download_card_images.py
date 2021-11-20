@@ -163,7 +163,7 @@ def get_images_for_set(card_set: Set, languages: List[Language]) -> None:
 
         elif "card_faces" in scryfall_card:
             for scryfall_face in scryfall_card["card_faces"]:
-                if 'illustration_id' not in scryfall_face:
+                if "illustration_id" not in scryfall_face:
                     continue
                 matching_face = matching_faces.filter(
                     card_printing_face__scryfall_illustration_id=scryfall_face[

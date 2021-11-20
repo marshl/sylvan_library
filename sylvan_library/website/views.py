@@ -30,11 +30,7 @@ from cards.models import (
     UserOwnedCard,
     UserProps,
 )
-from website.forms import (
-    QuerySearchForm,
-    ChangeCardOwnershipForm,
-    DeckForm,
-)
+from website.forms import QuerySearchForm, ChangeCardOwnershipForm, DeckForm
 from website.pagination import get_page_buttons
 
 logger = logging.getLogger("django")

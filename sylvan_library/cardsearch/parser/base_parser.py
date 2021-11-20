@@ -106,22 +106,14 @@ class Parser(ABC):
         :return: The character that was parsed
         """
         if self.pos >= self.len:
-            raise ParseError(
-                self.pos,
-                f"Expected %s but got end of string", pattern
-            )
+            raise ParseError(self.pos, f"Expected %s but got end of string", pattern)
 
         next_char = self.text[self.pos + 1]
         if re.match(pattern, next_char):
             self.pos += 1
             return next_char
 
-        raise ParseError(
-            self.pos + 1,
-            f"Expected %s but got %s",
-            pattern,
-            next_char,
-        )
+        raise ParseError(self.pos + 1, f"Expected %s but got %s", pattern, next_char)
 
     def char(self, chars: Optional[str] = None) -> str:
         """
@@ -232,7 +224,6 @@ class Parser(ABC):
             return self.char(chars)
         except ParseError:
             return None
-
 
     def maybe_pattern(self, pattern: str) -> Optional[str]:
         try:

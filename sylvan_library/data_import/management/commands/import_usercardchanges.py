@@ -9,7 +9,14 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from pytz import utc
 
-from cards.models import Card, CardPrinting, CardLocalisation, UserCardChange, Set, Language
+from cards.models import (
+    Card,
+    CardPrinting,
+    CardLocalisation,
+    UserCardChange,
+    Set,
+    Language,
+)
 
 logger = logging.getLogger("django")
 
@@ -79,7 +86,10 @@ class Command(BaseCommand):
         logger.info("CardLocalisation: %s", printlang)
 
         if UserCardChange.objects.filter(
-            card_localisation__in=printlang.localisations, owner=self.user, date=date, difference=number
+            card_localisation__in=printlang.localisations,
+            owner=self.user,
+            date=date,
+            difference=number,
         ).exists():
             logger.info("Other half of this card already has been added")
             return

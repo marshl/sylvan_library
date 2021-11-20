@@ -40,7 +40,8 @@ class SearchResult:
 
         if self.card and not self.selected_printing:
             sorted_printings = sorted(
-                self.card.printings.all(), key=lambda x: (x.set.release_date, -x.numerical_number)
+                self.card.printings.all(),
+                key=lambda x: (x.set.release_date, -x.numerical_number),
             )
             # Prefer non-promotional cards if possible
             non_promo_prints = [p for p in sorted_printings if p.set.type != "promo"]
@@ -167,9 +168,15 @@ class BaseSearch:
         # prefetch_related_objects(cards, "printings__face_printings")
         prefetch_related_objects(cards, "printings__localisations__ownerships")
         prefetch_related_objects(cards, "printings__localisations__language")
-        prefetch_related_objects(cards, "printings__localisations__localised_faces__image")
-        prefetch_related_objects(cards, "printings__face_printings__localised_faces__image")
-        prefetch_related_objects(cards, "printings__face_printings__localised_faces__localisation")
+        prefetch_related_objects(
+            cards, "printings__localisations__localised_faces__image"
+        )
+        prefetch_related_objects(
+            cards, "printings__face_printings__localised_faces__image"
+        )
+        prefetch_related_objects(
+            cards, "printings__face_printings__localised_faces__localisation"
+        )
         prefetch_related_objects(cards, "faces")
         prefetch_related_objects(cards, "printings__set")
         prefetch_related_objects(cards, "printings__rarity")

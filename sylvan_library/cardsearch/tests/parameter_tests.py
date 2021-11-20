@@ -5,8 +5,12 @@ The module for searching tests
 from django.test import TestCase
 
 from cards.models import Set, CardPrinting
-from cards.tests import create_test_card, create_test_card_printing, create_test_set, \
-    create_test_card_face
+from cards.tests import (
+    create_test_card,
+    create_test_card_printing,
+    create_test_set,
+    create_test_card_face,
+)
 from cardsearch.parameters import (
     AndParam,
     CardNameParam,
@@ -83,8 +87,6 @@ class CardNameParamTestCase(TestCase):
         param = CardNameParam("bar")
         root_param.add_parameter(param)
         self.assertIn(printing, CardPrinting.objects.filter(root_param.query()))
-
-
 
 
 class CardRulesParamTestCase(TestCase):

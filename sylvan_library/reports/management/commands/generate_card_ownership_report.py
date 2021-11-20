@@ -112,6 +112,8 @@ class Command(BaseCommand):
 
         plt.savefig(output_path + ".png")
         plt.savefig(output_path + ".svg")
+
+
 """
 
 WITH ownerships AS (

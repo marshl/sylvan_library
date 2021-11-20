@@ -96,7 +96,10 @@ class CardProducesManaParam(CardSearchParam):
 
         for colour in Colour.objects.all():
             query_part = Q(
-                **{"card__faces__search_metadata__produces_" + colour.symbol.lower(): True}
+                **{
+                    "card__faces__search_metadata__produces_"
+                    + colour.symbol.lower(): True
+                }
             )
             included = colour in self.colours
 

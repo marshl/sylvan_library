@@ -160,7 +160,6 @@ class CardFaceModelForm(forms.ModelForm):
         fields = [
             "card",
             "name",
-
             "side",
             "mana_cost",
             "converted_mana_cost",
@@ -180,7 +179,6 @@ class CardFaceModelForm(forms.ModelForm):
             "num_hand_modifier",
             "life_modifier",
             "num_life_modifier",
-
             "type_line",
             "types",
             "subtypes",
