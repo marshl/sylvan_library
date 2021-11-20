@@ -305,6 +305,12 @@ class ColourContainsTestCase(TestCase):
             self.green_card, self.set_obj, {}
         )
 
+        self.blue_card = create_test_card({"name": "Blue Card"})
+        create_test_card_face(self.blue_card, {"colour": Colour.BLUE})
+        self.blue_card_printing = create_test_card_printing(
+            self.blue_card, self.set_obj, {}
+        )
+
         self.red_green_card = create_test_card({"name": "Red/Green Card"})
         create_test_card_face(
             self.red_green_card, {"colour": Colour.RED | Colour.GREEN}
@@ -335,35 +341,70 @@ class ColourContainsTestCase(TestCase):
         self.red_card.delete()
         self.green_card.delete()
 
-    def test_name_match(self) -> None:
+    def test_eq_colour_search(self) -> None:
+        """
+        Test colour match
+        """
+        self.parse_search.query_string = "color=rg"
+        self.parse_search.build_parameters()
+        results = self.parse_search.get_queryset().all()
+        self.assertNotIn(self.red_card, results)
+        self.assertNotIn(self.green_card, results)
+        self.assertIn(self.red_green_card, results)
+        self.assertNotIn(self.red_green_black_card, results)
+        self.assertNotIn(self.blue_red_card, results)
+
+    def test_gte_colour_search(self) -> None:
         """
         Test colour match
         """
         self.parse_search.query_string = "color:rg"
         self.parse_search.build_parameters()
         results = self.parse_search.get_queryset().all()
-        self.assertNotIn(
-            self.red_card,
-            results,
-            "A red card shouldn't be found in a green/red search",
-        )
-        self.assertNotIn(
-            self.green_card,
-            results,
-            "A green card shouldn't be found in a red/green search",
-        )
-        self.assertIn(
-            self.red_green_card,
-            results,
-            "A red/green card should be found in a red/green search",
-        )
-        self.assertIn(
-            self.red_green_black_card,
-            results,
-            "A red/green/black card should be found in a red/green search",
-        )
-        self.assertNotIn(
-            self.blue_red_card,
-            results,
-            "A blue/red card shouldn't found in a red/green search')",
-        )
+        self.assertNotIn(self.red_card, results)
+        self.assertNotIn(self.green_card, results)
+        self.assertIn(self.red_green_card, results)
+        self.assertIn(self.red_green_black_card, results)
+        self.assertNotIn(self.blue_red_card, results)
+
+    def test_gt_colour_search(self) -> None:
+        """
+        Test colour match
+        """
+        self.parse_search.query_string = "color>rg"
+        self.parse_search.build_parameters()
+        results = self.parse_search.get_queryset().all()
+        self.assertNotIn(self.red_card, results)
+        self.assertNotIn(self.green_card, results)
+        self.assertNotIn(self.red_green_card, results)
+        self.assertIn(self.red_green_black_card, results)
+        self.assertNotIn(self.blue_red_card, results)
+        self.assertNotIn(self.blue_card, results)
+
+    def test_lte_colour_search(self) -> None:
+        """
+        Test colour match
+        """
+        self.parse_search.query_string = "color<=rg"
+        self.parse_search.build_parameters()
+        results = self.parse_search.get_queryset().all()
+        self.assertIn(self.red_card, results)
+        self.assertIn(self.green_card, results)
+        self.assertIn(self.red_green_card, results)
+        self.assertNotIn(self.red_green_black_card, results)
+        self.assertNotIn(self.blue_red_card, results)
+        self.assertNotIn(self.blue_card, results)
+
+    def test_lt_colour_search(self) -> None:
+        """
+        Test colour match
+        """
+        self.parse_search.query_string = "color<rg"
+        self.parse_search.build_parameters()
+        results = self.parse_search.get_queryset().all()
+        self.assertIn(self.red_card, results)
+        self.assertIn(self.green_card, results)
+        self.assertNotIn(self.red_green_card, results)
+        self.assertNotIn(self.red_green_black_card, results)
+        self.assertNotIn(self.blue_red_card, results)
+        self.assertNotIn(self.blue_card, results)

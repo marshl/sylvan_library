@@ -3,9 +3,10 @@ Card colour parameters
 """
 from typing import List
 
+from django.db.models import F
 from django.db.models.query import Q
 
-from cards.models import Colour
+from cards.models import Colour, Card
 from cards.models.colour import colours_to_int_flags, colours_to_symbols
 from .base_parameters import CardSearchParam
 
@@ -43,49 +44,41 @@ class CardComplexColourParam(CardSearchParam):
             self.operator = operator
         self.identity = identity
 
+    @property
+    def field_name(self):
+        return "colour_identity" if self.identity else "faces__colour"
+
     def query(self) -> Q:
         """
         Gets the Q query object
         :return: The Q query object
         """
-        field = "card__colour_identity" if self.identity else "card__faces__colour"
         colour_flags = colours_to_int_flags(self.colours)
-        # if self.operator == ">=":
-        #     return (
-        #         ~Q(**{field: colour_flags})
-        #         if self.negated
-        #         else Q(**{field: colour_flags})
-        #     )
 
-        if self.operator == ">" or self.operator == "=" or self.operator == ">=":
-            result = Q(**{field: colour_flags})
-            exclude = Q()
+        if self.operator == "=":
+            result = Q(**{f"card__{self.field_name}": colour_flags})
+        else:
+            if self.operator in (">=", ">"):
+                annotated_result = Card.objects.annotate(
+                    colour_filter=F(self.field_name).bitand(colour_flags)
+                ).filter(colour_filter__gte=colour_flags)
+                if self.operator == ">":
+                    annotated_result = annotated_result.exclude(
+                        **{self.field_name: colour_flags}
+                    )
+            elif self.operator in ("<=", "<"):
+                annotated_result = Card.objects.annotate(
+                    colour_filter=F(self.field_name).bitand(~colour_flags)
+                ).filter(colour_filter=0)
+                if self.operator == "<":
+                    annotated_result = annotated_result.exclude(
+                        **{self.field_name: colour_flags}
+                    )
+            else:
+                raise ValueError(f'Unsupported operator "{self.operator}"')
+            result = Q(card__in=annotated_result)
 
-            for colour in Colour.objects.exclude(symbol="C"):
-                if colour not in self.colours:
-                    exclude |= Q(**{field: colour.bit_value})
-            if exclude:
-                result &= exclude if self.operator == ">" else ~exclude
-            return ~result if self.negated else result
-
-        if self.operator == "<" or self.operator == "<=":
-            include = Q()
-            exclude = Q()
-            for colour in Colour.objects.exclude(symbol="C"):
-                if colour in self.colours:
-                    include |= Q(**{field: colour.bit_value})
-                else:
-                    exclude &= ~Q(**{field: colour.bit_value})
-
-            if self.identity:
-                include |= Q(card__colour_identity=0)
-
-            if self.operator == "<":
-                result = include & exclude & ~Q(**{field: colour_flags})
-                return ~result if self.negated else result
-            result = include & exclude
-            return ~result if self.negated else result
-        raise ValueError(f"Unsupported operator {self.operator}")
+        return ~result if self.negated else result
 
     def get_pretty_str(self) -> str:
         """
