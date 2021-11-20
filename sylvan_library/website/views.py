@@ -651,6 +651,9 @@ def deck_create(request: WSGIRequest) -> HttpResponse:
     :param request: The user's request
     :return: Either the deck page, or the deck view page, depending on errors and settings
     """
+    if not request.user.is_authenticated or not isinstance(request.user, User):
+        return redirect("website:index")
+
     if request.method == "POST":
         deck_form = DeckForm(request.POST)
         if deck_form.is_valid():
