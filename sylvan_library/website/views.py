@@ -318,7 +318,7 @@ def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse
                 urllib.parse.urlencode(
                     {
                         "search": "header",
-                        "filter[name]": f'"{get_website_card_filter(card, "Card Kingdom")}"',
+                        "filter[name]": f'{get_website_card_filter(card, "Card Kingdom")}',
                     }
                 )
             ),
