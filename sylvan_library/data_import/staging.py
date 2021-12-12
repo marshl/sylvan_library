@@ -372,7 +372,11 @@ class StagedSet(StagedObject):
         return self.set_data.get("cards", [])
 
     def get_scryfall_oracle_ids(self):
-        return [card["identifiers"]["scryfallOracleId"] for card in self.get_cards()]
+        return [
+            card["identifiers"]["scryfallOracleId"]
+            for card in self.get_cards()
+            if "scryfallOracleId" in card["identifiers"]
+        ]
 
     def compare_with_set(self, existing_set: Set):
 
