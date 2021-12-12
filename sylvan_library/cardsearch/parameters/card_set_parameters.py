@@ -42,3 +42,20 @@ class CardBlockParam(CardSearchParam):
     def get_pretty_str(self) -> str:
         verb = "isn't" if self.negated else "is"
         return f"card {verb} in {self.block_obj}"
+
+
+class CardLegalityParam(CardSearchParam):
+    def __init__(self, format_string: str):
+        super().__init__()
+        self.format_string = format_string
+
+    def query(self) -> Q:
+        query = Q(card__legalities__format__name__iexact=self.format_string)
+        return ~query if self.negated else query
+
+    def get_pretty_str(self) -> str:
+        return (
+            f"isn't legal in {self.format_string}"
+            if self.negated
+            else f"is legal in {self.format_string}"
+        )

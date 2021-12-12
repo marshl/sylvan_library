@@ -50,6 +50,7 @@ from cardsearch.parameters import (
     CardPriceSortParam,
     CardLayoutParameter,
     CardIsCommanderParam,
+    CardLegalityParam,
 )
 from .base_parser import Parser, ParseError
 
@@ -302,6 +303,13 @@ def parse_block_param(param_args: ParameterArgs) -> CardBlockParam:
             raise ValueError(f'Multiple blocks match "{param_args.text}"')
 
     return CardBlockParam(card_block)
+
+
+@param_parser(
+    name="format", keywords=["format", "legal", "legality", "lega;"], operators=[":", "="]
+)
+def parse_legality_param(param_args: ParameterArgs) -> CardLegalityParam:
+    return CardLegalityParam(param_args.text)
 
 
 @param_parser(
@@ -559,7 +567,7 @@ def parse_sort_order_param(param_args: ParameterArgs) -> CardSortParam:
         raise ValueError(f"Unknown sort parameter {param_args.text}")
 
     if negate_param:
-        param.sort_descending = not param.sort_descending
+        param.negated = not param.negated
     return param
 
 

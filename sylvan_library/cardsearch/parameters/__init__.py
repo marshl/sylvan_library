@@ -2,7 +2,9 @@
 The module for all search parameters
 """
 from enum import Enum
-from typing import List
+from typing import List, Callable
+
+from django.db.models import F
 
 from .base_parameters import OrParam, AndParam, CardSearchParam, BranchParam
 
@@ -45,7 +47,7 @@ from .card_rules_text_parameter import (
     CardProducesManaParam,
     CardWatermarkParam,
 )
-from .card_set_parameters import CardSetParam, CardBlockParam
+from .card_set_parameters import CardSetParam, CardBlockParam, CardLegalityParam
 from .card_type_parameters import (
     CardGenericTypeParam,
     CardSubtypeParam,
@@ -66,19 +68,28 @@ class CardSortParam:
     The base sorting parameter
     """
 
-    def __init__(self, descending: bool = False):
+    def __init__(self, negated: bool = False):
         super().__init__()
-        self.sort_descending = descending
+        self.negated = negated
 
     def get_sort_list(self, search_mode: SearchMode) -> List[str]:
         """
         Gets the sort list taking order into account
         :return:
         """
+        # return [
+        #     "-" + arg if self.negated else arg
+        #     for arg in self.get_sort_keys(search_mode)
+        # ]
+        sort_keys = self.get_sort_keys(search_mode)
         return [
-            "-" + arg if self.sort_descending else arg
-            for arg in self.get_sort_keys(search_mode)
+            F(key).desc(nulls_last=True)
+            if self.negated
+            else F(key).asc(nulls_last=True)
+            for key in sort_keys
         ]
+        # return [arg.desc() if self.negated else arg for arg in ]
+        # return self.get_sort_keys(search_mode, sort_func=F.desc if self.negated else F.asc)
 
     def get_sort_keys(self, search_mode: SearchMode) -> List[str]:
         """
