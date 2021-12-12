@@ -228,7 +228,17 @@ def ajax_search_result_set_summary(
     :param printing_id: The CardPrinting ID
     :return: The set summary HTML
     """
-    printing = CardPrinting.objects.get(id=printing_id)
+    printing = CardPrinting.objects.prefetch_related(
+        "card__printings__rarity",
+        "card__printings__localisations__ownerships",
+        "card__printings__localisations__language",
+        "card__printings__localisations__localised_faces__image",
+        "card__printings__face_printings__localised_faces__image",
+        "card__printings__face_printings__localised_faces__localisation",
+        "card__printings__set",
+        "card__printings__rarity",
+    ).get(id=printing_id)
+
     return render(
         request,
         "website/results/search_result_sets.html",
