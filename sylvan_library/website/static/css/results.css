@@ -72,6 +72,10 @@
     background-color: #444;
 }
 
+.search-result.owned {
+    border: solid #cccccc 1px;
+    border-radius: 8px;
+}
 
 .search-result-title {
     transition: .8s;

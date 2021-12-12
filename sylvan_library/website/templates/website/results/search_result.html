@@ -2,10 +2,14 @@
 {% load card_image %}
 {% load card_ownership %}
 {% load static %}
+{% load card_ownership %}
 
 
 {% block content %}
-    <div class="search-result js-card-result"
+    <div class="search-result js-card-result
+{% with count=result.card|user_card_ownership_count:request.user %}
+    {% if count > 0 %}owned{% endif %}
+{% endwith %}"
          id="card-result-{{ result.card.id }}"
          data-card-id="{{ result.card.id }}"
          data-card-printing-id="{{ result.selected_printing.id }}"
