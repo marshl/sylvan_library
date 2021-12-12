@@ -379,6 +379,9 @@ class SetParser:
         staged_card_printing = StagedCardPrinting(card_data, self.staged_set.code)
         staged_face_printing = StagedCardFacePrinting(card_data)
 
+        if not staged_card.scryfall_oracle_id:
+            return
+
         self.process_card(staged_card)
         self.process_card_faces(staged_card, staged_card_face)
 
