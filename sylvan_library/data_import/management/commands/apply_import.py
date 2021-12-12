@@ -499,9 +499,12 @@ class Command(BaseCommand):
                 frame_effects = update_card_face_printing.field_data["frame_effects"]
                 if update_card_face_printing.update_mode == UpdateMode.UPDATE:
                     frame_effects = frame_effects["to"]
-                face_printing.frame_effects.set(
-                    FrameEffect.objects.filter(code__in=frame_effects)
-                )
+                frame_effect_objs = FrameEffect.objects.filter(code__in=frame_effects)
+                if frame_effect_objs.count() != len(frame_effects):
+                    raise ValueError(
+                        f"Frame effects {frame_effects} did not match object count {frame_effect_objs}"
+                    )
+                face_printing.frame_effects.set(frame_effect_objs)
 
         return True
 
