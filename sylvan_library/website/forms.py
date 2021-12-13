@@ -287,6 +287,7 @@ class DeckForm(forms.ModelForm):
             "sorceries",
             "general",
             "commander",
+            "commanders",
             "x",
             "enchantment",
             "enchantments",
