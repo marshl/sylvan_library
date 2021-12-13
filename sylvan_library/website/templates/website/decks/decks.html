@@ -12,47 +12,12 @@
                 <a class="action-button" href="{% url 'website:create_deck' %}">Create New Deck</a>
                 <a class="action-button" href="{% url 'website:deck_stats' %}">Deck Stats</a>
             </div>
-            <div class="search-result-list">
-                {% for deck in decks %}
-                    <div class="search-result js-deck-result" style="flex-direction: row;" data-deck-id="{{ deck.id }}">
-                        <div>
-                            <canvas class="js-mini-deck-chart" height="75px" data-deck-id="{{ deck.id }}"></canvas>
-                        </div>
-                        <div>
-                            <h2 class="search-result-title">
-                                <a href="{% url 'website:deck_view' deck_id=deck.id %}">
-                                    {% if deck.is_prototype %}
-                                        <em>{{ deck.name }} [prototype]</em>
-                                    {% else %}
-                                        {{ deck.name }}
-                                    {% endif %}
-                                </a>
-                            </h2>
-
-                            {% if deck.subtitle %}
-                                <h3 class="search-result-subtitle">
-                                    {{ deck.subtitle }}
-                                </h3>
-                            {% endif %}
-                            {% if deck.description %}
-                                <h3 class="subtitle">
-                                    {% if deck.description|length > 200 %}
-                                        {{ deck.description|safe|slice:"0:200" }}...
-                                    {% else %}
-                                        {{ deck.description|safe }}
-                                    {% endif %}
-                                </h3>
-                            {% endif %}
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
+            {% include "website/decks/_deck_list.html" with decks=final_decks page_buttons=final_page_buttons%}
+            <h1>Prototype Decks</h1>
+            {% include "website/decks/_deck_list.html" with decks=prototype_decks page_buttons=prototype_page_buttons page_name="prototype_page" %}
         </div>
     </div>
 
 
-    {% if page_buttons|length > 3 %}
-        {% include "website/pager.html" with page_buttons=page_buttons %}
-    {% endif %}
 
 {% endblock %}

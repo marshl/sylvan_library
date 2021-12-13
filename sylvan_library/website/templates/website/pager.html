@@ -2,10 +2,16 @@
 <div class="pagination-container">
     <div class="page-button-list">
         {% for page_button in page_buttons %}
-            <div class="page-button js-page-button
-                {% if not page_button.enabled %}is-disabled{% endif %}
+            <div class="page-button
+                {% if page_button.enabled %}js-page-button{% endif %}
                 {% if page_button.is_active %}is-active{% endif %}"
-                 data-page-url="{% param_replace page=page_button.number %}">
+                 data-page-url="{% spaceless %}
+                    {% if page_name == "prototype_page" %}
+                        {% param_replace prototype_page=page_button.number %}
+                    {% else %}
+                        {% param_replace page=page_button.number %}
+                    {% endif %}
+                    {% endspaceless %}">
                 <div class="page-button-text">
                     {% if page_button.is_previous %}
                         Previous

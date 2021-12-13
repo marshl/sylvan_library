@@ -410,14 +410,14 @@ def ajax_search_result_price_json(
     return JsonResponse(result)
 
 
-def get_page_number(request: WSGIRequest) -> int:
+def get_page_number(request: WSGIRequest, param_name: str = "page") -> int:
     """
     Gets the page number of a given request
     :param request: The request to get the page from
     :return: The page number
     """
     try:
-        return int(request.GET.get("page"))
+        return int(request.GET.get(param_name))
     except (TypeError, ValueError):
         return 1
 
@@ -564,17 +564,32 @@ def deck_list(request: WSGIRequest) -> HttpResponse:
     """
     if not isinstance(request.user, User) or request.user.is_anonymous:
         return redirect("website:index")
-    page_size = 15
+    page_size = 10
     users_decks = Deck.objects.filter(owner=request.user).order_by(
         "-is_prototype", "-date_created", "-last_modified", "-id"
     )
-    paginator = Paginator(users_decks, page_size)
-    page_number = get_page_number(request)
-    page_buttons = get_page_buttons(paginator, page_number, 3)
+    final_decks = users_decks.filter(is_prototype=False)
+    prototype_decks = users_decks.filter(is_prototype=True)
+
+    final_paginator = Paginator(final_decks, page_size)
+    final_page_number = get_page_number(request)
+    final_page_buttons = get_page_buttons(final_paginator, final_page_number, 3)
+
+    prototype_paginator = Paginator(prototype_decks, page_size)
+    prototype_page_number = get_page_number(request, param_name="prototype_page")
+    prototype_page_buttons = get_page_buttons(
+        prototype_paginator, prototype_page_number, 3
+    )
+
     return render(
         request,
         "website/decks/decks.html",
-        {"decks": list(paginator.page(page_number)), "page_buttons": page_buttons},
+        {
+            "final_decks": list(final_paginator.page(final_page_number)),
+            "final_page_buttons": final_page_buttons,
+            "prototype_decks": list(prototype_paginator.page(prototype_page_number)),
+            "prototype_page_buttons": prototype_page_buttons,
+        },
     )
 
 

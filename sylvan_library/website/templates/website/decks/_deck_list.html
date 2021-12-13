@@ -1,0 +1,40 @@
+<div class="search-result-list">
+    {% for deck in decks %}
+        <div class="search-result js-deck-result" style="flex-direction: row;" data-deck-id="{{ deck.id }}">
+            <div>
+                <canvas class="js-mini-deck-chart" height="75px" data-deck-id="{{ deck.id }}"></canvas>
+            </div>
+            <div>
+                <h2 class="search-result-title">
+                    <a href="{% url 'website:deck_view' deck_id=deck.id %}">
+                        {% if deck.is_prototype %}
+                            <em>{{ deck.name }} [prototype]</em>
+                        {% else %}
+                            {{ deck.name }}
+                        {% endif %}
+                    </a>
+                </h2>
+
+                {% if deck.subtitle %}
+                    <h3 class="search-result-subtitle">
+                        {{ deck.subtitle }}
+                    </h3>
+                {% endif %}
+                {% if deck.description %}
+                    <h3 class="subtitle">
+                        {% if deck.description|length > 200 %}
+                            {{ deck.description|safe|slice:"0:200" }}...
+                        {% else %}
+                            {{ deck.description|safe }}
+                        {% endif %}
+                    </h3>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+
+{% if page_buttons|length > 3 %}
+    {% include "website/pager.html" with page_buttons=page_buttons page_name=page_name%}
+{% endif %}
