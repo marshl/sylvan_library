@@ -19,6 +19,7 @@ from django.shortcuts import render, redirect
 
 from cards.models import (
     Card,
+    CardFace,
     CardPrinting,
     CardLocalisation,
     Colour,
@@ -472,10 +473,13 @@ def get_unused_commanders(user: User):
     )
     commander_cards = (
         Card.objects.filter(is_token=False)
-        .filter(Q(faces__side__isnull=True) | Q(faces__side="a"))
         .filter(
-            (Q(faces__supertypes__name="Legendary") & Q(faces__types__name="Creature"))
-            | Q(faces__rules_text__contains="can be your commander")
+            faces__in=CardFace.objects.filter(
+                Q(side__isnull=True) | Q(side="a")
+            ).filter(
+                (Q(supertypes__name="Legendary") & Q(types__name="Creature"))
+                | Q(rules_text__contains="can be your commander")
+            )
         )
         .distinct()
     )
@@ -515,11 +519,6 @@ def deck_stats(request: WSGIRequest) -> HttpResponse:
     deck_count = Deck.objects.filter(owner=request.user).count()
 
     deck_warnings = []
-    # for deck in Deck.objects.filter(owner=request.user, is_prototype=False):
-    #     try:
-    #         deck.validate_format()
-    #     except ValidationError as error:
-    #         deck_warnings.append({"deck": deck, "msg": error.message})
 
     return render(
         request,
