@@ -18,6 +18,8 @@ DATABASES = {
     "default": env.db()  # Raises ImproperlyConfigured if DATABASE_URL not in os.environ
 }
 
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
 # if (
 #     "test" in sys.argv or "test_coverage" in sys.argv
 # ):  # Covers regular testing and django-coverage
