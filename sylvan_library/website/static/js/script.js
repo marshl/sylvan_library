@@ -66,4 +66,13 @@ $(function () {
     $(this).on('mouseleave', '.js-card-link', function () {
         $('.js-image-popup-container').stop().fadeOut(150);
     });
+
+    $(this).keydown(function (event) {
+        if (event.target === $("body").get(0) || (event.target.nodeName === "INPUT" && (event.target.type === "number" || event.target.type === "submit"))) {
+            if (event.key === 'f') {
+                $(".js-search-bar-input").focus();
+                event.preventDefault();
+            }
+        }
+    });
 });
