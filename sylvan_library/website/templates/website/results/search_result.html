@@ -57,11 +57,11 @@
                             {% if face.rules_text %}
                                 <div>
                                     {% if face.is_planeswalker %}
-                                        {{ face.rules_text | linebreaks | replace_mana_symbols | replace_reminder_text | replace_loyalty_symbols:'3x' | safe }}
+                                        {{ face.rules_text | linebreaks | replace_mana_symbols | italicise_ability_words | replace_reminder_text | replace_loyalty_symbols:'3x' | safe }}
                                     {% elif face.is_saga %}
-                                        {{ face.rules_text | linebreaks | replace_mana_symbols | replace_reminder_text | replace_chapter_symbols:'2x' | safe }}
+                                        {{ face.rules_text | linebreaks | replace_mana_symbols | italicise_ability_words | replace_reminder_text | replace_chapter_symbols:'2x' | safe }}
                                     {% else %}
-                                        {{ face.rules_text | linebreaks | replace_mana_symbols | replace_reminder_text | safe }}
+                                        {{ face.rules_text | linebreaks | replace_mana_symbols | italicise_ability_words | replace_reminder_text | safe }}
                                     {% endif %}
                                 </div>
                             {% endif %}
