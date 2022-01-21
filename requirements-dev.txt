@@ -1,6 +1,6 @@
 black==21.6b0
 django-debug-toolbar==3.2.2
-ipython==7.29.0
+ipython==7.31.1
 jupyter==1.0.0
 mypy==0.910
 mypy-extensions==0.4.3
