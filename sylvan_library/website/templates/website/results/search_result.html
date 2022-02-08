@@ -41,7 +41,7 @@
                                 <span class="search-result-mana-cost">
                                 {{ face.mana_cost | replace_mana_symbols | shadowed | safe }}
                                 </span>
-                                ({{ face.converted_mana_cost | floatformat }})
+                                ({{ face.mana_value | floatformat }})
                             {% endif %}
 
                             {% if request.user.is_authenticated %}

@@ -162,7 +162,7 @@ class CardFaceModelForm(forms.ModelForm):
             "name",
             "side",
             "mana_cost",
-            "converted_mana_cost",
+            "mana_value",
             "colour",
             "colour_indicator",
             "colour_count",

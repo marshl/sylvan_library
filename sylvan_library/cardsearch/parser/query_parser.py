@@ -17,8 +17,8 @@ from cardsearch.parameters import (
     AndParam,
     CardArtistParam,
     CardBlockParam,
-    CardCmcParam,
-    CardCmcSortParam,
+    CardManaValueParam,
+    CardManaValueSortParam,
     CardCollectorNumSortParam,
     CardColourCountParam,
     CardComplexColourParam,
@@ -90,8 +90,8 @@ def parse_numeric_parameter(
     if text in ("loyalty", "loy"):
         return F("card__faces__num_loyalty")
 
-    if text in ("cmc", "cost"):
-        return F("card__converted_mana_cost")
+    if text in ("cmc", "cost", "mv", "manavalue"):
+        return F("card__mana_value")
 
     if text in ("inf", "infinity", "∞"):
         return math.inf
@@ -128,20 +128,20 @@ def param_parser(
 
 
 @param_parser(
-    name="converted mana cost",
-    keywords=["cmc"],
+    name="mana value",
+    keywords=["cmc", "mv", "manavalue"],
     operators=["<", "<=", ":", "=", ">", ">="],
 )
-def parse_cmc_param(param_args: ParameterArgs) -> CardCmcParam:
+def parse_mana_value_param(param_args: ParameterArgs) -> CardManaValueParam:
     """
-    Parses a converted mana cost parameter
+    Parses a mana value parameter
     :param param_args: The parameter arguments
-    :return: The converted mana cost parameter
+    :return: The mana value parameter
     """
-    cmc = parse_numeric_parameter(
-        "converted mana cost", param_args.operator, param_args.text
+    mana_value = parse_numeric_parameter(
+        "mana value", param_args.operator, param_args.text
     )
-    return CardCmcParam(cmc, param_args.operator)
+    return CardManaValueParam(mana_value, param_args.operator)
 
 
 @param_parser(
@@ -555,8 +555,8 @@ def parse_sort_order_param(param_args: ParameterArgs) -> CardSortParam:
 
     if param_args.text == "number":
         param = CardCollectorNumSortParam()
-    elif param_args.text == "cmc":
-        param = CardCmcSortParam()
+    elif param_args.text in ("cmc", "mana_value", "mv", "manavalue"):
+        param = CardManaValueSortParam()
     elif param_args.text == "power":
         param = CardPowerSortParam()
     elif param_args.text in ("color", "colour"):

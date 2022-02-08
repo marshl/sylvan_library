@@ -17,7 +17,7 @@ from .card_colour_parameters import (
 from .card_flavour_parameters import CardFlavourTextParam
 from .card_mana_cost_parameters import (
     CardManaCostComplexParam,
-    CardCmcParam,
+    CardManaValueParam,
     CardManaCostParam,
     CardColourCountParam,
 )
@@ -142,9 +142,9 @@ class CardPriceSortParam(CardSortParam):
         return ["latest_price__paper_value"]
 
 
-class CardCmcSortParam(CardSortParam):
+class CardManaValueSortParam(CardSortParam):
     """
-    THe sort parameter for a card's converted mana cost
+    THe sort parameter for a card's mana value
     """
 
     def get_sort_keys(self, search_mode: SearchMode) -> list:
@@ -152,8 +152,8 @@ class CardCmcSortParam(CardSortParam):
         Gets the list of attributes to be sorted by
         """
         if search_mode == SearchMode.SEARCH_MODE_CARD:
-            return ["converted_mana_cost", "faces__colour_weight"]
-        return ["card__converted_mana_cost", "card__colour_weight"]
+            return ["mana_value", "faces__colour_weight"]
+        return ["card__mana_value", "card__colour_weight"]
 
 
 class CardCollectorNumSortParam(CardSortParam):
@@ -186,12 +186,12 @@ class CardColourWeightSortParam(CardSortParam):
     def get_sort_keys(self, search_mode: SearchMode) -> list:
         if search_mode == SearchMode.SEARCH_MODE_CARD:
             return [
-                "converted_mana_cost",
+                "mana_value",
                 "faces__colour_sort_key",
                 "faces__colour_weight",
             ]
         return [
-            "card__converted_mana_cost",
+            "card__mana_value",
             "card__faces__colour_sort_key",
             "card__faces__colour_weight",
         ]

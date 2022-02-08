@@ -31,7 +31,7 @@ class StagedCardTestCase(TestCase):
         Tests the colour weight of a card
         """
         staged_card_face = StagedCardFace(
-            {"name": "test", "manaCost": "{1}{G}{G}", "convertedManaCost": 3}
+            {"name": "test", "manaCost": "{1}{G}{G}", "manaValue": 3}
         )
         self.assertEqual(2, staged_card_face.colour_weight)
 
@@ -40,7 +40,7 @@ class StagedCardTestCase(TestCase):
         Tests that a colourless card has the correct colour weight
         """
         staged_card_face = StagedCardFace(
-            {"name": "test", "manaCost": "{11}", "convertedManaCost": 11}
+            {"name": "test", "manaCost": "{11}", "manaValue": 11}
         )
         self.assertEqual(0, staged_card_face.colour_weight)
 
@@ -49,7 +49,7 @@ class StagedCardTestCase(TestCase):
         Tests that a card with only coloured mana symbols has the correct colour weight
         """
         staged_card_face = StagedCardFace(
-            {"name": "test", "manaCost": "{B}{B}{B}{B}", "convertedManaCost": 4}
+            {"name": "test", "manaCost": "{B}{B}{B}{B}", "manaValue": 4}
         )
         self.assertEqual(4, staged_card_face.colour_weight)
 

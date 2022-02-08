@@ -323,56 +323,56 @@ class Command(BaseCommand):
         # Phyrexian mana card
         self.assert_card_face_cost_eq("Birthing Pod", "{3}{G/P}")
 
-    def test_card_cmc(self) -> None:
+    def test_card_mana_value(self) -> None:
         """
-        Tests the converted mana costs of various cards
+        Tests the mana value of various cards
         :return:
         """
         # Normal cards
-        self.assert_card_cmc_eq("Tarmogoyf", 2)
-        self.assert_card_cmc_eq("Black Lotus", 0)
+        self.assert_card_mana_value_eq("Tarmogoyf", 2)
+        self.assert_card_mana_value_eq("Black Lotus", 0)
 
         # Costless card
-        self.assert_card_cmc_eq("Living End", 0)
+        self.assert_card_mana_value_eq("Living End", 0)
 
         # Half mana card
-        self.assert_card_cmc_eq("Little Girl", 0.5)
+        self.assert_card_mana_value_eq("Little Girl", 0.5)
 
         # Monocoloured hybrid cards
-        self.assert_card_cmc_eq("Reaper King", 10)
-        self.assert_card_cmc_eq("Flame Javelin", 6)
+        self.assert_card_mana_value_eq("Reaper King", 10)
+        self.assert_card_mana_value_eq("Flame Javelin", 6)
 
         # High cost cards
-        self.assert_card_cmc_eq("Blinkmoth Infusion", 14)
-        self.assert_card_cmc_eq("Gleemax", 1000000)
+        self.assert_card_mana_value_eq("Blinkmoth Infusion", 14)
+        self.assert_card_mana_value_eq("Gleemax", 1000000)
 
         # Phyrexian mana card
-        self.assert_card_cmc_eq("Birthing Pod", 4)
+        self.assert_card_mana_value_eq("Birthing Pod", 4)
 
         # Land
-        self.assert_card_cmc_eq("Dryad Arbor", 0)
+        self.assert_card_mana_value_eq("Dryad Arbor", 0)
 
         # Colourless mana card
-        self.assert_card_cmc_eq("Kozilek, the Great Distortion", 10)
+        self.assert_card_mana_value_eq("Kozilek, the Great Distortion", 10)
 
         # Plane
-        self.assert_card_cmc_eq("Krosa", 0)
+        self.assert_card_mana_value_eq("Krosa", 0)
 
         # X cost card
-        self.assert_card_cmc_eq("Comet Storm", 2)
+        self.assert_card_mana_value_eq("Comet Storm", 2)
 
         # Transform card
-        self.assert_card_cmc_eq("Garruk Relentless // Garruk, the Veil-Cursed", 4)
+        self.assert_card_mana_value_eq("Garruk Relentless // Garruk, the Veil-Cursed", 4)
 
         # Meld card
-        self.assert_card_cmc_eq("Brisela, Voice of Nightmares", 11)
+        self.assert_card_mana_value_eq("Brisela, Voice of Nightmares", 11)
 
         # Split card
-        # Both Wear and Tear should have the same CMC under the new rules
-        self.assert_card_cmc_eq("Wear // Tear", 3)
+        # Both Wear and Tear should have the same mana value under the new rules
+        self.assert_card_mana_value_eq("Wear // Tear", 3)
 
         # Flip card
-        self.assert_card_cmc_eq("Homura, Human Ascendant // Homura's Essence", 6)
+        self.assert_card_mana_value_eq("Homura, Human Ascendant // Homura's Essence", 6)
 
     def test_card_colour(self) -> None:
         """
@@ -812,13 +812,13 @@ class Command(BaseCommand):
         """
         self.assert_card_face_attr_eq(card_name, "mana_cost", cost)
 
-    def assert_card_cmc_eq(self, card_name: str, cmc: float):
+    def assert_card_mana_value_eq(self, card_name: str, mana_value: float):
         """
-        Asserts that the given card has the given converted man cost
+        Asserts that the given card has the given mana value
         :param card_name: The name of the card to test
-        :param cmc: The expected converted mana cost of the card
+        :param mana_value: The expected mana value of the card
         """
-        self.assert_card_attr_eq(card_name, "converted_mana_cost", cmc)
+        self.assert_card_attr_eq(card_name, "mana_value", mana_value)
 
     def assert_card_face_colour_eq(self, card_face_name: str, colours: int):
         """

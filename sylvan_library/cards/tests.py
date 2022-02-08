@@ -27,7 +27,6 @@ def create_test_card(fields: Optional[Dict[str, Any]] = None) -> Card:
     card = Card()
     card.scryfall_oracle_id = uuid.uuid4()
     card.name = uuid.uuid1()
-    card.cmc = 0
     card.num_power = 0
     card.num_toughness = 0
     card.num_loyalty = 0
@@ -40,7 +39,7 @@ def create_test_card(fields: Optional[Dict[str, Any]] = None) -> Card:
     card.layout = "normal"
     card.is_reserved = False
     card.is_token = False
-    card.converted_mana_cost = 0
+    card.mana_value = 0
 
     for key, value in (fields or {}).items():
         assert hasattr(card, key)
@@ -56,7 +55,7 @@ def create_test_card_face(
 ) -> CardFace:
     card_face = CardFace(card=card)
     card_face.name = uuid.uuid4()
-    card_face.converted_mana_cost = 0
+    card_face.mana_value = 0
     card_face.colour_count = 0
     card_face.colour_weight = 0
     card_face.colour_sort_key = 0

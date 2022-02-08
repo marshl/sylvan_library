@@ -67,7 +67,7 @@ class Card(models.Model):
 
     scryfall_oracle_id = models.CharField(max_length=36, unique=True)
     name = models.CharField(max_length=200)
-    converted_mana_cost = models.FloatField()
+    mana_value = models.FloatField()
     layout = models.CharField(max_length=50)
     is_reserved = models.BooleanField(default=False)
     edh_rec_rank = models.IntegerField(blank=True, null=True)
@@ -195,7 +195,7 @@ class CardFace(models.Model):
     name = models.CharField(max_length=200)
 
     mana_cost = models.CharField(max_length=50, blank=True, null=True)
-    converted_mana_cost = models.FloatField()
+    mana_value = models.FloatField()
     colour = BitField(flags=Colour.FLAG_CHOICES)
     colour_indicator = BitField(flags=Colour.FLAG_CHOICES)
     colour_count = models.IntegerField()

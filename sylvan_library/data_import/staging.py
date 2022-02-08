@@ -168,7 +168,7 @@ class StagedCard(StagedObject):
             "scryfallOracleId"
         )
         self.name: str = card_data["name"]
-        self.converted_mana_cost: float = float(card_data.get("manaValue", 0.0) or 0)
+        self.mana_value: float = float(card_data.get("manaValue", 0.0) or 0)
         self.colour_identity: int = Colour.colour_codes_to_flags(
             card_data.get("colorIdentity", [])
         )
@@ -216,8 +216,8 @@ class StagedCardFace(StagedObject):
 
         self.mana_cost: str = card_data.get("manaCost")
 
-        cmc_text = card_data.get("faceManaValue", card_data.get("manaValue"))
-        self.converted_mana_cost: float = (float(cmc_text) if cmc_text else float(0))
+        mana_value_text = card_data.get("faceManaValue", card_data.get("manaValue"))
+        self.mana_value: float = (float(mana_value_text) if mana_value_text else float(0))
 
         self.colour: int = Colour.colour_codes_to_flags(card_data.get("colors", []))
         self.colour_indicator: int = Colour.colour_codes_to_flags(
@@ -245,7 +245,7 @@ class StagedCardFace(StagedObject):
         Gets the "colour weight" of the card, the number of coloured mana symbols te card has
         :return: The card's colour weight
         """
-        return int(self.converted_mana_cost - self.generic_mana_count)
+        return int(self.mana_value - self.generic_mana_count)
 
     @property
     def num_power(self) -> float:

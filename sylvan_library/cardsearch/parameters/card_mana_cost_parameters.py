@@ -220,13 +220,13 @@ class CardColourCountParam(CardNumericalParam):
         )
 
 
-class CardCmcParam(CardNumericalParam):
+class CardManaValueParam(CardNumericalParam):
     """
-    The parameter for searching by a card's numerical converted mana cost
+    The parameter for searching by a card's numerical mana value
     """
 
     def query(self) -> Q:
-        args = self.get_args("card__converted_mana_cost")
+        args = self.get_args("card__mana_value")
         query = Q()
         if isinstance(self.number, F):
             query &= Q(**{"toughness__isnull": False})
@@ -234,7 +234,7 @@ class CardCmcParam(CardNumericalParam):
 
     def get_pretty_str(self) -> str:
         return (
-            "cmc "
+            "mana value "
             + ("isn't " if self.negated else "")
             + f"{self.operator} {self.number}"
         )

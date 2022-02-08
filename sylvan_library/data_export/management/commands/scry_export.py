@@ -102,7 +102,7 @@ class Command(BaseCommand):
             ET.SubElement(card_xml, "ntf").text = (
                 str(card.num_toughness) if card.num_toughness != math.inf else "0"
             )
-            ET.SubElement(card_xml, "cmc").text = str(card.cmc)
+            ET.SubElement(card_xml, "mana_value").text = str(card.mana_value)
 
             card_sets_xml = ET.SubElement(card_xml, "sets")
 

@@ -249,15 +249,15 @@ class Deck(models.Model):
                 result[colour.symbol] = count
         return result
 
-    def deck_avg_cmc(self) -> float:
+    def deck_avg_mana_value(self) -> float:
         """
-        Gets the average converted mana cost of non-land cards in the deck
-        :return: The average converted mana cost
+        Gets the average mana value of non-land cards in the deck
+        :return: The average mana value
         """
         return (
             self.cards.filter(board="main")
             .exclude(card__type__contains="Land")
-            .aggregate(Avg("card__cmd"))["card__converted_mana_cost__avg"]
+            .aggregate(Avg("card__cmd"))["card__mana_value__avg"]
         )
 
     def get_mainboard_count(self) -> int:
@@ -431,7 +431,7 @@ class DeckCard(models.Model):
         Metaclass for DeckCard
         """
 
-        ordering = ["card__converted_mana_cost", "card__name"]
+        ordering = ["card__mana_value", "card__name"]
 
     def as_deck_text(self) -> str:
         """
