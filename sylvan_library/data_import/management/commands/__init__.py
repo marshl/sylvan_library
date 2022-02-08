@@ -16,7 +16,7 @@ logger = logging.getLogger("django")
 
 
 def get_all_set_data(
-    set_codes: Optional[List[str]] = None
+    set_codes: Optional[List[str]] = None,
 ) -> Generator[Dict[str, Any], None, None]:
     """
     Gets set data from the sets directory and returns each one as a parsed dict
@@ -35,7 +35,21 @@ def get_all_set_data(
         if (
             set_codes
             and set_code not in set_codes
-            or set_code in ("MZNR", "HTR", "OC21", "ASTX", "AMH2", "PLGS", "AAFR")
+            or set_code
+            in (
+                "MZNR",
+                "HTR",
+                "OC21",
+                "ASTX",
+                "AMH2",
+                "PLGS",
+                "AAFR",
+                "PWP09",
+                "PWP10",
+                "PWP11",
+                "PWP12",
+                "PWP21",
+            )
         ):
             continue
 
