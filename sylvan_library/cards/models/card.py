@@ -2,12 +2,9 @@
 Module for Card related models
 """
 import datetime
-import os
 import random
-import re
 from typing import Optional
 
-from bitfield import BitField
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Sum, IntegerField, Case, When
@@ -15,6 +12,7 @@ from django.db.models import Sum, IntegerField, Case, When
 from cards.models.colour import Colour
 from cards.models.rarity import Rarity
 from cards.models.sets import Set
+from sylvan_library.bitfield.models import BitField
 
 CARD_LAYOUT_CHOICES = (
     ("normal", "Normal"),

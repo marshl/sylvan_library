@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "tinymce",
     "widget_tweaks",
     # my apps
+    "bitfield.apps.BitFieldAppConfig",
     "cards.apps.CardsConfig",
     "cardsearch.apps.CardsearchConfig",
     "data_export.apps.DataExportConfig",
