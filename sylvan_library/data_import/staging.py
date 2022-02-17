@@ -114,7 +114,7 @@ class StagedObject:
         fields_to_ignore.update(["id", "_state", "_prefetched_objects_cache"])
 
         differences = {}
-        for field in old_object.__dict__.keys():
+        for field, old_val in old_object.__dict__.items():
             if field in fields_to_ignore:
                 continue
 
@@ -124,7 +124,6 @@ class StagedObject:
                     f"on {self.__class__.__name__}"
                 )
 
-            old_val = getattr(old_object, field)
             new_val = getattr(self, field)
             if (
                 not isinstance(old_val, type(new_val))
@@ -142,9 +141,12 @@ class StagedObject:
         return differences
 
     def compare_related_list(self, existing_object: models.Model, field_name: str):
-        # old_values = list(
-        #     getattr(existing_object, field_name).values_list("name", flat=True)
-        # )
+        """
+        Compares the list from this staged object with the existing object
+        :param existing_object:
+        :param field_name:
+        :return:
+        """
         old_values = [
             related.name for related in getattr(existing_object, field_name).all()
         ]
