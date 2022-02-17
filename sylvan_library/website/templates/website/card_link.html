@@ -17,7 +17,7 @@
           data-rotation="0"
             {% endif %}
     >
-    <a href="{% url 'website:name_search' %}?query_string={{ card.name }}"
+    <a href="{% url 'website:name_search' %}?query_string={{ card.name }}" rel="noreferrer"
        {% if newtab %}target="_blank"{% endif %}
     >{% if card_name %}{{ card_name }}{% else %}
         {{ card.name }}{% endif %}
