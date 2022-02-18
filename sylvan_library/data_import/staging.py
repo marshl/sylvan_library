@@ -226,8 +226,7 @@ class StagedCardFace(StagedObject):
             card_data.get("colorIndicator", [])
         )
         self.colour_count: int = bin(self.colour).count("1")
-        # self.colour_sort_key: int = COLOUR_TO_SORT_KEY[self.colour_flags]
-        self.colour_sort_key: int = 0  # TODO: Colour sort keys
+        self.colour_sort_key: int = COLOUR_TO_SORT_KEY[self.colour]
 
         self.power: Optional[str] = card_data.get("power")
         self.toughness: Optional[str] = card_data.get("toughness")
