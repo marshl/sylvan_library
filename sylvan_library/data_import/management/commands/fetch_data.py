@@ -1,11 +1,13 @@
 """
 Module for the fetch_data command
 """
+import json
 import logging
 import os
 import zipfile
 from typing import List, Any
 
+import requests
 from django.core.management.base import BaseCommand
 
 from data_import import _paths
@@ -37,7 +39,37 @@ class Command(BaseCommand):
             if set_file.endswith(".json"):
                 os.remove(set_file)
 
+    def has_json_meta_changed(self) -> bool:
+        meta_response = requests.get(_paths.META_DOWNLOAD_URL)
+        meta_response.raise_for_status()
+        latest_version = meta_response.json()["meta"]["version"]
+
+        if not os.path.exists(_paths.META_JSON_PATH):
+            logger.info("No local meta file found for version check.")
+            with open(_paths.META_JSON_PATH, "wb") as output:
+                output.write(meta_response.content)
+            return True
+
+        with open(_paths.META_JSON_PATH, "r") as meta_file:
+            meta_json = json.load(meta_file)
+            local_version = meta_json["meta"]["version"]
+
+        logger.info(
+            "Local meta version is '%s'. Latest version is %s",
+            local_version,
+            latest_version,
+        )
+        if latest_version > local_version:
+            with open(_paths.META_JSON_PATH, "wb") as output:
+                output.write(meta_response.content)
+            return True
+        return False
+
     def handle(self, *args: Any, **options: Any) -> None:
+        if not self.has_json_meta_changed():
+            logger.info("No update required.")
+            return
+
         logger.info("Downloading set files from %s", _paths.JSON_ZIP_DOWNLOAD_URL)
         download_file(_paths.JSON_ZIP_DOWNLOAD_URL, _paths.JSON_ZIP_PATH)
         logger.info("Extracting set files")
