@@ -30,7 +30,9 @@ from data_import.models import (
     UpdateCardPrinting,
     UpdateCardFacePrinting,
     UpdateCardLocalisation,
-    UpdateCardFaceLocalisation, UpdateCardRuling,
+    UpdateCardFaceLocalisation,
+    UpdateCardRuling,
+    UpdateCardLegality
 )
 from data_import.staging import (
     StagedCard,
@@ -84,7 +86,7 @@ class Command(BaseCommand):
             UpdateCard.objects.all().delete()
             UpdateCardFace.objects.all().delete()
             UpdateCardRuling.objects.all().delete()
-            # UpdateCardLegality.objects.all().delete()
+            UpdateCardLegality.objects.all().delete()
             UpdateCardPrinting.objects.all().delete()
             UpdateCardFacePrinting.objects.all().delete()
             UpdateCardLocalisation.objects.all().delete()
@@ -126,7 +128,7 @@ class Command(BaseCommand):
         self.log_single_stat("card printing face", UpdateCardFacePrinting)
         self.log_single_stat("card localisation", UpdateCardLocalisation)
         self.log_single_stat("card face localisation", UpdateCardFaceLocalisation)
-        # self.log_single_stat("legality", UpdateCardLegality)
+        self.log_single_stat("legality", UpdateCardLegality)
         self.log_single_stat("ruling", UpdateCardRuling)
         logger.info("Completed in %ss", time.time() - self.start_time)
 
@@ -187,13 +189,13 @@ class SetParser:
         self.localisations_to_update: List[UpdateCardLocalisation] = []
         self.face_localisations_to_update: List[UpdateCardFaceLocalisation] = []
         self.rulings_to_update: List[UpdateCardRuling] = []
-        # self.legalities_to_update: List[UpdateCardLegality] = []
+        self.legalities_to_update: List[UpdateCardLegality] = []
 
         self.existing_cards = {
             card.scryfall_oracle_id: card
             for card in Card.objects.filter(
                 scryfall_oracle_id__in=staged_set.get_scryfall_oracle_ids()
-            ).prefetch_related("rulings")
+            ).prefetch_related("rulings", "legalities__format")
             .all()
         }
 
@@ -315,7 +317,7 @@ class SetParser:
             self.face_localisations_to_update
         )
         UpdateCardRuling.objects.bulk_create(self.rulings_to_update)
-        # UpdateCardLegality.objects.bulk_create(self.legalities_to_update)
+        UpdateCardLegality.objects.bulk_create(self.legalities_to_update)
 
     def parse_set_data(self):
         """
@@ -410,7 +412,7 @@ class SetParser:
 
         self.set_file_parser.cards_parsed.add(staged_card.scryfall_oracle_id)
 
-        # self.process_card_legalities(staged_card, existing_card=existing_card)
+
 
         existing_card = self.get_existing_card(staged_card.scryfall_oracle_id)
 
@@ -435,6 +437,7 @@ class SetParser:
                 )
             )
         self.process_card_rulings(staged_card, existing_card=existing_card)
+        self.process_card_legalities(staged_card, existing_card=existing_card)
 
     def process_card_faces(
         self, staged_card: StagedCard, staged_card_face: StagedCardFace
@@ -524,61 +527,61 @@ class SetParser:
                         ruling_text=existing_ruling.text,
                     )
                 )
-    #
-    # def process_card_legalities(
-    #     self, staged_card: StagedCard, existing_card: Optional[Card] = None
-    # ) -> None:
-    #     """
-    #     Find CardLegalities for a card to update, create or delete
-    #     :param existing_card:
-    #     :param staged_card: The StagedCard to find legalities for
-    #     """
-    #     # Use prefetched legalities to improve performance
-    #     existing_legalities = (
-    #         list(existing_card.legalities.all()) if existing_card else []
-    #     )
-    #     for format_str, restriction in staged_card.legalities.items():
-    #         if not any(
-    #             True
-    #             for existing_legality in existing_legalities
-    #             if existing_legality.format.code == format_str
-    #         ):
-    #             self.legalities_to_update.append(
-    #                 UpdateCardLegality(
-    #                     update_mode=UpdateMode.CREATE,
-    #                     card_name=staged_card.name,
-    #                     scryfall_oracle_id=staged_card.scryfall_oracle_id,
-    #                     format_name=format_str,
-    #                     restriction=restriction,
-    #                 )
-    #             )
-    #
-    #     for old_legality in existing_legalities:
-    #         if old_legality.format.code not in staged_card.legalities:
-    #             self.legalities_to_update.append(
-    #                 UpdateCardLegality(
-    #                     update_mode=UpdateMode.DELETE,
-    #                     card_name=staged_card.name,
-    #                     scryfall_oracle_id=staged_card.scryfall_oracle_id,
-    #                     format_name=old_legality.format.code,
-    #                     restriction=old_legality.restriction,
-    #                 )
-    #             )
-    #
-    #         # Legalities to update
-    #         elif (
-    #             staged_card.legalities[old_legality.format.code]
-    #             != old_legality.restriction
-    #         ):
-    #             self.legalities_to_update.append(
-    #                 UpdateCardLegality(
-    #                     update_mode=UpdateMode.UPDATE,
-    #                     card_name=staged_card.name,
-    #                     scryfall_oracle_id=staged_card.scryfall_oracle_id,
-    #                     format_name=old_legality.format.code,
-    #                     restriction=staged_card.legalities[old_legality.format.code],
-    #                 )
-    #             )
+
+    def process_card_legalities(
+        self, staged_card: StagedCard, existing_card: Optional[Card] = None
+    ) -> None:
+        """
+        Find CardLegalities for a card to update, create or delete
+        :param existing_card:
+        :param staged_card: The StagedCard to find legalities for
+        """
+        # Use prefetched legalities to improve performance
+        existing_legalities = (
+            list(existing_card.legalities.all()) if existing_card else []
+        )
+        for format_str, restriction in staged_card.legalities.items():
+            if not any(
+                True
+                for existing_legality in existing_legalities
+                if existing_legality.format.code == format_str
+            ):
+                self.legalities_to_update.append(
+                    UpdateCardLegality(
+                        update_mode=UpdateMode.CREATE,
+                        card_name=staged_card.name,
+                        scryfall_oracle_id=staged_card.scryfall_oracle_id,
+                        format_name=format_str,
+                        restriction=restriction,
+                    )
+                )
+
+        for old_legality in existing_legalities:
+            if old_legality.format.code not in staged_card.legalities:
+                self.legalities_to_update.append(
+                    UpdateCardLegality(
+                        update_mode=UpdateMode.DELETE,
+                        card_name=staged_card.name,
+                        scryfall_oracle_id=staged_card.scryfall_oracle_id,
+                        format_name=old_legality.format.code,
+                        restriction=old_legality.restriction,
+                    )
+                )
+
+            # Legalities to update
+            elif (
+                staged_card.legalities[old_legality.format.code]
+                != old_legality.restriction
+            ):
+                self.legalities_to_update.append(
+                    UpdateCardLegality(
+                        update_mode=UpdateMode.UPDATE,
+                        card_name=staged_card.name,
+                        scryfall_oracle_id=staged_card.scryfall_oracle_id,
+                        format_name=old_legality.format.code,
+                        restriction=staged_card.legalities[old_legality.format.code],
+                    )
+                )
 
     def process_card_printing(
         self,

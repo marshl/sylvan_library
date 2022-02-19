@@ -8,6 +8,10 @@
     "name": "Commander"
   },
   {
+    "code": "paupercommander",
+    "name": "Pauper Commander"
+  },
+  {
     "code": "duel",
     "name": "Duel"
   },
@@ -40,6 +44,10 @@
     "name": "Brawl"
   },
   {
+    "code": "historicbrawl",
+    "name": "Historic Brawl"
+  },
+  {
     "code": "future",
     "name": "Future"
   },
@@ -66,5 +74,9 @@
   {
     "code": "gladiator",
     "name": "Gladiator"
+  },
+  {
+    "code": "alchemy",
+    "name": "Alchemy"
   }
 ]
