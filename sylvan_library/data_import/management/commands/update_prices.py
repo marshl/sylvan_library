@@ -38,7 +38,8 @@ class Command(BaseCommand):
         # The data for that week will be lumped into the date of the start of the previous week
         start_of_week = arrow.utcnow().floor("week").date()
         with transaction.atomic():
-            self.download_prices(start_of_week)
+            if not self.download_prices(start_of_week):
+                return
             self.update_prices(start_of_week)
             self.set_latest_prices()
 
@@ -107,7 +108,7 @@ WHERE latest_price.card_printing_id = cards_cardprinting.id
 """
             )
 
-    def download_prices(self, start_of_week: datetime.date):
+    def download_prices(self, start_of_week: datetime.date) -> bool:
         logger.info("Checking for up-to-date price files")
         if os.path.isfile(_paths.PRICES_JSON_PATH):
             with open(_paths.PRICES_JSON_PATH, "r", encoding="utf8") as prices_file:
@@ -116,9 +117,9 @@ WHERE latest_price.card_printing_id = cards_cardprinting.id
                 date = arrow.get(meta_data["date"]).date()
                 if date >= arrow.get(start_of_week).shift(weeks=-1).date():
                     logger.info(
-                        "The price file are up to date, no need to download them again"
+                        "The price file is up to date, no need to download them again"
                     )
-                    return
+                    return False
         logger.info("Downloading prices")
         download_file(_paths.PRICES_ZIP_DOWNLOAD_URL, _paths.PRICES_ZIP_PATH)
 
@@ -126,6 +127,7 @@ WHERE latest_price.card_printing_id = cards_cardprinting.id
         with zipfile.ZipFile(_paths.PRICES_ZIP_PATH) as prices_zip_file:
             prices_zip_file.extractall(_paths.IMPORT_FOLDER_PATH)
 
+        return True
 
 PAPER_FOIL = (True, True)
 MTGO_FOIL = (True, False)
