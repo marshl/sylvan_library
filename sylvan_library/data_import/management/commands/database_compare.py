@@ -4,7 +4,7 @@ Module for the update_database command
 import logging
 import time
 import typing
-from typing import List, Optional, Dict, Tuple
+from typing import List, Optional, Tuple
 
 from django.core.management.base import BaseCommand
 from django.db import transaction, models
@@ -272,6 +272,12 @@ class SetParser:
     def get_existing_card_face(
         self, scryfall_oracle_id: str, side: Optional[str]
     ) -> Optional[CardFace]:
+        """
+        Gets the existing CardFace for the given oracle ID and side (if it exists)
+        :param scryfall_oracle_id: The scryfall oracle ID of the card face to get
+        :param side: The face identifier of the CardFace (usually null, sometimes ab/ etc)
+        :return: The prefetched CardFace object if it exists, otherwise None
+        """
         assert scryfall_oracle_id
         return self.existing_card_faces.get((scryfall_oracle_id, side))
 

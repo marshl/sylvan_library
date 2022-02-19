@@ -93,6 +93,9 @@ class CardIsHybridParam(CardSearchParam):
 
 
 class CardIsCommanderParam(CardSearchParam):
+    """
+    Parameter for whether or not this card can be yor commander
+    """
     def query(self) -> Q:
         query = (
             Q(card__faces__supertypes__name="Legendary")

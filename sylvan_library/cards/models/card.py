@@ -12,7 +12,7 @@ from django.db.models import Sum, IntegerField, Case, When
 from cards.models.colour import Colour
 from cards.models.rarity import Rarity
 from cards.models.sets import Set
-from sylvan_library.bitfield.models import BitField
+from bitfield.models import BitField
 
 CARD_LAYOUT_CHOICES = (
     ("normal", "Normal"),
@@ -83,7 +83,8 @@ class Card(models.Model):
         index = random.randint(0, last)
         return Card.objects.all()[index]
 
-    def __str__(self):
+    # pylint: disable=invalid-str-returned
+    def __str__(self) -> str:
         return self.name
 
     def get_user_ownership_count(self, user: User, prefetched: bool = False) -> int:
@@ -160,6 +161,9 @@ class Card(models.Model):
 
 
 class CardType(models.Model):
+    """
+    The type of any number of cards (e.g. Creature, Artifact, etc.)
+    """
     name = models.CharField(max_length=50, unique=True)
     # Types that aren't listed in the MTGJSON type files are "automatically created"
     automatically_created = models.BooleanField(default=False)
@@ -169,6 +173,9 @@ class CardType(models.Model):
 
 
 class CardSupertype(models.Model):
+    """
+    The supertype of any number of cards (e.g. Legendary, Basic, etc.)
+    """
     name = models.CharField(max_length=50, unique=True)
     # Types that aren't listed in the MTGJSON type files are "automatically created"
     automatically_created = models.BooleanField(default=False)
@@ -178,6 +185,9 @@ class CardSupertype(models.Model):
 
 
 class CardSubtype(models.Model):
+    """
+    The subtype of any number of cards (e.g. Beast, Equipment, Aura etc.)
+    """
     name = models.CharField(max_length=50, unique=True)
     # Types that aren't listed in the MTGJSON type files are "automatically created"
     automatically_created = models.BooleanField(default=False)
@@ -187,6 +197,10 @@ class CardSubtype(models.Model):
 
 
 class CardFace(models.Model):
+    """
+    A face of a card. Most cards only have a single face, but any flip/split/transform or other
+    cards will have 2 faces. Who//What//When//Where//Why will have 5.
+    """
     card = models.ForeignKey(Card, related_name="faces", on_delete=models.CASCADE)
     side = models.CharField(max_length=1, blank=True, null=True)
 
@@ -384,6 +398,9 @@ class CardPrinting(models.Model):
 
 
 class FrameEffect(models.Model):
+    """
+    The frame effect on any number of cards (e.g. legendary, bestow etc.)
+    """
     code = models.CharField(max_length=50)
     name = models.CharField(max_length=100)
 
@@ -392,6 +409,9 @@ class FrameEffect(models.Model):
 
 
 class CardFacePrinting(models.Model):
+    """
+    The face of a card printed in a certain set (for example, Fire of Fire//Ice in Invasion)
+    """
     uuid = models.CharField(max_length=40, unique=True)
 
     flavour_text = models.CharField(max_length=500, blank=True, null=True)
@@ -476,14 +496,14 @@ class CardLocalisation(models.Model):
                 existing_card.clean()
                 existing_card.save()
         except UserOwnedCard.DoesNotExist:
-            if change_count <= 0:
+            if change_count < 0:
                 # You can't subtract cards when you don' have any
                 return False
-            new_card = UserOwnedCard(
+            new_ownership = UserOwnedCard(
                 count=change_count, owner=user, card_localisation=self
             )
-            new_card.clean()
-            new_card.save()
+            new_ownership.clean()
+            new_ownership.save()
 
         change = UserCardChange(
             card_localisation=self,
@@ -496,6 +516,10 @@ class CardLocalisation(models.Model):
         return True
 
     def get_image_path(self) -> str:
+        """
+        Gets most fitting image path for this localisation (the first face if there are multiple
+        :return: The image path
+        """
         return self.localised_faces.all()[0].get_image_path()
 
 
@@ -510,6 +534,11 @@ class CardImage(models.Model):
 
 
 class CardFaceLocalisation(models.Model):
+    """
+    A localised card face. That is, one that is tied to a specific language. For example, a Fire
+    face of a Fire//Ice card that is printed in Apocalypse will have an English version, a Spanish
+    version and so on.
+    """
 
     localisation = models.ForeignKey(
         CardLocalisation, related_name="localised_faces", on_delete=models.CASCADE
@@ -542,6 +571,10 @@ class CardFaceLocalisation(models.Model):
         return f"{self.localisation} ({self.face_name})"
 
     def get_image_path(self) -> Optional[str]:
+        """
+        Gets the path of the image for this localisation
+        :return: The image's file path
+        """
         if not self.image or not self.image.file_path:
             return None
         return self.image.file_path

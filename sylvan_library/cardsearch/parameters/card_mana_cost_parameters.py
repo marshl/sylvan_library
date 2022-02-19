@@ -122,7 +122,7 @@ class CardManaCostComplexParam(CardSearchParam):
             raise ValueError(f"Could not parse {self.cost_text}: expected '}}'")
 
         self.generic_mana = 0
-        for symbol, count in dict(self.symbol_counts).items():
+        for symbol, _ in dict(self.symbol_counts).items():
             try:
                 self.generic_mana = int(symbol)
                 del self.symbol_counts[symbol]

@@ -1,3 +1,6 @@
+"""
+Models used for updating
+"""
 from django.db import models
 
 
@@ -21,6 +24,9 @@ class UpdateCard(models.Model):
 
 
 class UpdateCardFace(models.Model):
+    """
+    Model for tracking staged updates for CardFace objects
+    """
     update_mode = UPDATE_MODE_FIELD
     scryfall_oracle_id = models.CharField(max_length=36)
     name = models.CharField(max_length=200)
@@ -106,6 +112,9 @@ class UpdateCardFaceLocalisation(models.Model):
 
 
 class UpdateSet(models.Model):
+    """
+    Model for updating a Set object
+    """
     update_mode = UPDATE_MODE_FIELD
     set_code = models.CharField(max_length=20, unique=True)
     field_data = models.JSONField()
@@ -115,6 +124,9 @@ class UpdateSet(models.Model):
 
 
 class UpdateBlock(models.Model):
+    """
+    Model for updating a Block object
+    """
     update_mode = UPDATE_MODE_FIELD
     name = models.CharField(max_length=100, unique=True)
     release_date = models.DateField()
@@ -124,6 +136,9 @@ class UpdateBlock(models.Model):
 
 
 class UpdateCardRuling(models.Model):
+    """
+    Model for updating a CardRuling object
+    """
     update_mode = UPDATE_MODE_FIELD
     card_name = models.CharField(max_length=100)
     scryfall_oracle_id = models.CharField(max_length=36)
@@ -138,6 +153,9 @@ class UpdateCardRuling(models.Model):
 
 
 class UpdateCardLegality(models.Model):
+    """
+    Model for updatig
+    """
     update_mode = UPDATE_MODE_FIELD
     card_name = models.CharField(max_length=100)
     scryfall_oracle_id = models.CharField(max_length=36)

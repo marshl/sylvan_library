@@ -98,8 +98,8 @@ def parse_numeric_parameter(
 
     try:
         return float(text)
-    except ValueError:
-        raise ValueError(f"Could not convert {text} to number")
+    except ValueError as ex:
+        raise ValueError(f"Could not convert {text} to number") from ex
 
 
 def param_parser(
@@ -450,6 +450,11 @@ def parse_colour_identity_param(
 
 @param_parser(name="price", keywords=["price"], operators=["<", "<=", ">=", ">"])
 def parse_price_param(param_args: ParameterArgs) -> CardPriceParam:
+    """
+    Creates a price parameter from the given operator and text
+    :param param_args: The parameter arguments
+    :return:
+    """
     return CardPriceParam(number=float(param_args.text), operator=param_args.operator)
 
 
@@ -547,6 +552,11 @@ def parse_layout_parameter(param_args: ParameterArgs) -> CardLayoutParameter:
 
 @param_parser(name="order", keywords=["order", "sort"], operators=[":", "="])
 def parse_sort_order_param(param_args: ParameterArgs) -> CardSortParam:
+    """
+    Creates a sort order parameter from the given operator and text
+    :param param_args:
+    :return:
+    """
     if param_args.text.startswith("-"):
         negate_param = True
         param_args.text = param_args.text.lstrip("-")

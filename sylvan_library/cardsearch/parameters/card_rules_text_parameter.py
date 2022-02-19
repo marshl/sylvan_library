@@ -109,6 +109,7 @@ class CardProducesManaParam(CardSearchParam):
                 excluded_colours.append(query_part)
 
         if self.operator in ("<", "<="):
+            # pylint: disable=invalid-unary-operand-type
             query = or_group_queries(included_colours) & ~or_group_queries(
                 included_colours
             )
@@ -118,6 +119,7 @@ class CardProducesManaParam(CardSearchParam):
         else:
             query = and_group_queries(included_colours)
             if self.operator == "=":
+                # pylint: disable=invalid-unary-operand-type
                 query &= ~or_group_queries(excluded_colours)
             elif self.operator == ">":
                 query &= or_group_queries(excluded_colours)

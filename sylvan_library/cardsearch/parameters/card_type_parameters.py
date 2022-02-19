@@ -94,6 +94,9 @@ class CardGenericTypeParam(CardSearchParam):
 
 
 class CardOriginalTypeParam(CardSearchParam):
+    """
+    A parameter for querying the original type line of a card
+    """
     def __init__(self, card_type: str, operator: str):
         super().__init__()
         self.card_type = card_type

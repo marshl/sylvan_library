@@ -85,7 +85,7 @@ class StagedObject:
         """
         result = {}
         for key in dir(self):
-            if fields_to_ignore and key in fields_to_ignore or key.startswith("_"):
+            if key.startswith("_") or (fields_to_ignore and key in fields_to_ignore) :
                 continue
 
             attr = getattr(self, key)
@@ -379,8 +379,12 @@ class StagedSet(StagedObject):
             if "scryfallOracleId" in card["identifiers"]
         ]
 
-    def compare_with_set(self, existing_set: Set):
-
+    def compare_with_set(self, existing_set: Set) -> dict:
+        """
+        Compares this set with an existing Set object
+        :param existing_set: The existing set to compare against
+        :return:
+        """
         differences = self.get_object_differences(
             existing_set,
             fields_to_ignore={
@@ -469,6 +473,10 @@ class StagedCardPrinting(StagedObject):
 
     @property
     def numerical_number(self) -> Optional[int]:
+        """
+
+        :return:
+        """
         if self.number is None:
             return None
         return int(convert_number_field_to_numerical(self.number))
@@ -624,6 +632,11 @@ class StagedCardLocalisation(StagedObject):
 
 
 class StagedCardFaceLocalisation(StagedObject):
+    """
+    A "staged" CardFaceLocalisation. A CardFaceLocalisation is the face of a card printed in some
+    set of some language. Staged objects are used as temporaru versions of what is stored in the
+    JSON that can then be compared to what is stored in the database.
+    """
     def __init__(
         self,
         staged_card_printing: StagedCardPrinting,

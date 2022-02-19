@@ -68,9 +68,12 @@ class ParserTests(TestCase):
         self.assertEqual(bar_param.card_name, "bar")
 
     def test_and_or_param(self) -> None:
+        """
+        Ensures that combining an "and" and an "or" parameter together works as expected
+        """
         root_param = self.parser.parse("foo and (bar or baz)")
         self.assertIsInstance(root_param, AndParam)
-        self.assertEquals(len(root_param.child_parameters), 2)
+        self.assertEqual(len(root_param.child_parameters), 2)
         foo_param, or_param = root_param.child_parameters
         self.assertIsInstance(foo_param, CardNameParam)
         self.assertIsInstance(or_param, OrParam)

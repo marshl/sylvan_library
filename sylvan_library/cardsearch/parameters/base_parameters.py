@@ -9,8 +9,6 @@ from typing import List, Union, Dict
 from django.db.models import F
 from django.db.models.query import Q
 
-from cards.models import Card
-
 logger = logging.getLogger("django")
 
 OPERATOR_MAPPING = {
@@ -58,7 +56,7 @@ def and_group_queries(q_objects: List[Q]) -> Q:
     return reduce(lambda a, b: a & b, q_objects)
 
 
-class CardSearchParam:
+class CardSearchParam(ABC):
     """
     The base search parameter class
     """
@@ -84,7 +82,7 @@ class CardSearchParam:
         )
 
 
-class BranchParam(CardSearchParam):
+class BranchParam(CardSearchParam, ABC):
     # pylint: disable=abstract-method
     """
     The base branching parameter class (subclassed to "and" and "or" parameters)
@@ -92,7 +90,7 @@ class BranchParam(CardSearchParam):
 
     def __init__(self):
         super().__init__()
-        self.child_parameters: List[CardSearchParam] = list()
+        self.child_parameters: List[CardSearchParam] = []
 
     def add_parameter(self, param: CardSearchParam):
         """

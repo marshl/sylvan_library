@@ -46,6 +46,9 @@ class CardComplexColourParam(CardSearchParam):
 
     @property
     def field_name(self):
+        """
+        The field to use based on whether this is in colour identity mode or colour mode
+        """
         return "colour_identity" if self.identity else "faces__colour"
 
     def query(self) -> Q:

@@ -4,7 +4,7 @@ Card ownership parameters
 from django.contrib.auth.models import User
 from django.db.models import Sum, Case, When, IntegerField, Q
 
-from cards.models import Card, CardPrinting
+from cards.models import Card
 from .base_parameters import CardSearchParam
 from .base_parameters import OPERATOR_MAPPING, CardNumericalParam
 
@@ -64,12 +64,12 @@ class CardOwnershipCountParam(CardNumericalParam):
         :return: The pretty version of this parameter
         """
         if self.operator in ("<", "<=", "=") and self.number <= 0:
-            return f"you you don't own any"
+            return "you you don't own any"
 
         if (self.operator == ">" and self.number == 0) or (
             self.operator == ">=" and self.number == 1
         ):
-            return f"you own it"
+            return "you own it"
 
         return f"you own {self.operator} {self.number}"
 

@@ -12,7 +12,6 @@ from django.db import transaction, models, IntegrityError, DataError
 
 from cards.models import (
     Block,
-    Colour,
     Rarity,
     Set,
     Card,
@@ -197,9 +196,9 @@ class Command(BaseCommand):
 
     def update_cards(self) -> bool:
         """
-                Updates existing Cards with any changes
-                returns: True if there were no errors, otherwise False
-                """
+        Updates existing Cards with any changes
+        returns: True if there were no errors, otherwise False
+        """
         self.logger.info("Updating %s cards", UpdateCard.objects.count())
         card_to_update: UpdateCard
         for card_to_update in UpdateCard.objects.all():
@@ -227,6 +226,9 @@ class Command(BaseCommand):
         return True
 
     def update_card_faces(self) -> bool:
+        """
+        Applies any CardFaceUpdates to CardFace objects (update/create/delete)
+        """
         self.logger.info("Creating %s card faces", UpdateCardFace.objects.count())
 
         for card_face_update in UpdateCardFace.objects.filter():
@@ -334,7 +336,8 @@ class Command(BaseCommand):
                 )
             else:
                 raise Exception(
-                    f"Invalid operation {update_card_ruling.update_mode} for card ruling update: {update_card_ruling}"
+                    f"Invalid operation {update_card_ruling.update_mode} "
+                    f"for card ruling update: {update_card_ruling}"
                 )
         return True
 
@@ -419,10 +422,10 @@ class Command(BaseCommand):
                 if field == "rarity":
                     try:
                         printing.rarity = rarity_map[value.lower()]
-                    except KeyError:
+                    except KeyError as ex:
                         raise ValueError(
                             f'Unknown rarity "{value}" for {update_card_printing}'
-                        )
+                        ) from ex
                 elif hasattr(printing, field):
                     setattr(printing, field, value)
                 else:
@@ -447,66 +450,71 @@ class Command(BaseCommand):
             UpdateCardFacePrinting.objects.filter(update_mode=UpdateMode.CREATE)
         )
         for update_card_face_printing in updates + creates:
-            if update_card_face_printing.update_mode == UpdateMode.CREATE:
-                printing = CardPrinting.objects.get(
-                    scryfall_id=update_card_face_printing.scryfall_id
+            self.update_single_card_face_printing(update_card_face_printing)
+        return True
+
+    def update_single_card_face_printing(
+        self, update_card_face_printing: UpdateCardFacePrinting
+    ) -> None:
+        if update_card_face_printing.update_mode == UpdateMode.CREATE:
+            printing = CardPrinting.objects.get(
+                scryfall_id=update_card_face_printing.scryfall_id
+            )
+            face_printing = CardFacePrinting(
+                uuid=update_card_face_printing.printing_uuid,
+                card_printing=printing,
+                card_face=CardFace.objects.get(
+                    card=printing.card, side=update_card_face_printing.side
+                ),
+            )
+        elif update_card_face_printing.update_mode == UpdateMode.UPDATE:
+            try:
+                face_printing = CardFacePrinting.objects.get(
+                    card_printing__scryfall_id=update_card_face_printing.scryfall_id,
+                    card_face__card__scryfall_oracle_id=update_card_face_printing.scryfall_oracle_id,
+                    card_face__side=update_card_face_printing.side,
                 )
-                face_printing = CardFacePrinting(
-                    uuid=update_card_face_printing.printing_uuid,
-                    card_printing=printing,
-                    card_face=CardFace.objects.get(
-                        card=printing.card, side=update_card_face_printing.side
-                    ),
+            except CardFacePrinting.DoesNotExist:
+                logging.error(
+                    f"Could not find card printing %s for %s",
+                    update_card_face_printing.printing_uuid,
+                    update_card_face_printing,
                 )
-            elif update_card_face_printing.update_mode == UpdateMode.UPDATE:
-                try:
-                    face_printing = CardFacePrinting.objects.get(
-                        # uuid=update_card_face_printing.printing_uuid
-                        card_printing__scryfall_id=update_card_face_printing.scryfall_id,
-                        card_face__card__scryfall_oracle_id=update_card_face_printing.scryfall_oracle_id,
-                        card_face__side=update_card_face_printing.side,
-                    )
-                except CardFacePrinting.DoesNotExist:
-                    logging.error(
-                        f"Could not find card printing %s for %s",
-                        update_card_face_printing.printing_uuid,
-                        update_card_face_printing,
-                    )
-                    raise
-            else:
+                raise
+        else:
+            return
+
+        for field, value in update_card_face_printing.field_data.items():
+            if update_card_face_printing.update_mode == UpdateMode.UPDATE:
+                value = value["to"]
+
+            # Frame effects nee to be handled separately
+            if field in ("frame_effects",):
                 continue
 
-            for field, value in update_card_face_printing.field_data.items():
-                if update_card_face_printing.update_mode == UpdateMode.UPDATE:
-                    value = value["to"]
+            if hasattr(face_printing, field):
+                setattr(face_printing, field, value)
+            else:
+                raise NotImplementedError(
+                    f"Cannot set unrecognised field CardFacePrinting.{field}"
+                )
 
-                if field in ("frame_effects",):
-                    continue
-                elif hasattr(face_printing, field):
-                    setattr(face_printing, field, value)
-                else:
-                    raise NotImplementedError(
-                        f"Cannot set unrecognised field CardFacePrinting.{field}"
-                    )
+        try:
+            face_printing.save()
+        except (ValidationError, IntegrityError):
+            self.logger.error("Failed to validate %s", update_card_face_printing)
+            raise
 
-            try:
-                face_printing.save()
-            except (ValidationError, IntegrityError):
-                self.logger.error("Failed to validate %s", update_card_face_printing)
-                raise
-
-            if "frame_effects" in update_card_face_printing.field_data:
-                frame_effects = update_card_face_printing.field_data["frame_effects"]
-                if update_card_face_printing.update_mode == UpdateMode.UPDATE:
-                    frame_effects = frame_effects["to"]
-                frame_effect_objs = FrameEffect.objects.filter(code__in=frame_effects)
-                if frame_effect_objs.count() != len(frame_effects):
-                    raise ValueError(
-                        f"Frame effects {frame_effects} did not match object count {frame_effect_objs}"
-                    )
-                face_printing.frame_effects.set(frame_effect_objs)
-
-        return True
+        if "frame_effects" in update_card_face_printing.field_data:
+            frame_effects = update_card_face_printing.field_data["frame_effects"]
+            if update_card_face_printing.update_mode == UpdateMode.UPDATE:
+                frame_effects = frame_effects["to"]
+            frame_effect_objs = FrameEffect.objects.filter(code__in=frame_effects)
+            if frame_effect_objs.count() != len(frame_effects):
+                raise ValueError(
+                    f"Frame effects {frame_effects} did not match object count {frame_effect_objs}"
+                )
+            face_printing.frame_effects.set(frame_effect_objs)
 
     def update_card_localisations(self) -> bool:
         self.logger.info(

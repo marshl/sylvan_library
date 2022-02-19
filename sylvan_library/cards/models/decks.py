@@ -1,7 +1,6 @@
 """
 Models for deck objects
 """
-import datetime
 import re
 from collections import defaultdict
 from typing import List, Dict
@@ -331,9 +330,8 @@ class Deck(models.Model):
         )
         if overcount_cards.exists():
             raise ValidationError(
-                "You have over {} of the following cards: {}".format(
-                    limit, ", ".join(c.card.name for c in overcount_cards)
-                )
+                f"You have over {limit} of the following cards: "
+                f"{', '.join(c.card.name for c in overcount_cards)}"
             )
 
     def validate_commander(self, validate_type: str) -> None:
@@ -346,7 +344,7 @@ class Deck(models.Model):
         commanders = self.cards.filter(is_commander=True)
         if not commanders.exists():
             raise ValidationError(
-                f"A commander deck should have at least one commander"
+                "A commander deck should have at least one commander"
             )
 
         if commanders.count() != 1:
@@ -354,13 +352,13 @@ class Deck(models.Model):
                 card__faces__rules_text__icontains="partner"
             ).exists():
                 raise ValidationError(
-                    f"A commander deck can only have multiple commanders if they have partner"
+                    "A commander deck can only have multiple commanders if they have partner"
                 )
 
         if validate_type:
             if commanders.exclude(card__faces__supertypes__name=validate_type).exists():
                 raise ValidationError(
-                    f"A commander deck should have a legend as the commander"
+                    "A commander deck should have a legend as the commander"
                 )
 
     def validate_size(self, minimum_count: int) -> None:

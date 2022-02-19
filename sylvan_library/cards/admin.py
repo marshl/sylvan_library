@@ -255,7 +255,7 @@ class CardRulingModelForm(forms.ModelForm):
 
     class Meta:
         model = CardRuling
-        exclude = []
+        fields = ["card", "date", "text"]
 
 
 @admin.register(CardRuling)
@@ -308,7 +308,18 @@ class CardFacePrintingModelForm(forms.ModelForm):
 
     class Meta:
         model = CardFacePrinting
-        exclude = []
+        fields = [
+            "uuid",
+            "flavour_text",
+            "artist",
+            "scryfall_illustration_id",
+            "original_text",
+            "original_type",
+            "watermark",
+            "card_face",
+            "card_printing",
+            "frame_effects",
+        ]
 
 
 @admin.register(CardFacePrinting)
@@ -344,7 +355,17 @@ class CardFaceLocalisationModelForm(forms.ModelForm):
 
     class Meta:
         model = CardFaceLocalisation
-        exclude = []
+        fields = [
+            "localisation",
+        "card_printing_face",
+
+        "face_name",
+        "flavour_text",
+        "type",
+
+        "text",
+        "image"
+        ]
 
 
 @admin.register(CardFaceLocalisation)

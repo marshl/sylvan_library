@@ -16,20 +16,25 @@ from data_import.models import (
 
 
 @admin.register(UpdateBlock)
-class CreateBlockAdmin(admin.ModelAdmin):
+class UpdateBlockAdmin(admin.ModelAdmin):
     pass
 
 
 @admin.register(UpdateSet)
 class UpdateSetAdmin(admin.ModelAdmin):
+    """
+    Admin for an UpdateSet object
+    """
     search_fields = ["field_data"]
     list_filter = ["update_mode"]
 
 
 @admin.register(UpdateCard)
 class UpdateCardAdmin(admin.ModelAdmin):
+    """
+    Admin for an UpdateCard object
+    """
     list_filter = ["update_mode"]
-    pass
 
 
 @admin.register(UpdateCardFace)
@@ -48,6 +53,9 @@ class UpdateCardRulingModelForm(forms.ModelForm):
 
 @admin.register(UpdateCardRuling)
 class UpdateCardRulingAdmin(admin.ModelAdmin):
+    """
+    Admin for updating a CardRuling object
+    """
     search_fields = ["card_name"]
     form = UpdateCardRulingModelForm
 

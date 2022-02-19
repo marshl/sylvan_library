@@ -2,7 +2,7 @@
 The module for staging tests
 """
 from django.test import TestCase
-from data_import.staging import StagedCard, StagedCardFace
+from data_import.staging import StagedCard, StagedCardFace, convert_number_field_to_numerical
 
 
 class StagedCardTestCase(TestCase):
@@ -81,3 +81,14 @@ class StagedCardTestCase(TestCase):
         self.assertEqual(
             "Token Legendary Creature — Monkey", staged_card_face.type_line
         )
+
+
+class NumberConversionTestCase(TestCase):
+    """
+    Test cases for conversion functions
+    """
+    def test_convert_number_field_to_numerical(self):
+        param_list = [("", 0), (None, 0), ("1", 1), ("2", 2), ("*", 0), ("2+*", 2)]
+        for param1, param2 in param_list:
+            with self.subTest():
+                self.assertEqual(convert_number_field_to_numerical(param1), param2)

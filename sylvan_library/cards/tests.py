@@ -53,6 +53,12 @@ def create_test_card(fields: Optional[Dict[str, Any]] = None) -> Card:
 def create_test_card_face(
     card: Card, fields: Optional[Dict[str, Any]] = None
 ) -> CardFace:
+    """
+    Creates a dummy card face fr testing
+    :param card: The card the face belongs to
+    :param fields: Any extra fields to fill out
+    :return: The dummy card face
+    """
     card_face = CardFace(card=card)
     card_face.name = uuid.uuid4()
     card_face.mana_value = 0
