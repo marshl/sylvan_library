@@ -306,10 +306,20 @@ def parse_block_param(param_args: ParameterArgs) -> CardBlockParam:
 
 
 @param_parser(
-    name="format", keywords=["format", "legal", "legality", "lega;"], operators=[":", "="]
+    name="format", keywords=["format", "legal", "legality", "banned", "restricted"], operators=[":", "="]
 )
 def parse_legality_param(param_args: ParameterArgs) -> CardLegalityParam:
-    return CardLegalityParam(param_args.text)
+    """
+    Creates a card legality parameter from the given param args
+    :param param_args: The parameter arguments
+    :return: The card legality parameter
+    """
+    restriction = "legal"
+    if param_args.keyword == "banned":
+        restriction = "banned"
+    elif param_args.keyword == "restricted":
+        restriction = "restricted"
+    return CardLegalityParam(format_string=param_args.text, restriction=restriction)
 
 
 @param_parser(

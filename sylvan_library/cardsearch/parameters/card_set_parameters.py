@@ -3,7 +3,7 @@ Card set parameters
 """
 from django.db.models.query import Q
 
-from cards.models import Block, Set
+from cards.models import Block, Set, CardLegality
 from .base_parameters import CardSearchParam
 
 
@@ -45,17 +45,22 @@ class CardBlockParam(CardSearchParam):
 
 
 class CardLegalityParam(CardSearchParam):
-    def __init__(self, format_string: str):
+    def __init__(self, format_string: str, restriction: str):
         super().__init__()
         self.format_string = format_string
+        self.restriction = restriction
 
     def query(self) -> Q:
-        query = Q(card__legalities__format__name__iexact=self.format_string)
+        legality_query = CardLegality.objects.filter(
+            format__name__iexact=self.format_string,
+            restriction__iexact=self.restriction,
+        )
+        query = Q(card__legalities__in=legality_query)
         return ~query if self.negated else query
 
     def get_pretty_str(self) -> str:
         return (
-            f"isn't legal in {self.format_string}"
+            f"it's {self.restriction} in {self.format_string}"
             if self.negated
-            else f"is legal in {self.format_string}"
+            else f"it's {self.restriction} in {self.format_string}"
         )
