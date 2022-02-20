@@ -293,6 +293,7 @@ class DeckForm(forms.ModelForm):
             "enchantments",
             "other spells",
             "instants and sorc.",
+            "other",
         ):
             return None
 
