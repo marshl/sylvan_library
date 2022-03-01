@@ -2,11 +2,11 @@
 Card ownership parameters
 """
 from django.contrib.auth.models import User
-from django.db.models import Sum, Case, When, IntegerField, Q
+from django.db.models import Q
 
 from cards.models import Card
+from .base_parameters import CardNumericalParam
 from .base_parameters import CardSearchParam
-from .base_parameters import OPERATOR_MAPPING, CardNumericalParam
 
 
 class CardOwnerParam(CardSearchParam):
@@ -40,22 +40,20 @@ class CardOwnershipCountParam(CardNumericalParam):
         Gets the Q query object
         :return: The Q object
         """
-        annotated_result = Card.objects.annotate(
-            ownership_count=Sum(
-                Case(
-                    When(
-                        printings__localisations__ownerships__owner=self.user,
-                        then="printings__localisations__ownerships__count",
-                    ),
-                    output_field=IntegerField(),
-                    default=0,
-                )
-            )
+        raw = Card.objects.raw(
+            f"""
+SELECT cards_card.id 
+FROM cards_card
+JOIN cards_cardprinting ON cards_cardprinting.card_id = cards_card.id
+JOIN cards_cardlocalisation ON cards_cardprinting.id = cards_cardlocalisation.card_printing_id
+LEFT JOIN cards_userownedcard ON cards_userownedcard.card_localisation_id = cards_cardlocalisation.id
+AND cards_userownedcard.owner_id = %s
+GROUP BY cards_card.id
+HAVING SUM(COALESCE(cards_userownedcard.count, 0)) {self.operator} %s
+        """,
+            [self.user.id, self.number],
         )
-
-        kwargs = {f"ownership_count{OPERATOR_MAPPING[self.operator]}": self.number}
-        query = Q(**kwargs)
-        return Q(card_id__in=annotated_result.filter(query))
+        return Q(card_id__in=raw)
 
     def get_pretty_str(self) -> str:
         """
@@ -88,19 +86,18 @@ class CardUsageCountParam(CardNumericalParam):
         Gets the Q query object
         :return: The Q object
         """
-        annotated_result = Card.objects.annotate(
-            usage_count=Sum(
-                Case(
-                    When(deck_cards__deck__owner=self.user, then=1),
-                    output_field=IntegerField(),
-                    default=0,
-                )
-            )
+        raw = Card.objects.raw(
+            f"""
+SELECT cards_card.id 
+FROM cards_card
+LEFT JOIN cards_deckcard ON cards_deckcard.card_id = cards_card.id
+LEFT JOIN cards_deck ON cards_deck.id = cards_deckcard.deck_id AND cards_deck.owner_id = %s
+GROUP BY cards_card.id
+HAVING COUNT(cards_deckcard.id) {self.operator} %s
+""",
+            [self.user.id, self.number],
         )
-
-        kwargs = {f"usage_count{OPERATOR_MAPPING[self.operator]}": self.number}
-        query = Q(**kwargs)
-        return Q(card_id__in=annotated_result.filter(query))
+        return Q(card_id__in=raw)
 
     def get_pretty_str(self) -> str:
         """
@@ -108,4 +105,6 @@ class CardUsageCountParam(CardNumericalParam):
         (and all sub parameters for those with children)
         :return: The pretty version of this parameter
         """
-        return f"the card was used in {self.operator} {self.number} decks"
+        if self.operator == "=" and self.number == 0:
+            return "you haven't used it in a deck"
+        return f"you used it in {self.operator} {self.number} decks"
