@@ -113,13 +113,13 @@ class Deck(models.Model):
                 groups["commander"].append(deck_card)
                 continue
 
-            if deck_card.card.is_land(only_land=True):
-                groups["land"].append(deck_card)
-                continue
-
             first_face_types = [
                 _type.name for _type in deck_card.card.faces.first().types.all()
             ]
+
+            if "Land" in first_face_types:
+                groups["land"].append(deck_card)
+                continue
 
             if "Creature" in first_face_types:
                 groups["creature"].append(deck_card)
