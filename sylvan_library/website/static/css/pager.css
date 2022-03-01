@@ -25,7 +25,7 @@
     display: none;
 }
 
-.toggle-item, .page-button {
+.page-button {
     flex: 1;
     background-color: #333;
     border: 1px solid #444;
@@ -37,29 +37,34 @@
     border-right: none;
     text-decoration: none;
     white-space: nowrap;
+
 }
 
-.toggle-item:first-child, .page-button:first-child {
+.page-button:first-child {
     border-radius: 3px 0 0 3px;
 }
 
-.toggle-item:first-child, .page-button:last-child {
+.page-button:last-child {
     border-radius: 0 3px 3px 0;
     border-right: 1px solid #444;
 }
 
-.toggle-item.is-active, .page-button.is-active, .page-button:hover {
+.page-button.is-active, .page-button:hover {
     background-color: #08c;
     color: #fff;
     border-color: #08c;
 }
 
-.toggle-item.is-disabled, .page-button.is-disabled {
+.page-button.is-disabled {
     cursor: auto;
     color: #777;
     pointer-events: none;
 }
 
-.toggle-item-content, .page-button-text {
+.page-button-text {
     display: inline;
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+/Edge */
+    user-select: none; /* Standard */
 }

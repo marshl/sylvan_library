@@ -99,7 +99,7 @@ def replace_chapter_symbols(text: str, scale: Optional[str] = None) -> str:
         classes = ["ms", "ms-saga", "ms-saga-{}".format(roman_map.get(roman_symbol))]
         if scale is not None:
             classes.append(f"ms-{scale}")
-        return '<i class="{}"></i>'.format(" ".join(classes))
+        return f'<i class="{" ".join(classes)}"></i>'
 
     return re.sub(r"\b([IV]+)\b", replace_symbol, text)
 
