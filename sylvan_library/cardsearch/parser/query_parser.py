@@ -306,7 +306,9 @@ def parse_block_param(param_args: ParameterArgs) -> CardBlockParam:
 
 
 @param_parser(
-    name="format", keywords=["format", "legal", "legality", "banned", "restricted"], operators=[":", "="]
+    name="format",
+    keywords=["format", "legal", "legality", "banned", "restricted"],
+    operators=[":", "="],
 )
 def parse_legality_param(param_args: ParameterArgs) -> CardLegalityParam:
     """
@@ -397,7 +399,7 @@ def parse_watermark_param(param_args: ParameterArgs) -> CardWatermarkParam:
     operators=[":", "=", "<", "<=", ">", ">="],
 )
 def parse_colour_param(
-    param_args: ParameterArgs
+    param_args: ParameterArgs,
 ) -> Union[CardComplexColourParam, CardColourCountParam]:
     """
     Parses a card colour parameter
@@ -437,7 +439,7 @@ def parse_produces_param(param_args: ParameterArgs) -> CardProducesManaParam:
     operators=[":", "=", "<", "<=", ">", ">="],
 )
 def parse_colour_identity_param(
-    param_args: ParameterArgs
+    param_args: ParameterArgs,
 ) -> Union[CardComplexColourParam, CardColourCountParam]:
     """
     Parses a card colour identity parameter
@@ -516,7 +518,7 @@ def parse_deck_usage_param(param_args: ParameterArgs) -> CardUsageCountParam:
     if param_args.operator == ":" and param_args.text == "any":
         return CardUsageCountParam(param_args.context_user, ">=", 1)
 
-    if param_args.operator == ":" and param_args.text == "none":
+    if param_args.operator == ":" and param_args.text == "never":
         return CardUsageCountParam(param_args.context_user, "=", 0)
 
     try:
@@ -527,7 +529,9 @@ def parse_deck_usage_param(param_args: ParameterArgs) -> CardUsageCountParam:
     return CardUsageCountParam(param_args.context_user, param_args.operator, count)
 
 
-@param_parser(name="rarity", keywords=["r", "rarity"], operators=[":", "="])
+@param_parser(
+    name="rarity", keywords=["r", "rarity"], operators=[":", "=", "<=", "<", ">", ">="]
+)
 def parse_rarity_param(param_args: ParameterArgs) -> CardRarityParam:
     """
     Creates a rarity parameter from the given operator and text
@@ -537,7 +541,7 @@ def parse_rarity_param(param_args: ParameterArgs) -> CardRarityParam:
     rarity = Rarity.objects.get(
         Q(symbol__iexact=param_args.text) | Q(name__iexact=param_args.text)
     )
-    return CardRarityParam(rarity)
+    return CardRarityParam(rarity, operator=param_args.operator)
 
 
 @param_parser(name="artist", keywords=["art", "artist"], operators=[":", "="])

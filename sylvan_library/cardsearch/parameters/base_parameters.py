@@ -25,6 +25,20 @@ OPERATOR_MAPPING = {
     "EQ": "",
 }
 
+OPERATOR_TO_WORDY_MAPPING = {
+    "<": "less than",
+    "<=": "less than or equal to",
+    ">": "greater than",
+    ">=": "greater than or equal to",
+    "=": "equal to",
+    ":": "equal to",
+    "LT": "less than",
+    "LTE": "less than or equal to",
+    "GT": "greater than",
+    "GTE": "greater than or equal to",
+    "EQ": "equal to",
+}
+
 NUMERICAL_OPERATOR_CHOICES = (
     ("GT", ">"),
     ("GTE", ">="),
