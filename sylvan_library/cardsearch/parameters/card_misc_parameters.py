@@ -89,7 +89,7 @@ class CardIsHybridParam(CardSearchParam):
         return ~query if self.negated else query
 
     def get_pretty_str(self) -> str:
-        return "card " + ("isn't" if self.negated else "is") + " hybrid"
+        return "the cards " + ("don't have" if self.negated else "have") + " hybrid mana"
 
 
 class CardIsCommanderParam(CardSearchParam):
@@ -105,4 +105,4 @@ class CardIsCommanderParam(CardSearchParam):
         return ~query if self.negated else query
 
     def get_pretty_str(self) -> str:
-        return "card " + ("can't" if self.negated else "can") + " be your commander"
+        return "the cards " + ("can't" if self.negated else "can") + " be your commander"
