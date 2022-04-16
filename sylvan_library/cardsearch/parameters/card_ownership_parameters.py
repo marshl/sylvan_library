@@ -4,9 +4,11 @@ Card ownership parameters
 from django.contrib.auth.models import User
 from django.db.models import Q
 
-from cards.models import Card
-from .base_parameters import CardNumericalParam
-from .base_parameters import CardSearchParam
+from sylvan_library.cards.models.card import Card
+from sylvan_library.cardsearch.parameters.base_parameters import (
+    CardNumericalParam,
+    CardSearchParam,
+)
 
 
 class CardOwnerParam(CardSearchParam):

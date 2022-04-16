@@ -3,7 +3,7 @@ Example parser for JSON
 """
 
 from typing import Union, Tuple, Any, Dict, List, Type
-from cardsearch.parser.base_parser import Parser, ParseError
+from sylvan_library.cardsearch.parser.base_parser import Parser, ParseError
 
 
 class JSONParser(Parser):

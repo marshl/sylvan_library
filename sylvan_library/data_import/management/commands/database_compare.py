@@ -10,18 +10,17 @@ from django.core.management.base import BaseCommand
 from django.db import transaction, models
 from django.db.models import F
 
-from cards.models import (
-    Block,
+from sylvan_library.cards.models.card import (
+    CardFace,
+    CardFacePrinting,
+    CardLocalisation,
+    CardFaceLocalisation,
     Card,
     CardPrinting,
-    Set,
-    CardLocalisation,
-    CardFacePrinting,
-    CardFace,
-    CardFaceLocalisation,
 )
-from data_import.management.commands import get_all_set_data
-from data_import.models import (
+from sylvan_library.cards.models.sets import Set, Block
+from sylvan_library.data_import.management.commands import get_all_set_data
+from sylvan_library.data_import.models import (
     UpdateSet,
     UpdateCard,
     UpdateBlock,
@@ -32,9 +31,9 @@ from data_import.models import (
     UpdateCardLocalisation,
     UpdateCardFaceLocalisation,
     UpdateCardRuling,
-    UpdateCardLegality
+    UpdateCardLegality,
 )
-from data_import.staging import (
+from sylvan_library.data_import.staging import (
     StagedCard,
     StagedSet,
     StagedCardLocalisation,
@@ -195,7 +194,8 @@ class SetParser:
             card.scryfall_oracle_id: card
             for card in Card.objects.filter(
                 scryfall_oracle_id__in=staged_set.get_scryfall_oracle_ids()
-            ).prefetch_related("rulings", "legalities__format")
+            )
+            .prefetch_related("rulings", "legalities__format")
             .all()
         }
 
@@ -366,7 +366,9 @@ class SetParser:
 
         self.process_set_cards()
 
-    def process_set_cards(self,) -> None:
+    def process_set_cards(
+        self,
+    ) -> None:
         """
         Processes the cards within a set dictionary
         """
@@ -411,8 +413,6 @@ class SetParser:
             return
 
         self.set_file_parser.cards_parsed.add(staged_card.scryfall_oracle_id)
-
-
 
         existing_card = self.get_existing_card(staged_card.scryfall_oracle_id)
 

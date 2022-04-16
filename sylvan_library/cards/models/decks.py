@@ -10,9 +10,9 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Sum, Avg, Q
 
-from cards.models.card import Card, CardType
-from cards.models.colour import Colour
-from cards.models.rarity import Rarity
+from sylvan_library.cards.models.card import Card, CardType
+from sylvan_library.cards.models.colour import Colour
+from sylvan_library.cards.models.rarity import Rarity
 
 
 class Deck(models.Model):
@@ -343,9 +343,7 @@ class Deck(models.Model):
 
         commanders = self.cards.filter(is_commander=True)
         if not commanders.exists():
-            raise ValidationError(
-                "A commander deck should have at least one commander"
-            )
+            raise ValidationError("A commander deck should have at least one commander")
 
         if commanders.count() != 1:
             if commanders.exclude(

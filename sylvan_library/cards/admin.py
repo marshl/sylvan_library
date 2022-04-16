@@ -4,26 +4,23 @@ Django admin config for card app
 from django import forms
 from django.contrib import admin
 
-from cards.models import (
-    Block,
-    Card,
+from sylvan_library.cards.models.card import (
     CardFace,
-    CardFaceLocalisation,
-    CardFacePrinting,
-    CardImage,
-    CardLegality,
-    CardLocalisation,
-    CardPrice,
     CardPrinting,
-    CardRuling,
+    CardFacePrinting,
+    CardLocalisation,
+    CardFaceLocalisation,
+    Card,
+    CardType,
     CardSubtype,
     CardSupertype,
-    CardType,
-    Deck,
-    DeckCard,
-    Format,
-    Set,
+    CardImage,
 )
+from sylvan_library.cards.models.card_price import CardPrice
+from sylvan_library.cards.models.decks import DeckCard, Deck
+from sylvan_library.cards.models.legality import CardLegality
+from sylvan_library.cards.models.ruling import CardRuling
+from sylvan_library.cards.models.sets import Set, Block, Format
 
 
 class SetInline(admin.TabularInline):

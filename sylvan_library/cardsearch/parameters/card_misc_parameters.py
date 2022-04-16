@@ -89,13 +89,16 @@ class CardIsHybridParam(CardSearchParam):
         return ~query if self.negated else query
 
     def get_pretty_str(self) -> str:
-        return "the cards " + ("don't have" if self.negated else "have") + " hybrid mana"
+        return (
+            "the cards " + ("don't have" if self.negated else "have") + " hybrid mana"
+        )
 
 
 class CardIsCommanderParam(CardSearchParam):
     """
     Parameter for whether or not this card can be yor commander
     """
+
     def query(self) -> Q:
         query = (
             Q(card__faces__supertypes__name="Legendary")
@@ -105,4 +108,6 @@ class CardIsCommanderParam(CardSearchParam):
         return ~query if self.negated else query
 
     def get_pretty_str(self) -> str:
-        return "the cards " + ("can't" if self.negated else "can") + " be your commander"
+        return (
+            "the cards " + ("can't" if self.negated else "can") + " be your commander"
+        )

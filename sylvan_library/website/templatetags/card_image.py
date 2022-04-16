@@ -7,14 +7,14 @@ from typing import Optional
 from django import template
 from django.contrib.staticfiles import finders
 
-from cards.models import (
-    Card,
-    CardPrinting,
+from sylvan_library.cards.models.card import (
     CardLocalisation,
-    Language,
     CardFacePrinting,
     CardFaceLocalisation,
+    CardPrinting,
+    Card,
 )
+from sylvan_library.cards.models.language import Language
 
 logger = logging.getLogger("django")
 

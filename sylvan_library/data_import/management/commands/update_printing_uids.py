@@ -8,10 +8,10 @@ import typing
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from _query import query_yes_no
-from cards.models import CardPrinting
-from data_import.management.commands import get_all_set_data
-from data_import.staging import StagedCard, StagedCardPrinting
+from sylvan_library.cards.models.card import CardPrinting
+from sylvan_library.data_import._query import query_yes_no
+from sylvan_library.data_import.management.commands import get_all_set_data
+from sylvan_library.data_import.staging import StagedCardPrinting, StagedCard
 
 logger = logging.getLogger("django")
 

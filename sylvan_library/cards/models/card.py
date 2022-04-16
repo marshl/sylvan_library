@@ -9,9 +9,10 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Sum, IntegerField, Case, When
 
-from cards.models.colour import Colour
-from cards.models.rarity import Rarity
-from cards.models.sets import Set
+from sylvan_library.cards.models.colour import Colour
+from sylvan_library.cards.models.language import Language
+from sylvan_library.cards.models.rarity import Rarity
+from sylvan_library.cards.models.sets import Set
 from bitfield.models import BitField
 
 CARD_LAYOUT_CHOICES = (
@@ -164,6 +165,7 @@ class CardType(models.Model):
     """
     The type of any number of cards (e.g. Creature, Artifact, etc.)
     """
+
     name = models.CharField(max_length=50, unique=True)
     # Types that aren't listed in the MTGJSON type files are "automatically created"
     automatically_created = models.BooleanField(default=False)
@@ -176,6 +178,7 @@ class CardSupertype(models.Model):
     """
     The supertype of any number of cards (e.g. Legendary, Basic, etc.)
     """
+
     name = models.CharField(max_length=50, unique=True)
     # Types that aren't listed in the MTGJSON type files are "automatically created"
     automatically_created = models.BooleanField(default=False)
@@ -188,6 +191,7 @@ class CardSubtype(models.Model):
     """
     The subtype of any number of cards (e.g. Beast, Equipment, Aura etc.)
     """
+
     name = models.CharField(max_length=50, unique=True)
     # Types that aren't listed in the MTGJSON type files are "automatically created"
     automatically_created = models.BooleanField(default=False)
@@ -201,6 +205,7 @@ class CardFace(models.Model):
     A face of a card. Most cards only have a single face, but any flip/split/transform or other
     cards will have 2 faces. Who//What//When//Where//Why will have 5.
     """
+
     card = models.ForeignKey(Card, related_name="faces", on_delete=models.CASCADE)
     side = models.CharField(max_length=1, blank=True, null=True)
 
@@ -401,6 +406,7 @@ class FrameEffect(models.Model):
     """
     The frame effect on any number of cards (e.g. legendary, bestow etc.)
     """
+
     code = models.CharField(max_length=50)
     name = models.CharField(max_length=100)
 
@@ -412,6 +418,7 @@ class CardFacePrinting(models.Model):
     """
     The face of a card printed in a certain set (for example, Fire of Fire//Ice in Invasion)
     """
+
     uuid = models.CharField(max_length=40, unique=True)
 
     flavour_text = models.CharField(max_length=500, blank=True, null=True)
@@ -451,7 +458,7 @@ class CardLocalisation(models.Model):
     """
 
     language = models.ForeignKey(
-        "Language", related_name="cards", on_delete=models.CASCADE
+        Language, related_name="cards", on_delete=models.CASCADE
     )
     card_printing = models.ForeignKey(
         CardPrinting, related_name="localisations", on_delete=models.CASCADE

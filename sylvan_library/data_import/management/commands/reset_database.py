@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from django.db import connection
 from django.db import models
 
-from cards.models import (
+from sylvan_library.cards.models import (
     Block,
     Card,
     CardLegality,

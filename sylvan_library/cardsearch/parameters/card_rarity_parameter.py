@@ -3,8 +3,12 @@ Card rarity parameters
 """
 from django.db.models.query import Q
 
-from cards.models import Rarity
-from .base_parameters import CardSearchParam, OPERATOR_MAPPING, OPERATOR_TO_WORDY_MAPPING
+from sylvan_library.cards.models.rarity import Rarity
+from sylvan_library.cardsearch.parameters import CardSearchParam
+from sylvan_library.cardsearch.parameters.base_parameters import (
+    OPERATOR_MAPPING,
+    OPERATOR_TO_WORDY_MAPPING,
+)
 
 
 class CardRarityParam(CardSearchParam):
@@ -33,6 +37,10 @@ class CardRarityParam(CardSearchParam):
         return (
             "the rarity "
             + ("isn't" if self.negated else "is")
-            + (" " + OPERATOR_TO_WORDY_MAPPING[self.operator] if self.operator not in (":", "=") else "")
+            + (
+                " " + OPERATOR_TO_WORDY_MAPPING[self.operator]
+                if self.operator not in (":", "=")
+                else ""
+            )
             + f" {self.rarity.name.lower()}"
         )

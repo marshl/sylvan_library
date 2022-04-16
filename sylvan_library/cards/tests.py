@@ -7,7 +7,7 @@ from typing import Dict, Any, Optional
 from django.test import TestCase
 from django.contrib.auth.models import User
 
-from cards.models import (
+from sylvan_library.cards.models import (
     Card,
     CardPrinting,
     CardLocalisation,

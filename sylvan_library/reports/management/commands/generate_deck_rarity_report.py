@@ -12,7 +12,7 @@ from django.core.management.base import BaseCommand, OutputWrapper
 from django.db.models.query import QuerySet
 from pandas.plotting import register_matplotlib_converters
 
-from cards.models import Deck, User
+from sylvan_library.cards.models import Deck, User
 from sylvan_library.reports.management.commands import download_tournament_decks
 
 

@@ -14,10 +14,9 @@ import ijson
 from django.core.management.base import BaseCommand
 from django.db import transaction, connection
 
-import _paths
-from cards.models import CardPrice
-from data_import.management.commands import download_file, pretty_print_json_file
-from sylvan_library.conf import settings
+from sylvan_library.cards.models.card_price import CardPrice
+from sylvan_library.data_import import _paths
+from sylvan_library.data_import.management.commands import download_file
 
 logger = logging.getLogger("django")
 
@@ -128,6 +127,7 @@ WHERE latest_price.card_printing_id = cards_cardprinting.id
             prices_zip_file.extractall(_paths.IMPORT_FOLDER_PATH)
 
         return True
+
 
 PAPER_FOIL = (True, True)
 MTGO_FOIL = (True, False)

@@ -1,10 +1,9 @@
 """
 Models fo card pricing
 """
-from django.contrib.humanize.templatetags.humanize import intcomma
 from django.db import models
 
-from cards.models.card import CardPrinting
+from sylvan_library.cards.models.card import CardPrinting
 
 
 class CardPrice(models.Model):

@@ -1,17 +1,17 @@
 from django import forms
 from django.contrib import admin
 
-from data_import.models import (
+from sylvan_library.data_import.models import (
+    UpdateBlock,
     UpdateSet,
     UpdateCard,
-    UpdateBlock,
     UpdateCardFace,
     UpdateCardRuling,
     UpdateCardLegality,
-    UpdateCardPrinting,
-    UpdateCardFacePrinting,
-    UpdateCardLocalisation,
     UpdateCardFaceLocalisation,
+    UpdateCardLocalisation,
+    UpdateCardFacePrinting,
+    UpdateCardPrinting,
 )
 
 
@@ -25,6 +25,7 @@ class UpdateSetAdmin(admin.ModelAdmin):
     """
     Admin for an UpdateSet object
     """
+
     search_fields = ["field_data"]
     list_filter = ["update_mode"]
 
@@ -34,6 +35,7 @@ class UpdateCardAdmin(admin.ModelAdmin):
     """
     Admin for an UpdateCard object
     """
+
     list_filter = ["update_mode"]
 
 
@@ -56,6 +58,7 @@ class UpdateCardRulingAdmin(admin.ModelAdmin):
     """
     Admin for updating a CardRuling object
     """
+
     search_fields = ["card_name"]
     form = UpdateCardRulingModelForm
 

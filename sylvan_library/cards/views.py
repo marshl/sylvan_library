@@ -3,8 +3,8 @@ Views
 """
 from rest_framework import viewsets
 
-from cards.models import Card
-from cards.serializers import CardSerializer
+from sylvan_library.cards.models.card import Card
+from sylvan_library.cards.serializers import CardSerializer
 
 
 # pylint: disable=too-many-ancestors

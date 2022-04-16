@@ -11,7 +11,10 @@ from django.core.management.base import BaseCommand
 from django.db import models
 from django.db.models import Count
 
-from cards.models import Block, Card, CardPrinting, Rarity, Set, CardFace, Colour
+from sylvan_library.cards.models.card import Card, CardFace, CardPrinting
+from sylvan_library.cards.models.colour import Colour
+from sylvan_library.cards.models.rarity import Rarity
+from sylvan_library.cards.models.sets import Block, Set
 
 WUBRG = Colour.WHITE | Colour.BLUE | Colour.BLACK | Colour.RED | Colour.GREEN
 
@@ -362,7 +365,9 @@ class Command(BaseCommand):
         self.assert_card_mana_value_eq("Comet Storm", 2)
 
         # Transform card
-        self.assert_card_mana_value_eq("Garruk Relentless // Garruk, the Veil-Cursed", 4)
+        self.assert_card_mana_value_eq(
+            "Garruk Relentless // Garruk, the Veil-Cursed", 4
+        )
 
         # Meld card
         self.assert_card_mana_value_eq("Brisela, Voice of Nightmares", 11)

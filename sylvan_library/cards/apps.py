@@ -9,4 +9,4 @@ class CardsConfig(AppConfig):
     Configuration for the cards app
     """
 
-    name = "cards"
+    name = "sylvan_library.cards"

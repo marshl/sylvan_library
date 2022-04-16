@@ -11,8 +11,10 @@ from django.db.models import Func, Value, F
 from django_select2.forms import Select2MultipleWidget
 from tinymce.widgets import TinyMCE
 
-from cards.models import Card, CardPrinting, Deck, DeckCard, Language
-from cardsearch.parse_search import ParseSearch
+from sylvan_library.cards.models.card import CardPrinting, Card
+from sylvan_library.cards.models.decks import Deck, DeckCard
+from sylvan_library.cards.models.language import Language
+from sylvan_library.cardsearch.parse_search import ParseSearch
 
 
 class ChangeCardOwnershipForm(forms.Form):

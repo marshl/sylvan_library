@@ -6,9 +6,13 @@ from typing import List
 from django.db.models import F
 from django.db.models.query import Q
 
-from cards.models import Colour, Card
-from cards.models.colour import colours_to_int_flags, colours_to_symbols
-from .base_parameters import CardSearchParam
+from sylvan_library.cards.models.card import Card
+from sylvan_library.cards.models.colour import (
+    Colour,
+    colours_to_int_flags,
+    colours_to_symbols,
+)
+from sylvan_library.cardsearch.parameters import CardSearchParam
 
 
 class CardColourParam(CardSearchParam):

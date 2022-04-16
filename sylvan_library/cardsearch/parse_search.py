@@ -5,10 +5,10 @@ from typing import Optional
 
 from django.contrib.auth.models import User
 
-from cards.models import Set
-from cardsearch.base_search import BaseSearch
-from cardsearch.parameters import CardSetParam, BranchParam
-from cardsearch.parser import CardQueryParser, ParseError
+from sylvan_library.cards.models.sets import Set
+from sylvan_library.cardsearch.base_search import BaseSearch
+from sylvan_library.cardsearch.parameters import BranchParam, CardSetParam
+from sylvan_library.cardsearch.parser import ParseError, CardQueryParser
 
 
 class ParseSearch(BaseSearch):

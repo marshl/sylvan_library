@@ -9,16 +9,16 @@ from typing import List, Optional, Dict, Any
 import arrow
 from django.db import models
 
-from cards.models import (
-    Card,
-    Colour,
-    Set,
+from sylvan_library.cards.models.card import (
     CardFace,
     CardPrinting,
     CardFacePrinting,
     CardLocalisation,
     CardFaceLocalisation,
+    Card,
 )
+from sylvan_library.cards.models.colour import Colour
+from sylvan_library.cards.models.sets import Set
 
 COLOUR_TO_SORT_KEY = {
     Colour.COLOURLESS: 0,
@@ -85,7 +85,7 @@ class StagedObject:
         """
         result = {}
         for key in dir(self):
-            if key.startswith("_") or (fields_to_ignore and key in fields_to_ignore) :
+            if key.startswith("_") or (fields_to_ignore and key in fields_to_ignore):
                 continue
 
             attr = getattr(self, key)
@@ -219,7 +219,7 @@ class StagedCardFace(StagedObject):
         self.mana_cost: str = card_data.get("manaCost")
 
         mana_value_text = card_data.get("faceManaValue", card_data.get("manaValue"))
-        self.mana_value: float = (float(mana_value_text) if mana_value_text else float(0))
+        self.mana_value: float = float(mana_value_text) if mana_value_text else float(0)
 
         self.colour: int = Colour.colour_codes_to_flags(card_data.get("colors", []))
         self.colour_indicator: int = Colour.colour_codes_to_flags(
@@ -637,6 +637,7 @@ class StagedCardFaceLocalisation(StagedObject):
     set of some language. Staged objects are used as temporaru versions of what is stored in the
     JSON that can then be compared to what is stored in the database.
     """
+
     def __init__(
         self,
         staged_card_printing: StagedCardPrinting,

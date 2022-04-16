@@ -17,22 +17,25 @@ from django.db.models import Sum, Count, Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 
-from cards.models import (
-    Card,
-    CardFace,
+from sylvan_library.cards.models.card import (
     CardPrinting,
-    CardLocalisation,
-    Colour,
-    Deck,
-    DeckCard,
-    Language,
-    Set,
-    UserCardChange,
+    Card,
     UserOwnedCard,
-    UserProps,
+    CardLocalisation,
+    CardFace,
+    UserCardChange,
 )
-from website.forms import QuerySearchForm, ChangeCardOwnershipForm, DeckForm
-from website.pagination import get_page_buttons
+from sylvan_library.cards.models.colour import Colour
+from sylvan_library.cards.models.decks import DeckCard, Deck
+from sylvan_library.cards.models.language import Language
+from sylvan_library.cards.models.sets import Set
+from sylvan_library.cards.models.user import UserProps
+from sylvan_library.website.forms import (
+    QuerySearchForm,
+    ChangeCardOwnershipForm,
+    DeckForm,
+)
+from sylvan_library.website.pagination import get_page_buttons
 
 logger = logging.getLogger("django")
 
@@ -67,33 +70,11 @@ def name_search(request: WSGIRequest) -> HttpResponse:
             "page_buttons": get_page_buttons(
                 search.paginator, query_form.get_page_number(), 3
             ),
-            "page_title":  f"{search.query_string} - Sylvan Library" if search.query_string else "Sylvan Library",
+            "page_title": f"{search.query_string} - Sylvan Library"
+            if search.query_string
+            else "Sylvan Library",
             "pretty_query_message": search.get_pretty_str(),
             "error_message": search.error_message,
-        },
-    )
-
-
-def simple_search(request: WSGIRequest) -> HttpResponse:
-    """
-    The simple search form
-    :param request: The user's request
-    :return: The HTTP Response
-    """
-    form = FieldSearchForm(request.GET)
-    search = form.get_field_search()
-
-    return render(
-        request,
-        "website/simple_search.html",
-        {
-            "form": form,
-            "results": search.results,
-            "result_count": search.paginator.count,
-            "page": search.page,
-            "page_buttons": get_page_buttons(
-                search.paginator, form.get_page_number(), 3
-            ),
         },
     )
 

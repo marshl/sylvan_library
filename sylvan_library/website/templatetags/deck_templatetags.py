@@ -5,9 +5,10 @@ from typing import List
 
 from django import template
 
-from cards.models import Deck, DeckCard, CardPrinting
-
 # pylint: disable=invalid-name
+from sylvan_library.cards.models.card import CardPrinting
+from sylvan_library.cards.models.decks import DeckCard, Deck
+
 register = template.Library()
 
 

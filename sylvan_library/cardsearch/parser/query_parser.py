@@ -9,9 +9,7 @@ from typing import Union, Optional, Dict, Callable, List
 from django.contrib.auth.models import User
 from django.db.models import F, Q
 
-from cards.models import Set, Rarity, colour, Block
-from cards.models.colour import get_colours_for_nickname
-from cardsearch.parameters import (
+from sylvan_library.cardsearch.parameters import (
     CardSearchParam,
     OrParam,
     AndParam,
@@ -53,6 +51,10 @@ from cardsearch.parameters import (
     CardLegalityParam,
 )
 from .base_parser import Parser, ParseError
+from ...cards.models import colour
+from ...cards.models.colour import get_colours_for_nickname
+from ...cards.models.rarity import Rarity
+from ...cards.models.sets import Set, Block
 
 
 class ParameterArgs:
@@ -224,7 +226,7 @@ def parse_type_param(param_args: ParameterArgs) -> CardGenericTypeParam:
 
 
 @param_parser(name="original type", keywords=["ot"], operators=[":", "="])
-def parse_original_type_param(param_args: ParameterArgs) -> CardGenericTypeParam:
+def parse_original_type_param(param_args: ParameterArgs) -> CardOriginalTypeParam:
     """
     Parses a card type parameter
     :param param_args: The parameter arguments

@@ -9,4 +9,4 @@ class DataExportConfig(AppConfig):
     Class for data_export configuration
     """
 
-    name = "data_export"
+    name = "sylvan_library.data_export"

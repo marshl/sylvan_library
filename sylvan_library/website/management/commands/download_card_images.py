@@ -13,7 +13,9 @@ from django.core.management.base import BaseCommand, OutputWrapper
 from django.db import transaction
 from requests import HTTPError
 
-from cards.models import Language, CardImage, Set, CardFaceLocalisation
+from sylvan_library.cards.models.card import CardFaceLocalisation, CardImage
+from sylvan_library.cards.models.language import Language
+from sylvan_library.cards.models.sets import Set
 
 logger = logging.getLogger("django")
 

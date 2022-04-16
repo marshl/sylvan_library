@@ -3,13 +3,12 @@ Urls for the website app
 """
 from django.urls import path
 
-from website import views
+from sylvan_library.website import views
 
 # pylint: disable=invalid-name
 app_name = "website"
 urlpatterns = [
     path("", views.index, name="index"),
-    path("simple_search/", views.simple_search, name="simple_search"),
     path("name_search/", views.name_search, name="name_search"),
     path("set_list/", views.set_list, name="set_list"),
     path(

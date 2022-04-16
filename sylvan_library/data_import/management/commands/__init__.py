@@ -49,7 +49,8 @@ def get_all_set_data(
                 "PWP11",
                 "PWP12",
                 "PWP21",
-                "YMID", "Alchemy: Innistrad"
+                "YMID",
+                "Alchemy: Innistrad",
             )
         ):
             continue

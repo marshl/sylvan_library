@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from pytz import utc
 
-from cards.models import (
+from sylvan_library.cards.models import (
     Card,
     CardPrinting,
     CardLocalisation,

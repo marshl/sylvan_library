@@ -8,8 +8,8 @@ from .base_parameters import CardNumericalParam
 
 class CardPriceParam(CardNumericalParam):
     """
-       The parameter for searching by how many a user owns of it
-       """
+    The parameter for searching by how many a user owns of it
+    """
 
     def query(self) -> Q:
         """

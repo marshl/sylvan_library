@@ -6,34 +6,36 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cards', '0004_make_card_images_unique'),
+        ("cards", "0004_make_card_images_unique"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='cardfacelocalisation',
-            options={'ordering': ('card_printing_face__card_face__side',)},
+            name="cardfacelocalisation",
+            options={"ordering": ("card_printing_face__card_face__side",)},
         ),
         migrations.AlterModelOptions(
-            name='cardfaceprinting',
-            options={'ordering': ('card_face__side',)},
+            name="cardfaceprinting",
+            options={"ordering": ("card_face__side",)},
         ),
         migrations.AlterModelOptions(
-            name='cardprinting',
-            options={'ordering': ['set__release_date', 'set__name', 'numerical_number']},
+            name="cardprinting",
+            options={
+                "ordering": ["set__release_date", "set__name", "numerical_number"]
+            },
         ),
         migrations.AlterModelOptions(
-            name='deckcard',
-            options={'ordering': ['card__mana_value', 'card__name']},
+            name="deckcard",
+            options={"ordering": ["card__mana_value", "card__name"]},
         ),
         migrations.RenameField(
-            model_name='card',
-            old_name='converted_mana_cost',
-            new_name='mana_value',
+            model_name="card",
+            old_name="converted_mana_cost",
+            new_name="mana_value",
         ),
         migrations.RenameField(
-            model_name='cardface',
-            old_name='converted_mana_cost',
-            new_name='mana_value',
+            model_name="cardface",
+            old_name="converted_mana_cost",
+            new_name="mana_value",
         ),
     ]

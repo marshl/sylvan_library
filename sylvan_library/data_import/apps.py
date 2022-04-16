@@ -9,4 +9,4 @@ class DataImportConfig(AppConfig):
     COnfiguration for the data_import app
     """
 
-    name = "data_import"
+    name = "sylvan_library.data_import"

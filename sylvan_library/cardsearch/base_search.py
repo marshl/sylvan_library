@@ -6,7 +6,9 @@ from typing import List, Optional
 from django.core.paginator import Paginator, EmptyPage
 from django.db.models import prefetch_related_objects, QuerySet
 
-from cardsearch.parameters import (
+from sylvan_library.cards.models.card import CardPrinting, Card
+from sylvan_library.cards.models.sets import Set
+from sylvan_library.cardsearch.parameters import (
     CardSortParam,
     CardNameSortParam,
     AndParam,
@@ -14,8 +16,6 @@ from cardsearch.parameters import (
     BranchParam,
     SearchMode,
 )
-
-from cards.models import Card, CardPrinting, Set
 
 
 # pylint: disable=too-few-public-methods

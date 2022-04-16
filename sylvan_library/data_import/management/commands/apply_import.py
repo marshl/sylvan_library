@@ -10,26 +10,24 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction, models, IntegrityError, DataError
 
-from cards.models import (
-    Block,
-    Rarity,
-    Set,
+from sylvan_library.cards.models.card import (
+    CardPrinting,
     Card,
     CardFace,
-    CardRuling,
-    CardLegality,
-    Format,
     CardType,
     CardSubtype,
     CardSupertype,
-    CardPrinting,
-    CardFacePrinting,
     FrameEffect,
     CardLocalisation,
-    Language,
+    CardFacePrinting,
     CardFaceLocalisation,
 )
-from data_import.models import (
+from sylvan_library.cards.models.language import Language
+from sylvan_library.cards.models.legality import CardLegality
+from sylvan_library.cards.models.rarity import Rarity
+from sylvan_library.cards.models.ruling import CardRuling
+from sylvan_library.cards.models.sets import Set, Block, Format
+from sylvan_library.data_import.models import (
     UpdateBlock,
     UpdateSet,
     UpdateMode,

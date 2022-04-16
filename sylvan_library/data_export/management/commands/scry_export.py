@@ -10,7 +10,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from django.db.models import Min
 
-from cards.models import Block, Card, Set
+from sylvan_library.cards.models import Block, Card, Set
 
 logger = logging.getLogger("django")
 

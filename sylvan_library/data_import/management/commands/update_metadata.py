@@ -8,13 +8,21 @@ import time
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-import _paths
-from cards.models import Colour, Format, Language, Rarity
-from cards.models.card import CardType, CardSupertype, CardSubtype, FrameEffect
-from data_import._paths import (
-    LANGUAGE_JSON_PATH,
-    RARITY_JSON_PATH,
+from sylvan_library.cards.models.card import (
+    CardType,
+    CardSubtype,
+    CardSupertype,
+    FrameEffect,
+)
+from sylvan_library.cards.models.colour import Colour
+from sylvan_library.cards.models.language import Language
+from sylvan_library.cards.models.rarity import Rarity
+from sylvan_library.cards.models.sets import Format
+from sylvan_library.data_import import _paths
+from sylvan_library.data_import._paths import (
     COLOUR_JSON_PATH,
+    RARITY_JSON_PATH,
+    LANGUAGE_JSON_PATH,
     FORMAT_JSON_PATH,
 )
 

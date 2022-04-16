@@ -14,7 +14,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from bs4 import BeautifulSoup
 
-from cards.models import Card, Deck, DeckCard, User, CardFace
+from sylvan_library.cards.models import Card, Deck, DeckCard, User, CardFace
 
 
 class Command(BaseCommand):
