@@ -532,6 +532,9 @@ class CardImage(models.Model):
     scryfall_image_url = models.URLField(unique=True)
     file_path = models.FilePathField(blank=True, null=True, unique=True)
 
+    def __str__(self):
+        return self.file_path or self.scryfall_image_url
+
 
 class CardFaceLocalisation(models.Model):
     """
