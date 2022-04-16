@@ -7,12 +7,13 @@ from django.db.models.lookups import Exact
 class BitQueryLookupWrapper(Exact):  # NOQA
     def process_lhs(self, compiler, connection, lhs=None):
         lhs_sql, lhs_params = super(BitQueryLookupWrapper, self).process_lhs(
-            compiler, connection, lhs)
+            compiler, connection, lhs
+        )
 
         if not isinstance(self.rhs, (BitHandler, Bit)):
             return lhs_sql, lhs_params
 
-        op = ' & ' if self.rhs else ' | '
+        op = " & " if self.rhs else " | "
         rhs_sql, rhs_params = self.process_rhs(compiler, connection)
         params = list(lhs_params)
         params.extend(rhs_params)
@@ -37,16 +38,21 @@ class BitQuerySaveWrapper(BitQueryLookupWrapper):
 
         This will be called by Where.as_sql()
         """
-        engine = connection.settings_dict['ENGINE'].rsplit('.', -1)[-1]
-        if engine.startswith('postgres'):
-            XOR_OPERATOR = '#'
-        elif engine.startswith('sqlite'):
+        engine = connection.settings_dict["ENGINE"].rsplit(".", -1)[-1]
+        if engine.startswith("postgres"):
+            XOR_OPERATOR = "#"
+        elif engine.startswith("sqlite"):
             raise NotImplementedError
         else:
-            XOR_OPERATOR = '^'
+            XOR_OPERATOR = "^"
 
         if self.bit:
-            return ("%s.%s | %d" % (qn(self.table_alias), qn(self.column), self.bit.mask),
-                    [])
-        return ("%s.%s %s %d" % (qn(self.table_alias), qn(self.column), XOR_OPERATOR, self.bit.mask),
-                [])
+            return (
+                "%s.%s | %d" % (qn(self.table_alias), qn(self.column), self.bit.mask),
+                [],
+            )
+        return (
+            "%s.%s %s %d"
+            % (qn(self.table_alias), qn(self.column), XOR_OPERATOR, self.bit.mask),
+            [],
+        )
