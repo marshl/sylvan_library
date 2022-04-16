@@ -6,22 +6,23 @@ from django.contrib import admin
 
 from cards.models import (
     Block,
-    Set,
     Card,
     CardFace,
-    CardRuling,
-    CardType,
-    CardSupertype,
-    CardSubtype,
-    CardLegality,
-    Format,
-    CardPrinting,
-    CardFacePrinting,
-    CardLocalisation,
     CardFaceLocalisation,
+    CardFacePrinting,
+    CardImage,
+    CardLegality,
+    CardLocalisation,
     CardPrice,
+    CardPrinting,
+    CardRuling,
+    CardSubtype,
+    CardSupertype,
+    CardType,
     Deck,
     DeckCard,
+    Format,
+    Set,
 )
 
 
@@ -357,14 +358,12 @@ class CardFaceLocalisationModelForm(forms.ModelForm):
         model = CardFaceLocalisation
         fields = [
             "localisation",
-        "card_printing_face",
-
-        "face_name",
-        "flavour_text",
-        "type",
-
-        "text",
-        "image"
+            "card_printing_face",
+            "face_name",
+            "flavour_text",
+            "type",
+            "text",
+            "image",
         ]
 
 
@@ -374,8 +373,13 @@ class CardFaceLocalisationAdmin(admin.ModelAdmin):
     Admin for a Card Face Localisation (a face of a card printed in some set in some language)
     """
 
-    autocomplete_fields = ["localisation", "card_printing_face"]
+    autocomplete_fields = ["localisation", "card_printing_face", "image"]
     form = CardFaceLocalisationModelForm
+
+
+@admin.register(CardImage)
+class CardImageAdmin(admin.ModelAdmin):
+    search_fields = ["file_path", "scryfall_image_url"]
 
 
 @admin.register(CardPrice)
