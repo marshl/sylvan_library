@@ -49,6 +49,7 @@ def get_all_set_data(
                 "PWP11",
                 "PWP12",
                 "PWP21",
+                "YMID", "Alchemy: Innistrad"
             )
         ):
             continue
@@ -60,6 +61,7 @@ def get_all_set_data(
             set_data.get("isPreview")
             or set_data.get("isPartialPreview")
             or set_data.get("name").endswith("Minigames")
+            or set_data.get("name").endswith("Art Series")
         ):
             continue
 
