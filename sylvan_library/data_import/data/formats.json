@@ -16,6 +16,10 @@
     "name": "Duel"
   },
   {
+    "code": "explorer",
+    "name": "Explorer"
+  },
+  {
     "code": "legacy",
     "name": "Legacy"
   },
