@@ -9,7 +9,7 @@ from typing import List, Optional, Dict, Any
 import arrow
 from django.db import models
 
-from sylvan_library.cards.models.card import (
+from cards.models.card import (
     CardFace,
     CardPrinting,
     CardFacePrinting,
@@ -17,8 +17,8 @@ from sylvan_library.cards.models.card import (
     CardFaceLocalisation,
     Card,
 )
-from sylvan_library.cards.models.colour import Colour
-from sylvan_library.cards.models.sets import Set
+from cards.models.colour import Colour
+from cards.models.sets import Set
 
 COLOUR_TO_SORT_KEY = {
     Colour.COLOURLESS: 0,
@@ -77,7 +77,11 @@ def convert_number_field_to_numerical(val: str) -> float:
 
 
 class StagedObject:
-    def get_all_fields(self, fields_to_ignore: Optional[set] = None) -> dict:
+    """
+    The base staged object
+    """
+
+    def get_all_fields(self, fields_to_ignore: Optional[set] = None) -> Dict[str, Any]:
         """
         Converts any kind of staging object to a dictionary to save out to json
         :param fields_to_ignore:  Fields that shouldn't be serialized out

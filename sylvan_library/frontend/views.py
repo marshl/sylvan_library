@@ -1,6 +1,6 @@
-from django.shortcuts import render
-
-# Create your views here.
+"""
+Views
+"""
 from django.shortcuts import render
 
 

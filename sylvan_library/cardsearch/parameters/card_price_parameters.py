@@ -3,7 +3,7 @@ Card rarity parameters
 """
 from django.db.models.query import Q
 
-from .base_parameters import CardNumericalParam
+from cardsearch.parameters.base_parameters import CardNumericalParam
 
 
 class CardPriceParam(CardNumericalParam):

@@ -5,15 +5,16 @@ import datetime
 import random
 from typing import Optional
 
-from django.contrib.auth.models import User
+
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Sum, IntegerField, Case, When
 
-from sylvan_library.cards.models.colour import Colour
-from sylvan_library.cards.models.language import Language
-from sylvan_library.cards.models.rarity import Rarity
-from sylvan_library.cards.models.sets import Set
-from bitfield.models import BitField
+from bitfield import BitField
+from cards.models.colour import Colour
+from cards.models.language import Language
+from cards.models.rarity import Rarity
+from cards.models.sets import Set
 
 CARD_LAYOUT_CHOICES = (
     ("normal", "Normal"),
@@ -88,7 +89,9 @@ class Card(models.Model):
     def __str__(self) -> str:
         return self.name
 
-    def get_user_ownership_count(self, user: User, prefetched: bool = False) -> int:
+    def get_user_ownership_count(
+        self, user: get_user_model(), prefetched: bool = False
+    ) -> int:
         """
         Returns the total number of cards that given user owns of this card
         :param prefetched: Whether to use prefetched data, or to get it from the database again
@@ -376,7 +379,9 @@ class CardPrinting(models.Model):
 
         return self.set.keyrune_code.lower()
 
-    def get_user_ownership_count(self, user: User, prefetched: bool = False) -> int:
+    def get_user_ownership_count(
+        self, user: get_user_model(), prefetched: bool = False
+    ) -> int:
         """
         Returns the total number of cards that given user owns of this printing
         :param prefetched: Whether to use prefetched data, or to get it from the database again
@@ -479,7 +484,7 @@ class CardLocalisation(models.Model):
     def __str__(self):
         return f"{self.language} {self.card_printing}"
 
-    def apply_user_change(self, change_count: int, user: User) -> bool:
+    def apply_user_change(self, change_count: int, user: get_user_model()) -> bool:
         """
         Applies a change of the number of cards a user owns (can add or subtract cards)
         :param change_count: The number of cards that should be added/removed
@@ -600,7 +605,7 @@ class UserOwnedCard(models.Model):
         CardLocalisation, related_name="ownerships", on_delete=models.CASCADE
     )
     owner = models.ForeignKey(
-        User, related_name="owned_cards", on_delete=models.CASCADE
+        get_user_model(), related_name="owned_cards", on_delete=models.CASCADE
     )
 
     class Meta:
@@ -626,7 +631,7 @@ class UserCardChange(models.Model):
         CardLocalisation, related_name="user_changes", on_delete=models.CASCADE
     )
     owner = models.ForeignKey(
-        User, related_name="card_changes", on_delete=models.CASCADE
+        get_user_model(), related_name="card_changes", on_delete=models.CASCADE
     )
 
     def __str__(self):

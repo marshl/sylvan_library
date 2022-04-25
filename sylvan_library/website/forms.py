@@ -11,10 +11,10 @@ from django.db.models import Func, Value, F
 from django_select2.forms import Select2MultipleWidget
 from tinymce.widgets import TinyMCE
 
-from sylvan_library.cards.models.card import CardPrinting, Card
-from sylvan_library.cards.models.decks import Deck, DeckCard
-from sylvan_library.cards.models.language import Language
-from sylvan_library.cardsearch.parse_search import ParseSearch
+from cards.models.card import CardPrinting, Card
+from cards.models.decks import Deck, DeckCard
+from cards.models.language import Language
+from cardsearch.parse_search import ParseSearch
 
 
 class ChangeCardOwnershipForm(forms.Form):
@@ -248,10 +248,10 @@ class DeckForm(forms.ModelForm):
         else:
             try:
                 count = int(matches["count"])
-            except (TypeError, ValueError):
+            except (TypeError, ValueError) as ex:
                 raise ValidationError(
-                    f"Invalid count '{matches['count']}'' for {card_name}"
-                )
+                    f"Invalid count \"{matches['count']}\" for {card_name}"
+                ) from ex
 
         if count == 0:
             return None

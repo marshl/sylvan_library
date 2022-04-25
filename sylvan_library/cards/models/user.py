@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db import models
 
 
@@ -7,11 +7,11 @@ class UserProps(models.Model):
     Additional properties for the Django User model
     """
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
     unused_cards_seed = models.IntegerField(default=0)
 
     @staticmethod
-    def add_to_user(user: User) -> "UserProps":
+    def add_to_user(user: get_user_model()) -> "UserProps":
         """
         Adds a new UserProps instance to the given user
         (user.userpops existence should be checked every time a value from it is used,

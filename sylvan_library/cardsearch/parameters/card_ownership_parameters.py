@@ -1,11 +1,11 @@
 """
 Card ownership parameters
 """
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db.models import Q
 
-from sylvan_library.cards.models.card import Card
-from sylvan_library.cardsearch.parameters.base_parameters import (
+from cards.models.card import Card
+from cardsearch.parameters.base_parameters import (
     CardNumericalParam,
     CardSearchParam,
 )
@@ -16,7 +16,7 @@ class CardOwnerParam(CardSearchParam):
     The parameter for searching by whether it is owned by a given user
     """
 
-    def __init__(self, user: User):
+    def __init__(self, user: get_user_model()):
         super().__init__()
         self.user = user
 
@@ -33,7 +33,7 @@ class CardOwnershipCountParam(CardNumericalParam):
     The parameter for searching by how many a user owns of it
     """
 
-    def __init__(self, user: User, operator: str, number: int):
+    def __init__(self, user: get_user_model(), operator: str, number: int):
         super().__init__(number, operator)
         self.user = user
 
@@ -44,12 +44,15 @@ class CardOwnershipCountParam(CardNumericalParam):
         """
         raw = Card.objects.raw(
             f"""
-SELECT cards_card.id 
+SELECT cards_card.id
 FROM cards_card
-JOIN cards_cardprinting ON cards_cardprinting.card_id = cards_card.id
-JOIN cards_cardlocalisation ON cards_cardprinting.id = cards_cardlocalisation.card_printing_id
-LEFT JOIN cards_userownedcard ON cards_userownedcard.card_localisation_id = cards_cardlocalisation.id
-AND cards_userownedcard.owner_id = %s
+JOIN cards_cardprinting
+  ON cards_cardprinting.card_id = cards_card.id
+JOIN cards_cardlocalisation
+  ON cards_cardprinting.id = cards_cardlocalisation.card_printing_id
+LEFT JOIN cards_userownedcard
+  ON cards_userownedcard.card_localisation_id = cards_cardlocalisation.id
+  AND cards_userownedcard.owner_id = %s
 GROUP BY cards_card.id
 HAVING SUM(COALESCE(cards_userownedcard.count, 0)) {self.operator} %s
         """,
@@ -79,7 +82,7 @@ class CardUsageCountParam(CardNumericalParam):
     The parameter for searching by how many times it has been used in a deck
     """
 
-    def __init__(self, user: User, operator: str, number: int):
+    def __init__(self, user: get_user_model(), operator: str, number: int):
         super().__init__(number, operator)
         self.user = user
 

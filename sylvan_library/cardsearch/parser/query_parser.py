@@ -9,52 +9,72 @@ from typing import Union, Optional, Dict, Callable, List
 from django.contrib.auth.models import User
 from django.db.models import F, Q
 
-from sylvan_library.cardsearch.parameters import (
+from cards.models import colour
+from cards.models.colour import get_colours_for_nickname
+from cards.models.rarity import Rarity
+from cards.models.sets import Set, Block
+from cardsearch.parameters import (
+    CardSortParam,
+    CardCollectorNumSortParam,
+    CardManaValueSortParam,
+    CardPowerSortParam,
+    CardColourSortParam,
+    CardPriceSortParam,
+)
+from cardsearch.parameters.base_parameters import (
     CardSearchParam,
     OrParam,
     AndParam,
-    CardArtistParam,
-    CardBlockParam,
-    CardManaValueParam,
-    CardManaValueSortParam,
-    CardCollectorNumSortParam,
-    CardColourCountParam,
+)
+from cardsearch.parameters.card_artist_parameters import CardArtistParam
+from cardsearch.parameters.card_colour_parameters import (
+    CardMulticolouredOnlyParam,
     CardComplexColourParam,
+)
+from cardsearch.parameters.card_flavour_parameters import (
     CardFlavourTextParam,
-    CardGenericTypeParam,
-    CardOriginalTypeParam,
+)
+from cardsearch.parameters.card_mana_cost_parameters import (
+    CardManaValueParam,
+    CardManaCostComplexParam,
+    CardColourCountParam,
+)
+from cardsearch.parameters.card_misc_parameters import (
     CardHasColourIndicatorParam,
     CardHasWatermarkParam,
-    CardIsHybridParam,
     CardIsPhyrexianParam,
     CardIsReprintParam,
-    CardManaCostComplexParam,
-    CardMulticolouredOnlyParam,
-    CardNameParam,
-    CardNumLoyaltyParam,
-    CardNumPowerParam,
-    CardNumToughnessParam,
+    CardIsHybridParam,
+    CardIsCommanderParam,
+    CardLayoutParameter,
+)
+from cardsearch.parameters.card_name_parameters import CardNameParam
+from cardsearch.parameters.card_ownership_parameters import (
     CardOwnershipCountParam,
     CardUsageCountParam,
-    CardPowerSortParam,
-    CardProducesManaParam,
-    CardRarityParam,
+)
+from cardsearch.parameters.card_power_toughness_parameters import (
+    CardNumToughnessParam,
+    CardNumPowerParam,
+    CardNumLoyaltyParam,
+)
+from cardsearch.parameters.card_price_parameters import CardPriceParam
+from cardsearch.parameters.card_rarity_parameter import CardRarityParam
+from cardsearch.parameters.card_rules_text_parameter import (
     CardRulesTextParam,
-    CardSetParam,
-    CardSortParam,
     CardWatermarkParam,
-    CardColourSortParam,
-    CardPriceParam,
-    CardPriceSortParam,
-    CardLayoutParameter,
-    CardIsCommanderParam,
+    CardProducesManaParam,
+)
+from cardsearch.parameters.card_set_parameters import (
+    CardSetParam,
+    CardBlockParam,
     CardLegalityParam,
 )
-from .base_parser import Parser, ParseError
-from ...cards.models import colour
-from ...cards.models.colour import get_colours_for_nickname
-from ...cards.models.rarity import Rarity
-from ...cards.models.sets import Set, Block
+from cardsearch.parameters.card_type_parameters import (
+    CardGenericTypeParam,
+    CardOriginalTypeParam,
+)
+from cardsearch.parser.base_parser import Parser, ParseError
 
 
 class ParameterArgs:
@@ -300,9 +320,9 @@ def parse_block_param(param_args: ParameterArgs) -> CardBlockParam:
         try:
             card_block = Block.objects.get(name__icontains=param_args.text)
         except Block.DoesNotExist:
-            raise ValueError(f'Unknown block "{param_args.text}"')
-        except Block.MultipleObjectsReturned:
-            raise ValueError(f'Multiple blocks match "{param_args.text}"')
+            raise ValueError(f'Unknown block "{param_args.text}"') from ex
+        except Block.MultipleObjectsReturned as ex:
+            raise ValueError(f'Multiple blocks match "{param_args.text}"') from ex
 
     return CardBlockParam(card_block)
 

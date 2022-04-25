@@ -2,7 +2,8 @@
 Module for flavour text parameters
 """
 from django.db.models import Q
-from .base_parameters import CardSearchParam
+
+from cardsearch.parameters.base_parameters import CardSearchParam
 
 
 class CardFlavourTextParam(CardSearchParam):

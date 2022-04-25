@@ -9,12 +9,14 @@ import time
 from datetime import datetime
 from typing import List, Set
 import requests
+from django.contrib.auth import get_user_model
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from bs4 import BeautifulSoup
 
-from sylvan_library.cards.models import Card, Deck, DeckCard, User, CardFace
+from cards.models.card import Card, CardFace
+from cards.models.decks import Deck, DeckCard
 
 
 class Command(BaseCommand):
@@ -30,18 +32,20 @@ class Command(BaseCommand):
         self.base_uri = "https://www.mtgtop8.com/"
         self.output_path = os.path.join("reports", "output", "parsed_decks.json")
         if not os.path.exists(self.output_path):
-            with open(self.output_path, "w") as json_file:
+            with open(self.output_path, "w", encoding="utf8") as json_file:
                 json.dump({"decks": [], "events": []}, json_file)
 
-        with open(self.output_path) as json_file:
+        with open(self.output_path, encoding="utf8") as json_file:
             json_data = json.load(json_file)
             self.parsed_deck_uris = json_data["decks"]
             self.parsed_event_uris = json_data["events"]
 
         try:
-            self.deck_user = User.objects.get(username=Command.deck_owner_username)
-        except User.DoesNotExist:
-            self.deck_user = User.objects.create(
+            self.deck_user = get_user_model().objects.get(
+                username=Command.deck_owner_username
+            )
+        except get_user_model().DoesNotExist:
+            self.deck_user = get_user_model().objects.create(
                 username=Command.deck_owner_username, is_active=False
             )
 
@@ -217,7 +221,7 @@ class Command(BaseCommand):
         WRite out the list of decks and events that have already been parsed to file
         (this is performed periodically so that decks aren't duplicated if an error occurred.
         """
-        with open(self.output_path, "w") as json_file:
+        with open(self.output_path, "w", encoding="utf8") as json_file:
             json.dump(
                 {"decks": self.parsed_deck_uris, "events": self.parsed_event_uris},
                 json_file,

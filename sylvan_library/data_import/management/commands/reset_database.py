@@ -7,26 +7,23 @@ from django.core.management.base import BaseCommand
 from django.db import connection
 from django.db import models
 
-from sylvan_library.cards.models import (
-    Block,
-    Card,
-    CardLegality,
-    CardPrinting,
-    CardLocalisation,
-    CardRuling,
-    CardTag,
-    Colour,
-    Deck,
-    DeckCard,
-    Format,
-    Language,
-    Rarity,
-    Set,
-    UserCardChange,
+from cards.models.card import (
     CardFace,
+    Card,
+    CardPrinting,
     CardFacePrinting,
+    CardLocalisation,
     UserOwnedCard,
+    UserCardChange,
 )
+from cards.models.colour import Colour
+from cards.models.decks import DeckCard, Deck
+from cards.models.language import Language
+from cards.models.legality import CardLegality
+from cards.models.rarity import Rarity
+from cards.models.ruling import CardRuling
+from cards.models.sets import Set, Block, Format
+from cards.models.tag import CardTag
 from data_import import _query
 
 

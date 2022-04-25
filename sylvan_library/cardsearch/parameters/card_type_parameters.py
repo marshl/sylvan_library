@@ -3,14 +3,14 @@ Card type parameters
 """
 from django.db.models.query import Q
 
-from sylvan_library.cards.models.card import (
+from cards.models.card import (
     CardSubtype,
     CardSupertype,
     CardType,
     CardFacePrinting,
     Card,
 )
-from sylvan_library.cardsearch.parameters import CardSearchParam
+from cardsearch.parameters.base_parameters import CardSearchParam
 
 
 class CardTypeParam(CardSearchParam):

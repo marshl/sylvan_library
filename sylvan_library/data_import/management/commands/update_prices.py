@@ -14,9 +14,9 @@ import ijson
 from django.core.management.base import BaseCommand
 from django.db import transaction, connection
 
-from sylvan_library.cards.models.card_price import CardPrice
-from sylvan_library.data_import import _paths
-from sylvan_library.data_import.management.commands import download_file
+from cards.models.card_price import CardPrice
+from data_import import _paths
+from data_import.management.commands import download_file
 
 logger = logging.getLogger("django")
 
@@ -92,7 +92,7 @@ ON latest_price.id = card_printing.latest_price_id
         with connection.cursor() as cursor:
             cursor.execute(
                 """
-UPDATE cards_cardprinting 
+UPDATE cards_cardprinting
 SET latest_price_id = latest_price.id
 FROM (
     SELECT *
@@ -145,7 +145,7 @@ def apply_printing_prices(
     for stock_type, stock_data in card_data.items():
         is_paper = stock_type == "paper"
         # We don't care about different stores, so just the data from every store and average it
-        for store_name, store_data in stock_data.items():
+        for _, store_data in stock_data.items():
             if store_data.get("currency") != "USD":
                 continue
 

@@ -4,7 +4,7 @@ hard/expensive to search for at run time
 """
 from django.db import models
 
-from sylvan_library.cards.models.card import CardFace
+from cards.models.card import CardFace
 
 
 class CardFaceSearchMetadata(models.Model):

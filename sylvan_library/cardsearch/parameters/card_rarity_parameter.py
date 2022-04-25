@@ -3,11 +3,11 @@ Card rarity parameters
 """
 from django.db.models.query import Q
 
-from sylvan_library.cards.models.rarity import Rarity
-from sylvan_library.cardsearch.parameters import CardSearchParam
-from sylvan_library.cardsearch.parameters.base_parameters import (
+from cards.models.rarity import Rarity
+from cardsearch.parameters.base_parameters import (
     OPERATOR_MAPPING,
     OPERATOR_TO_WORDY_MAPPING,
+    CardSearchParam,
 )
 
 

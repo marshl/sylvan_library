@@ -17,7 +17,7 @@ from django.db.models import Sum, Count, Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 
-from sylvan_library.cards.models.card import (
+from cards.models.card import (
     CardPrinting,
     Card,
     UserOwnedCard,
@@ -25,17 +25,17 @@ from sylvan_library.cards.models.card import (
     CardFace,
     UserCardChange,
 )
-from sylvan_library.cards.models.colour import Colour
-from sylvan_library.cards.models.decks import DeckCard, Deck
-from sylvan_library.cards.models.language import Language
-from sylvan_library.cards.models.sets import Set
-from sylvan_library.cards.models.user import UserProps
-from sylvan_library.website.forms import (
+from cards.models.colour import Colour
+from cards.models.decks import DeckCard, Deck
+from cards.models.language import Language
+from cards.models.sets import Set
+from cards.models.user import UserProps
+from website.forms import (
     QuerySearchForm,
     ChangeCardOwnershipForm,
     DeckForm,
 )
-from sylvan_library.website.pagination import get_page_buttons
+from website.pagination import get_page_buttons
 
 logger = logging.getLogger("django")
 
@@ -262,31 +262,23 @@ def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse
     links = [
         {
             "name": "Search on Channel Fireball",
-            "url": "https://store.channelfireball.com/products/search?{}".format(
-                urllib.parse.urlencode({"q": card.name})
-            ),
+            "url": f"https://store.channelfireball.com/products/search?{urllib.parse.urlencode({'q': card.name})}",
         },
         {
             "name": "TCGPlayer Decks",
-            "url": "https://decks.tcgplayer.com/magic/deck/search?{}".format(
-                urllib.parse.urlencode({"contains": card.name, "page": 1})
-            ),
+            "url": f"https://decks.tcgplayer.com/magic/deck/search?{urllib.parse.urlencode({'contains': card.name, 'page': 1})}",
         },
         {
             "name": "Card Analysis on EDHREC",
-            "url": "http://edhrec.com/route/?{}".format(
-                urllib.parse.urlencode({"cc": card.faces.first().name})
-            ),
+            "url": f"https://edhrec.com/route/?{urllib.parse.urlencode({'cc': card.faces.first().name})}",
         },
         {
             "name": "Search on DeckStats",
-            "url": "https://deckstats.net/decks/search/?{}".format(
-                urllib.parse.urlencode({"search_cards[]": card.name})
-            ),
+            "url": f"https://deckstats.net/decks/search/?{urllib.parse.urlencode({'search_cards[]': card.name})}",
         },
         {
             "name": "MTGTop8 decks",
-            "url": "http://mtgtop8.com/search?{}".format(
+            "url": "https://mtgtop8.com/search?{}".format(
                 urllib.parse.urlencode(
                     {"MD_check": 1, "SB_check": 1, "cards": card.faces.first().name}
                 )
@@ -294,15 +286,11 @@ def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse
         },
         {
             "name": "Search on Starcity Games",
-            "url": "https://starcitygames.com/search/?{}".format(
-                urllib.parse.urlencode({"search_query": card.name})
-            ),
+            "url": f"https://starcitygames.com/search/?{urllib.parse.urlencode({'search_query': card.name})}",
         },
         {
             "name": "Search on Scryfall",
-            "url": "https://scryfall.com/search?q={}".format(
-                urllib.parse.urlencode({"name": card.name})
-            ),
+            "url": f"https://scryfall.com/search?q={urllib.parse.urlencode({'name': card.name})}",
         },
         {
             "name": "Card Kingdom",
@@ -310,7 +298,7 @@ def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse
                 urllib.parse.urlencode(
                     {
                         "search": "header",
-                        "filter[name]": f'{get_website_card_filter(card, "Card Kingdom")}',
+                        "filter[name]": get_website_card_filter(card, "Card Kingdom"),
                     }
                 )
             ),
@@ -329,9 +317,7 @@ def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse
             0,
             {
                 "name": "View on Gatherer",
-                "url": "https://gatherer.wizards.com/Pages/Card/Details.aspx?{}".format(
-                    urllib.parse.urlencode({"multiverseid": localisation.multiverse_id})
-                ),
+                "url": f"https://gatherer.wizards.com/Pages/Card/Details.aspx?{urllib.parse.urlencode({'multiverseid': localisation.multiverse_id})}",
             },
         )
 
@@ -339,6 +325,12 @@ def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse
 
 
 def get_website_card_filter(card: Card, website: str) -> str:
+    """
+    Gets the website specific filter used to query for a card.
+    :param card: The card to search for
+    :param website: The website the link is for
+    :return: The filter string used for that website
+    """
     if website == "Card Kingdom":
         if not card.is_token:
             if card.layout in ("aftermath", "split"):
@@ -754,6 +746,9 @@ def get_colour_info() -> Dict[int, Dict[str, Any]]:
 
 
 def set_list(request: WSGIRequest):
+    """
+    View for the list of all sets
+    """
     all_sets = list(Set.objects.order_by("-release_date"))
     root_sets = [card_set for card_set in all_sets if not card_set.parent_set_id]
 

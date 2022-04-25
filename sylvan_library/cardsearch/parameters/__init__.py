@@ -2,60 +2,9 @@
 The module for all search parameters
 """
 from enum import Enum
-from typing import List, Callable
+from typing import List
 
 from django.db.models import F
-
-from .base_parameters import OrParam, AndParam, CardSearchParam, BranchParam
-
-from .card_artist_parameters import CardArtistParam
-from .card_colour_parameters import (
-    CardComplexColourParam,
-    CardColourIdentityParam,
-    CardMulticolouredOnlyParam,
-)
-from .card_flavour_parameters import CardFlavourTextParam
-from .card_mana_cost_parameters import (
-    CardManaCostComplexParam,
-    CardManaValueParam,
-    CardManaCostParam,
-    CardColourCountParam,
-)
-from .card_misc_parameters import (
-    CardLayoutParameter,
-    CardIsReprintParam,
-    CardHasWatermarkParam,
-    CardIsPhyrexianParam,
-    CardHasColourIndicatorParam,
-    CardIsHybridParam,
-    CardIsCommanderParam,
-)
-from .card_name_parameters import CardNameParam
-from .card_ownership_parameters import (
-    CardOwnershipCountParam,
-    CardOwnerParam,
-    CardUsageCountParam,
-)
-from .card_power_toughness_parameters import (
-    CardNumLoyaltyParam,
-    CardNumToughnessParam,
-    CardNumPowerParam,
-)
-from .card_rarity_parameter import CardRarityParam
-from .card_rules_text_parameter import (
-    CardRulesTextParam,
-    CardProducesManaParam,
-    CardWatermarkParam,
-)
-from .card_set_parameters import CardSetParam, CardBlockParam, CardLegalityParam
-from .card_type_parameters import (
-    CardGenericTypeParam,
-    CardSubtypeParam,
-    CardTypeParam,
-    CardOriginalTypeParam,
-)
-
-from .card_price_parameters import CardPriceParam
 
 
 class SearchMode(Enum):
@@ -77,10 +26,6 @@ class CardSortParam:
         Gets the sort list taking order into account
         :return:
         """
-        # return [
-        #     "-" + arg if self.negated else arg
-        #     for arg in self.get_sort_keys(search_mode)
-        # ]
         sort_keys = self.get_sort_keys(search_mode)
         return [
             F(key).desc(nulls_last=True)
@@ -88,8 +33,6 @@ class CardSortParam:
             else F(key).asc(nulls_last=True)
             for key in sort_keys
         ]
-        # return [arg.desc() if self.negated else arg for arg in ]
-        # return self.get_sort_keys(search_mode, sort_func=F.desc if self.negated else F.asc)
 
     def get_sort_keys(self, search_mode: SearchMode) -> List[str]:
         """

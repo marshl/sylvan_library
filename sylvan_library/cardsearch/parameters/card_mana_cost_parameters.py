@@ -7,7 +7,11 @@ import typing
 from django.db.models import F
 from django.db.models.query import Q
 
-from .base_parameters import CardNumericalParam, CardSearchParam, OPERATOR_MAPPING
+from cardsearch.parameters.base_parameters import (
+    CardSearchParam,
+    OPERATOR_MAPPING,
+    CardNumericalParam,
+)
 
 
 class CardManaCostParam(CardSearchParam):

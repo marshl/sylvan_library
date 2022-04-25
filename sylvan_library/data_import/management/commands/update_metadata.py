@@ -8,18 +8,18 @@ import time
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from sylvan_library.cards.models.card import (
+from cards.models.card import (
     CardType,
     CardSubtype,
     CardSupertype,
     FrameEffect,
 )
-from sylvan_library.cards.models.colour import Colour
-from sylvan_library.cards.models.language import Language
-from sylvan_library.cards.models.rarity import Rarity
-from sylvan_library.cards.models.sets import Format
-from sylvan_library.data_import import _paths
-from sylvan_library.data_import._paths import (
+from cards.models.colour import Colour
+from cards.models.language import Language
+from cards.models.rarity import Rarity
+from cards.models.sets import Format
+from data_import import _paths
+from data_import._paths import (
     COLOUR_JSON_PATH,
     RARITY_JSON_PATH,
     LANGUAGE_JSON_PATH,
@@ -51,9 +51,9 @@ class Command(BaseCommand):
     )
 
     def __init__(self, stdout=None, stderr=None, no_color=False):
-        self.update_counts = dict()
-        self.created_counts = dict()
-        self.ignored_counts = dict()
+        self.update_counts = {}
+        self.created_counts = {}
+        self.ignored_counts = {}
         self.start_time = time.time()
 
         super().__init__(stdout=stdout, stderr=stderr, no_color=no_color)

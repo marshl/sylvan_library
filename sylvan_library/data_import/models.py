@@ -5,6 +5,10 @@ from django.db import models
 
 
 class UpdateMode(models.TextChoices):
+    """
+    Update mode choices
+    """
+
     UPDATE = "UPDATE", "Update"
     CREATE = "CREATE", "Create"
     DELETE = "DELETE", "Delete"

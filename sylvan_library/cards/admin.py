@@ -4,7 +4,7 @@ Django admin config for card app
 from django import forms
 from django.contrib import admin
 
-from sylvan_library.cards.models.card import (
+from cards.models.card import (
     CardFace,
     CardPrinting,
     CardFacePrinting,
@@ -16,11 +16,11 @@ from sylvan_library.cards.models.card import (
     CardSupertype,
     CardImage,
 )
-from sylvan_library.cards.models.card_price import CardPrice
-from sylvan_library.cards.models.decks import DeckCard, Deck
-from sylvan_library.cards.models.legality import CardLegality
-from sylvan_library.cards.models.ruling import CardRuling
-from sylvan_library.cards.models.sets import Set, Block, Format
+from cards.models.card_price import CardPrice
+from cards.models.decks import DeckCard, Deck
+from cards.models.legality import CardLegality
+from cards.models.ruling import CardRuling
+from cards.models.sets import Set, Block, Format
 
 
 class SetInline(admin.TabularInline):
@@ -376,6 +376,10 @@ class CardFaceLocalisationAdmin(admin.ModelAdmin):
 
 @admin.register(CardImage)
 class CardImageAdmin(admin.ModelAdmin):
+    """
+    Admin for a Card Image model
+    """
+
     search_fields = ["file_path", "scryfall_image_url"]
 
 

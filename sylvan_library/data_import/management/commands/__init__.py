@@ -1,5 +1,5 @@
 """
-Django sell commands for data_import
+Django shell commands for data_import
 """
 import json
 import logging
@@ -78,6 +78,11 @@ def get_all_set_data(
 
 
 def pretty_print_json_file(set_file_path: str) -> None:
+    """
+    Reads, pretty prints, and writes out the chosen file back into itself
+    :param set_file_path:
+    :return:
+    """
     with open(set_file_path, "r", encoding="utf8") as set_file:
         set_data = json.load(set_file, encoding="utf8")
 
@@ -85,7 +90,12 @@ def pretty_print_json_file(set_file_path: str) -> None:
         json.dump(set_data, set_file, indent=2)
 
 
-def download_file(url: str, destination_path: str):
+def download_file(url: str, destination_path: str) -> None:
+    """
+    Downloads a file from the given URL to the given destination
+    :param url: The download URL
+    :param destination_path: The path for where the file should go
+    """
     logger.info("Downloading %s", url)
     response = requests.get(url, stream=True)
     total_length = response.headers.get("content-length")
@@ -102,5 +112,5 @@ def download_file(url: str, destination_path: str):
                 data_length += len(data)
                 output.write(data)
                 done = int(50 * data_length / total_length)
-                sys.stdout.write("\r[%s%s]" % ("=" * done, " " * (50 - done)))
+                sys.stdout.write(f'\r[{"=" * done}{" " * (50 - done)}]')
                 sys.stdout.flush()

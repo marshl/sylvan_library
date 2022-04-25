@@ -96,7 +96,7 @@ def replace_chapter_symbols(text: str, scale: Optional[str] = None) -> str:
         """
         roman_map = {"i": 1, "ii": 2, "iii": 3, "iv": 4, "v": 5}
         roman_symbol = chapter_match.groups()[0].lower()
-        classes = ["ms", "ms-saga", "ms-saga-{}".format(roman_map.get(roman_symbol))]
+        classes = ["ms", "ms-saga", f"ms-saga-{roman_map.get(roman_symbol)}"]
         if scale is not None:
             classes.append(f"ms-{scale}")
         return f'<i class="{" ".join(classes)}"></i>'

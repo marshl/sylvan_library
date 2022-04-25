@@ -9,4 +9,4 @@ class ReportsConfig(AppConfig):
     Configuration for the reports app
     """
 
-    name = "sylvan_library.reports"
+    name = "reports"

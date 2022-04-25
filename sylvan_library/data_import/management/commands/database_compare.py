@@ -10,7 +10,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction, models
 from django.db.models import F
 
-from sylvan_library.cards.models.card import (
+from cards.models.card import (
     CardFace,
     CardFacePrinting,
     CardLocalisation,
@@ -18,9 +18,9 @@ from sylvan_library.cards.models.card import (
     Card,
     CardPrinting,
 )
-from sylvan_library.cards.models.sets import Set, Block
-from sylvan_library.data_import.management.commands import get_all_set_data
-from sylvan_library.data_import.models import (
+from cards.models.sets import Set, Block
+from data_import.management.commands import get_all_set_data
+from data_import.models import (
     UpdateSet,
     UpdateCard,
     UpdateBlock,
@@ -33,7 +33,7 @@ from sylvan_library.data_import.models import (
     UpdateCardRuling,
     UpdateCardLegality,
 )
-from sylvan_library.data_import.staging import (
+from data_import.staging import (
     StagedCard,
     StagedSet,
     StagedCardLocalisation,
@@ -107,6 +107,11 @@ class Command(BaseCommand):
     def log_single_stat(
         self, model_name: str, update_type: typing.Type[models.Model]
     ) -> None:
+        """
+        Logs a single update statistic
+        :param model_name: The name of the model that was changed
+        :param update_type: The model that was changed
+        """
         create_count = update_type.objects.filter(update_mode=UpdateMode.CREATE).count()
         if create_count > 0:
             logger.info("%s %s objects to create", create_count, model_name)

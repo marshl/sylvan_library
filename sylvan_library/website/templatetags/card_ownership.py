@@ -5,7 +5,7 @@ Module for custom template filters to get the image paths of different card mode
 from django import template
 from django.conf import settings
 
-from sylvan_library.cards.models.card import Card, CardPrinting, CardLocalisation
+from cards.models.card import Card, CardPrinting, CardLocalisation
 
 register = template.Library()
 

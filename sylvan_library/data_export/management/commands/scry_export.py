@@ -7,10 +7,12 @@ import math
 import os
 import xml.etree.ElementTree as ET
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
+
+from django.contrib.auth import get_user_model
 from django.db.models import Min
 
-from sylvan_library.cards.models import Block, Card, Set
+from cards.models.card import Card
+from cards.models.sets import Block, Set
 
 logger = logging.getLogger("django")
 
@@ -53,8 +55,8 @@ class Command(BaseCommand):
             return
 
         try:
-            self.user = User.objects.get(username=username)
-        except User.DoesNotExist:
+            self.user = get_user_model().objects.get(username=username)
+        except get_user_model().DoesNotExist:
             logger.error("User with name %s could not be found", username)
             return
 

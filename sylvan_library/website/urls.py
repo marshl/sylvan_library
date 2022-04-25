@@ -3,7 +3,7 @@ Urls for the website app
 """
 from django.urls import path
 
-from sylvan_library.website import views
+from website import views
 
 # pylint: disable=invalid-name
 app_name = "website"

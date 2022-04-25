@@ -5,14 +5,14 @@ import re
 from collections import defaultdict
 from typing import List, Dict
 
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Sum, Avg, Q
+from django.contrib.auth import get_user_model
 
-from sylvan_library.cards.models.card import Card, CardType
-from sylvan_library.cards.models.colour import Colour
-from sylvan_library.cards.models.rarity import Rarity
+from cards.models.card import Card, CardType
+from cards.models.colour import Colour
+from cards.models.rarity import Rarity
 
 
 class Deck(models.Model):
@@ -62,7 +62,9 @@ class Deck(models.Model):
     name = models.CharField(max_length=200)
     subtitle = models.CharField(max_length=200, blank=True, null=True)
     description = models.TextField(null=True, blank=True)
-    owner = models.ForeignKey(User, related_name="decks", on_delete=models.CASCADE)
+    owner = models.ForeignKey(
+        get_user_model(), related_name="decks", on_delete=models.CASCADE
+    )
     format = models.CharField(max_length=50, choices=FORMAT_CHOICES)
     exclude_colours = models.ManyToManyField(
         Colour, related_name="exclude_from_decks", blank=True

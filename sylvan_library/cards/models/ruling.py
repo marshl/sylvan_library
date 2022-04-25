@@ -1,8 +1,11 @@
+"""
+Card ruling models
+"""
 import datetime
 
 from django.db import models
 
-from sylvan_library.cards.models.card import Card
+from cards.models.card import Card
 
 
 class CardRuling(models.Model):

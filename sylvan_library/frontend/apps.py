@@ -2,4 +2,8 @@ from django.apps import AppConfig
 
 
 class FrontendConfig(AppConfig):
-    name = "sylvan_library.frontend"
+    """
+    Config for the frontend app
+    """
+
+    name = "frontend"

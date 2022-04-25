@@ -13,9 +13,9 @@ from django.core.management.base import BaseCommand, OutputWrapper
 from django.db import transaction
 from requests import HTTPError
 
-from sylvan_library.cards.models.card import CardFaceLocalisation, CardImage
-from sylvan_library.cards.models.language import Language
-from sylvan_library.cards.models.sets import Set
+from cards.models.card import CardFaceLocalisation, CardImage
+from cards.models.language import Language
+from cards.models.sets import Set
 
 logger = logging.getLogger("django")
 
@@ -212,7 +212,7 @@ def get_scryfall_set(set_code: str) -> dict:
 def get_scryfall_cards(set_code: str) -> list:
     """
     Gets tne cards from the scryfall API for the given set
-    :param set_code: The setcode to get teh cards for
+    :param set_code: The setcode to get the cards for
     :return: The cards
     """
     set_info = get_scryfall_set(set_code)

@@ -52,13 +52,13 @@ INSTALLED_APPS = [
     "widget_tweaks",
     # my apps
     "bitfield.apps.BitFieldAppConfig",
-    "sylvan_library.cards.apps.CardsConfig",
-    "sylvan_library.cardsearch.apps.CardsearchConfig",
-    "sylvan_library.data_export.apps.DataExportConfig",
-    "sylvan_library.data_import.apps.DataImportConfig",
-    "sylvan_library.reports.apps.ReportsConfig",
-    "sylvan_library.website.apps.WebsiteConfig",
-    "frontend",
+    "cards.apps.CardsConfig",
+    "cardsearch.apps.CardsearchConfig",
+    "data_export.apps.DataExportConfig",
+    "data_import.apps.DataImportConfig",
+    "reports.apps.ReportsConfig",
+    "website.apps.WebsiteConfig",
+    "frontend.apps.FrontendConfig",
 ]
 
 if DEBUG_TOOLBAR:

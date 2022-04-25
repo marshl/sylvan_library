@@ -3,7 +3,7 @@ Models fo card pricing
 """
 from django.db import models
 
-from sylvan_library.cards.models.card import CardPrinting
+from cards.models.card import CardPrinting
 
 
 class CardPrice(models.Model):

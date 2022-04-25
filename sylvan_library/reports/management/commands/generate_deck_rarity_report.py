@@ -8,12 +8,13 @@ from typing import List, Optional
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, OutputWrapper
 from django.db.models.query import QuerySet
 from pandas.plotting import register_matplotlib_converters
 
-from sylvan_library.cards.models import Deck, User
-from sylvan_library.reports.management.commands import download_tournament_decks
+from cards.models.decks import Deck
+from reports.management.commands import download_tournament_decks
 
 
 class Command(BaseCommand):

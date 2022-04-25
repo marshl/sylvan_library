@@ -125,7 +125,7 @@ class Parser(ABC):
             raise ParseError(
                 self.pos,
                 "Expected %s but got end of string",
-                "character" if chars is None else "[%s]" % chars,
+                "character" if chars is None else f"[{chars}]",
             )
 
         next_char = self.text[self.pos + 1]
@@ -145,7 +145,7 @@ class Parser(ABC):
         raise ParseError(
             self.pos + 1,
             "Expected %s but got %s",
-            "character" if chars is None else "[%s]" % chars,
+            "character" if chars is None else f"[{chars}]",
             next_char,
         )
 

@@ -1,6 +1,7 @@
+# pylint: skip-file
 from django.db import models
 
-from bitfield import BitField, CompositeBitField
+from bitfield.models import BitField, CompositeBitField
 
 
 class BitFieldTestModel(models.Model):

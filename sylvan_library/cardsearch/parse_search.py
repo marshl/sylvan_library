@@ -3,12 +3,14 @@ Module for the ParseSearch
 """
 from typing import Optional
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
-from sylvan_library.cards.models.sets import Set
-from sylvan_library.cardsearch.base_search import BaseSearch
-from sylvan_library.cardsearch.parameters import BranchParam, CardSetParam
-from sylvan_library.cardsearch.parser import ParseError, CardQueryParser
+from cards.models.sets import Set
+from cardsearch.base_search import BaseSearch
+from cardsearch.parameters.base_parameters import BranchParam
+from cardsearch.parameters.card_set_parameters import CardSetParam
+from cardsearch.parser.base_parser import ParseError
+from cardsearch.parser.query_parser import CardQueryParser
 
 
 class ParseSearch(BaseSearch):
@@ -16,11 +18,11 @@ class ParseSearch(BaseSearch):
     Search that consumes a query string
     """
 
-    def __init__(self, user: User = None):
+    def __init__(self, user: get_user_model() = None):
         super().__init__()
         self.query_string: Optional[str] = None
         self.error_message: Optional[str] = None
-        self.user: User = user
+        self.user: get_user_model() = user
 
     def get_preferred_set(self) -> Optional[Set]:
         """

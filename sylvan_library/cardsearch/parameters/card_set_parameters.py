@@ -3,9 +3,9 @@ Card set parameters
 """
 from django.db.models.query import Q
 
-from sylvan_library.cards.models.legality import CardLegality
-from sylvan_library.cards.models.sets import Set, Block
-from sylvan_library.cardsearch.parameters import CardSearchParam
+from cards.models.legality import CardLegality
+from cards.models.sets import Set, Block
+from cardsearch.parameters.base_parameters import CardSearchParam
 
 
 class CardSetParam(CardSearchParam):

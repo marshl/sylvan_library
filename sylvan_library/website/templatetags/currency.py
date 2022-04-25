@@ -17,7 +17,7 @@ def currency(value: float, currency_unit="dollars"):
     :return: The formatted string
     """
     value = round(float(value), 2)
-    value_string = "%s%s" % (intcomma(int(value)), ("%0.2f" % value)[-3:])
+    value_string = f"{intcomma(int(value))}{f'{value:0.2f}'[-3:]}"
     if currency_unit == "tickets":
-        return "{} TIX".format(value_string)
-    return "${}".format(value_string)
+        return f"{value_string} TIX"
+    return f"${value_string}"

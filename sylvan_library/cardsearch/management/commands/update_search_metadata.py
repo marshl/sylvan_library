@@ -8,8 +8,8 @@ from typing import Any
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from sylvan_library.cards.models.card import CardFace
-from sylvan_library.cardsearch.models import CardFaceSearchMetadata
+from cards.models.card import CardFace
+from cardsearch.models import CardFaceSearchMetadata
 
 logger = logging.getLogger("django")
 

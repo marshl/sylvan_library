@@ -2,7 +2,7 @@
 The module for staging tests
 """
 from django.test import TestCase
-from sylvan_library.data_import.staging import (
+from data_import.staging import (
     StagedCard,
     StagedCardFace,
     convert_number_field_to_numerical,

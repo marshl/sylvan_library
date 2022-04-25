@@ -7,7 +7,7 @@ import re
 
 from django.core.management.base import BaseCommand
 
-from sylvan_library.cards.models import Set
+from cards.models.sets import Set
 
 
 class Command(BaseCommand):
@@ -26,7 +26,7 @@ class Command(BaseCommand):
             "website", "static", "node_modules", "keyrune", "sass", "_variables.scss"
         )
         sets = {}
-        with open(sass_path) as sass_file:
+        with open(sass_path, encoding="utf8") as sass_file:
             for line in sass_file:
                 if "$mtg_setlist:" not in line:
                     continue
@@ -46,7 +46,7 @@ class Command(BaseCommand):
                         sets[groups["set_code"]] = groups["set_name"]
 
         for card_set in Set.objects.all().order_by("code"):
-            if card_set.keyrune_code.lower() not in sets.keys():
+            if card_set.keyrune_code.lower() not in sets:
                 print(f"{card_set.name} ({card_set.code}) doesn't have a set symbol")
 
         for set_code, set_name in sets.items():

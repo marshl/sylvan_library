@@ -8,15 +8,15 @@ from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction
 from django.contrib.auth.models import User
 
-from sylvan_library.cards.models.card import (
+from cards.models.card import (
     Card,
     CardPrinting,
     CardLocalisation,
     UserOwnedCard,
 )
-from sylvan_library.cards.models.language import Language
-from sylvan_library.cards.models.sets import Set
-from sylvan_library.data_import._query import query_yes_no
+from cards.models.language import Language
+from cards.models.sets import Set
+from data_import._query import query_yes_no
 
 logger = logging.getLogger("django")
 

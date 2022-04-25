@@ -4,7 +4,7 @@ Module for website test cases
 
 from django.test import TestCase
 
-from sylvan_library.website.templatetags.mana_templates import (
+from website.templatetags.mana_templates import (
     replace_mana_symbols,
     replace_loyalty_symbols,
 )

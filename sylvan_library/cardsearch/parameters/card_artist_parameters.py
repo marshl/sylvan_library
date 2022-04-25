@@ -3,7 +3,7 @@ Card artist parameters
 """
 from django.db.models.query import Q
 
-from .base_parameters import CardSearchParam
+from cardsearch.parameters.base_parameters import CardSearchParam
 
 
 class CardArtistParam(CardSearchParam):

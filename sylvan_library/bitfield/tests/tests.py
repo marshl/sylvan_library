@@ -1,3 +1,4 @@
+# pylint: skip-file
 from __future__ import absolute_import
 
 import pickle
@@ -8,8 +9,11 @@ from django.test import TestCase
 
 from bitfield import BitHandler, Bit, BitField
 
-from .forms import BitFieldTestModelForm
-from .models import BitFieldTestModel, CompositeBitFieldTestModel
+from bitfield.tests.forms import BitFieldTestModelForm
+from bitfield.tests.models import (
+    BitFieldTestModel,
+    CompositeBitFieldTestModel,
+)
 
 
 class BitHandlerTest(TestCase):

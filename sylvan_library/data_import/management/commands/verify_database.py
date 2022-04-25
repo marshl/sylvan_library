@@ -11,10 +11,10 @@ from django.core.management.base import BaseCommand
 from django.db import models
 from django.db.models import Count
 
-from sylvan_library.cards.models.card import Card, CardFace, CardPrinting
-from sylvan_library.cards.models.colour import Colour
-from sylvan_library.cards.models.rarity import Rarity
-from sylvan_library.cards.models.sets import Block, Set
+from cards.models.card import Card, CardFace, CardPrinting
+from cards.models.colour import Colour
+from cards.models.rarity import Rarity
+from cards.models.sets import Block, Set
 
 WUBRG = Colour.WHITE | Colour.BLUE | Colour.BLACK | Colour.RED | Colour.GREEN
 
@@ -35,7 +35,7 @@ class Command(BaseCommand):
 
         self.successful_tests = 0
         self.failed_tests = 0
-        self.error_messages = list()
+        self.error_messages = []
         self.test_count = 0
 
     def handle(self, *args, **options):
@@ -82,16 +82,12 @@ class Command(BaseCommand):
         mirrodin_sets = Block.objects.get(name="Mirrodin").sets
         self.assert_true(
             mirrodin_sets.count() == 6,
-            "Mirrodin should have 3 sets, but instead has: {}".format(
-                mirrodin_sets.all()
-            ),
+            f"Mirrodin should have 3 sets, but instead has: {mirrodin_sets.all()}",
         )
         time_spiral_sets = Block.objects.get(name="Time Spiral").sets
         self.assert_true(
             time_spiral_sets.count() == 7,
-            "Time Spiral should have 4 sets, but instead has: {}".format(
-                time_spiral_sets.all()
-            ),
+            f"Time Spiral should have 4 sets, but instead has: {time_spiral_sets.all()}",
         )
         amonkhet_sets = Block.objects.get(name="Amonkhet").sets
         self.assert_true(
@@ -153,7 +149,8 @@ class Command(BaseCommand):
         ).filter(localisation_count=0)
         self.assert_false(
             zero_localisation_printings.exists(),
-            f"There should be at least one localisation for each printing: {zero_localisation_printings}",
+            f"There should be at least one localisation for each printing: "
+            f"{zero_localisation_printings}",
         )
 
     def test_minimum_printings(self) -> None:

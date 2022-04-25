@@ -1,3 +1,6 @@
+"""
+Card language models
+"""
 from django.db import models
 
 

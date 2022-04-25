@@ -3,7 +3,7 @@ Card serializers
 """
 from rest_framework import serializers
 
-from sylvan_library.cards.models.card import Card
+from cards.models.card import Card
 
 
 class CardSerializer(serializers.HyperlinkedModelSerializer):

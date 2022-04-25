@@ -5,17 +5,17 @@ import uuid
 from typing import Dict, Any, Optional
 
 from django.test import TestCase
-from django.contrib.auth.models import User
 
-from sylvan_library.cards.models import (
+from django.contrib.auth import get_user_model
+from cards.models.card import (
     Card,
+    CardFace,
     CardPrinting,
     CardLocalisation,
-    Language,
-    Rarity,
-    Set,
-    CardFace,
 )
+from cards.models.language import Language
+from cards.models.rarity import Rarity
+from cards.models.sets import Set
 
 
 def create_test_card(fields: Optional[Dict[str, Any]] = None) -> Card:
@@ -162,11 +162,11 @@ def create_test_rarity(name: str, symbol: str) -> Rarity:
     return rarity
 
 
-def create_test_user() -> User:
+def create_test_user() -> get_user_model():
     """
     Creates a test user
     """
-    user = User(username="testuser", password="password")
+    user = get_user_model()(username="testuser", password="password")
     user.full_clean()
     user.save()
     return user

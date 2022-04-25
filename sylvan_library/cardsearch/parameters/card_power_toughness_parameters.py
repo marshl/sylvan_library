@@ -4,7 +4,7 @@ Card power, toughness and loyalty parameters
 from django.db.models import F
 from django.db.models.query import Q
 
-from .base_parameters import CardNumericalParam
+from cardsearch.parameters.base_parameters import CardNumericalParam
 
 
 class CardNumPowerParam(CardNumericalParam):

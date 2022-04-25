@@ -6,19 +6,23 @@ from typing import List, Optional
 from django.core.paginator import Paginator, EmptyPage
 from django.db.models import prefetch_related_objects, QuerySet
 
-from sylvan_library.cards.models.card import CardPrinting, Card
-from sylvan_library.cards.models.sets import Set
-from sylvan_library.cardsearch.parameters import (
+from cards.models.card import CardPrinting, Card
+from cards.models.sets import Set
+from cardsearch.parameters import (
     CardSortParam,
     CardNameSortParam,
-    AndParam,
-    OrParam,
-    BranchParam,
     SearchMode,
 )
 
 
 # pylint: disable=too-few-public-methods
+from cardsearch.parameters.base_parameters import (
+    AndParam,
+    OrParam,
+    BranchParam,
+)
+
+
 class SearchResult:
     """
     A single search result including the card and it's selected printing
@@ -133,8 +137,6 @@ class BaseSearch:
         queryset = Card.objects.filter(printings__in=queryset).distinct()
         # Add some default sort params to ensure stable ordering
         self.add_sort_param(CardNameSortParam())
-        # self.add_sort_param(CardColourSortParam())
-        # self.add_sort_param(CardPowerSortParam())
 
         queryset = queryset.order_by(
             *[
@@ -144,11 +146,6 @@ class BaseSearch:
             ]
         )
         return queryset
-        queryset = queryset.distinct()
-        # card_ids = queryset.values_list("card", flat=True)
-        # queryset = Card.objects.filter(id__in=card_ids)
-        queryset = Card.objects.filter(printings__in=queryset)  # .distinct()
-        # queryset = queryset.select_related("card")
 
     def search(self, page_number: int = 1, page_size: int = 25) -> None:
         """

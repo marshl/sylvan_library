@@ -1,7 +1,10 @@
+"""
+Card legalitiy models
+"""
 from django.db import models
 
-from sylvan_library.cards.models.card import Card
-from sylvan_library.cards.models.sets import Format
+from cards.models.card import Card
+from cards.models.sets import Format
 
 CARD_LEGALITY_RESTRICTION_CHOICES = (
     ("Legal", "Legal"),

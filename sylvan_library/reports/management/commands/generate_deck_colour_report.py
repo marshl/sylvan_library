@@ -10,12 +10,14 @@ from typing import List, Optional, Dict
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, OutputWrapper
 from django.db.models import Sum
 from django.db.models.query import QuerySet
 
-from sylvan_library.cards.models import Deck, User, Colour, DeckCard
-from sylvan_library.reports.management.commands import download_tournament_decks
+from cards.models.colour import Colour
+from cards.models.decks import Deck, DeckCard
+from reports.management.commands import download_tournament_decks
 
 
 class Command(BaseCommand):

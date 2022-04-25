@@ -1,7 +1,7 @@
 """
 Module for the numeric calculator parser
 """
-from sylvan_library.cardsearch.parser.base_parser import Parser
+from cardsearch.parser.base_parser import Parser
 
 
 class CalcParser(Parser):

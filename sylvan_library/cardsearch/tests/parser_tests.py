@@ -3,25 +3,29 @@ Tests for the parser (search parameter tests are elsewhere)
 """
 from django.test import TestCase
 
-from sylvan_library.cards.models.card import Card
-from sylvan_library.cards.models.colour import Colour
-from sylvan_library.cards.tests import (
+from cards.models.colour import Colour
+from cards.tests import (
     create_test_card,
     create_test_set,
     create_test_card_printing,
     create_test_card_face,
 )
-from sylvan_library.cardsearch.parameters import (
-    AndParam,
-    OrParam,
-    CardNameParam,
+from cardsearch.parameters.base_parameters import AndParam, OrParam
+from cardsearch.parameters.card_colour_parameters import (
     CardComplexColourParam,
-    CardGenericTypeParam,
-    CardRulesTextParam,
+)
+from cardsearch.parameters.card_mana_cost_parameters import (
     CardManaCostComplexParam,
 )
-from sylvan_library.cardsearch.parse_search import ParseSearch
-from sylvan_library.cardsearch.parser import CardQueryParser
+from cardsearch.parameters.card_name_parameters import CardNameParam
+from cardsearch.parameters.card_rules_text_parameter import (
+    CardRulesTextParam,
+)
+from cardsearch.parameters.card_type_parameters import (
+    CardGenericTypeParam,
+)
+from cardsearch.parse_search import ParseSearch
+from cardsearch.parser.query_parser import CardQueryParser
 
 
 class ParserTests(TestCase):

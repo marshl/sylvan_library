@@ -9,14 +9,14 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from pytz import utc
 
-from sylvan_library.cards.models import (
-    Card,
-    CardPrinting,
-    CardLocalisation,
+from cards.models.card import (
     UserCardChange,
-    Set,
-    Language,
+    CardLocalisation,
+    CardPrinting,
+    Card,
 )
+from cards.models.language import Language
+from cards.models.sets import Set
 
 logger = logging.getLogger("django")
 

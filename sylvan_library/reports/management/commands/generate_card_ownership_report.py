@@ -10,12 +10,28 @@ from typing import List, Optional, Dict
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, OutputWrapper
 from django.db.models import Sum
 from django.db.models.query import QuerySet
 
-from sylvan_library.cards.models import Deck, User, Colour, DeckCard
-from sylvan_library.reports.management.commands import download_tournament_decks
+from cards.models.colour import Colour
+from cards.models.decks import DeckCard, Deck
+from reports.management.commands import download_tournament_decks
+
+
+def generate_dataframe(rows: Dict[datetime.date, Dict[str, int]]) -> pd.DataFrame:
+    """
+    Gets the dataframe from the given rows of dates to ownership counts
+    :param rows:
+    :return:
+    """
+    dataframe = pd.DataFrame.from_dict(rows).transpose()
+    dataframe = dataframe.divide(dataframe.sum(axis=1), axis=0)
+    dataframe.index = pd.to_datetime(dataframe.index)
+    dataframe = dataframe.resample("3M").mean()
+    dataframe = dataframe.interpolate(method="linear")
+    return dataframe
 
 
 class Command(BaseCommand):
@@ -39,13 +55,13 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options) -> None:
         image_path = os.path.join("reports", "output", "deck_colour_progression")
-        owner = User.objects.get(
+        owner = get_user_model().objects.get(
             username=download_tournament_decks.Command.deck_owner_username
         )
         decks = Deck.objects.filter(owner=owner).prefetch_related("cards__card")
         dates = self.get_dates(decks)
         rows = self.get_colour_ratio_rows(dates, decks)
-        dataframe = self.generate_dataframe(rows)
+        dataframe = generate_dataframe(rows)
         self.generate_plot(dataframe, image_path)
 
     @staticmethod
@@ -75,21 +91,6 @@ class Command(BaseCommand):
             rows[created_date] = row
 
         return rows
-
-    def generate_dataframe(
-        self, rows: Dict[datetime.date, Dict[str, int]]
-    ) -> pd.DataFrame:
-        """
-        Gets the dataframe from the given rows of dates to ownership counts
-        :param rows:
-        :return:
-        """
-        dataframe = pd.DataFrame.from_dict(rows).transpose()
-        dataframe = dataframe.divide(dataframe.sum(axis=1), axis=0)
-        dataframe.index = pd.to_datetime(dataframe.index)
-        dataframe = dataframe.resample("3M").mean()
-        dataframe = dataframe.interpolate(method="linear")
-        return dataframe
 
     def generate_plot(self, data: pd.DataFrame, output_path: str) -> None:
         """

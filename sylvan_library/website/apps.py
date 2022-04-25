@@ -9,4 +9,4 @@ class WebsiteConfig(AppConfig):
     The configuration for the website app
     """
 
-    name = "sylvan_library.website"
+    name = "website"
