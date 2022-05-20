@@ -67,7 +67,7 @@ HAVING SUM(COALESCE(cards_userownedcard.count, 0)) {self.operator} %s
         :return: The pretty version of this parameter
         """
         if self.operator in ("<", "<=", "=") and self.number <= 0:
-            return "you you don't own any"
+            return "you don't own any"
 
         if (self.operator == ">" and self.number == 0) or (
             self.operator == ">=" and self.number == 1
