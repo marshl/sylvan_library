@@ -93,12 +93,12 @@ class CardUsageCountParam(CardNumericalParam):
         """
         raw = Card.objects.raw(
             f"""
-SELECT cards_card.id 
+SELECT cards_card.id
 FROM cards_card
 LEFT JOIN cards_deckcard ON cards_deckcard.card_id = cards_card.id
 LEFT JOIN cards_deck ON cards_deck.id = cards_deckcard.deck_id AND cards_deck.owner_id = %s
 GROUP BY cards_card.id
-HAVING COUNT(cards_deckcard.id) {self.operator} %s
+HAVING COUNT(cards_deck.id) {self.operator} %s
 """,
             [self.user.id, self.number],
         )
