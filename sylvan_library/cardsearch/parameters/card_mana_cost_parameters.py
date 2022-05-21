@@ -213,14 +213,15 @@ class CardColourCountParam(CardNumericalParam):
 
     def get_pretty_str(self) -> str:
         """
-        Returns a human readable version of this parameter
+        Returns a human-readable version of this parameter
         (and all sub parameters for those with children)
         :return: The pretty version of this parameter
         """
+        operator_text = "" if self.operator == "=" else self.operator
         return (
             "card "
             + ("doesn't have" if self.negated else "has")
-            + f" {self.operator} {self.number} colours"
+            + f" {operator_text} {self.number} colours"
         )
 
 
