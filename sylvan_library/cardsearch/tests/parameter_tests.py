@@ -12,12 +12,10 @@ from cards.tests import (
     create_test_set,
     create_test_card_face,
 )
-from cardsearch.parameters import (
-    AndParam,
-    CardNameParam,
-    CardRulesTextParam,
-    CardSetParam,
-)
+from cardsearch.parameters.base_parameters import AndParam
+from cardsearch.parameters.card_name_parameters import CardNameParam
+from cardsearch.parameters.card_rules_text_parameter import CardRulesTextParam
+from cardsearch.parameters.card_set_parameters import CardSetParam
 
 
 class CardNameParamTestCase(TestCase):
