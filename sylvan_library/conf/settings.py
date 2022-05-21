@@ -2,7 +2,6 @@
 Module for all django settings
 """
 
-import sys
 import environ
 
 root = environ.Path(__file__) - 3  # three folder back (/a/b/c/ - 3 = /)
