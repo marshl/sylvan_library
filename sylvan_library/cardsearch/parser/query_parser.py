@@ -20,6 +20,7 @@ from cardsearch.parameters import (
     CardPowerSortParam,
     CardColourSortParam,
     CardPriceSortParam,
+    CardRaritySortParam,
 )
 from cardsearch.parameters.base_parameters import (
     CardSearchParam,
@@ -605,6 +606,8 @@ def parse_sort_order_param(param_args: ParameterArgs) -> CardSortParam:
         param = CardManaValueSortParam()
     elif param_args.text == "power":
         param = CardPowerSortParam()
+    elif param_args.text == "rarity":
+        param = CardRaritySortParam()
     elif param_args.text in ("color", "colour"):
         param = CardColourSortParam()
     elif param_args.text == "price":

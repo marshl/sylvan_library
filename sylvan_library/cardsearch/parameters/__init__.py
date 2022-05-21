@@ -8,6 +8,9 @@ from django.db.models import F
 
 
 class SearchMode(Enum):
+    """
+    Different search modes (the model "origin" of the search, for example card, card printing)
+    """
     SEARCH_MODE_CARD = "SEARCH_MODE_CARD"
     SEARCH_MODE_PRINTING = "SEARCH_MODE_PRINTING"
 
@@ -119,6 +122,17 @@ class CardColourSortParam(CardSortParam):
         if search_mode == SearchMode.SEARCH_MODE_CARD:
             return ["faces__colour_sort_key"]
         return ["card__faces__colour_sort_key"]
+
+
+class CardRaritySortParam(CardSortParam):
+    """
+    The sort parameter for a card's rarity
+    """
+
+    def get_sort_keys(self, search_mode: SearchMode) -> List[str]:
+        if search_mode == SearchMode.SEARCH_MODE_CARD:
+            return ["printings__rarity__display_order"]
+        return ["rarity__display_order"]
 
 
 class CardColourWeightSortParam(CardSortParam):
