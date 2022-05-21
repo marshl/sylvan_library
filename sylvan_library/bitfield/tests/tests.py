@@ -426,6 +426,9 @@ class BitFieldTest(TestCase):
                 default=("FLAG_1", "FLAG_2"),
             )
 
+            class Meta:
+                app_label = "bitfield"
+
         field = TestModel._meta.get_field("flags")
         self.assertEqual(field.default, TestModel.flags.FLAG_1 | TestModel.flags.FLAG_2)
 
