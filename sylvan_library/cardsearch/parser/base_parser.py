@@ -226,6 +226,11 @@ class Parser(ABC):
             return None
 
     def maybe_pattern(self, pattern: str) -> Optional[str]:
+        """
+        Tries to get a pattern match
+        :param pattern: The allowable pattern
+        :return: The pattern if it matches
+        """
         try:
             return self.pattern(pattern)
         except ParseError:

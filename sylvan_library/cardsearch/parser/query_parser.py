@@ -287,8 +287,8 @@ def parse_set_param(param_args: ParameterArgs) -> CardSetParam:
                 type="promo"
             )
             return CardSetParam(card_set)
-        except (Set.DoesNotExist, Set.MultipleObjectsReturned):
-            raise ValueError(f'Multiple sets match "{param_args.text}"')
+        except (Set.DoesNotExist, Set.MultipleObjectsReturned) as ex:
+            raise ValueError(f'Multiple sets match "{param_args.text}"') from ex
 
 
 @param_parser(name="block", keywords=["b", "block"], operators=[":", "="])
@@ -515,8 +515,8 @@ def parse_ownership_param(param_args: ParameterArgs) -> CardOwnershipCountParam:
 
     try:
         count = int(param_args.text)
-    except (ValueError, TypeError):
-        raise ValueError(f'Cannot parse number "{param_args.text}"')
+    except (ValueError, TypeError) as ex:
+        raise ValueError(f'Cannot parse number "{param_args.text}"') from ex
 
     if param_args.operator == ":":
         param_args.operator = ">="
@@ -538,7 +538,7 @@ def parse_deck_usage_param(param_args: ParameterArgs) -> CardUsageCountParam:
     if param_args.context_user.is_anonymous:
         raise ValueError("Cannot search by deck usage if you aren't logged in")
 
-    if param_args.operator == ":" and param_args.text == "any":
+    if param_args.operator == ":" and param_args.text in ("any", "ever"):
         return CardUsageCountParam(param_args.context_user, ">=", 1)
 
     if param_args.operator == ":" and param_args.text == "never":
@@ -756,12 +756,18 @@ class CardQueryParser(Parser):
         """
         parameter_type = self.match("param_type")
         operator = self.match("operator")
-        param_values = self.match("simple_word_group")
-        and_param = AndParam()
+        param_values = self.maybe_match("or_word_group")
+        if param_values:
+            base_param = OrParam()
+        else:
+            param_values = self.match("and_word_group")
+            base_param = AndParam()
+
         for value in param_values:
             param = self.parse_param(parameter_type, operator, value)
-            and_param.add_parameter(param)
-        return and_param
+            base_param.add_parameter(param)
+        return base_param
+
 
     def unquoted_name_parameter(self) -> Optional[CardSearchParam]:
         """
@@ -877,21 +883,33 @@ class CardQueryParser(Parser):
 
         return "".join(chars)
 
-    def simple_word_group(self) -> List[str]:
+    def and_word_group(self) -> List[str]:
         """
         Attempts to parse a list of words in parentheses, for example "(foo bar)"
         :return: The words inside the parentheses
         """
-        self.char("(")
+        return self.word_group("(", ")")
+
+    def or_word_group(self) -> List[str]:
+        """
+        Attempts to parse a list of words in parentheses, for example "(foo bar)"
+        :return: The words inside the parentheses
+        """
+        return self.word_group("[", "]")
+
+    def word_group(self, opening_bracket: str, closing_bracket: str):
+        assert len(opening_bracket) == 1
+        assert len(closing_bracket) == 1
+        self.char(opening_bracket)
         chars: List[str] = []
         words: List[str] = []
         while True:
             char = self.char()
-            if char in (" ", ")"):
+            if char in (" ", closing_bracket):
                 if chars:
                     words.append("".join(chars))
                     chars = []
-                if char == ")":
+                if char == closing_bracket:
                     break
             else:
                 chars.append(char)
