@@ -23,7 +23,7 @@ class CardSetParam(CardSearchParam):
         return Q(set=self.set_obj)
 
     def get_pretty_str(self) -> str:
-        return "set " + ("isn't" if self.negated else "is") + f" {self.set_obj.name}"
+        return "the card " + ("isn't" if self.negated else "is") + f" in {self.set_obj.name}"
 
 
 class CardBlockParam(CardSearchParam):
@@ -46,6 +46,9 @@ class CardBlockParam(CardSearchParam):
 
 
 class CardLegalityParam(CardSearchParam):
+    """
+    The parameter for searching by a card's "legality" (banned in a format, legal in a format etc.)
+    """
     def __init__(self, format_string: str, restriction: str):
         super().__init__()
         self.format_string = format_string
