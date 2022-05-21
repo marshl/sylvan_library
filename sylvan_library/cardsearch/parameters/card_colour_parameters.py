@@ -74,6 +74,7 @@ class CardComplexColourParam(CardSearchParam):
                         **{self.field_name: colour_flags}
                     )
             elif self.operator in ("<=", "<"):
+                # pylint: disable=invalid-unary-operand-type
                 annotated_result = Card.objects.annotate(
                     colour_filter=F(self.field_name).bitand(~colour_flags)
                 ).filter(colour_filter=0)
@@ -101,7 +102,8 @@ class CardComplexColourParam(CardSearchParam):
             )
 
         param_type = "colour identity" if self.identity else "colours"
-        return f"the {param_type} {self.operator} {colours_to_symbols(self.colours)}"
+        operator_text = "is" if self.operator == "=" else self.operator
+        return f"the {param_type} {operator_text} {colours_to_symbols(self.colours)}"
 
 
 class CardColourIdentityParam(CardSearchParam):
