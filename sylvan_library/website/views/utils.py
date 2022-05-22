@@ -1,4 +1,6 @@
 import random
+import urllib
+from abc import ABC
 from typing import Dict, Any
 
 from django.contrib.auth.models import User
@@ -124,3 +126,130 @@ def get_colour_info() -> Dict[int, Dict[str, Any]]:
         }
         for colour in Colour.objects.all().order_by("display_order")
     }
+
+
+def get_website_card_filter(card: Card, website: str) -> str:
+    """
+    Gets the website specific filter used to query for a card.
+    :param card: The card to search for
+    :param website: The website the link is for
+    :return: The filter string used for that website
+    """
+    if website == "Card Kingdom":
+        if not card.is_token:
+            if card.layout in ("aftermath", "split"):
+                face_names = [f.name for f in card.faces.all()]
+                return " // ".join(face_names)
+            return card.faces.first().name
+        if card.faces.filter(types__name="Emblem").exists():
+            return f'Emblem ({card.name.replace(" Emblem", "")})'
+        return f"{card.name} token"
+    return ""
+
+
+class LinkBuilder(ABC):
+    def get_name(self) -> str:
+        raise NotImplementedError
+
+    def get_base_url(self) -> str:
+        raise NotImplementedError
+
+    def get_params(self, card: Card) -> dict:
+        raise NotImplementedError
+
+    def build_link(self, card: Card):
+        return {
+            "name": self.get_name(),
+            "url": f"{self.get_base_url()}?{urllib.parse.urlencode(self.get_params(card))}",
+        }
+
+
+class ChannelFireballLink(LinkBuilder):
+    def get_name(self):
+        return "Search on Channel Fireball"
+
+    def get_base_url(self) -> str:
+        return f"https://store.channelfireball.com/products/search"
+
+    def get_params(self, card: Card) -> dict:
+        return {"q": card.name}
+
+
+class TCGPlayerLink(LinkBuilder):
+    def get_name(self):
+        return "TCGPlayer Decks"
+
+    def get_base_url(self) -> str:
+        return "https://decks.tcgplayer.com/magic/deck/search"
+
+    def get_params(self, card: Card) -> dict:
+        return {"contains": card.name, "page": 1}
+
+
+class EDHRecLink(LinkBuilder):
+    def get_name(self) -> str:
+        return "Card Analysis on EDHREC"
+
+    def get_base_url(self) -> str:
+        return "https://edhrec.com/route/"
+
+    def get_params(self, card: Card) -> dict:
+        return {"cc": card.faces.first().name}
+
+
+class DeckStatsLink(LinkBuilder):
+    def get_name(self) -> str:
+        return "Search on DeckStats"
+
+    def get_base_url(self) -> str:
+        return "https://deckstats.net/decks/search/"
+
+    def get_params(self, card: Card) -> dict:
+        return {"search_cards[]": card.name}
+
+
+class MTGTop8Link(LinkBuilder):
+    def get_name(self) -> str:
+        return "MTGTop8 Decks"
+
+    def get_base_url(self) -> str:
+        return "https://mtgtop8.com/search"
+
+    def get_params(self, card: Card) -> dict:
+        return {"MD_check": 1, "SB_check": 1, "cards": card.faces.first().name}
+
+
+class StarCityGamesLink(LinkBuilder):
+    def get_name(self) -> str:
+        return "Search on Starcity Games"
+
+    def get_base_url(self) -> str:
+        return "https://starcitygames.com/search/"
+
+    def get_params(self, card: Card) -> dict:
+        return {"search_query": card.name}
+
+
+class ScryfallLink(LinkBuilder):
+    def get_name(self) -> str:
+        return "Search on Scryfall"
+
+    def get_base_url(self) -> str:
+        return "https://scryfall.com/search"
+
+    def get_params(self, card: Card) -> dict:
+        return {"q": urllib.parse.urlencode({"name": card.name})}
+
+
+class CardKingdomLink(LinkBuilder):
+    def get_name(self) -> str:
+        return "Card Kingdom"
+
+    def get_base_url(self) -> str:
+        return "https://www.cardkingdom.com/catalog/search"
+
+    def get_params(self, card: Card) -> dict:
+        return {
+            "search": "header",
+            "filter[name]": get_website_card_filter(card, "Card Kingdom"),
+        }

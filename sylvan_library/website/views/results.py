@@ -20,6 +20,16 @@ from cards.models.language import Language
 from website.forms import (
     ChangeCardOwnershipForm,
 )
+from website.views.utils import (
+    TCGPlayerLink,
+    EDHRecLink,
+    DeckStatsLink,
+    MTGTop8Link,
+    ScryfallLink,
+    CardKingdomLink,
+    StarCityGamesLink,
+    ChannelFireballLink,
+)
 
 logger = logging.getLogger("django")
 
@@ -204,50 +214,19 @@ def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse
     :return: The link HTML
     """
     card: Card = Card.objects.get(pk=card_id)
+    link_builders = [
+        ChannelFireballLink(),
+        TCGPlayerLink(),
+        EDHRecLink(),
+        DeckStatsLink(),
+        MTGTop8Link(),
+        StarCityGamesLink(),
+        ScryfallLink(),
+        CardKingdomLink(),
+    ]
+
     links = [
-        {
-            "name": "Search on Channel Fireball",
-            "url": f"https://store.channelfireball.com/products/search?{urllib.parse.urlencode({'q': card.name})}",
-        },
-        {
-            "name": "TCGPlayer Decks",
-            "url": f"https://decks.tcgplayer.com/magic/deck/search?{urllib.parse.urlencode({'contains': card.name, 'page': 1})}",
-        },
-        {
-            "name": "Card Analysis on EDHREC",
-            "url": f"https://edhrec.com/route/?{urllib.parse.urlencode({'cc': card.faces.first().name})}",
-        },
-        {
-            "name": "Search on DeckStats",
-            "url": f"https://deckstats.net/decks/search/?{urllib.parse.urlencode({'search_cards[]': card.name})}",
-        },
-        {
-            "name": "MTGTop8 decks",
-            "url": "https://mtgtop8.com/search?{}".format(
-                urllib.parse.urlencode(
-                    {"MD_check": 1, "SB_check": 1, "cards": card.faces.first().name}
-                )
-            ),
-        },
-        {
-            "name": "Search on Starcity Games",
-            "url": f"https://starcitygames.com/search/?{urllib.parse.urlencode({'search_query': card.name})}",
-        },
-        {
-            "name": "Search on Scryfall",
-            "url": f"https://scryfall.com/search?q={urllib.parse.urlencode({'name': card.name})}",
-        },
-        {
-            "name": "Card Kingdom",
-            "url": "https://www.cardkingdom.com/catalog/search?{}".format(
-                urllib.parse.urlencode(
-                    {
-                        "search": "header",
-                        "filter[name]": get_website_card_filter(card, "Card Kingdom"),
-                    }
-                )
-            ),
-        },
+        link_builder.build_link(card) for link_builder in link_builders
     ]
 
     localisation = (
@@ -267,28 +246,6 @@ def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse
         )
 
     return render(request, "website/results/search_result_links.html", {"links": links})
-
-
-
-
-def get_website_card_filter(card: Card, website: str) -> str:
-    """
-    Gets the website specific filter used to query for a card.
-    :param card: The card to search for
-    :param website: The website the link is for
-    :return: The filter string used for that website
-    """
-    if website == "Card Kingdom":
-        if not card.is_token:
-            if card.layout in ("aftermath", "split"):
-                face_names = [f.name for f in card.faces.all()]
-                return " // ".join(face_names)
-            return card.faces.first().name
-        if card.faces.filter(types__name="Emblem").exists():
-            return f'Emblem ({card.name.replace(" Emblem", "")})'
-        return f"{card.name} token"
-    return ""
-
 
 
 def ajax_search_result_prices(
