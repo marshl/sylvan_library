@@ -98,8 +98,8 @@ class CardManaValueSortParam(CardSortParam):
         Gets the list of attributes to be sorted by
         """
         if search_mode == SearchMode.SEARCH_MODE_CARD:
-            return ["mana_value", "faces__colour_weight"]
-        return ["card__mana_value", "card__colour_weight"]
+            return ["mana_value"]
+        return ["card__mana_value"]
 
 
 class CardCollectorNumSortParam(CardSortParam):
