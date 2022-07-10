@@ -3,7 +3,7 @@ Card name parameters
 """
 from django.db.models.query import Q
 
-from cardsearch.parameters.base_parameters import CardSearchParam
+from cardsearch.parameters.base_parameters import CardSearchParam, OPERATOR_MAPPING
 
 
 class CardNameParam(CardSearchParam):
@@ -11,11 +11,13 @@ class CardNameParam(CardSearchParam):
     The parameter for searching by a card's name
     """
 
-    def __init__(self, card_name, match_exact: bool = False) -> None:
+    def __init__(self, card_name, match_exact: bool = False, operator: str=":") -> None:
         super().__init__()
         self.card_name = card_name
         self.match_exact = match_exact
         self.regex_match: bool = False
+        self.operator = operator
+
         if self.card_name.startswith("/") and self.card_name.endswith("/"):
             self.regex_match = True
             self.card_name = self.card_name.strip("/")
@@ -27,8 +29,11 @@ class CardNameParam(CardSearchParam):
             query = Q(card__name__iregex=self.card_name)
         elif self.match_exact:
             query = Q(card__name__iexact=self.card_name)
-        else:
+        elif self.operator == ":":
             query = Q(card__name__icontains=self.card_name)
+        else:
+            django_op = OPERATOR_MAPPING[self.operator]
+            query = Q(**{"card__name" + django_op: self.card_name})
 
         return ~query if self.negated else query
 

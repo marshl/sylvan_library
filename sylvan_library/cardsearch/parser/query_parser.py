@@ -6,7 +6,7 @@ import math
 import sys
 from typing import Union, Optional, Dict, Callable, List
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db.models import F, Q
 
 from cards.models import colour
@@ -84,7 +84,7 @@ class ParameterArgs:
     Argument container for all parameter parser functions
     """
 
-    def __init__(self, keyword: str, operator: str, text: str, context_user: User):
+    def __init__(self, keyword: str, operator: str, text: str, context_user: get_user_model()):
         self.keyword = keyword
         self.operator = operator
         self.text = text
@@ -390,7 +390,7 @@ def parse_is_param(param_args: ParameterArgs) -> CardSearchParam:
     return param
 
 
-@param_parser(name="name", keywords=["n", "name"], operators=[":", "="])
+@param_parser(name="name", keywords=["n", "name"], operators=[":", "=", ">", ">=", "<", "<="])
 def parse_name_param(param_args: ParameterArgs) -> CardNameParam:
     """
     Parses a card name parameter
@@ -403,7 +403,7 @@ def parse_name_param(param_args: ParameterArgs) -> CardNameParam:
         text = param_args.text[1:]
     else:
         text = param_args.text
-    return CardNameParam(card_name=text, match_exact=match_exact)
+    return CardNameParam(card_name=text, match_exact=match_exact, operator=param_args.operator)
 
 
 @param_parser(name="watermark", keywords=["w", "watermark", "wm"], operators=[":", "="])
@@ -625,9 +625,9 @@ class CardQueryParser(Parser):
     Parser for parsing a scryfall-style card qquery
     """
 
-    def __init__(self, user: User = None):
+    def __init__(self, user: get_user_model() = None):
         super().__init__()
-        self.user: User = user
+        self.user = user
         self.order_params = []
         all_functions = inspect.getmembers(sys.modules[__name__], inspect.isfunction)
         self.parser_dict: Dict[str, Callable] = {}
