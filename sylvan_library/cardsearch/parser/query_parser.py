@@ -279,8 +279,8 @@ def parse_set_param(param_args: ParameterArgs) -> CardSetParam:
     try:
         card_set = Set.objects.get(name__icontains=param_args.text)
         return CardSetParam(card_set)
-    except Set.DoesNotExist:
-        raise ValueError(f'Unknown set "{param_args.text}"')
+    except Set.DoesNotExist as ex:
+        raise ValueError(f'Unknown set "{param_args.text}"') from ex
     except Set.MultipleObjectsReturned:
         try:
             card_set = Set.objects.get(name__icontains=param_args.text).exclude(
@@ -320,7 +320,7 @@ def parse_block_param(param_args: ParameterArgs) -> CardBlockParam:
     if not card_block:
         try:
             card_block = Block.objects.get(name__icontains=param_args.text)
-        except Block.DoesNotExist:
+        except Block.DoesNotExist as ex:
             raise ValueError(f'Unknown block "{param_args.text}"') from ex
         except Block.MultipleObjectsReturned as ex:
             raise ValueError(f'Multiple blocks match "{param_args.text}"') from ex

@@ -28,11 +28,8 @@ class CardRarityParam(CardSearchParam):
         if self.operator == "=":
             query = Q(rarity=self.rarity)
         else:
-            query = Q(
-                **{
-                    f"rarity__display_order{OPERATOR_MAPPING[self.operator]}": self.rarity.display_order
-                }
-            )
+            filter_ = f"rarity__display_order{OPERATOR_MAPPING[self.operator]}"
+            query = Q(**{filter_: self.rarity.display_order})
         return ~query if self.negated else query
 
     def get_pretty_str(self) -> str:
