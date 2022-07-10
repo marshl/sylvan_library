@@ -128,25 +128,6 @@ def get_colour_info() -> Dict[int, Dict[str, Any]]:
     }
 
 
-def get_website_card_filter(card: Card, website: str) -> str:
-    """
-    Gets the website specific filter used to query for a card.
-    :param card: The card to search for
-    :param website: The website the link is for
-    :return: The filter string used for that website
-    """
-    if website == "Card Kingdom":
-        if not card.is_token:
-            if card.layout in ("aftermath", "split"):
-                face_names = [f.name for f in card.faces.all()]
-                return " // ".join(face_names)
-            return card.faces.first().name
-        if card.faces.filter(types__name="Emblem").exists():
-            return f'Emblem ({card.name.replace(" Emblem", "")})'
-        return f"{card.name} token"
-    return ""
-
-
 class LinkBuilder(ABC):
     def get_name(self) -> str:
         raise NotImplementedError
@@ -227,7 +208,7 @@ class StarCityGamesLink(LinkBuilder):
         return "https://starcitygames.com/search/"
 
     def get_params(self, card: Card) -> dict:
-        return {"search_query": card.name}
+        return {"search_query": f"({card.name} token)" if card.is_token else card.name}
 
 
 class ScryfallLink(LinkBuilder):
@@ -249,7 +230,15 @@ class CardKingdomLink(LinkBuilder):
         return "https://www.cardkingdom.com/catalog/search"
 
     def get_params(self, card: Card) -> dict:
-        return {
-            "search": "header",
-            "filter[name]": get_website_card_filter(card, "Card Kingdom"),
-        }
+        if not card.is_token:
+            if card.layout in ("aftermath", "split"):
+                face_names = [f.name for f in card.faces.all()]
+                search = " // ".join(face_names)
+            else:
+                search = card.faces.first().name
+        elif card.faces.filter(types__name="Emblem").exists():
+            search = f'Emblem ({card.name.replace(" Emblem", "")})'
+        else:
+            search = f"{card.name} token"
+
+        return {"search": "header", "filter[name]": search}
