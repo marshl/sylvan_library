@@ -101,10 +101,14 @@ class CardIsCommanderParam(CardSearchParam):
 
     def query(self) -> Q:
         query = (
-            Q(card__faces__supertypes__name="Legendary")
-            & Q(card__faces__types__name="Creature")
-            & ~Q(card__faces__types__name="Token")
-        ) | Q(card__faces__rules_text__contains="can be your commander")
+            (
+                Q(card__faces__supertypes__name="Legendary")
+                & Q(card__faces__types__name="Creature")
+                & ~Q(card__faces__types__name="Token")
+            )
+            | Q(card__faces__rules_text__contains="can be your commander")
+            | Q(card__faces__subtypes__name="Background")
+        )
         return ~query if self.negated else query
 
     def get_pretty_str(self) -> str:
