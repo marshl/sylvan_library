@@ -12,11 +12,6 @@ Navigate into the folder
 ```bash
 cd ./sylvan_library
 ```
-SylvanLibrary uses git submodules to store some assets. These need to be initialised
-```bash
-git subodule init
-git submodule update
-```
 Create the python virtual environment and install th dependencies
 ```bash
 pipenv install --dev
