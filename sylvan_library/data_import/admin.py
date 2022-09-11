@@ -1,3 +1,6 @@
+"""
+Data import admin
+"""
 from django import forms
 from django.contrib import admin
 
@@ -48,6 +51,9 @@ class UpdateCardFaceAdmin(admin.ModelAdmin):
 
 
 class UpdateCardRulingModelForm(forms.ModelForm):
+    """
+    Form for a card ruling change
+    """
     ruling_text = forms.CharField(widget=forms.Textarea)
 
     class Meta:
@@ -68,6 +74,7 @@ class UpdateCardRulingAdmin(admin.ModelAdmin):
 @admin.register(UpdateCardLegality)
 class UpdateCardLegalityAdmin(admin.ModelAdmin):
     search_fields = ["card_name"]
+    list_filter = ["update_mode"]
 
 
 @admin.register(UpdateCardPrinting)
@@ -77,6 +84,9 @@ class UpdateCardPrintingAdmin(admin.ModelAdmin):
 
 @admin.register(UpdateCardFacePrinting)
 class UpdateCardFacePrintingAdmin(admin.ModelAdmin):
+    """
+    Admin for a change to a card face printing
+    """
     search_fields = ["card_name", "scryfall_id", "scryfall_oracle_id", "printing_uuid"]
 
 

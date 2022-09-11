@@ -54,7 +54,6 @@ class Command(BaseCommand):
     help = (
         "Uses the downloaded JSON files to update the database, "
         "including creating cards, set and rarities\n"
-        "Use the update_rulings command to update rulings"
     )
 
     def __init__(self, stdout=None, stderr=None, no_color=False):
@@ -515,7 +514,7 @@ class SetParser:
                     )
                 )
 
-        # For every existing ruling, it if isn't contained in the list of rulings,
+        # For every existing ruling, if it isn't contained in the list of rulings,
         # then mark it for deletion
         for existing_ruling in existing_rulings:
             if not any(
