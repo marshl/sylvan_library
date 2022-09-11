@@ -101,7 +101,8 @@ def download_images(root_dir: str) -> None:
         url_path = urlparse(card_image.scryfall_image_url).path
         url_parts = url_path.split("/")
         if "normal" not in url_parts:
-            raise ValueError(f"Invalid image URL {card_image.scryfall_image_url}")
+            logger.warning(f"Invalid image URL {card_image.scryfall_image_url}")
+            continue
 
         url_parts = url_parts[url_parts.index("normal") :]
 
