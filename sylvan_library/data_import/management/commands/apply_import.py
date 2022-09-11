@@ -6,6 +6,8 @@ import math
 from typing import Any, Dict, Optional
 
 import typing
+
+import django.db
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction, models, IntegrityError, DataError
@@ -172,8 +174,11 @@ class Command(BaseCommand):
                         "Cannot update unrecognised field Set."
                         f"{field} with value {value} for {set_to_create}"
                     )
-
-            set_obj.save()
+            try:
+                set_obj.save()
+            except django.db.IntegrityError:
+                self.logger.exception(f"IntegrityError when updating set {set_obj.name} ({set_obj.code})")
+                raise
 
         for set_to_create in UpdateSet.objects.filter(update_mode=UpdateMode.CREATE):
             parent_set_code = set_to_create.field_data.get("parent_set_code")
@@ -510,7 +515,8 @@ class Command(BaseCommand):
             frame_effect_objs = FrameEffect.objects.filter(code__in=frame_effects)
             if frame_effect_objs.count() != len(frame_effects):
                 raise ValueError(
-                    f"Frame effects {frame_effects} did not match object count {frame_effect_objs}"
+                    f"Frame effects {frame_effects} did not match object count {frame_effect_objs}."
+                    f" A new frame effect may have been added?"
                 )
             face_printing.frame_effects.set(frame_effect_objs)
 
