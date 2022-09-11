@@ -21,6 +21,24 @@
                             </li>
                         {% endfor %}
                     </ul>
+                    <h2>Partner Pairings</h2>
+                    <ul>
+                        {% for partner_pair in partner_pairs %}
+                            <li>
+                                {% include "website/card_link.html" with card=partner_pair.partner_1 %} //
+                                {% include "website/card_link.html" with card=partner_pair.partner_2 %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <h2>Background Pairings</h2>
+                    <ul>
+                        {% for background_pair in background_pairs %}
+                            <li>
+                                {% include "website/card_link.html" with card=background_pair.choose_background %} //
+                                {% include "website/card_link.html" with card=background_pair.background %}
+                            </li>
+                        {% endfor %}
+                    </ul>
                     <a href="{% url "website:change_unused_decks" %}">See more unused cards</a>
                     <h2>Decks</h2> {{ deck_count }}
                     <h2>Warnings</h2>

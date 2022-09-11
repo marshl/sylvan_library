@@ -112,6 +112,46 @@ def get_unused_commanders(user: User):
     return unused_cards
 
 
+def get_unused_partner_commanders(user: User):
+    user_owned_cards = Card.objects.filter(
+        printings__localisations__ownerships__owner=user
+    ).distinct()
+
+    partner_cards = list(
+        user_owned_cards.filter(faces__rules_text__contains="Partner").exclude(
+            faces__rules_text__contains="Partner with"
+        )
+    )
+    background_cards = list(user_owned_cards.filter(faces__subtypes__name="Background"))
+    choose_background_cards = list(
+        user_owned_cards.filter(faces__rules_text__contains="Choose a Background")
+    )
+
+    rand = random.Random(user.userprops.unused_cards_seed)
+    rand.shuffle(partner_cards)
+    rand.shuffle(background_cards)
+    rand.shuffle(choose_background_cards)
+    partner_cards = partner_cards[:20]
+    background_limit = min([len(background_cards), len(choose_background_cards), 10])
+    background_cards = background_cards[:background_limit]
+    choose_background_cards = choose_background_cards[:background_limit]
+
+    partner_pairs = []
+    for partner_a, partner_b in zip(partner_cards[0::2], partner_cards[1::2]):
+        if partner_a and partner_b:
+            partner_pairs.append({"partner_1": partner_a, "partner_2": partner_b})
+
+    background_pairs = [
+        {
+            "choose_background": choose_background_cards[x],
+            "background": background_cards[x],
+        }
+        for x in range(background_limit)
+    ]
+
+    return partner_pairs, background_pairs
+
+
 def get_colour_info() -> Dict[int, Dict[str, Any]]:
     """
     Gets information about all colours

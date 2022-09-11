@@ -20,7 +20,7 @@ from website.forms import (
 )
 from website.pagination import get_page_buttons
 from website.views.utils import get_unused_cards, get_page_number, get_unused_commanders, \
-    get_colour_info
+    get_colour_info, get_unused_partner_commanders
 
 
 def deck_stats(request: WSGIRequest) -> HttpResponse:
@@ -36,12 +36,16 @@ def deck_stats(request: WSGIRequest) -> HttpResponse:
 
     deck_warnings = []
 
+    partner_pairs, background_pairs = get_unused_partner_commanders(request.user)
+
     return render(
         request,
         "website/decks/deck_stats.html",
         {
             "unused_cards": get_unused_cards(request.user),
             "unused_commanders": get_unused_commanders(request.user),
+            "partner_pairs": partner_pairs,
+            "background_pairs": background_pairs,
             "deck_count": deck_count,
             "deck_warnings": deck_warnings,
         },
