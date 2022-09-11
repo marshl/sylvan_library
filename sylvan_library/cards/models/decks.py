@@ -154,46 +154,53 @@ class Deck(models.Model):
                 "name": "Commander"
                 if len(groups.get("commander", [])) == 1
                 else "Commanders",
+                "code": "commander",
                 "cards": groups.get("commander", []),
             },
-            {"name": "Lands", "cards": groups.get("land", [])},
+            {"name": "Lands", "cards": groups.get("land", []), "code": "land"},
             {
                 "name": "Creature"
                 if len(groups.get("creature", [])) == 1
                 else "Creatures",
+                "code": "creature",
                 "cards": groups.get("creature", []),
             },
             {
                 "name": "Instant"
                 if len(groups.get("instant", [])) == 1
                 else "Instants",
+                "code": "instant",
                 "cards": groups.get("instant", []),
             },
             {
                 "name": "Sorcery"
                 if len(groups.get("sorcery", [])) == 1
                 else "Sorceries",
+                "code": "sorcery",
                 "cards": groups.get("sorcery", []),
             },
             {
                 "name": "Artifact"
                 if len(groups.get("artifact", [])) == 1
                 else "Artifacts",
+                "code": "artifact",
                 "cards": groups.get("artifact", []),
             },
             {
                 "name": "Enchantment"
                 if len(groups.get("enchantment", [])) == 1
                 else "Enchantments",
+                "code": "enchantment",
                 "cards": groups.get("enchantment", []),
             },
             {
                 "name": "Planeswalker"
                 if len(groups.get("planeswalker", [])) == 1
                 else "Planeswalkers",
+                "code": "planeswalker",
                 "cards": groups.get("planeswalker", []),
             },
-            {"name": "Other", "cards": groups.get("other", [])},
+            {"name": "Other", "cards": groups.get("other", []), "code": "other"},
         ]
 
     def get_land_symbol_counts(self) -> Dict[str, int]:
