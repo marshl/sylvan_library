@@ -444,7 +444,7 @@ class DeckCard(models.Model):
         :return: The text representation version of the card for use in the DeckForm
         """
 
-        result = f"{self.count}x {self.card.name}"
+        result = f"{self.count} {self.card.name}"
         if self.is_commander:
             result += " *CMDR*"
         return result
