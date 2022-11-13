@@ -305,15 +305,19 @@ class DeckForm(forms.ModelForm):
             card = Card.objects.get(name__iexact=card_name, is_token=False)
         except Card.DoesNotExist as ex:
             stripped_name = re.sub(r"\W", "", card_name)
-            card_matches = Card.objects.annotate(
-                short_name=Func(
-                    F("name"),
-                    Value(r"\W"),
-                    Value(""),
-                    Value("g"),
-                    function="regexp_replace",
+            card_matches = (
+                Card.objects.annotate(
+                    short_name=Func(
+                        F("name"),
+                        Value(r"\W"),
+                        Value(""),
+                        Value("g"),
+                        function="regexp_replace",
+                    )
                 )
-            ).filter(is_token=False, short_name__icontains=stripped_name)
+                .exclude(name__startswith="A-")  # Ignore Alchemy cards
+                .filter(is_token=False, short_name__icontains=stripped_name)
+            )
             if card_matches.count() == 1:
                 card = card_matches.first()
             else:
