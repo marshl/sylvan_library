@@ -4,14 +4,14 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "chart.js": "^2.9.3",
+    "chart.js": "^2.9.4",
     "font-awesome": "^4.7.0",
-    "jquery": "^3.6.0",
-    "jquery-ui-dist": "^1.13.1",
+    "jquery": "^3.6.1",
+    "jquery-ui-dist": "^1.13.2",
     "js-cookie": "^2.2.1",
-    "keyrune": "^3.9.2",
+    "keyrune": "^3.11.0",
     "mana-font": "^1.14.0",
     "moment": "^2.29.4",
-    "tinymce": "^5.10.5"
+    "tinymce": "^5.10.6"
   }
 }
