@@ -36,7 +36,7 @@ def import_json(file_path: str) -> dict:
     :return: The dict representation of the file
     """
     with open(file_path, "r", encoding="utf8") as json_file:
-        return json.load(json_file, encoding="UTF-8")
+        return json.load(json_file)
 
 
 class Command(BaseCommand):

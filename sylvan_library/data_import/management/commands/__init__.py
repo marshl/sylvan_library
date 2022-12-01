@@ -58,7 +58,7 @@ def get_all_set_data(
             continue
 
         with open(set_file_path, "r", encoding="utf8") as set_file:
-            set_data = json.load(set_file, encoding="utf8").get("data")
+            set_data = json.load(set_file).get("data")
 
         if (
             set_data.get("isPreview")
@@ -75,7 +75,7 @@ def get_all_set_data(
     set_list.sort(key=lambda s: s["date"])
     for card_set in set_list:
         with open(card_set["path"], "r", encoding="utf8") as set_file:
-            set_data = json.load(set_file, encoding="utf8")
+            set_data = json.load(set_file)
         yield set_data.get("data")
 
 
@@ -86,7 +86,7 @@ def pretty_print_json_file(set_file_path: str) -> None:
     :return:
     """
     with open(set_file_path, "r", encoding="utf8") as set_file:
-        set_data = json.load(set_file, encoding="utf8")
+        set_data = json.load(set_file)
 
     with open(set_file_path, "w", encoding="utf8") as set_file:
         json.dump(set_data, set_file, indent=2)
