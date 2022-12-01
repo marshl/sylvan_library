@@ -12,6 +12,10 @@
     "code": "compasslanddfc"
   },
   {
+    "name": "Convert DFC",
+    "code": "convertdfc"
+  },
+  {
     "name": "Devoid",
     "code": "devoid"
   },
@@ -26,6 +30,14 @@
   {
     "name": "Extended Art",
     "code": "extendedart"
+  },
+  {
+    "name": "Fan DFC",
+    "code": "fandfc"
+  },
+  {
+    "name": "Full Art",
+    "code": "fullart"
   },
   {
     "name": "Inverted",
@@ -60,8 +72,20 @@
     "code": "originpwdfc"
   },
   {
+    "name": "Shattered Glass",
+    "code": "shatteredglass"
+  },
+  {
     "name": "Showcase",
     "code": "showcase"
+  },
+  {
+    "name": "Snow",
+    "code": "snow"
+  },
+  {
+    "name": "Story Spotlight",
+    "code": "storyspotlight"
   },
   {
     "name": "Sun/moon DFC",
@@ -76,15 +100,11 @@
     "code": "textless"
   },
   {
+    "name": "Upside-down DFC",
+    "code": "upsidedowndfc"
+  },
+  {
     "name": "Waxing and Waning Moon DFC",
     "code": "waxingandwaningmoondfc"
-  },
-  {
-    "name": "Full Art",
-    "code": "fullart"
-  },
-  {
-    "name": "Snow",
-    "code": "snow"
   }
 ]
