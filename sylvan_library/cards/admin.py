@@ -15,6 +15,8 @@ from cards.models.card import (
     CardSubtype,
     CardSupertype,
     CardImage,
+    UserCardChange,
+    UserOwnedCard,
 )
 from cards.models.card_price import CardPrice
 from cards.models.decks import DeckCard, Deck
@@ -420,3 +422,14 @@ class DeckAdmin(admin.ModelAdmin):
 
     search_fields = ["name", "cards__card__name", "owner__username"]
     inlines = [DeckCardInline]
+
+
+@admin.register(UserOwnedCard)
+class UserOwnedCardAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(UserCardChange)
+class UserCardChangeAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["card_localisation", "owner"]
+    list_display = ["card_localisation", "date", "difference"]
