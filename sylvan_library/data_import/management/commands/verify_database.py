@@ -478,7 +478,7 @@ class Command(BaseCommand):
         self.assert_card_face_colour_count_eq("Edgewalker", 2)
         self.assert_card_face_colour_count_eq("Naya Hushblade", 3)
         self.assert_card_face_colour_count_eq("Temple of the False God", 0)
-        self.assert_card_face_colour_count_eq("Ornithopter", 0)
+        self.assert_card_face_colour_count_eq("Memnite", 0)
         self.assert_card_face_colour_count_eq("Glint-Eye Nephilim", 4)
         self.assert_card_face_colour_count_eq("Cromat", 5)
 
