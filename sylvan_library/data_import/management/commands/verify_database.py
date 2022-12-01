@@ -206,6 +206,7 @@ class Command(BaseCommand):
                     "modal_dfc",
                     # Not all tokens have multiple faces, but there are some dual faced tokens
                     "token",
+                    "double_faced_token",
                 )
             )
             .annotate(face_count=Count("faces"))
