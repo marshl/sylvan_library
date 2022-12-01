@@ -21,77 +21,33 @@ from data_import.management.commands import download_file
 logger = logging.getLogger("django")
 
 
-class Command(BaseCommand):
-    """
-    Command for updating card prices from the MTGJSON price files
-    """
-
-    help = (
-        "Finds printings that may have had their UID (printing.json_id) changed, "
-        "and the prompts the user to fix them."
-    )
-
-    def handle(self, *args: Any, **options: Any) -> None:
-        # We want to get the average for a weeks prices into a single lump
-        # So the latest date that can be considered is the start of this week
-        # The data for that week will be lumped into the date of the start of the previous week
-        start_of_week = arrow.utcnow().floor("week").date()
-        with transaction.atomic():
-            if not self.download_prices(start_of_week):
-                return
-            self.update_prices(start_of_week)
-            self.set_latest_prices()
-
-    def update_prices(self, start_of_week: datetime.date):
-
-        logger.info("Querying DB for most recent prices")
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """
-SELECT
-card_printing.id,
-face_printing.uuid,
-latest_price.date
-FROM cards_cardprinting card_printing
-JOIN cards_cardfaceprinting face_printing
-ON face_printing.card_printing_id = card_printing.id
-LEFT JOIN cards_cardprice latest_price
-ON latest_price.id = card_printing.latest_price_id
-"""
-            )
-            recent_price_map = {
-                uuid: (printing_id, most_recent_date)
-                for printing_id, uuid, most_recent_date in cursor.fetchall()
-            }
-
-        logger.info("Updating prices")
-        # We need to check which printings we've already done in case there are two faces
-        # and therefore two price rows the same printing and we don't want to duplicate the prices
-        updated_printings = set()
+def download_prices(start_of_week: datetime.date) -> bool:
+    logger.info("Checking for up-to-date price files")
+    if os.path.isfile(_paths.PRICES_JSON_PATH):
         with open(_paths.PRICES_JSON_PATH, "r", encoding="utf8") as prices_file:
-            cards = ijson.kvitems(prices_file, "data")
-            for uuid, price_data in cards:
-                if uuid not in recent_price_map:
-                    logger.warning("No printing found for %s", uuid)
-                    continue
-
-                printing_id, latest_price = recent_price_map[uuid]
-
-                if printing_id in updated_printings:
-                    logger.info("Already updated %s. Skipping...", uuid)
-                    continue
-
-                logger.info("Updating prices for %s", uuid)
-                apply_printing_prices(
-                    start_of_week, price_data, printing_id, latest_price
+            meta = ijson.items(prices_file, "meta")
+            meta_data = next(meta)
+            date = arrow.get(meta_data["date"]).date()
+            if date >= arrow.get(start_of_week).shift(weeks=-1).date():
+                logger.info(
+                    "The price file is up to date, no need to download them again"
                 )
-                updated_printings.add(printing_id)
+                return False
+    logger.info("Downloading prices")
+    download_file(_paths.PRICES_ZIP_DOWNLOAD_URL, _paths.PRICES_ZIP_PATH)
 
-    def set_latest_prices(self):
-        logger.info("Setting latest prices")
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """
+    logger.info("Extracting price file")
+    with zipfile.ZipFile(_paths.PRICES_ZIP_PATH) as prices_zip_file:
+        prices_zip_file.extractall(_paths.IMPORT_FOLDER_PATH)
+
+    return True
+
+
+def set_latest_prices():
+    logger.info("Setting latest prices")
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
 UPDATE cards_cardprinting
 SET latest_price_id = latest_price.id
 FROM (
@@ -105,28 +61,51 @@ FROM (
 ) latest_price
 WHERE latest_price.card_printing_id = cards_cardprinting.id
 """
-            )
+        )
 
-    def download_prices(self, start_of_week: datetime.date) -> bool:
-        logger.info("Checking for up-to-date price files")
-        if os.path.isfile(_paths.PRICES_JSON_PATH):
-            with open(_paths.PRICES_JSON_PATH, "r", encoding="utf8") as prices_file:
-                meta = ijson.items(prices_file, "meta")
-                meta_data = next(meta)
-                date = arrow.get(meta_data["date"]).date()
-                if date >= arrow.get(start_of_week).shift(weeks=-1).date():
-                    logger.info(
-                        "The price file is up to date, no need to download them again"
-                    )
-                    return False
-        logger.info("Downloading prices")
-        download_file(_paths.PRICES_ZIP_DOWNLOAD_URL, _paths.PRICES_ZIP_PATH)
 
-        logger.info("Extracting price file")
-        with zipfile.ZipFile(_paths.PRICES_ZIP_PATH) as prices_zip_file:
-            prices_zip_file.extractall(_paths.IMPORT_FOLDER_PATH)
+def update_prices(start_of_week: datetime.date):
 
-        return True
+    logger.info("Querying DB for most recent prices")
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+SELECT
+card_printing.id,
+face_printing.uuid,
+latest_price.date
+FROM cards_cardprinting card_printing
+JOIN cards_cardfaceprinting face_printing
+ON face_printing.card_printing_id = card_printing.id
+LEFT JOIN cards_cardprice latest_price
+ON latest_price.id = card_printing.latest_price_id
+"""
+        )
+        recent_price_map = {
+            uuid: (printing_id, most_recent_date)
+            for printing_id, uuid, most_recent_date in cursor.fetchall()
+        }
+
+    logger.info("Updating prices")
+    # We need to check which printings we've already done in case there are two faces
+    # and therefore two price rows the same printing and we don't want to duplicate the prices
+    updated_printings = set()
+    with open(_paths.PRICES_JSON_PATH, "r", encoding="utf8") as prices_file:
+        cards = ijson.kvitems(prices_file, "data")
+        for uuid, price_data in cards:
+            if uuid not in recent_price_map:
+                logger.warning("No printing found for %s", uuid)
+                continue
+
+            printing_id, latest_price = recent_price_map[uuid]
+
+            if printing_id in updated_printings:
+                logger.info("Already updated %s. Skipping...", uuid)
+                continue
+
+            logger.info("Updating prices for %s", uuid)
+            apply_printing_prices(start_of_week, price_data, printing_id, latest_price)
+            updated_printings.add(printing_id)
 
 
 PAPER_FOIL = (True, True)
@@ -188,3 +167,25 @@ def apply_printing_prices(
         new_prices.append(new_price)
 
     CardPrice.objects.bulk_create(new_prices)
+
+
+class Command(BaseCommand):
+    """
+    Command for updating card prices from the MTGJSON price files
+    """
+
+    help = (
+        "Finds printings that may have had their UID (printing.json_id) changed, "
+        "and the prompts the user to fix them."
+    )
+
+    def handle(self, *args: Any, **options: Any) -> None:
+        # We want to get the average for a weeks prices into a single lump
+        # So the latest date that can be considered is the start of this week
+        # The data for that week will be lumped into the date of the start of the previous week
+        start_of_week = arrow.utcnow().floor("week").date()
+        with transaction.atomic():
+            if not download_prices(start_of_week):
+                return
+            update_prices(start_of_week)
+            set_latest_prices()
