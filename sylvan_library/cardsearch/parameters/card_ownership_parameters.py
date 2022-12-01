@@ -11,23 +11,6 @@ from cardsearch.parameters.base_parameters import (
 )
 
 
-class CardOwnerParam(CardSearchParam):
-    """
-    The parameter for searching by whether it is owned by a given user
-    """
-
-    def __init__(self, user: get_user_model()):
-        super().__init__()
-        self.user = user
-
-    def query(self) -> Q:
-        return Q(localisations__ownerships__owner=self.user)
-
-    def get_pretty_str(self) -> str:
-        verb = "don't own" if self.negated else "own"
-        return f"{verb} the card"
-
-
 class CardOwnershipCountParam(CardNumericalParam):
     """
     The parameter for searching by how many a user owns of it
@@ -42,6 +25,7 @@ class CardOwnershipCountParam(CardNumericalParam):
         Gets the Q query object
         :return: The Q object
         """
+        assert self.operator in ("<", "<=", "=", ">=", ">")
         raw = Card.objects.raw(
             f"""
 SELECT cards_card.id
@@ -62,7 +46,7 @@ HAVING SUM(COALESCE(cards_userownedcard.count, 0)) {self.operator} %s
 
     def get_pretty_str(self) -> str:
         """
-        Returns a human readable version of this parameter
+        Returns a human-readable version of this parameter
         (and all sub parameters for those with children)
         :return: The pretty version of this parameter
         """
@@ -113,3 +97,82 @@ HAVING COUNT(cards_deck.id) {self.operator} %s
         if self.operator == "=" and self.number == 0:
             return "you haven't used it in a deck"
         return f"you used it in {self.operator} {self.number} decks"
+
+
+class CardMissingPauperParam(CardSearchParam):
+    """
+    A parameter for searching for cards that the user owns a rare version of,
+    but doesn't own a common or uncommon variant that they can use in pauper
+    """
+
+    def __init__(self, user: get_user_model()):
+        super().__init__()
+        self.user = user
+
+    def query(self) -> Q:
+        """
+        Gets the Q query object
+        :return: The Q object
+        """
+        raw = Card.objects.raw(
+            f"""
+SELECT DISTINCT(cards_card.id)
+FROM cards_card
+JOIN cards_cardprinting
+  ON cards_cardprinting.card_id = cards_card.id
+JOIN cards_set
+  ON cards_set.id = cards_cardprinting.set_id
+JOIN cards_rarity
+  ON cards_rarity.id = cards_cardprinting.rarity_id
+JOIN cards_cardlocalisation
+  ON cards_cardprinting.id = cards_cardlocalisation.card_printing_id
+JOIN cards_userownedcard
+  ON cards_userownedcard.card_localisation_id = cards_cardlocalisation.id
+WHERE cards_userownedcard.owner_id = %s
+AND cards_rarity.symbol IN ('R', 'M')
+AND cards_set.release_date >= (SELECT release_date FROM cards_set WHERE cards_set.code = 'EXO')
+
+INTERSECT 
+
+SELECT DISTINCT(cards_card.id)
+FROM cards_card
+JOIN cards_cardprinting
+  ON cards_cardprinting.card_id = cards_card.id
+JOIN cards_set
+  ON cards_set.id = cards_cardprinting.set_id
+JOIN cards_rarity
+  ON cards_rarity.id = cards_cardprinting.rarity_id
+JOIN cards_cardlocalisation
+  ON cards_cardprinting.id = cards_cardlocalisation.card_printing_id
+WHERE cards_rarity.symbol IN ('U', 'C')
+AND NOT cards_set.is_online_only
+AND cards_set.release_date >= (SELECT release_date FROM cards_set WHERE cards_set.code = 'EXO')
+
+EXCEPT
+
+SELECT DISTINCT(cards_card.id)
+FROM cards_card
+JOIN cards_cardprinting
+  ON cards_cardprinting.card_id = cards_card.id
+JOIN cards_set
+  ON cards_set.id = cards_cardprinting.set_id
+JOIN cards_rarity
+  ON cards_rarity.id = cards_cardprinting.rarity_id
+JOIN cards_cardlocalisation
+  ON cards_cardprinting.id = cards_cardlocalisation.card_printing_id
+JOIN cards_userownedcard
+  ON cards_userownedcard.card_localisation_id = cards_cardlocalisation.id
+WHERE cards_userownedcard.owner_id = %s
+AND cards_rarity.symbol IN ('U', 'C')
+""",
+            [self.user.id, self.user.id],
+        )
+        return ~Q(card_id__in=raw) if self.negated else Q(card_id__in=raw)
+
+    def get_pretty_str(self) -> str:
+        """
+        Returns a human-readable version of this parameter
+        (and all sub parameters for those with children)
+        :return: The pretty version of this parameter
+        """
+        return "you are missing pauper variant of it"

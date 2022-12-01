@@ -53,6 +53,7 @@ from cardsearch.parameters.card_name_parameters import CardNameParam
 from cardsearch.parameters.card_ownership_parameters import (
     CardOwnershipCountParam,
     CardUsageCountParam,
+    CardMissingPauperParam,
 )
 from cardsearch.parameters.card_power_toughness_parameters import (
     CardNumToughnessParam,
@@ -384,6 +385,8 @@ def parse_is_param(param_args: ParameterArgs) -> CardSearchParam:
         param = CardGenericTypeParam("token", param_args.operator)
     elif param_args.text in ("commander", "general"):
         param = CardIsCommanderParam()
+    elif param_args.text == "missing-pauper":
+        param = CardMissingPauperParam(param_args.context_user)
     else:
         raise ValueError(f'Unknown parameter "{param_args.keyword}:{param_args.text}"')
 
