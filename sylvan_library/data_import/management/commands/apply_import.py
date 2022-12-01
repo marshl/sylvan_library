@@ -177,7 +177,9 @@ class Command(BaseCommand):
             try:
                 set_obj.save()
             except django.db.IntegrityError:
-                self.logger.exception(f"IntegrityError when updating set {set_obj.name} ({set_obj.code})")
+                self.logger.exception(
+                    f"IntegrityError when updating set {set_obj.name} ({set_obj.code})"
+                )
                 raise
 
         for set_to_create in UpdateSet.objects.filter(update_mode=UpdateMode.CREATE):
@@ -266,7 +268,7 @@ class Command(BaseCommand):
             try:
                 card_face.save()
             except (ValidationError, DataError):
-                self.logger.exception("Could not {}", card_face_update)
+                self.logger.exception("Could not %s", card_face_update)
                 raise
 
             self.apply_card_face_types(
@@ -582,7 +584,8 @@ class Command(BaseCommand):
                     update_face_localisation,
                 )
                 raise ValueError(
-                    f"Could not find CardFacePrinting with uuid {update_face_localisation.face_printing_uuid} for {update_face_localisation}"
+                    f"Could not find CardFacePrinting with uuid "
+                    f"{update_face_localisation.face_printing_uuid} for {update_face_localisation}"
                 ) from ex
 
             if update_face_localisation.update_mode == UpdateMode.CREATE:

@@ -84,7 +84,9 @@ class ParameterArgs:
     Argument container for all parameter parser functions
     """
 
-    def __init__(self, keyword: str, operator: str, text: str, context_user: get_user_model()):
+    def __init__(
+        self, keyword: str, operator: str, text: str, context_user: get_user_model()
+    ):
         self.keyword = keyword
         self.operator = operator
         self.text = text
@@ -390,7 +392,9 @@ def parse_is_param(param_args: ParameterArgs) -> CardSearchParam:
     return param
 
 
-@param_parser(name="name", keywords=["n", "name"], operators=[":", "=", ">", ">=", "<", "<="])
+@param_parser(
+    name="name", keywords=["n", "name"], operators=[":", "=", ">", ">=", "<", "<="]
+)
 def parse_name_param(param_args: ParameterArgs) -> CardNameParam:
     """
     Parses a card name parameter
@@ -403,7 +407,9 @@ def parse_name_param(param_args: ParameterArgs) -> CardNameParam:
         text = param_args.text[1:]
     else:
         text = param_args.text
-    return CardNameParam(card_name=text, match_exact=match_exact, operator=param_args.operator)
+    return CardNameParam(
+        card_name=text, match_exact=match_exact, operator=param_args.operator
+    )
 
 
 @param_parser(name="watermark", keywords=["w", "watermark", "wm"], operators=[":", "="])
@@ -546,8 +552,8 @@ def parse_deck_usage_param(param_args: ParameterArgs) -> CardUsageCountParam:
 
     try:
         count = int(param_args.text)
-    except (ValueError, TypeError):
-        raise ValueError(f'Cannot parse number "{param_args.text}"')
+    except (ValueError, TypeError) as ex:
+        raise ValueError(f'Cannot parse number "{param_args.text}"') from ex
 
     return CardUsageCountParam(param_args.context_user, param_args.operator, count)
 
@@ -768,7 +774,6 @@ class CardQueryParser(Parser):
             base_param.add_parameter(param)
         return base_param
 
-
     def unquoted_name_parameter(self) -> Optional[CardSearchParam]:
         """
         Attempts to parse a parameter that is just an unquoted string
@@ -850,6 +855,10 @@ class CardQueryParser(Parser):
         return "".join(chars).rstrip(" \t")
 
     def unquoted_complex(self) -> Union[str, float]:
+        """
+        Parses an unquoted series of characters
+        :return: The unquoted complex string
+        """
         pattern = r"[^\s()]"
         chars = [self.pattern(pattern)]
         while True:
@@ -897,7 +906,13 @@ class CardQueryParser(Parser):
         """
         return self.word_group("[", "]")
 
-    def word_group(self, opening_bracket: str, closing_bracket: str):
+    def word_group(self, opening_bracket: str, closing_bracket: str) -> List[str]:
+        """
+
+        :param opening_bracket:
+        :param closing_bracket:
+        :return:
+        """
         assert len(opening_bracket) == 1
         assert len(closing_bracket) == 1
         self.char(opening_bracket)

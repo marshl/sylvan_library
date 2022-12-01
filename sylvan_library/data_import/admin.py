@@ -46,6 +46,10 @@ class UpdateCardAdmin(admin.ModelAdmin):
 
 @admin.register(UpdateCardFace)
 class UpdateCardFaceAdmin(admin.ModelAdmin):
+    """
+    Admin for the UpdateCardFace model
+    """
+
     search_fields = ["face_name"]
     list_filter = ["update_mode"]
 
@@ -54,6 +58,7 @@ class UpdateCardRulingModelForm(forms.ModelForm):
     """
     Form for a card ruling change
     """
+
     ruling_text = forms.CharField(widget=forms.Textarea)
 
     class Meta:
@@ -87,11 +92,16 @@ class UpdateCardFacePrintingAdmin(admin.ModelAdmin):
     """
     Admin for a change to a card face printing
     """
+
     search_fields = ["card_name", "scryfall_id", "scryfall_oracle_id", "printing_uuid"]
 
 
 @admin.register(UpdateCardLocalisation)
 class UpdateCardLocalisationAdmin(admin.ModelAdmin):
+    """
+    Admin for the UPdateCardLocalisation model
+    """
+
     search_fields = ["card_name", "printing_scryfall_id"]
 
 
