@@ -277,7 +277,7 @@ class CardKingdomLink(LinkBuilder):
             else:
                 search = card.faces.first().name
         elif card.faces.filter(types__name="Emblem").exists():
-            search = f'Emblem ({card.name.replace(" Emblem", "")})'
+            search = card.name
         else:
             search = f"{card.name} token"
 
