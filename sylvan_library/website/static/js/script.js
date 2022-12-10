@@ -69,7 +69,7 @@ $(function () {
 
     $(this).keydown(function (event) {
         if (event.target === $("body").get(0) || (event.target.nodeName === "INPUT" && (event.target.type === "number" || event.target.type === "submit"))) {
-            if (event.key === 'f') {
+            if (event.key === 'f' && !event.ctrlKey) {
                 $(".js-search-bar-input").focus();
                 event.preventDefault();
             }
