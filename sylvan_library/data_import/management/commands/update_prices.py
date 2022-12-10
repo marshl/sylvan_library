@@ -65,7 +65,6 @@ WHERE latest_price.card_printing_id = cards_cardprinting.id
 
 
 def update_prices(start_of_week: datetime.date):
-
     logger.info("Querying DB for most recent prices")
     with connection.cursor() as cursor:
         cursor.execute(
@@ -124,7 +123,13 @@ def apply_printing_prices(
     for stock_type, stock_data in card_data.items():
         is_paper = stock_type == "paper"
         # We don't care about different stores, so just the data from every store and average it
-        for _, store_data in stock_data.items():
+        for store_name, store_data in stock_data.items():
+            # There have been problems with "cardsphere" having greatly inflated prices over that
+            # of the other retailers. Potentially they are using foil prices for non-foil data
+            # So we will ignore any data not from the Big 3
+            if store_name not in ("cardkingdom", "cardmarket", "tcgplayer"):
+                continue
+
             if store_data.get("currency") != "USD":
                 continue
 
