@@ -355,11 +355,20 @@ class Deck(models.Model):
             raise ValidationError("A commander deck should have at least one commander")
 
         if commanders.count() != 1:
-            if commanders.exclude(
-                card__faces__rules_text__icontains="partner"
-            ).exists():
+            both_have_partner = (
+                commanders.filter(card__faces__rules_text__icontains="partner").count()
+                == 2
+            )
+            is_background_pair = (
+                commanders.filter(
+                    card__faces__rules_text__contains="Choose a Background"
+                ).exists()
+                and commanders.filter(card__faces__subtypes__name="Background").exists()
+            )
+            if not both_have_partner and not is_background_pair:
                 raise ValidationError(
-                    "A commander deck can only have multiple commanders if they have partner"
+                    "A commander deck can only have multiple commanders if they have partner "
+                    "or if they are a background pair"
                 )
 
         if validate_type:
