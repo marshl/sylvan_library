@@ -49,6 +49,7 @@ from cardsearch.parameters.card_misc_parameters import (
     CardIsHybridParam,
     CardIsCommanderParam,
     CardLayoutParameter,
+    CardIsVanillaParam,
 )
 from cardsearch.parameters.card_name_parameters import CardNameParam
 from cardsearch.parameters.card_ownership_parameters import (
@@ -388,6 +389,8 @@ def parse_is_param(param_args: ParameterArgs) -> CardSearchParam:
         param = CardIsCommanderParam()
     elif param_args.text == "missing-pauper":
         param = CardMissingPauperParam(param_args.context_user)
+    elif param_args.text == "vanilla":
+        param = CardIsVanillaParam()
     else:
         raise ValueError(f'Unknown parameter "{param_args.keyword}:{param_args.text}"')
 

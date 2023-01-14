@@ -115,3 +115,14 @@ class CardIsCommanderParam(CardSearchParam):
         return (
             "the cards " + ("can't" if self.negated else "can") + " be your commander"
         )
+
+
+class CardIsVanillaParam(CardSearchParam):
+    def query(self) -> Q:
+        query = Q(card__faces__rules_text__isnull=True) & Q(
+            card__faces__types__name="Creature"
+        )
+        return ~query if self.negated else query
+
+    def get_pretty_str(self):
+        return "the card " + ("isn't" if self.negated else "is") + " vanilla"
