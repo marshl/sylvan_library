@@ -185,17 +185,6 @@ class LinkBuilder(ABC):
         }
 
 
-class ChannelFireballLink(LinkBuilder):
-    def get_name(self):
-        return "Search on Channel Fireball"
-
-    def get_base_url(self) -> str:
-        return f"https://store.channelfireball.com/products/search"
-
-    def get_params(self, card: Card) -> dict:
-        return {"q": card.name}
-
-
 class TCGPlayerLink(LinkBuilder):
     def get_name(self):
         return "TCGPlayer Decks"

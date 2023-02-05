@@ -28,7 +28,6 @@ from website.views.utils import (
     ScryfallLink,
     CardKingdomLink,
     StarCityGamesLink,
-    ChannelFireballLink,
 )
 
 logger = logging.getLogger("django")
@@ -215,7 +214,6 @@ def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse
     """
     card: Card = Card.objects.get(pk=card_id)
     link_builders = [
-        ChannelFireballLink(),
         TCGPlayerLink(),
         EDHRecLink(),
         DeckStatsLink(),
@@ -225,9 +223,7 @@ def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse
         CardKingdomLink(),
     ]
 
-    links = [
-        link_builder.build_link(card) for link_builder in link_builders
-    ]
+    links = [link_builder.build_link(card) for link_builder in link_builders]
 
     localisation = (
         CardLocalisation.objects.filter(card_printing__card=card)
