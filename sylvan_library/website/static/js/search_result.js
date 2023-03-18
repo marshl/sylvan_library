@@ -22,32 +22,40 @@ $(function () {
         Cookies.set('selected_tab', tabType);
     }
 
+    if ($('.js-card-result').length === 1) {
+        expandCardResult($('.js-card-result'));
+    }
+
     $(this).on('click', '.js-card-result', function () {
-        if ($(this).data('is-expanded')) {
+        expandCardResult($(this))
+    });
+
+    function expandCardResult($cardResult) {
+        if ($cardResult.data('is-expanded')) {
             return;
         }
 
         $('.js-card-result').data('is-expanded', false);
-        $(this).data('is-expanded', true);
+        $cardResult.data('is-expanded', true);
 
         $('.js-card-result-expander').show();
-        $(this).find('.js-card-result-expander').hide();
+        $cardResult.find('.js-card-result-expander').hide();
 
-        let $image = $(this).find('.js-card-result-image');
+        let $image = $cardResult.find('.js-card-result-image');
         $('.js-card-result-image').removeClass('clicked');
         $image.addClass('clicked');
         $('.js-card-result-tab-container').slideUp();
-        $(this).find('.js-card-result-tab-container').slideDown();
+        $cardResult.find('.js-card-result-tab-container').slideDown();
 
-        let printing_id = $(this).data('card-printing-id');
-        let card_id = $(this).data('card-id');
+        let printing_id = $cardResult.data('card-printing-id');
+        let card_id = $cardResult.data('card-id');
 
         let selectedTab = Cookies.get('selected_tab') || 'details';
-        let $tabContainer = $(this).find('.js-card-result-tab-container');
+        let $tabContainer = $cardResult.find('.js-card-result-tab-container');
         showTab($tabContainer, selectedTab);
 
         loadTabDataForPrinting($tabContainer, card_id, printing_id);
-    });
+    }
 
     $(this).on('click', '.js-card-result-set-symbol', function () {
         let $result = $(this).closest('.js-card-result');
