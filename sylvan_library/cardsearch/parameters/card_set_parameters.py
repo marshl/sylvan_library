@@ -4,7 +4,7 @@ Card set parameters
 from django.db.models.query import Q
 
 from cards.models.legality import CardLegality
-from cards.models.sets import Set, Block
+from cards.models.sets import Set, Block, Format
 from cardsearch.parameters.base_parameters import CardSearchParam
 
 
@@ -23,7 +23,11 @@ class CardSetParam(CardSearchParam):
         return Q(set=self.set_obj)
 
     def get_pretty_str(self) -> str:
-        return "the card " + ("isn't" if self.negated else "is") + f" in {self.set_obj.name}"
+        return (
+            "the card "
+            + ("isn't" if self.negated else "is")
+            + f" in {self.set_obj.name}"
+        )
 
 
 class CardBlockParam(CardSearchParam):
@@ -49,14 +53,16 @@ class CardLegalityParam(CardSearchParam):
     """
     The parameter for searching by a card's "legality" (banned in a format, legal in a format etc.)
     """
+
     def __init__(self, format_string: str, restriction: str):
         super().__init__()
         self.format_string = format_string
         self.restriction = restriction
+        self.card_format = Format.objects.get(name__iexact=self.format_string)
 
     def query(self) -> Q:
         legality_query = CardLegality.objects.filter(
-            format__name__iexact=self.format_string,
+            format=self.card_format,
             restriction__iexact=self.restriction,
         )
         query = Q(card__legalities__in=legality_query)
@@ -64,7 +70,7 @@ class CardLegalityParam(CardSearchParam):
 
     def get_pretty_str(self) -> str:
         return (
-            f"it's {self.restriction} in {self.format_string}"
+            f"it's not {self.restriction} in {self.card_format.name}"
             if self.negated
-            else f"it's {self.restriction} in {self.format_string}"
+            else f"it's {self.restriction} in {self.card_format.name}"
         )
