@@ -266,7 +266,12 @@ class CardKingdomLink(LinkBuilder):
             else:
                 search = card.faces.first().name
         elif card.faces.filter(types__name="Emblem").exists():
-            search = card.name
+            first_name = card.name.split(" ")[0]
+            return {
+                "search": "mtg_advanced",
+                "filter[name]": first_name,
+                "filter[card_type][10]": "emblem",
+            }
         else:
             search = f"{card.name} token"
 
