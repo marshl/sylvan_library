@@ -282,6 +282,10 @@
     transition: .4s;
 }
 
+.setIcon.owned {
+    border: solid #cccccc 1px;
+}
+
 .setIcon.clicked.R, .setIcon.R:hover {
     box-shadow: inset 0 0 0 20px #e3cb8c;
 }

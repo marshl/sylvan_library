@@ -3,12 +3,16 @@
 {% load static %}
 <p style="text-align:center;max-height:200px;overflow-y:auto;">
     {% for printing in card.printings.all %}
-        <i class="js-card-result-set-symbol
+        {% with ownership_count=printing|user_cardprinting_ownership_count:request.user %}
+            <i class="js-card-result-set-symbol
                     setIcon ss ss-2x
                     ss-{{ printing.get_set_keyrune_code }}
-                    {% if printing.set.code == 'TSB'  %}
+                    {% if ownership_count > 0 %}
+                      owned
+                    {% endif %}
+                    {% if printing.set.code == 'TSB' %}
                         ss-timeshifted
-                    {% else  %}
+                    {% else %}
                         ss-{{ printing.rarity.name | lower }}
                     {% endif %}
                     {% if printing.rarity.symbol != 'C' %}
@@ -18,19 +22,18 @@
                         clicked
                     {% endif %}
                         {{ printing.rarity.symbol }}"
-           data-card-printing-id="{{ printing.id }}"
-           data-image-url="{% static printing|card_printing_image_url|safe %}"
-                {% if request.user.is_authenticated %}
-                    {% with ownership_count=printing|user_cardprinting_ownership_count:request.user %}
+               data-card-printing-id="{{ printing.id }}"
+               data-image-url="{% static printing|card_printing_image_url|safe %}"
+                    {% if request.user.is_authenticated %}
                         {% if ownership_count > 0 %}
-           title="{{ printing.set.name }}&#013;x {{ ownership_count }}"
+               title="{{ printing.set.name }}&#013;x {{ ownership_count }}"
                         {% else %}
-           title="{{ printing.set.name }}"
+               title="{{ printing.set.name }}"
                         {% endif %}
-                    {% endwith %}
-                {% else %}
-           title="{{ printing.set.name }}"
-                {% endif %}
-        ></i>
+                    {% else %}
+               title="{{ printing.set.name }}"
+                    {% endif %}
+            ></i>
+        {% endwith %}
     {% endfor %}
 </p>
