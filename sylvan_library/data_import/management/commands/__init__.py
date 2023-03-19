@@ -1,18 +1,56 @@
 """
 Django shell commands for data_import
 """
+import datetime
 import json
 import logging
 import os
 import sys
-from datetime import date
+from collections import defaultdict
 from typing import Generator, Dict, Any, List, Optional
 
 import requests
 
+from cards.models.sets import Set
 from data_import import _paths
 
 logger = logging.getLogger("django")
+
+
+SET_CODES_TO_SKIP = [
+    "AAFR",
+    "AMH2",
+    "ASTX",
+    "Alchemy: Innistrad",
+    "HTR",
+    "HTR16",
+    "HTR17",
+    "HTR18",
+    "HTR19",
+    "HTR20",
+    "MZNR",
+    "OC21",
+    "PDWA",
+    "PLGS",
+    "PPOD",
+    "PWCQ",
+    "PWP09",
+    "PWP10",
+    "PWP11",
+    "PWP12",
+    "PWP21",
+    "YMID",
+]
+
+
+class SimpleSet:
+    def __init__(
+        self, set_code: str, name: str, path: str, release_date: datetime.date
+    ):
+        self.set_code = set_code
+        self.name = name
+        self.path = path
+        self.release_date = release_date
 
 
 def get_all_set_data(
@@ -22,8 +60,7 @@ def get_all_set_data(
     Gets set data from the sets directory and returns each one as a parsed dict
     :return: The set data as a dict
     """
-
-    set_list: List[Dict[str, Any]] = []
+    set_list: List[SimpleSet] = []
 
     for set_file_path in [
         os.path.join(_paths.SET_FOLDER, s) for s in os.listdir(_paths.SET_FOLDER)
@@ -32,51 +69,94 @@ def get_all_set_data(
             continue
 
         set_code = os.path.basename(set_file_path).split(".")[0].strip("_")
-        if (
-            set_codes
-            and set_code not in set_codes
-            or set_code
-            in (
-                "MZNR",
-                "HTR",
-                "OC21",
-                "ASTX",
-                "AMH2",
-                "PLGS",
-                "AAFR",
-                "PWP09",
-                "PWP10",
-                "PWP11",
-                "PWP12",
-                "PWP21",
-                "YMID",
-                "Alchemy: Innistrad",
-                "PPOD",
-                "PWCQ",
-            )
-        ):
+        if set_codes and set_code not in set_codes:
             continue
 
-        with open(set_file_path, "r", encoding="utf8") as set_file:
-            set_data = json.load(set_file).get("data")
+        set_obj = parse_set(set_file_path)
+        if set_obj is not None:
+            set_list.append(set_obj)
 
-        if (
-            set_data.get("isPreview")
-            or set_data.get("isPartialPreview")
-            or set_data.get("name").endswith("Minigames")
-            or set_data.get("name").endswith("Art Series")
-        ):
-            continue
+    if not set_codes:
+        check_for_duplicate_sets(set_list)
+        check_for_setcode_mismatches(set_list)
+        check_for_missing_sets(set_list)
+        check_for_name_duplicates(set_list)
 
-        set_list.append(
-            {"path": set_file_path, "date": set_data.get("releaseDate", str(date.max))}
-        )
-
-    set_list.sort(key=lambda s: s["date"])
+    set_list.sort(key=lambda s: s.release_date)
     for card_set in set_list:
-        with open(card_set["path"], "r", encoding="utf8") as set_file:
+        with open(card_set.path, "r", encoding="utf8") as set_file:
             set_data = json.load(set_file)
         yield set_data.get("data")
+
+
+def parse_set(set_file_path: str) -> Optional[SimpleSet]:
+
+    with open(set_file_path, "r", encoding="utf8") as set_file:
+        set_data = json.load(set_file).get("data")
+
+    set_code = set_data["code"]
+    set_name = set_data["name"]
+    if (
+        set_data.get("isPreview")
+        or set_data.get("isPartialPreview")
+        or set_name.endswith("Minigames")
+        or set_name.endswith("Art Series")
+        or set_code in SET_CODES_TO_SKIP
+    ):
+        return None
+
+    return SimpleSet(
+        set_code=set_code,
+        name=set_name,
+        path=set_file_path,
+        release_date=set_data.get("releaseDate", str(datetime.date.max)),
+    )
+
+
+def check_for_duplicate_sets(set_list: List[SimpleSet]):
+    name_dict = defaultdict(list)
+    for set_obj in set_list:
+        name_dict[set_obj.name].append(set_obj.set_code)
+
+    name_dict = {
+        set_name: set_codes
+        for set_name, set_codes in name_dict.items()
+        if len(set_codes) > 1
+    }
+    if name_dict:
+        raise Exception(f"The following sets have duplicate names: {name_dict}")
+
+
+def check_for_setcode_mismatches(set_list: List[SimpleSet]):
+    for simple_set in set_list:
+        try:
+            actual_set = Set.objects.get(name=simple_set.name)
+            if actual_set.code != simple_set.set_code:
+                raise Exception(
+                    f'Existing set "{actual_set}" has setcode {actual_set.code} '
+                    f"but new set with same name has setcode {simple_set.set_code}"
+                )
+        except Set.DoesNotExist:
+            continue
+
+
+def check_for_missing_sets(set_list: List[SimpleSet]) -> None:
+    for set_obj in Set.objects.all():
+        if set_obj.type == "token":
+            continue
+        matching_simple_sets = [s for s in set_list if s.name == set_obj.name]
+        if len(matching_simple_sets) == 0:
+            raise Exception(
+                f'Set "{set_obj.name}" ({set_obj.code}) doesn\'t have any matching set files.'
+            )
+
+
+def check_for_name_duplicates(set_list: List[SimpleSet]):
+    set_names = set()
+    for simple_set in set_list:
+        if simple_set.name in set_names:
+            raise Exception(f"Duplicate set {simple_set.name}")
+        set_names.add(simple_set.name)
 
 
 def pretty_print_json_file(set_file_path: str) -> None:
