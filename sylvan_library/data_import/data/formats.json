@@ -82,5 +82,13 @@
   {
     "code": "alchemy",
     "name": "Alchemy"
+  },
+  {
+    "code": "predh",
+    "name": "PrEDH"
+  },
+  {
+    "code": "oathbreaker",
+    "name": "Oathbreaker"
   }
 ]
