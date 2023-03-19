@@ -118,7 +118,7 @@ def get_unused_partner_commanders(user: User):
     ).distinct()
 
     partner_cards = list(
-        user_owned_cards.filter(faces__rules_text__contains="Partner").exclude(
+        user_owned_cards.filter(faces__rules_text__regex="Partner\W").exclude(
             faces__rules_text__contains="Partner with"
         )
     )
