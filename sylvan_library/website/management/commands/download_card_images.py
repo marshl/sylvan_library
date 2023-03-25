@@ -11,6 +11,7 @@ from urllib.parse import urlparse
 import requests
 from django.core.management.base import BaseCommand, OutputWrapper
 from django.db import transaction
+from django.db.models import Count
 from requests import HTTPError
 
 from cards.models.card import CardFaceLocalisation, CardImage
@@ -69,6 +70,8 @@ class Command(BaseCommand):
         #     )
         #     return
 
+        clear_orphaned_images()
+
         set_codes = options.get("set_codes")
         sets = Set.objects.all()
         if set_codes:
@@ -79,6 +82,14 @@ class Command(BaseCommand):
             get_images_for_set(card_set, [english])
 
         download_images(self.root_dir)
+
+
+def clear_orphaned_images():
+    for card_image in CardImage.objects.annotate(
+        card_count=Count("cardfacelocalisation")
+    ).filter(card_count=0):
+        logger.warning("Deleting orphaned image %s", card_image)
+        card_image.delete()
 
 
 def download_images(root_dir: str) -> None:
@@ -184,8 +195,16 @@ def get_images_for_set(card_set: Set, languages: List[Language]) -> None:
                 )
 
                 with transaction.atomic():
-                    new_image = CardImage.objects.create(scryfall_image_url=image_url)
-                    matching_face.update(image=new_image)
+                    existing_image = CardImage.objects.filter(
+                        scryfall_image_url=image_url
+                    )
+                    if existing_image.exists():
+                        matching_face.update(image=existing_image.first())
+                    else:
+                        new_image = CardImage.objects.create(
+                            scryfall_image_url=image_url
+                        )
+                        matching_face.update(image=new_image)
         else:
             raise ValueError(f"Unhandled card type: {scryfall_card}")
 
