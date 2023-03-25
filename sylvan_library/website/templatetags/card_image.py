@@ -97,7 +97,11 @@ def card_printing_image_url(card_printing: CardPrinting) -> str:
         return path
 
     for localisation in card_printing.localisations.all():
-        path = localisation.localised_faces.all()[0].get_image_path()
+        try:
+            path = localisation.localised_faces.all()[0].get_image_path()
+        except IndexError:
+            logging.exception("Failed to find image path for %s", localisation)
+            return get_default_image()
         if does_image_exist(path):
             return path
 

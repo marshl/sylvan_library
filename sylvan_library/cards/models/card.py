@@ -2,6 +2,7 @@
 Module for Card related models
 """
 import datetime
+import logging
 import random
 from typing import Optional
 
@@ -527,12 +528,16 @@ class CardLocalisation(models.Model):
         change.save()
         return True
 
-    def get_image_path(self) -> str:
+    def get_image_path(self) -> Optional[str]:
         """
         Gets most fitting image path for this localisation (the first face if there are multiple
         :return: The image path
         """
-        return self.localised_faces.all()[0].get_image_path()
+        try:
+            return self.localised_faces.all()[0].get_image_path()
+        except IndexError:
+            logging.exception("Failed to find an image for %s", self)
+            return None
 
 
 class CardImage(models.Model):
