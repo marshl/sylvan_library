@@ -29,7 +29,6 @@
     flex: 1;
     background-color: #333;
     border: 1px solid #444;
-    cursor: pointer;
     font-weight: 500;
     font-size: 14px;
     color: #ddd;
@@ -37,7 +36,10 @@
     border-right: none;
     text-decoration: none;
     white-space: nowrap;
+}
 
+.page-button:not(.disabled) {
+    cursor: pointer;
 }
 
 .page-button:first-child {
@@ -49,7 +51,7 @@
     border-right: 1px solid #444;
 }
 
-.page-button.is-active, .page-button:hover {
+.page-button.is-active, .page-button:hover:not(.disabled) {
     background-color: #08c;
     color: #fff;
     border-color: #08c;
