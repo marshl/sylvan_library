@@ -302,7 +302,7 @@ class DeckForm(forms.ModelForm):
         try:
             # We have to ignore tokens, as otherwise Earthshaker Khenra would return two results
             # But you shouldn't be putting tokens in a deck anyway
-            card = Card.objects.get(name__iexact=card_name, is_token=False)
+            card: Card = Card.objects.get(name__iexact=card_name, is_token=False)
         except Card.DoesNotExist as ex:
             stripped_name = re.sub(r"\W", "", card_name)
             card_matches = (
@@ -328,14 +328,12 @@ class DeckForm(forms.ModelForm):
                 f'You can\'t put the {card.layout} card "{card.name}" in a deck'
             )
 
-        # Two-sided cards should always be stored as the front-facing card
-        # This even includes cards like Fire // Ice (which will be stored as Fire)
-        # However the DeckCard will be displayed as "Fire // Ice"
-        # if card.layout in ("flip", "split", "transform") and card.side == "b":
-        #     card = card.links.get(side="a")
-
-        # Related to the above rule, it doesn't make sense to put a back half of a meld card in
-        if card.layout == "meld" and card.side == "c":
+        # It doesn't make sense to have the back half of a meld card in a deck (which is stored as a separate card)
+        if (
+            card.layout == "meld"
+            and card.faces.count() == 1
+            and card.faces.first().side == "b"
+        ):
             raise ValidationError(
                 f"Reverse side meld cards like {card.name} are not allowed"
             )
