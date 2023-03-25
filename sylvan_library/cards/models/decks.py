@@ -98,7 +98,11 @@ class Deck(models.Model):
         main_cards = self.cards.filter(board="main")
         land_cards = (
             main_cards.filter(card__faces__types__name="Land")
-            .filter(Q(card__faces__side__isnull=True) | Q(card__layout="modal_dfc"))
+            .filter(
+                Q(card__faces__side__isnull=True)
+                | Q(card__faces__side="a")
+                | Q(card__layout="modal_dfc")
+            )
             .distinct()
         )
         return int(land_cards.aggregate(sum=Sum("count"))["sum"])
