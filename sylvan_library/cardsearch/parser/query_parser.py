@@ -230,7 +230,9 @@ def parse_text_param(param_args: ParameterArgs) -> CardRulesTextParam:
 
 
 @param_parser(
-    name="flavour text", keywords=["f", "flavour", "flavor"], operators=[":", "="]
+    name="flavour text",
+    keywords=["ft", "flavour", "flavor"],
+    operators=[":", "="],
 )
 def parse_flavour_text_param(param_args: ParameterArgs) -> CardFlavourTextParam:
     """
