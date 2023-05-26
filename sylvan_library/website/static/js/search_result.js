@@ -31,12 +31,12 @@ $(function () {
     });
 
     function expandCardResult($cardResult) {
-        if ($cardResult.data('is-expanded')) {
+        if ($cardResult.hasClass('expanded')) {
             return;
         }
 
-        $('.js-card-result').data('is-expanded', false);
-        $cardResult.data('is-expanded', true);
+        $('.js-card-result').removeClass("expanded");
+        $cardResult.addClass("expanded");
 
         $('.js-card-result-expander').show();
         $cardResult.find('.js-card-result-expander').hide();
@@ -204,5 +204,26 @@ $(function () {
             .closest('.js-card-result')
             .find('.js-card-result-image-container')
             .toggleClass('flipped');
+    });
+
+    $(this).keydown(function (event) {
+        if (event.ctrlKey && (event.key === "ArrowLeft" || event.key === "ArrowRight")) {
+            const $expandedResult = $(".js-card-result.expanded");
+            const $selectedSet = $expandedResult.find(".js-card-result-set-symbol.clicked");
+            const selectedIndex = $selectedSet.data("index");
+            let targetIndex;
+            if (event.key === "ArrowLeft") {
+                targetIndex = selectedIndex - 1;
+            } else {
+                targetIndex = selectedIndex + 1;
+            }
+            let target = `.js-card-result-set-symbol[data-index="${targetIndex}"]`;
+            console.log(target);
+            const $newTarget = $expandedResult.find(target);
+            if ($newTarget) {
+                $newTarget.trigger("click");
+            }
+            event.preventDefault();
+        }
     });
 });

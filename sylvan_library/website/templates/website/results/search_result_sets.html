@@ -23,6 +23,7 @@
                     {% endif %}
                         {{ printing.rarity.symbol }}"
                data-card-printing-id="{{ printing.id }}"
+               data-index="{{ forloop.counter }}"
                data-image-url="{% static printing|card_printing_image_url|safe %}"
                     {% if request.user.is_authenticated %}
                         {% if ownership_count > 0 %}
