@@ -217,13 +217,7 @@ class SetParser:
             for printing in CardPrinting.objects.filter(
                 card__scryfall_oracle_id__in=staged_set.get_scryfall_oracle_ids(),
                 set__code=staged_set.code,
-            ).prefetch_related(
-                # "face_printings__frame_effects",
-                # "face_printings__card_face",
-                "rarity",
-                # "localisations__language",
-                # "localisations__localised_faces__card_printing_face",
-            )
+            ).prefetch_related("rarity")
         }
 
         self.existing_face_printings = {
@@ -246,7 +240,6 @@ class SetParser:
                 language_name=F("language__name"),
                 scryfall_id=F("card_printing__scryfall_id"),
             )
-            # .prefetch_related("localised_faces")
         }
 
         self.existing_face_localisations = {
@@ -386,7 +379,10 @@ class SetParser:
         staged_card_printing = StagedCardPrinting(card_data, self.staged_set.code)
         staged_face_printing = StagedCardFacePrinting(card_data)
 
-        if not staged_card.scryfall_oracle_id:
+        if (
+            not staged_card.scryfall_oracle_id
+            or staged_card.layout == "reversible_card"
+        ):
             return
 
         self.process_card(staged_card)
@@ -603,7 +599,6 @@ class SetParser:
         :param staged_face_printing:
         :return: A tuple containing the StagedCardPrinting and a list of StagedCardLocalisations
         """
-        # existing_printing = existing_printings.get(staged_card_printing.scryfall_id)
         existing_printing = self.get_existing_printing(staged_card_printing.scryfall_id)
         if (
             staged_card_printing.scryfall_id
@@ -692,8 +687,7 @@ class SetParser:
         :param staged_face_printing:
         :return:
         """
-
-        foreign_data_list = card_data.get("foreignData", [])
+        language_data_list = []
         if not card_data.get("isForeignOnly", False):
             # Fake the english language version from normal data
             english_data = {
@@ -706,11 +700,11 @@ class SetParser:
                 english_data["faceName"] = card_data["faceName"]
             if "multiverseId" in card_data["identifiers"]:
                 english_data["multiverseId"] = card_data["identifiers"]["multiverseId"]
-            foreign_data_list.append(english_data)
-
-        for foreign_data in foreign_data_list:
+            language_data_list.append(english_data)
+        language_data_list += card_data.get("foreignData", [])
+        for language_data in language_data_list:
             self.parse_foreign_data(
-                foreign_data,
+                language_data,
                 staged_card_face,
                 staged_card_printing,
                 staged_face_printing,

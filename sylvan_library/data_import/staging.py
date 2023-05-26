@@ -371,7 +371,7 @@ class StagedSet(StagedObject):
             self.type = "token"
             self.total_set_size = self.base_set_size = len(set_data["tokens"])
 
-    def get_cards(self):
+    def get_cards(self) -> List[dict]:
         if self.is_token_set:
             return self.set_data.get("tokens") or self.set_data.get("cards", [])
         return self.set_data.get("cards", [])
