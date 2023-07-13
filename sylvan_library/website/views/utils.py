@@ -104,7 +104,7 @@ def get_unused_commanders(user: User):
             "preferred_printing": card.printings.filter(
                 localisations__ownerships__owner=user
             )
-            .order_by("set__release_date")
+            .order_by("set__release_date", "-numerical_number")
             .last(),
         }
         for card in unused_cards
@@ -139,12 +139,43 @@ def get_unused_partner_commanders(user: User):
     partner_pairs = []
     for partner_a, partner_b in zip(partner_cards[0::2], partner_cards[1::2]):
         if partner_a and partner_b:
-            partner_pairs.append({"partner_1": partner_a, "partner_2": partner_b})
+            partner_pairs.append(
+                {
+                    "partner_1": {
+                        "card": partner_a,
+                        "preferred_printing": partner_a.printings.filter(
+                            localisations__ownerships__owner=user
+                        )
+                        .order_by("-set__release_date", "numerical_number")
+                        .first(),
+                    },
+                    "partner_2": {
+                        "card": partner_b,
+                        "preferred_printing": partner_b.printings.filter(
+                            localisations__ownerships__owner=user
+                        )
+                        .order_by("-set__release_date", "numerical_number")
+                        .first(),
+                    },
+                }
+            )
 
     background_pairs = [
         {
-            "choose_background": choose_background_cards[x],
-            "background": background_cards[x],
+            "choose_background": {
+                "card": choose_background_cards[x],
+                "preferred_printing": choose_background_cards[x]
+                .printings.filter(localisations__ownerships__owner=user)
+                .order_by("-set__release_date", "numerical_number")
+                .first(),
+            },
+            "background": {
+                "card": background_cards[x],
+                "preferred_printing": background_cards[x]
+                .printings.filter(localisations__ownerships__owner=user)
+                .order_by("-set__release_date", "numerical_number")
+                .first(),
+            },
         }
         for x in range(background_limit)
     ]

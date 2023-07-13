@@ -25,8 +25,9 @@
                     <ul>
                         {% for partner_pair in partner_pairs %}
                             <li>
-                                {% include "website/card_link.html" with card=partner_pair.partner_1 %} //
-                                {% include "website/card_link.html" with card=partner_pair.partner_2 %}
+                                {% include "website/card_link.html" with card=partner_pair.partner_1.card preferred_printing=partner_pair.partner_1.preferred_printing %}
+                                //
+                                {% include "website/card_link.html" with card=partner_pair.partner_2.card preferred_printing=partner_pair.partner_2.preferred_printing %}
                             </li>
                         {% endfor %}
                     </ul>
@@ -34,8 +35,9 @@
                     <ul>
                         {% for background_pair in background_pairs %}
                             <li>
-                                {% include "website/card_link.html" with card=background_pair.choose_background %} //
-                                {% include "website/card_link.html" with card=background_pair.background %}
+                                {% include "website/card_link.html" with card=background_pair.choose_background.card preferred_printing=background_pair.choose_background.preferred_printing %}
+                                //
+                                {% include "website/card_link.html" with card=background_pair.background.card preferred_printing=background_pair.background.preferred_printing %}
                             </li>
                         {% endfor %}
                     </ul>
