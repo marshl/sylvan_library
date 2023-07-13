@@ -3,7 +3,7 @@ Miscellaneous card parameters (mostly the "is" and "has" parameters)
 """
 from django.db.models import Q
 
-from cardsearch.parameters.base_parameters import CardSearchParam
+from cardsearch.parameters.base_parameters import CardSearchParam, CardNumericalParam
 
 
 class CardLayoutParameter(CardSearchParam):
@@ -126,3 +126,17 @@ class CardIsVanillaParam(CardSearchParam):
 
     def get_pretty_str(self):
         return "the card " + ("isn't" if self.negated else "is") + " vanilla"
+
+
+class CardCollectorNumberParam(CardNumericalParam):
+    """
+    The parameter for searching by a card's numerical power
+    """
+
+    def query(self) -> Q:
+        args = self.get_args("card__printings__numerical_number")
+        query = Q(**args)
+        return ~query if self.negated else query
+
+    def get_pretty_str(self) -> str:
+        return f"the printing's collector number {'is not ' if self.negated else ''}{self.operator} {self.number}"

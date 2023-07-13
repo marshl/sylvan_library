@@ -50,6 +50,7 @@ from cardsearch.parameters.card_misc_parameters import (
     CardIsCommanderParam,
     CardLayoutParameter,
     CardIsVanillaParam,
+    CardCollectorNumberParam,
 )
 from cardsearch.parameters.card_name_parameters import CardNameParam
 from cardsearch.parameters.card_ownership_parameters import (
@@ -187,6 +188,18 @@ def parse_toughness_param(param_args: ParameterArgs) -> CardNumToughnessParam:
         "toughness", param_args.operator, param_args.text
     )
     return CardNumToughnessParam(toughness, param_args.operator)
+
+
+@param_parser(
+    name="power",
+    keywords=["number", "cnum"],
+    operators=["<", "<=", ":", "=", ">", ">="],
+)
+def parse_collector_number_param(param_args: ParameterArgs) -> CardCollectorNumberParam:
+    collector_number = parse_numeric_parameter(
+        "number", param_args.operator, param_args.text
+    )
+    return CardCollectorNumberParam(collector_number, param_args.operator)
 
 
 @param_parser(
