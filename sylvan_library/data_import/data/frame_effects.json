@@ -1,5 +1,9 @@
 [
   {
+    "name": "Borderless",
+    "code": "borderless"
+  },
+  {
     "name": "Colorshifted",
     "code": "colorshifted"
   },
