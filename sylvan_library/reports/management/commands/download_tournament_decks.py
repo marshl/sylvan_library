@@ -68,12 +68,12 @@ class Command(BaseCommand):
         while pages_to_visit:
             page = pages_to_visit.pop()
             visited_pages.add(page)
-            print(f"Parsing event list {event_summary_uri} on page{page}")
+            print(f"Parsing event list {event_summary_uri} on page {page}")
             resp = requests.post(event_summary_uri, {"cp": page})
             resp.raise_for_status()
             soup = BeautifulSoup(resp.content, features="html.parser")
             pages_to_visit.update(self.find_event_summary_pages(soup, visited_pages))
-            event_list = soup.select("table.Stable")[2]
+            event_list = soup.select("table.Stable")[1]
             event_trs = event_list.find_all("tr", class_="hover_tr")
             for event in event_trs:
                 link = event.find("a")
@@ -110,7 +110,8 @@ class Command(BaseCommand):
         resp.raise_for_status()
 
         soup = BeautifulSoup(resp.text, features="html.parser")
-        summary = soup.select_one("td.S14")
+        summary_div = soup.select_one("div.S14")
+        summary = summary_div.select("div")[1]
         date_match = re.search(r"(?P<date>\d+/\d+/\d+)", summary.text)
         if not date_match:
             raise Exception("Could not find the date")
@@ -159,7 +160,7 @@ class Command(BaseCommand):
 
             for line in resp.text.split("\n"):
                 if line.startswith("// FORMAT"):
-                    deck.format = line.split(":")[-1]
+                    deck.format = line.split(":")[-1].lower()
                     continue
 
                 if line.startswith("// CREATOR"):
