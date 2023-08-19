@@ -90,7 +90,7 @@ HAVING COUNT(cards_deck.id) {self.operator} %s
 
     def get_pretty_str(self) -> str:
         """
-        Returns a human readable version of this parameter
+        Returns a human-readable version of this parameter
         (and all sub parameters for those with children)
         :return: The pretty version of this parameter
         """
@@ -146,6 +146,7 @@ JOIN cards_cardlocalisation
   ON cards_cardprinting.id = cards_cardlocalisation.card_printing_id
 WHERE cards_rarity.symbol IN ('U', 'C')
 AND NOT cards_set.is_online_only
+AND cards_set.code NOT IN ('30A')
 AND cards_set.release_date >= (SELECT release_date FROM cards_set WHERE cards_set.code = 'EXO')
 
 EXCEPT
