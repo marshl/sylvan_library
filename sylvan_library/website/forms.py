@@ -302,7 +302,11 @@ class DeckForm(forms.ModelForm):
         try:
             # We have to ignore tokens, as otherwise Earthshaker Khenra would return two results
             # But you shouldn't be putting tokens in a deck anyway
-            card: Card = Card.objects.get(name__iexact=card_name, is_token=False)
+            # We also have to ignore "Battle the Horde" which includes cards with the same
+            # name as normal cards
+            card: Card = Card.objects.exclude(printings__set__code="TBTH").get(
+                name__iexact=card_name, is_token=False
+            )
         except Card.DoesNotExist as ex:
             stripped_name = re.sub(r"\W", "", card_name)
             card_matches = (
@@ -322,6 +326,8 @@ class DeckForm(forms.ModelForm):
                 card = card_matches.first()
             else:
                 raise ValidationError(f'Unknown card "{card_name}"') from ex
+        except Card.MultipleObjectsReturned as ex:
+            raise ValidationError(f'Card "{card_name}" matches too many cards: {ex}')
 
         if card.layout in ("scheme", "planar", "vanguard", "emblem"):
             raise ValidationError(
