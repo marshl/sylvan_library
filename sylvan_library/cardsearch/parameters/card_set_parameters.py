@@ -58,7 +58,10 @@ class CardLegalityParam(CardSearchParam):
         super().__init__()
         self.format_string = format_string
         self.restriction = restriction
-        self.card_format = Format.objects.get(name__iexact=self.format_string)
+        try:
+            self.card_format = Format.objects.get(name__iexact=self.format_string)
+        except Format.DoesNotExist:
+            raise ValueError(f'Format "{self.format_string}" does not exist.')
 
     def query(self) -> Q:
         legality_query = CardLegality.objects.filter(
