@@ -22,6 +22,7 @@ from cardsearch.parameters import (
     CardPriceSortParam,
     CardRaritySortParam,
     CardNameSortParam,
+    CardRandomSortParam,
 )
 from cardsearch.parameters.base_parameters import (
     CardSearchParam,
@@ -642,6 +643,8 @@ def parse_sort_order_param(param_args: ParameterArgs) -> CardSortParam:
         param = CardPriceSortParam()
     elif param_args.text == "name":
         param = CardNameSortParam()
+    elif param_args.text == "random":
+        param = CardRandomSortParam()
     else:
         raise ValueError(f"Unknown sort parameter {param_args.text}")
 

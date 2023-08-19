@@ -11,6 +11,7 @@ class SearchMode(Enum):
     """
     Different search modes (the model "origin" of the search, for example card, card printing)
     """
+
     SEARCH_MODE_CARD = "SEARCH_MODE_CARD"
     SEARCH_MODE_PRINTING = "SEARCH_MODE_PRINTING"
 
@@ -133,6 +134,19 @@ class CardRaritySortParam(CardSortParam):
         if search_mode == SearchMode.SEARCH_MODE_CARD:
             return ["printings__rarity__display_order"]
         return ["rarity__display_order"]
+
+
+class CardRandomSortParam(CardSortParam):
+    """
+    A "sort" parameter to order the results randomly
+    This overrides get_sort_list() instead of get_sort_keys() as the "?" sort is not a column
+    """
+
+    def get_sort_list(self, search_mode: SearchMode) -> List[str]:
+        return ["?"]
+
+    def get_sort_keys(self, search_mode: SearchMode) -> List[str]:
+        raise NotImplementedError
 
 
 class CardColourWeightSortParam(CardSortParam):
