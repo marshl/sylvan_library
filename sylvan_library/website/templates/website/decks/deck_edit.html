@@ -6,7 +6,7 @@
     {{ deck_form.media.css }}
     {{ deck_form.media.js }}
     <script>
-        var DECK_CARD_SEARCH_URL = '{% url 'website:deck_card_search' %}';
+        let DECK_CARD_SEARCH_URL = '{% url 'website:deck_card_search' %}';
     </script>
     <script src="{% static "js/decks.js" %}" type="text/javascript"></script>
 {% endblock %}
@@ -15,11 +15,13 @@
     <div class="body-content">
         <div class="main-content">
             <form method="post"
-                    {% if deck_form.instance.id %}
-                  action="{% url 'website:deck_edit' deck_id=deck_form.instance.id %}"
-                    {% else %}
-                  action="{% url 'website:create_deck' %}"
-                    {% endif %}>
+                  action="{% spaceless %}
+{% if deck_form.instance.id %}
+    {% url 'website:deck_edit' deck_id=deck_form.instance.id %}
+{% else %}
+    {% url 'website:create_deck' %}
+{% endif %}
+{% endspaceless %}">
                 {% csrf_token %}
                 <div class="group-container">
                     <div class="row">
