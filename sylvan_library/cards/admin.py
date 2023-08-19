@@ -217,6 +217,7 @@ class SetAdmin(admin.ModelAdmin):
     search_fields = ["name", "code"]
     inlines = [CardPrintingInline]
     list_display = ["name", "code", "release_date", "type"]
+    autocomplete_fields = ["parent_set"]
 
 
 @admin.register(CardType)
