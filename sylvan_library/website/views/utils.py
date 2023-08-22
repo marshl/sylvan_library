@@ -268,7 +268,11 @@ class StarCityGamesLink(LinkBuilder):
         return "https://starcitygames.com/search/"
 
     def get_params(self, card: Card) -> dict:
-        return {"search_query": f"({card.name} token)" if card.is_token else card.name}
+        # https://starcitygames.com/search/?card_name=Assault%20Formation&sort=priceasc
+        return {
+            "card_name": f"({card.name} token)" if card.is_token else card.name,
+            "sort": "priceasc",
+        }
 
 
 class ScryfallLink(LinkBuilder):
