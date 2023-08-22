@@ -1,13 +1,18 @@
 """
 Card ownership parameters
 """
-from django.contrib.auth import get_user_model
+from typing import List
+
 from django.db.models import Q
 
 from cards.models.card import Card
 from cardsearch.parameters.base_parameters import (
     CardNumericalParam,
-    CardSearchParam,
+    CardSearchContext,
+    QueryContext,
+    ParameterArgs,
+    QueryValidationError,
+    CardIsParameter,
 )
 
 
@@ -16,15 +21,37 @@ class CardOwnershipCountParam(CardNumericalParam):
     The parameter for searching by how many a user owns of it
     """
 
-    def __init__(self, user: get_user_model(), operator: str, number: int):
-        super().__init__(number, operator)
-        self.user = user
+    @classmethod
+    def get_parameter_name(cls) -> str:
+        return "ownership"
 
-    def query(self) -> Q:
-        """
-        Gets the Q query object
-        :return: The Q object
-        """
+    @classmethod
+    def get_search_keywords(cls) -> List[str]:
+        return ["have", "own"]
+
+    def get_default_search_context(self) -> CardSearchContext:
+        return CardSearchContext.CARD
+
+    def validate(self, query_context: QueryContext) -> None:
+        if not query_context.user or query_context.user.is_anonymous:
+            raise QueryValidationError("Can't search by ownership when not logged in")
+
+        if self.operator == ":":
+            if self.value == "any":
+                self.operator = ">="
+                self.number = 1
+            elif self.value == "none":
+                self.operator = "="
+                self.number = 0
+            else:
+                self.operator = ">="
+
+        super().validate(query_context)
+
+    def __init__(self, negated: bool, param_args: ParameterArgs):
+        super().__init__(negated, param_args)
+
+    def query(self, query_context: QueryContext) -> Q:
         assert self.operator in ("<", "<=", "=", ">=", ">")
         raw = Card.objects.raw(
             f"""
@@ -40,11 +67,11 @@ LEFT JOIN cards_userownedcard
 GROUP BY cards_card.id
 HAVING SUM(COALESCE(cards_userownedcard.count, 0)) {self.operator} %s
         """,
-            [self.user.id, self.number],
+            [query_context.user.id, self.number],
         )
         return Q(card_id__in=raw)
 
-    def get_pretty_str(self) -> str:
+    def get_pretty_str(self, query_context: QueryContext) -> str:
         """
         Returns a human-readable version of this parameter
         (and all sub parameters for those with children)
@@ -66,11 +93,32 @@ class CardUsageCountParam(CardNumericalParam):
     The parameter for searching by how many times it has been used in a deck
     """
 
-    def __init__(self, user: get_user_model(), operator: str, number: int):
-        super().__init__(number, operator)
-        self.user = user
+    @classmethod
+    def get_parameter_name(cls) -> str:
+        return "usage"
 
-    def query(self) -> Q:
+    @classmethod
+    def get_search_keywords(cls) -> List[str]:
+        return ["used", "decks", "deck"]
+
+    def get_default_search_context(self) -> CardSearchContext:
+        return CardSearchContext.CARD
+
+    def validate(self, query_context: QueryContext) -> None:
+        if not query_context.user or query_context.user.is_anonymous:
+            raise QueryValidationError("Can't search by deck usage if not logged in")
+
+        if self.operator == ":":
+            if self.value in ("any", "ever"):
+                self.operator = ">="
+                self.number = 1
+            elif self.value == "never":
+                self.operator = "="
+                self.number = 0
+
+        super().validate(query_context)
+
+    def query(self, query_context: QueryContext) -> Q:
         """
         Gets the Q query object
         :return: The Q object
@@ -84,11 +132,11 @@ LEFT JOIN cards_deck ON cards_deck.id = cards_deckcard.deck_id AND cards_deck.ow
 GROUP BY cards_card.id
 HAVING COUNT(cards_deck.id) {self.operator} %s
 """,
-            [self.user.id, self.number],
+            [query_context.user.id, self.number],
         )
         return Q(card_id__in=raw)
 
-    def get_pretty_str(self) -> str:
+    def get_pretty_str(self, query_context: QueryContext) -> str:
         """
         Returns a human-readable version of this parameter
         (and all sub parameters for those with children)
@@ -99,17 +147,30 @@ HAVING COUNT(cards_deck.id) {self.operator} %s
         return f"you used it in {self.operator} {self.number} decks"
 
 
-class CardMissingPauperParam(CardSearchParam):
+class CardMissingPauperParam(CardIsParameter):
     """
     A parameter for searching for cards that the user owns a rare version of,
     but doesn't own a common or uncommon variant that they can use in pauper
     """
 
-    def __init__(self, user: get_user_model()):
-        super().__init__()
-        self.user = user
+    @classmethod
+    def get_is_keywords(cls) -> List[str]:
+        return ["missing-pauper", "missingpauper", "nopauper"]
 
-    def query(self) -> Q:
+    @classmethod
+    def get_parameter_name(cls) -> str:
+        return "missing pauper"
+
+    def get_default_search_context(self) -> CardSearchContext:
+        return CardSearchContext.CARD
+
+    def validate(self, query_context: QueryContext) -> None:
+        if not query_context.user or query_context.user.is_anonymous:
+            raise QueryValidationError(
+                "Can't search by missing pauper cards when not logged in"
+            )
+
+    def query(self, query_context: QueryContext) -> Q:
         """
         Gets the Q query object
         :return: The Q object
@@ -166,11 +227,11 @@ JOIN cards_userownedcard
 WHERE cards_userownedcard.owner_id = %s
 AND cards_rarity.symbol IN ('U', 'C')
 """,
-            [self.user.id, self.user.id],
+            [query_context.user.id, query_context.user.id],
         )
         return ~Q(card_id__in=raw) if self.negated else Q(card_id__in=raw)
 
-    def get_pretty_str(self) -> str:
+    def get_pretty_str(self, query_context: QueryContext) -> str:
         """
         Returns a human-readable version of this parameter
         (and all sub parameters for those with children)

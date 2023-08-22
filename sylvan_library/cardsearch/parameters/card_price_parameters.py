@@ -1,9 +1,15 @@
 """
 Card rarity parameters
 """
+from typing import List
+
 from django.db.models.query import Q
 
-from cardsearch.parameters.base_parameters import CardNumericalParam
+from cardsearch.parameters.base_parameters import (
+    CardNumericalParam,
+    QueryContext,
+    CardSearchContext,
+)
 
 
 class CardPriceParam(CardNumericalParam):
@@ -11,13 +17,24 @@ class CardPriceParam(CardNumericalParam):
     The parameter for searching by how many a user owns of it
     """
 
-    def query(self) -> Q:
-        """
-        Gets the Q query object
-        :return: The Q query object
-        """
+    @classmethod
+    def get_parameter_name(cls) -> str:
+        return "price"
+
+    @classmethod
+    def get_search_keywords(cls) -> List[str]:
+        return ["price", "cost"]
+
+    @classmethod
+    def get_search_operators(cls) -> List[str]:
+        return ["<", "<=", ">=", ">"]
+
+    def get_default_search_context(self) -> CardSearchContext:
+        return CardSearchContext.PRINTING
+
+    def query(self, query_context: QueryContext) -> Q:
         args = self.get_args("latest_price__paper_value")
         return Q(**args)
 
-    def get_pretty_str(self) -> str:
-        return f"is worth {self.operator} ${self.number}"
+    def get_pretty_str(self, query_context: QueryContext) -> str:
+        return f"is worth {self.operator} ${self.value}"

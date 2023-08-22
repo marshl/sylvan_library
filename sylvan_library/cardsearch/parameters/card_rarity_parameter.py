@@ -1,30 +1,57 @@
 """
 Card rarity parameters
 """
+from typing import List, Optional
+
 from django.db.models.query import Q
 
 from cards.models.rarity import Rarity
 from cardsearch.parameters.base_parameters import (
     OPERATOR_MAPPING,
     OPERATOR_TO_WORDY_MAPPING,
-    CardSearchParam,
+    CardTextParameter,
+    CardSearchContext,
+    ParameterArgs,
+    QueryContext,
+    QueryValidationError,
 )
 
 
-class CardRarityParam(CardSearchParam):
+class CardRarityParam(CardTextParameter):
     """
     The parameter for searching by a card's rarity
     """
 
-    def __init__(self, rarity: Rarity, operator: str):
-        super().__init__()
-        self.rarity = rarity
-        self.operator = operator
+    @classmethod
+    def get_parameter_name(cls) -> str:
+        return "rarity"
+
+    @classmethod
+    def get_search_operators(cls) -> List[str]:
+        return [":", "=", "<=", "<", ">", ">="]
+
+    @classmethod
+    def get_search_keywords(cls) -> List[str]:
+        return ["rarity", "r"]
+
+    def get_default_search_context(self) -> CardSearchContext:
+        return CardSearchContext.PRINTING
+
+    def __init__(self, negated: bool, param_args: ParameterArgs):
+        super().__init__(negated, param_args)
+        self.rarity: Optional[Rarity] = None
         if self.operator == ":":
             self.operator = "="
 
-    def query(self) -> Q:
+    def validate(self, query_context: QueryContext) -> None:
+        try:
+            self.rarity = Rarity.objects.get(
+                Q(symbol__iexact=self.value) | Q(name__iexact=self.value)
+            )
+        except Rarity.DoesNotExist:
+            raise QueryValidationError(f'Couldn\'t find rarity "{self.value}"')
 
+    def query(self, query_context: QueryContext) -> Q:
         if self.operator == "=":
             query = Q(rarity=self.rarity)
         else:
@@ -32,7 +59,7 @@ class CardRarityParam(CardSearchParam):
             query = Q(**{filter_: self.rarity.display_order})
         return ~query if self.negated else query
 
-    def get_pretty_str(self) -> str:
+    def get_pretty_str(self, query_context: QueryContext) -> str:
         return (
             "the rarity "
             + ("isn't" if self.negated else "is")

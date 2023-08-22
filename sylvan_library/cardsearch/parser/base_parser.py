@@ -102,7 +102,7 @@ class Parser(ABC):
     def pattern(self, pattern: str) -> str:
         """
         Attempts to parse a single char
-        :param chars: The list of potential characters to parse
+        :param pattern: The list of potential characters to parse
         :return: The character that was parsed
         """
         if self.pos >= self.len:

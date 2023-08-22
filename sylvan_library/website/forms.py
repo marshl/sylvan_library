@@ -14,6 +14,7 @@ from tinymce.widgets import TinyMCE
 from cards.models.card import CardPrinting, Card
 from cards.models.decks import Deck, DeckCard
 from cards.models.language import Language
+from cardsearch.parameters.base_parameters import QueryContext
 from cardsearch.parse_search import ParseSearch
 
 
@@ -49,10 +50,16 @@ class ChangeCardOwnershipForm(forms.Form):
         self.fields["localisation"].choices = choices
 
 
-class SearchForm(forms.Form):
+class QuerySearchForm(forms.Form):
     """
-    The base search form
+    The search form for searching by a query string
     """
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.user = None
+
+    query_string = forms.CharField(required=False)
 
     def get_page_number(self) -> int:
         """
@@ -64,18 +71,6 @@ class SearchForm(forms.Form):
         except (TypeError, ValueError):
             return 1
 
-
-class QuerySearchForm(SearchForm):
-    """
-    The search form for searching by a query string
-    """
-
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.user = None
-
-    query_string = forms.CharField(required=False)
-
     def get_search(self) -> ParseSearch:
         """
         Gets the search object using the data from this form
@@ -83,10 +78,11 @@ class QuerySearchForm(SearchForm):
         """
         self.full_clean()
 
-        search = ParseSearch(self.user)
-        search.query_string = self.data.get("query_string")
+        query_context = QueryContext(user=self.user)
+        search = ParseSearch(self.user, self.data.get("query_string"))
         search.build_parameters()
-        search.search(self.get_page_number())
+        search.root_parameter.validate(query_context)
+        search.search(query_context, self.get_page_number())
         return search
 
 

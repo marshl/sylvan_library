@@ -1,30 +1,56 @@
 """
 Card name parameters
 """
+from typing import List
+
 from django.db.models.query import Q
 
-from cardsearch.parameters.base_parameters import CardSearchParam, OPERATOR_MAPPING
+from cardsearch.parameters.base_parameters import (
+    OPERATOR_MAPPING,
+    CardSearchContext,
+    ParameterArgs,
+    QueryContext,
+    CardTextParameter,
+)
 
 
-class CardNameParam(CardSearchParam):
+class CardNameParam(CardTextParameter):
     """
     The parameter for searching by a card's name
     """
 
-    def __init__(self, card_name, match_exact: bool = False, operator: str=":") -> None:
-        super().__init__()
-        self.card_name = card_name
+    def get_default_search_context(self) -> CardSearchContext:
+        return CardSearchContext.CARD
+
+    @classmethod
+    def get_parameter_name(cls) -> str:
+        return "name"
+
+    @classmethod
+    def get_search_operators(cls) -> List[str]:
+        return [":", "=", ">", ">=", "<", "<="]
+
+    @classmethod
+    def get_search_keywords(cls) -> List[str]:
+        return ["name", "n"]
+
+    def __init__(self, negated: bool, param_args: ParameterArgs):
+        super().__init__(negated, param_args)
+        match_exact = self.operator == "="
+        if self.value.startswith("!"):
+            match_exact = True
+            self.value = self.value[1:]
+
         self.match_exact = match_exact
         self.regex_match: bool = False
-        self.operator = operator
 
-        if self.card_name.startswith("/") and self.card_name.endswith("/"):
+        if self.value.startswith("/") and self.value.endswith("/"):
             self.regex_match = True
-            self.card_name = self.card_name.strip("/")
+            self.card_name = self.value.strip("/")
             if self.match_exact:
                 self.card_name = "^" + self.card_name + "$"
 
-    def query(self) -> Q:
+    def query(self, query_context: QueryContext) -> Q:
         if self.regex_match:
             query = Q(card__name__iregex=self.card_name)
         elif self.match_exact:
@@ -37,9 +63,9 @@ class CardNameParam(CardSearchParam):
 
         return ~query if self.negated else query
 
-    def get_pretty_str(self) -> str:
+    def get_pretty_str(self, query_context: QueryContext) -> str:
         """
-        Returns a human readable version of this parameter
+        Returns a human-readable version of this parameter
         (and all sub parameters for those with children)
         :return: The pretty version of this parameter
         """

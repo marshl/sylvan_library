@@ -4,38 +4,20 @@ Card mana cost parameters
 from collections import Counter
 
 import typing
+from typing import List
+
 from django.db.models import F
 from django.db.models.query import Q
 
 from cardsearch.parameters.base_parameters import (
-    CardSearchParam,
     OPERATOR_MAPPING,
     CardNumericalParam,
+    CardSearchContext,
+    ParameterArgs,
+    QueryContext,
+    QueryValidationError,
+    CardTextParameter,
 )
-
-
-class CardManaCostParam(CardSearchParam):
-    """
-    The parameter for searching by a card's mana cost
-    """
-
-    def __init__(self, cost: str, exact_match: bool):
-        super().__init__()
-        self.cost = cost
-        self.exact_match = exact_match
-
-    def query(self) -> Q:
-        return (
-            Q(card__cost=self.cost)
-            if self.exact_match
-            else Q(card__cost__icontains=self.cost)
-        )
-
-    def get_pretty_str(self) -> str:
-        verb = "isn't" if self.negated else "is"
-        if self.exact_match:
-            verb = f"{verb} exactly"
-        return f"card colour {verb} {self.cost}"
 
 
 SYMBOL_REMAPPING = {
@@ -47,10 +29,38 @@ SYMBOL_REMAPPING = {
 }
 
 
-class CardManaCostComplexParam(CardSearchParam):
+class CardManaCostComplexParam(CardTextParameter):
     """
     Parameter for complex mana cost checking
     """
+
+    def get_default_search_context(self) -> CardSearchContext:
+        return CardSearchContext.CARD
+
+    @classmethod
+    def get_parameter_name(cls) -> str:
+        return "mana cost"
+
+    @classmethod
+    def get_search_operators(cls) -> List[str]:
+        return [":", "=", "<", "<=", ">", ">="]
+
+    @classmethod
+    def get_search_keywords(cls) -> List[str]:
+        return ["mana", "m"]
+
+    @classmethod
+    def matches_param_args(cls, param_args: ParameterArgs) -> bool:
+        if not super().matches_param_args(param_args):
+            return False
+
+        try:
+            int(param_args.value)
+            return False
+        except (TypeError, ValueError):
+            pass
+
+        return True
 
     symbols = [
         "W",
@@ -83,13 +93,15 @@ class CardManaCostComplexParam(CardSearchParam):
         "G/P",
     ]
 
-    def __init__(self, cost: str, operator: str) -> None:
-        super().__init__()
-        self.cost_text: str = cost.lower()
-        self.operator: str = ">=" if operator == ":" else operator
-        self.symbol_counts = {}
-
+    def __init__(self, negated: bool, param_args: ParameterArgs) -> None:
+        super().__init__(negated, param_args)
+        self.cost_text: str = self.value.lower()
+        self.operator: str = ">=" if self.operator == ":" else self.operator
         self.symbol_counts: typing.Counter[str] = Counter()
+        self.generic_mana = 0
+
+    def validate(self, query_context: QueryContext) -> None:
+        self.symbol_counts = Counter()
         pos: int = 0
         current_symbol: str = ""
         in_symbol: bool = False
@@ -112,7 +124,7 @@ class CardManaCostComplexParam(CardSearchParam):
 
                     in_symbol = False
                 else:
-                    raise ValueError(
+                    raise QueryValidationError(
                         f"Could not parse {self.cost_text}: unexpected '{{'"
                     )
             elif in_symbol:
@@ -123,7 +135,9 @@ class CardManaCostComplexParam(CardSearchParam):
             pos += 1
 
         if in_symbol:
-            raise ValueError(f"Could not parse {self.cost_text}: expected '}}'")
+            raise QueryValidationError(
+                f"Could not parse {self.cost_text}: expected '}}'"
+            )
 
         self.generic_mana = 0
         for symbol, _ in dict(self.symbol_counts).items():
@@ -133,7 +147,7 @@ class CardManaCostComplexParam(CardSearchParam):
             except (TypeError, ValueError):
                 continue
 
-    def query(self) -> Q:
+    def query(self, query_context: QueryContext) -> Q:
         query = Q()
 
         for symbol, count in dict(self.symbol_counts).items():
@@ -180,9 +194,9 @@ class CardManaCostComplexParam(CardSearchParam):
 
         return ~query if self.negated else query
 
-    def get_pretty_str(self) -> str:
+    def get_pretty_str(self, query_context: QueryContext) -> str:
         """
-        Returns a human readable version of this parameter
+        Returns a human-readable version of this parameter
         (and all sub parameters for those with children)
         :return: The pretty version of this parameter
         """
@@ -194,24 +208,51 @@ class CardColourCountParam(CardNumericalParam):
     Parameter for the number of colours a card has
     """
 
-    def __init__(self, number: int, operator: str, identity: bool = False):
-        super().__init__(number, operator)
-        self.identity = identity
-        self.operator = "=" if self.identity and operator == ":" else operator
+    def get_default_search_context(self) -> CardSearchContext:
+        return CardSearchContext.CARD
 
-    def query(self) -> Q:
+    @classmethod
+    def get_parameter_name(cls) -> str:
+        return "colour"
+
+    @classmethod
+    def get_search_operators(cls) -> List[str]:
+        return [":", "=", "<", "<=", ">", ">="]
+
+    @classmethod
+    def get_search_keywords(cls) -> List[str]:
+        return ["colour", "color", "col", "c", "identity", "ci", "id"]
+
+    @classmethod
+    def matches_param_args(cls, param_args: ParameterArgs) -> bool:
+        if not super().matches_param_args(param_args):
+            return False
+
+        try:
+            int(param_args.value)
+            return True
+        except (TypeError, ValueError):
+            return False
+
+    def __init__(self, negated: bool, param_args: ParameterArgs):
+        super().__init__(negated, param_args)
+        self.in_identity_mode = param_args.keyword in ["identity", "di", "id"]
+        if self.in_identity_mode and self.operator == ":":
+            self.operator = "="
+
+    def query(self, query_context: QueryContext) -> Q:
         """
         Gets the Q query object
         :return: The Q query object
         """
         args = (
             self.get_args("card__colour_identity_count")
-            if self.identity
+            if self.in_identity_mode
             else self.get_args("card__faces__colour_count")
         )
         return Q(**args)
 
-    def get_pretty_str(self) -> str:
+    def get_pretty_str(self, query_context: QueryContext) -> str:
         """
         Returns a human-readable version of this parameter
         (and all sub parameters for those with children)
@@ -221,7 +262,7 @@ class CardColourCountParam(CardNumericalParam):
         return (
             "card "
             + ("doesn't have" if self.negated else "has")
-            + f" {operator_text} {self.number} colours"
+            + f" {operator_text} {self.value} colours"
         )
 
 
@@ -230,16 +271,27 @@ class CardManaValueParam(CardNumericalParam):
     The parameter for searching by a card's numerical mana value
     """
 
-    def query(self) -> Q:
-        args = self.get_args("card__mana_value")
-        query = Q()
-        if isinstance(self.number, F):
-            query &= Q(**{"toughness__isnull": False})
-        return query & Q(**args)
+    @classmethod
+    def get_parameter_name(cls) -> str:
+        return "mana value"
 
-    def get_pretty_str(self) -> str:
+    @classmethod
+    def get_search_keywords(cls) -> List[str]:
+        return ["cmc", "manavalue", "mv"]
+
+    def get_default_search_context(self) -> CardSearchContext:
+        return CardSearchContext.CARD
+
+    def query(self, query_context: QueryContext) -> Q:
+        args = self.get_args("card__mana_value")
+        query = Q(**args)
+        if isinstance(self.get_search_value(), F):
+            query &= Q(**{"toughness__isnull": False})
+        return query
+
+    def get_pretty_str(self, query_context: QueryContext) -> str:
         return (
             "mana value "
             + ("isn't " if self.negated else "")
-            + f"{self.operator} {self.number}"
+            + f"{self.operator} {self.value}"
         )

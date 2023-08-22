@@ -6,56 +6,67 @@ from typing import List
 from django.db.models import F
 from django.db.models.query import Q
 
+from cards.models import colour
 from cards.models.card import Card
 from cards.models.colour import (
-    Colour,
     colours_to_int_flags,
     colours_to_symbols,
 )
-from cardsearch.parameters.base_parameters import CardSearchParam
+from cardsearch.parameters.base_parameters import (
+    CardIsParameter,
+    CardSearchContext,
+    QueryContext,
+    CardTextParameter,
+    ParameterArgs,
+)
 
 
-class CardColourParam(CardSearchParam):
-    """
-    The parameter for searching by a card's colour
-    """
-
-    def __init__(self, card_colour: int):
-        super().__init__()
-        self.card_colour = card_colour
-
-    def query(self) -> Q:
-        return Q(card__face__colour_flags=self.card_colour)
-
-    def get_pretty_str(self) -> str:
-        verb = "isn't" if self.negated else "is"
-        return f"card colour {verb} {self.card_colour}"
-
-
-class CardComplexColourParam(CardSearchParam):
+class CardComplexColourParam(CardTextParameter):
     """
     Parameter for complex card parameters, including subset superset and colour identity handling
     """
 
-    def __init__(
-        self, colours: List[Colour], operator: str = "=", identity: bool = False
-    ) -> None:
-        super().__init__()
-        self.colours = colours
-        if operator == ":":
-            self.operator = "<=" if identity else ">="
-        else:
-            self.operator = operator
-        self.identity = identity
+    @classmethod
+    def get_parameter_name(cls) -> str:
+        return "colour"
+
+    @classmethod
+    def get_search_operators(cls) -> List[str]:
+        return [":", "=", "<", "<=", ">", ">="]
+
+    @classmethod
+    def get_search_keywords(cls) -> List[str]:
+        return ["colour", "color", "col", "c", "identity", "ci", "id"]
+
+    @classmethod
+    def matches_param_args(cls, param_args: ParameterArgs) -> bool:
+        if not super().matches_param_args(param_args):
+            return False
+
+        try:
+            int(param_args.value)
+            return False
+        except (TypeError, ValueError):
+            return True
+
+    def get_default_search_context(self) -> CardSearchContext:
+        return CardSearchContext.CARD
+
+    def __init__(self, negated: bool, param_args: ParameterArgs):
+        super().__init__(negated, param_args)
+        self.colours = colour.get_colours_for_nickname(self.value)
+        self.search_by_identity = param_args.keyword in ["identity", "ci", "id"]
+        if self.operator == ":":
+            self.operator = "<=" if self.search_by_identity else ">="
 
     @property
     def field_name(self):
         """
         The field to use based on whether this is in colour identity mode or colour mode
         """
-        return "colour_identity" if self.identity else "faces__colour"
+        return "colour_identity" if self.search_by_identity else "faces__colour"
 
-    def query(self) -> Q:
+    def query(self, query_context: QueryContext) -> Q:
         """
         Gets the Q query object
         :return: The Q query object
@@ -88,49 +99,38 @@ class CardComplexColourParam(CardSearchParam):
 
         return ~result if self.negated else result
 
-    def get_pretty_str(self) -> str:
-        """
-        Returns a human readable version of this parameter
-        (and all sub parameters for those with children)
-        :return: The pretty version of this parameter
-        """
+    def get_pretty_str(self, query_context: QueryContext) -> str:
         if self.colours == 0:
             return (
                 "is cards have colourless identity"
-                if self.identity
+                if self.search_by_identity
                 else "the cards are colourless"
             )
 
-        param_type = "colour identity" if self.identity else "colours"
+        param_type = "colour identity" if self.search_by_identity else "colours"
         operator_text = "is" if self.operator == "=" else self.operator
         return f"the {param_type} {operator_text} {colours_to_symbols(self.colours)}"
 
 
-class CardColourIdentityParam(CardSearchParam):
-    """
-    The parameter for searching by a card's colour identity
-    """
-
-    def __init__(self, colour_identity: int):
-        super().__init__()
-        self.colour_identity = colour_identity
-
-    def query(self) -> Q:
-        return Q(card__colour_identity=self.colour_identity)
-
-    def get_pretty_str(self) -> str:
-        verb = "isn't" if self.negated else "is"
-        return f"card colour identity {verb} {self.colour_identity}"
-
-
-class CardMulticolouredOnlyParam(CardSearchParam):
+class CardMulticolouredOnlyParam(CardIsParameter):
     """
     The parameter for searching by whether a card is multicoloured or not
     """
 
-    def query(self) -> Q:
-        return Q(card__faces__colour_count__gte=2)
+    @classmethod
+    def get_is_keywords(cls) -> List[str]:
+        return ["multicoloured", "multicolored", "multi"]
 
-    def get_pretty_str(self) -> str:
+    @classmethod
+    def get_parameter_name(cls) -> str:
+        return "is multicoloured"
+
+    def get_default_search_context(self) -> CardSearchContext:
+        return CardSearchContext.CARD
+
+    def query(self, query_context: QueryContext) -> Q:
+        return Q(card__faces__colour_count__gte=2, _negated=self.negated)
+
+    def get_pretty_str(self, query_context: QueryContext) -> str:
         verb = "isn't" if self.negated else "is"
         return f"card {verb} multicoloured"

@@ -18,11 +18,10 @@ class ParseSearch(BaseSearch):
     Search that consumes a query string
     """
 
-    def __init__(self, user: get_user_model() = None):
-        super().__init__()
-        self.query_string: Optional[str] = None
+    def __init__(self, user: get_user_model(), query_string: str):
+        super().__init__(user)
+        self.query_string: str = query_string
         self.error_message: Optional[str] = None
-        self.user: get_user_model() = user
 
     def get_preferred_set(self) -> Optional[Set]:
         """
@@ -48,10 +47,10 @@ class ParseSearch(BaseSearch):
         if not self.query_string:
             return
 
-        query_parser = CardQueryParser(self.user)
+        query_parser = CardQueryParser()
         try:
             self.root_parameter = query_parser.parse(self.query_string)
-            self.sort_params = query_parser.order_params
-            print(self.root_parameter.query())
+            # TODO
+            self.sort_params = []
         except (ParseError, ValueError) as error:
             self.error_message = str(error)
