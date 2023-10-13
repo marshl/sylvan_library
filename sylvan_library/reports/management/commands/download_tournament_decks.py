@@ -201,6 +201,8 @@ class Command(BaseCommand):
         print(matches["count"] + " x " + card_name)
         if card_name == "Unknown Card":
             return
+        if " / " in card_name:
+            card_name = card_name.replace(" / ", " // ")
         deck_card = DeckCard()
         deck_card.deck = deck
         deck_card.count = int(matches["count"])
