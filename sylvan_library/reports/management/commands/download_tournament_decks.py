@@ -163,11 +163,13 @@ class Command(BaseCommand):
 
             for line in resp.text.split("\n"):
                 if line.startswith("// FORMAT"):
-                    deck.format = line.split(":")[-1].lower()
+                    deck.format = line.split(":")[-1].lower().strip()
+                    deck.save()
                     continue
 
                 if line.startswith("// CREATOR"):
                     deck.subtitle = line.split(":")[-1]
+                    deck.save()
                     continue
 
                 if line.startswith("//") or line.strip() == "":
