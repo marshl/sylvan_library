@@ -90,9 +90,12 @@ class Command(BaseCommand):
         :param visited_pages: Pages that have already been visited
         :return: A list of pages to visit
         """
-        nav_buttons = soup.select('form[name="format_form"] .Nav_norm')
+        nav_buttons = soup.select(".Nav_norm")
         for button in nav_buttons:
-            button_page = int(button.text)
+            try:
+                button_page = int(button.text)
+            except ValueError:
+                continue
             if button_page not in visited_pages:
                 yield button_page
 
@@ -117,7 +120,7 @@ class Command(BaseCommand):
             raise Exception("Could not find the date")
         event_date = datetime.strptime(date_match["date"], "%d/%m/%y")
 
-        deck_links = soup.select("div.hover_tr div.S14 a")
+        deck_links = soup.select("div.hover_tr div.S14 a, div.chosen_tr div.S14 a")
         for link in deck_links:
             href = link.attrs["href"]
             matches = re.search(r"d=(?P<deck_id>\d+)", href)
