@@ -11,12 +11,12 @@ from django.db.models.query import Q
 
 from cardsearch.parameters.base_parameters import (
     OPERATOR_MAPPING,
-    CardNumericalParam,
+    CardSearchNumericalParameter,
     CardSearchContext,
     ParameterArgs,
     QueryContext,
     QueryValidationError,
-    CardTextParameter,
+    CardSearchParameter,
 )
 
 
@@ -29,7 +29,7 @@ SYMBOL_REMAPPING = {
 }
 
 
-class CardManaCostComplexParam(CardTextParameter):
+class CardManaCostComplexParam(CardSearchParameter):
     """
     Parameter for complex mana cost checking
     """
@@ -93,8 +93,8 @@ class CardManaCostComplexParam(CardTextParameter):
         "G/P",
     ]
 
-    def __init__(self, negated: bool, param_args: ParameterArgs) -> None:
-        super().__init__(negated, param_args)
+    def __init__(self, param_args: ParameterArgs, negated: bool = False) -> None:
+        super().__init__(param_args, negated)
         self.cost_text: str = self.value.lower()
         self.operator: str = ">=" if self.operator == ":" else self.operator
         self.symbol_counts: typing.Counter[str] = Counter()
@@ -191,8 +191,8 @@ class CardManaCostComplexParam(CardTextParameter):
                         + OPERATOR_MAPPING[self.operator]: 0
                     }
                 )
-
-        return ~query if self.negated else query
+        query.negated = self.negated
+        return query
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         """
@@ -203,7 +203,7 @@ class CardManaCostComplexParam(CardTextParameter):
         return f"mana cost {'does not contain' if self.negated else 'contains'} {self.cost_text}"
 
 
-class CardColourCountParam(CardNumericalParam):
+class CardColourCountParam(CardSearchNumericalParameter):
     """
     Parameter for the number of colours a card has
     """
@@ -234,8 +234,8 @@ class CardColourCountParam(CardNumericalParam):
         except (TypeError, ValueError):
             return False
 
-    def __init__(self, negated: bool, param_args: ParameterArgs):
-        super().__init__(negated, param_args)
+    def __init__(self, param_args: ParameterArgs, negated: bool = False):
+        super().__init__(param_args, negated)
         self.in_identity_mode = param_args.keyword in ["identity", "di", "id"]
         if self.in_identity_mode and self.operator == ":":
             self.operator = "="
@@ -266,7 +266,7 @@ class CardColourCountParam(CardNumericalParam):
         )
 
 
-class CardManaValueParam(CardNumericalParam):
+class CardManaValueParam(CardSearchNumericalParameter):
     """
     The parameter for searching by a card's numerical mana value
     """

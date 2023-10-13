@@ -12,7 +12,7 @@ from cards.tests import (
     create_test_set,
     create_test_card_face,
 )
-from cardsearch.parameters.base_parameters import AndParam
+from cardsearch.parameters.base_parameters import CardSearchAnd
 from cardsearch.parameters.card_name_parameters import CardNameParam
 from cardsearch.parameters.card_rules_text_parameter import CardRulesTextParam
 from cardsearch.parameters.card_set_parameters import CardSetParam
@@ -78,7 +78,7 @@ class CardNameParamTestCase(TestCase):
         """
         Tests that
         """
-        root_param = AndParam()
+        root_param = CardSearchAnd()
         root_param.negated = True
         card = create_test_card({"name": "foo"})
         set_obj = create_test_set("Setty", "SET", {})

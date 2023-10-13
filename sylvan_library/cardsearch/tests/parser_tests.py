@@ -10,7 +10,7 @@ from cards.tests import (
     create_test_card_printing,
     create_test_card_face,
 )
-from cardsearch.parameters.base_parameters import AndParam, OrParam
+from cardsearch.parameters.base_parameters import CardSearchAnd, CardSearchOr
 from cardsearch.parameters.card_colour_parameters import (
     CardComplexColourParam,
 )
@@ -51,7 +51,7 @@ class ParserTests(TestCase):
         Tests that the and keyword in a query string is converted to a parameter group
         """
         root_param = self.parser.parse("foo and bar")
-        self.assertIsInstance(root_param, AndParam)
+        self.assertIsInstance(root_param, CardSearchAnd)
         self.assertEqual(len(root_param.child_parameters), 2)
         foo_param, bar_param = root_param.child_parameters
         self.assertIsInstance(foo_param, CardNameParam)
@@ -64,7 +64,7 @@ class ParserTests(TestCase):
         Tests that the or keyword is converted to a parameter group
         """
         root_param = self.parser.parse("foo or bar")
-        self.assertIsInstance(root_param, OrParam)
+        self.assertIsInstance(root_param, CardSearchOr)
         self.assertEqual(len(root_param.child_parameters), 2)
         foo_param, bar_param = root_param.child_parameters
         self.assertIsInstance(foo_param, CardNameParam)
@@ -77,11 +77,11 @@ class ParserTests(TestCase):
         Ensures that combining an "and" and an "or" parameter together works as expected
         """
         root_param = self.parser.parse("foo and (bar or baz)")
-        self.assertIsInstance(root_param, AndParam)
+        self.assertIsInstance(root_param, CardSearchAnd)
         self.assertEqual(len(root_param.child_parameters), 2)
         foo_param, or_param = root_param.child_parameters
         self.assertIsInstance(foo_param, CardNameParam)
-        self.assertIsInstance(or_param, OrParam)
+        self.assertIsInstance(or_param, CardSearchOr)
         self.assertEqual(foo_param.card_name, "foo")
         self.assertEqual(len(or_param.child_parameters), 2)
         bar_param, baz_param = or_param.child_parameters
@@ -97,7 +97,7 @@ class ParserTests(TestCase):
         :return:
         """
         root_param = self.parser.parse("foo bar")
-        self.assertIsInstance(root_param, AndParam)
+        self.assertIsInstance(root_param, CardSearchAnd)
         self.assertEqual(len(root_param.child_parameters), 2)
         first_param = root_param.child_parameters[0]
         second_param = root_param.child_parameters[1]
@@ -138,7 +138,7 @@ class ParserTests(TestCase):
         Tests that a colour query string is converted to parameters
         """
         root_param = self.parser.parse("color>=uw -c:red")
-        self.assertIsInstance(root_param, AndParam)
+        self.assertIsInstance(root_param, CardSearchAnd)
         self.assertEqual(len(root_param.child_parameters), 2)
         white_blue_param, not_red_param = root_param.child_parameters
         self.assertIsInstance(white_blue_param, CardComplexColourParam)
@@ -157,7 +157,7 @@ class ParserTests(TestCase):
         Tests that a colour identity string is converted to parameters
         """
         root_param = self.parser.parse("id<=esper t:instant")
-        self.assertIsInstance(root_param, AndParam)
+        self.assertIsInstance(root_param, CardSearchAnd)
         self.assertEqual(len(root_param.child_parameters), 2)
         esper_param, instant_param = root_param.child_parameters
 
@@ -177,7 +177,7 @@ class ParserTests(TestCase):
         Tests that a colour identity plus a type parameter parse ok
         """
         root_param = self.parser.parse("id:c t:land")
-        self.assertIsInstance(root_param, AndParam)
+        self.assertIsInstance(root_param, CardSearchAnd)
         self.assertEqual(len(root_param.child_parameters), 2)
         id_param, type_param = root_param.child_parameters
         self.assertIsInstance(id_param, CardComplexColourParam)
@@ -193,7 +193,7 @@ class ParserTests(TestCase):
         Tests that a multi-part type parameter parses correctly
         """
         root_param = self.parser.parse("t:legend t:merfolk")
-        self.assertIsInstance(root_param, AndParam)
+        self.assertIsInstance(root_param, CardSearchAnd)
         self.assertEqual(len(root_param.child_parameters), 2)
         legend_param, merfolk_param = root_param.child_parameters
         self.assertIsInstance(legend_param, CardGenericTypeParam)
@@ -210,7 +210,7 @@ class ParserTests(TestCase):
         Tests that a type param plus an inverted type param parse correctly
         """
         root_param = self.parser.parse("t:goblin -t:creature")
-        self.assertIsInstance(root_param, AndParam)
+        self.assertIsInstance(root_param, CardSearchAnd)
         self.assertEqual(len(root_param.child_parameters), 2)
         goblin_param, noncreature_param = root_param.child_parameters
         self.assertIsInstance(goblin_param, CardGenericTypeParam)
@@ -228,7 +228,7 @@ class ParserTests(TestCase):
         Tests that a type and text parameter work in conjunction
         """
         root_param = self.parser.parse("t:creature o:draw")
-        self.assertIsInstance(root_param, AndParam)
+        self.assertIsInstance(root_param, CardSearchAnd)
         self.assertEqual(len(root_param.child_parameters), 2)
         creature_param, draw_param = root_param.child_parameters
         self.assertIsInstance(creature_param, CardGenericTypeParam)

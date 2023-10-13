@@ -14,12 +14,12 @@ from cardsearch.parameters.base_parameters import (
     or_group_queries,
     CardSearchContext,
     QueryContext,
-    CardTextParameter,
+    CardSearchParameter,
     ParameterArgs,
 )
 
 
-class CardRulesTextParam(CardTextParameter):
+class CardRulesTextParam(CardSearchParameter):
     """
     The parameter for searching by a card's rules text
     """
@@ -39,8 +39,8 @@ class CardRulesTextParam(CardTextParameter):
     def get_default_search_context(self) -> CardSearchContext:
         return CardSearchContext.CARD
 
-    def __init__(self, negated: bool, param_args: ParameterArgs):
-        super().__init__(negated, param_args)
+    def __init__(self, param_args: ParameterArgs, negated: bool = False):
+        super().__init__(param_args, negated)
         self.exact_match = self.operator == "="
         if self.value.startswith("/") and self.value.endswith("/"):
             self.regex_match: bool = True
@@ -89,7 +89,7 @@ class CardRulesTextParam(CardTextParameter):
         return f'the rules text {modifier} "{self.value}"'
 
 
-class CardProducesManaParam(CardTextParameter):
+class CardProducesManaParam(CardSearchParameter):
     """
     Parameter for the mana that a card can produce
     """
@@ -109,8 +109,8 @@ class CardProducesManaParam(CardTextParameter):
     def get_default_search_context(self) -> CardSearchContext:
         return CardSearchContext.CARD
 
-    def __init__(self, negated: bool, param_args: ParameterArgs):
-        super().__init__(negated, param_args)
+    def __init__(self, param_args: ParameterArgs, negated: bool = False):
+        super().__init__(param_args, negated)
         self.any_colour = "any"
         if self.any_colour:
             self.colours = []
@@ -164,7 +164,7 @@ class CardProducesManaParam(CardTextParameter):
         return f"card {verb} {colour_names}"
 
 
-class CardWatermarkParam(CardTextParameter):
+class CardWatermarkParam(CardSearchParameter):
     """
     Parameter for whether a printing has a watermark or not
     """

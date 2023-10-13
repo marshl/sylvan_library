@@ -13,15 +13,15 @@ from cards.models.colour import (
     colours_to_symbols,
 )
 from cardsearch.parameters.base_parameters import (
-    CardIsParameter,
+    CardSearchBinaryParameter,
     CardSearchContext,
     QueryContext,
-    CardTextParameter,
+    CardSearchParameter,
     ParameterArgs,
 )
 
 
-class CardComplexColourParam(CardTextParameter):
+class CardComplexColourParam(CardSearchParameter):
     """
     Parameter for complex card parameters, including subset superset and colour identity handling
     """
@@ -52,8 +52,8 @@ class CardComplexColourParam(CardTextParameter):
     def get_default_search_context(self) -> CardSearchContext:
         return CardSearchContext.CARD
 
-    def __init__(self, negated: bool, param_args: ParameterArgs):
-        super().__init__(negated, param_args)
+    def __init__(self, param_args: ParameterArgs, negated: bool = False):
+        super().__init__(param_args, negated)
         self.colours = colour.get_colours_for_nickname(self.value)
         self.search_by_identity = param_args.keyword in ["identity", "ci", "id"]
         if self.operator == ":":
@@ -112,7 +112,7 @@ class CardComplexColourParam(CardTextParameter):
         return f"the {param_type} {operator_text} {colours_to_symbols(self.colours)}"
 
 
-class CardMulticolouredOnlyParam(CardIsParameter):
+class CardMulticolouredOnlyParam(CardSearchBinaryParameter):
     """
     The parameter for searching by whether a card is multicoloured or not
     """

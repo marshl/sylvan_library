@@ -15,12 +15,12 @@ from cards.models.card import (
 from cardsearch.parameters.base_parameters import (
     CardSearchContext,
     QueryContext,
-    CardTextParameter,
+    CardSearchParameter,
     ParameterArgs,
 )
 
 
-class CardGenericTypeParam(CardTextParameter):
+class CardGenericTypeParam(CardSearchParameter):
     """
     Parameter for searching both types and subtypes
     """
@@ -89,7 +89,7 @@ class CardGenericTypeParam(CardTextParameter):
         return f'the card types {inclusion} "{self.value}"'
 
 
-class CardOriginalTypeParam(CardTextParameter):
+class CardOriginalTypeParam(CardSearchParameter):
     """
     A parameter for querying the original type line of a card
     """

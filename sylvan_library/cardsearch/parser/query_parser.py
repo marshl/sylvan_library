@@ -3,23 +3,12 @@ Module for the card query recursive descent parser
 """
 from typing import Union, Optional, Callable, List, Type
 
-from cardsearch.parameters import (
-    CardSortParam,
-    CardCollectorNumSortParam,
-    CardManaValueSortParam,
-    CardPowerSortParam,
-    CardColourSortParam,
-    CardPriceSortParam,
-    CardRaritySortParam,
-    CardNameSortParam,
-    CardRandomSortParam,
-)
 from cardsearch.parameters.base_parameters import (
-    CardSearchParam,
-    OrParam,
-    AndParam,
+    CardSearchTreeNode,
+    CardSearchOr,
+    CardSearchAnd,
     ParameterArgs,
-    CardTextParameter,
+    CardSearchParameter,
 )
 from cardsearch.parameters.card_artist_parameters import CardArtistParam
 from cardsearch.parameters.card_colour_parameters import (
@@ -72,13 +61,25 @@ from cardsearch.parameters.card_type_parameters import (
     CardGenericTypeParam,
     CardOriginalTypeParam,
 )
+from cardsearch.parameters.sort_parameters import (
+    CardColourSortParam,
+    CardCollectorNumSortParam,
+    CardManaValueSortParam,
+    CardNameSortParam,
+    CardPowerSortParam,
+    CardPriceSortParam,
+    CardRandomSortParam,
+    CardRaritySortParam,
+)
 from cardsearch.parser.base_parser import Parser, ParseError
 
-SEARCH_PARAMETERS: List[Type[CardTextParameter]] = [
+SEARCH_PARAMETERS: List[Type[CardSearchParameter]] = [
     CardArtistParam,
     CardBlockParam,
+    CardCollectorNumSortParam,
     CardCollectorNumberParam,
     CardColourCountParam,
+    CardColourSortParam,
     CardComplexColourParam,
     CardFlavourTextParam,
     CardGenericTypeParam,
@@ -93,17 +94,23 @@ SEARCH_PARAMETERS: List[Type[CardTextParameter]] = [
     CardLegalityParam,
     CardManaCostComplexParam,
     CardManaValueParam,
+    CardManaValueSortParam,
     CardMissingPauperParam,
     CardMulticolouredOnlyParam,
     CardNameParam,
+    CardNameSortParam,
     CardNumLoyaltyParam,
     CardNumPowerParam,
     CardNumToughnessParam,
     CardOriginalTypeParam,
     CardOwnershipCountParam,
+    CardPowerSortParam,
     CardPriceParam,
+    CardPriceSortParam,
     CardProducesManaParam,
+    CardRandomSortParam,
     CardRarityParam,
+    CardRaritySortParam,
     CardRulesTextParam,
     CardSetParam,
     CardUsageCountParam,
@@ -114,8 +121,8 @@ SEARCH_PARAMETERS: List[Type[CardTextParameter]] = [
 def param_parser(
     name: str, keywords: List[str], operators: List[str]
 ) -> Callable[
-    [Callable[[ParameterArgs], CardSearchParam]],
-    Callable[[ParameterArgs], CardSearchParam],
+    [Callable[[ParameterArgs], CardSearchTreeNode]],
+    Callable[[ParameterArgs], CardSearchTreeNode],
 ]:
     """
     Decorator for parameter parsing functions
@@ -126,7 +133,7 @@ def param_parser(
     :return:
     """
 
-    def decorator(function: Callable[[ParameterArgs], CardSearchParam]):
+    def decorator(function: Callable[[ParameterArgs], CardSearchTreeNode]):
         function.is_param_parser = True
         function.param_name = name
         function.param_keywords = keywords
@@ -136,56 +143,19 @@ def param_parser(
     return decorator
 
 
-@param_parser(name="order", keywords=["order", "sort"], operators=[":", "="])
-def parse_sort_order_param(param_args: ParameterArgs) -> CardSortParam:
-    """
-    Creates a sort order parameter from the given operator and text
-    :param param_args:
-    :return:
-    """
-    if param_args.text.startswith("-"):
-        negate_param = True
-        param_args.text = param_args.text.lstrip("-")
-    else:
-        negate_param = False
-
-    if param_args.text == "number":
-        param = CardCollectorNumSortParam()
-    elif param_args.text in ("cmc", "mana_value", "mv", "manavalue"):
-        param = CardManaValueSortParam()
-    elif param_args.text == "power":
-        param = CardPowerSortParam()
-    elif param_args.text == "rarity":
-        param = CardRaritySortParam()
-    elif param_args.text in ("color", "colour"):
-        param = CardColourSortParam()
-    elif param_args.text == "price":
-        param = CardPriceSortParam()
-    elif param_args.text == "name":
-        param = CardNameSortParam()
-    elif param_args.text == "random":
-        param = CardRandomSortParam()
-    else:
-        raise ValueError(f"Unknown sort parameter {param_args.text}")
-
-    if negate_param:
-        param.negated = not param.negated
-    return param
-
-
 class CardQueryParser(Parser):
     """
     Parser for parsing a scryfall-style card qquery
     """
 
-    def start(self) -> CardSearchParam:
+    def start(self) -> CardSearchTreeNode:
         """
         Starts matching with the text
         :return: The root parameter node
         """
         return self.or_group()
 
-    def or_group(self) -> CardSearchParam:
+    def or_group(self) -> CardSearchTreeNode:
         """
         Matches a group of parameters separated by "or"s or the single "and" group if
         that's all this group contains
@@ -200,16 +170,16 @@ class CardQueryParser(Parser):
 
             param_group = self.match("and_group")
             if or_group is None:
-                or_group = OrParam(negated=False)
+                or_group = CardSearchOr()
                 or_group.add_parameter(subgroup)
             or_group.add_parameter(param_group)
 
         return or_group or subgroup
 
-    def and_group(self) -> CardSearchParam:
+    def and_group(self) -> CardSearchTreeNode:
         """
         Attempts to parse a list of parameters separated by "and"s
-        :return: The AndParam group, or the single parameter if there is only one
+        :return: The CardSearchAnd group, or the single parameter if there is only one
         """
         result = self.match("parameter_group")
         and_group = None
@@ -220,13 +190,13 @@ class CardQueryParser(Parser):
                 break
 
             if and_group is None:
-                and_group = AndParam(negated=False)
+                and_group = CardSearchAnd()
                 and_group.add_parameter(result)
             and_group.add_parameter(param_group)
 
         return and_group or result
 
-    def parameter_group(self) -> Optional[CardSearchParam]:
+    def parameter_group(self) -> Optional[CardSearchTreeNode]:
         """
         Attempts to parse a parameter group (type + operator + value)
         :return: The parsed parameter
@@ -266,7 +236,7 @@ class CardQueryParser(Parser):
 
         return "".join(chars).rstrip(" \t").lower()
 
-    def normal_parameter(self) -> CardSearchParam:
+    def normal_parameter(self) -> CardSearchTreeNode:
         """
         Attempts to parse a parameter with a type, operator and value
         :return: THe parsed parameter
@@ -276,7 +246,7 @@ class CardQueryParser(Parser):
         parameter_value = self.match("quoted_string", "unquoted_complex")
         return self.parse_param(parameter_type, operator, parameter_value)
 
-    def quoted_name_parameter(self) -> CardSearchParam:
+    def quoted_name_parameter(self) -> CardSearchTreeNode:
         """
         Attempts to parse a parameter that is just a quoted string
         :return: The name parameter
@@ -284,28 +254,28 @@ class CardQueryParser(Parser):
         parameter_value = self.match("quoted_string")
         return self.parse_param("name", ":", parameter_value)
 
-    def simple_word_group_parameter(self) -> CardSearchParam:
+    def simple_word_group_parameter(self) -> CardSearchTreeNode:
         """
         Attempts to parse a parameter that has a list of words inside parentheses
         For example "oracle:(foo bar)"
-        :return: An AndParam containing the parameters. All the parameters will be of
+        :return: An CardSearchAnd containing the parameters. All the parameters will be of
         the type specified before the colon at the start of the string
         """
         parameter_type = self.match("param_type")
         operator = self.match("operator")
         param_values = self.maybe_match("or_word_group")
         if param_values:
-            base_param = OrParam(negated=False)
+            base_param = CardSearchOr()
         else:
             param_values = self.match("and_word_group")
-            base_param = AndParam(negated=False)
+            base_param = CardSearchAnd()
 
         for value in param_values:
             param = self.parse_param(parameter_type, operator, value)
             base_param.add_parameter(param)
         return base_param
 
-    def unquoted_name_parameter(self) -> Optional[CardSearchParam]:
+    def unquoted_name_parameter(self) -> Optional[CardSearchTreeNode]:
         """
         Attempts to parse a parameter that is just an unquoted string
         :return: The name parameter
@@ -321,7 +291,7 @@ class CardQueryParser(Parser):
 
     def parse_param(
         self, keyword: str, operator: str, value: str
-    ) -> Optional[CardSearchParam]:
+    ) -> Optional[CardSearchTreeNode]:
         """
         Returns a parameter based on the given parameter type
         :param keyword: The type of the parameter
@@ -348,9 +318,7 @@ class CardQueryParser(Parser):
             )
         parameter_type = matching_parameters[0]
 
-        param = parameter_type(False, param_args)
-        # if isinstance(param, CardSortParam):
-        #     self.order_params.append(param)
+        param = parameter_type(param_args)
         return param
 
     def operator(self):

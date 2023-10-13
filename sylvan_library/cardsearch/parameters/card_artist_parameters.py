@@ -6,13 +6,13 @@ from typing import List
 from django.db.models.query import Q
 
 from cardsearch.parameters.base_parameters import (
-    CardTextParameter,
+    CardSearchParameter,
     CardSearchContext,
     QueryContext,
 )
 
 
-class CardArtistParam(CardTextParameter):
+class CardArtistParam(CardSearchParameter):
     """
     The parameter for searching by a card printings artist
     """

@@ -12,11 +12,11 @@ from cardsearch.parameters.base_parameters import (
     ParameterArgs,
     QueryContext,
     QueryValidationError,
-    CardTextParameter,
+    CardSearchParameter,
 )
 
 
-class CardSetParam(CardTextParameter):
+class CardSetParam(CardSearchParameter):
     """
     The parameter for searching by a card's set
     """
@@ -36,8 +36,8 @@ class CardSetParam(CardTextParameter):
     def get_search_keywords(cls) -> List[str]:
         return ["set", "s"]
 
-    def __init__(self, negated: bool, param_args: ParameterArgs):
-        super().__init__(negated, param_args)
+    def __init__(self, param_args: ParameterArgs, negated: bool = False):
+        super().__init__(param_args, negated)
         self.set_obj = None
 
     def validate(self, query_context: QueryContext) -> None:
@@ -80,7 +80,7 @@ class CardSetParam(CardTextParameter):
         )
 
 
-class CardBlockParam(CardTextParameter):
+class CardBlockParam(CardSearchParameter):
     """
     The parameter for searching by a card's block
     """
@@ -100,8 +100,8 @@ class CardBlockParam(CardTextParameter):
     def get_search_keywords(cls) -> List[str]:
         return ["block", "b"]
 
-    def __init__(self, negated: bool, parameter_args: ParameterArgs):
-        super().__init__(negated, parameter_args)
+    def __init__(self, parameter_args: ParameterArgs, negated: bool = False):
+        super().__init__(parameter_args, negated)
         self.block_obj = None
 
     def validate(self, query_context: QueryContext) -> None:
@@ -144,7 +144,7 @@ class CardBlockParam(CardTextParameter):
         return f"card {verb} in {self.block_obj}"
 
 
-class CardLegalityParam(CardTextParameter):
+class CardLegalityParam(CardSearchParameter):
     """
     The parameter for searching by a card's "legality" (banned in a format, legal in a format etc.)
     """
@@ -164,8 +164,8 @@ class CardLegalityParam(CardTextParameter):
     def get_search_keywords(cls) -> List[str]:
         return ["format", "f", "legal", "legality", "banned", "restricted"]
 
-    def __init__(self, negated: bool, param_args: ParameterArgs):
-        super().__init__(negated, param_args)
+    def __init__(self, param_args: ParameterArgs, negated: bool = False):
+        super().__init__(param_args, negated)
         if param_args.keyword == "banned":
             self.restriction = "banned"
         elif param_args.keyword == "restricted":

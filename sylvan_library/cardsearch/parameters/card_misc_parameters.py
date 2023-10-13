@@ -6,15 +6,15 @@ from typing import List
 from django.db.models import Q
 
 from cardsearch.parameters.base_parameters import (
-    CardNumericalParam,
+    CardSearchNumericalParameter,
     CardSearchContext,
     QueryContext,
-    CardTextParameter,
-    CardIsParameter,
+    CardSearchParameter,
+    CardSearchBinaryParameter,
 )
 
 
-class CardLayoutParameter(CardTextParameter):
+class CardLayoutParameter(CardSearchParameter):
     """
     Parameter for whether a card has any phyrexian mana symbols or not
     """
@@ -35,14 +35,13 @@ class CardLayoutParameter(CardTextParameter):
         return ["layout", "l"]
 
     def query(self, query_context: QueryContext) -> Q:
-        query = Q(card__layout=self.value)
-        return ~query if self.negated else query
+        return Q(card__layout=self.value, _negated=self.negated)
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         return f"card layout " + ("isn't" if self.negated else "is") + f" {self.value}"
 
 
-class CardIsPhyrexianParam(CardIsParameter):
+class CardIsPhyrexianParam(CardSearchBinaryParameter):
     """
     Parameter for whether a card has any phyrexian mana symbols or not
     """
@@ -68,7 +67,7 @@ class CardIsPhyrexianParam(CardIsParameter):
         return "card " + ("isn't" if self.negated else "is") + " phyrexian"
 
 
-class CardHasWatermarkParam(CardIsParameter):
+class CardHasWatermarkParam(CardSearchBinaryParameter):
     """
     Parameter for whether a printing has a watermark or not
     """
@@ -91,7 +90,7 @@ class CardHasWatermarkParam(CardIsParameter):
         return "card " + ("doesn't have " if self.negated else "has") + " a watermark"
 
 
-class CardIsReprintParam(CardIsParameter):
+class CardIsReprintParam(CardSearchBinaryParameter):
     """
     Parameter for whether a printing has been printed before
     """
@@ -114,7 +113,7 @@ class CardIsReprintParam(CardIsParameter):
         return "card " + ("isn't" if self.negated else "is") + " a reprint"
 
 
-class CardHasColourIndicatorParam(CardIsParameter):
+class CardHasColourIndicatorParam(CardSearchBinaryParameter):
     """
     Parameter for whether a card has a colour indicator or not
     """
@@ -142,7 +141,7 @@ class CardHasColourIndicatorParam(CardIsParameter):
         )
 
 
-class CardIsHybridParam(CardIsParameter):
+class CardIsHybridParam(CardSearchBinaryParameter):
     """
     Parameter for whether a card has hybrid mana in its cost
     """
@@ -168,7 +167,7 @@ class CardIsHybridParam(CardIsParameter):
         )
 
 
-class CardIsCommanderParam(CardIsParameter):
+class CardIsCommanderParam(CardSearchBinaryParameter):
     """
     Parameter for whether this card can be yor commander
     """
@@ -202,7 +201,7 @@ class CardIsCommanderParam(CardIsParameter):
         )
 
 
-class CardIsVanillaParam(CardIsParameter):
+class CardIsVanillaParam(CardSearchBinaryParameter):
     @classmethod
     def get_is_keywords(cls) -> List[str]:
         return ["vanilla"]
@@ -224,7 +223,7 @@ class CardIsVanillaParam(CardIsParameter):
         return "the card " + ("isn't" if self.negated else "is") + " vanilla"
 
 
-class CardCollectorNumberParam(CardNumericalParam):
+class CardCollectorNumberParam(CardSearchNumericalParameter):
     """
     The parameter for searching by a card's numerical power
     """

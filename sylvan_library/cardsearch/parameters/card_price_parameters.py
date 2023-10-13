@@ -6,13 +6,13 @@ from typing import List
 from django.db.models.query import Q
 
 from cardsearch.parameters.base_parameters import (
-    CardNumericalParam,
+    CardSearchNumericalParameter,
     QueryContext,
     CardSearchContext,
 )
 
 
-class CardPriceParam(CardNumericalParam):
+class CardPriceParam(CardSearchNumericalParameter):
     """
     The parameter for searching by how many a user owns of it
     """

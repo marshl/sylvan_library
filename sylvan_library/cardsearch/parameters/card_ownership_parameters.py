@@ -7,16 +7,16 @@ from django.db.models import Q
 
 from cards.models.card import Card
 from cardsearch.parameters.base_parameters import (
-    CardNumericalParam,
+    CardSearchNumericalParameter,
     CardSearchContext,
     QueryContext,
     ParameterArgs,
     QueryValidationError,
-    CardIsParameter,
+    CardSearchBinaryParameter,
 )
 
 
-class CardOwnershipCountParam(CardNumericalParam):
+class CardOwnershipCountParam(CardSearchNumericalParameter):
     """
     The parameter for searching by how many a user owns of it
     """
@@ -48,8 +48,8 @@ class CardOwnershipCountParam(CardNumericalParam):
 
         super().validate(query_context)
 
-    def __init__(self, negated: bool, param_args: ParameterArgs):
-        super().__init__(negated, param_args)
+    def __init__(self, param_args: ParameterArgs, negated: bool = False):
+        super().__init__(param_args, negated)
 
     def query(self, query_context: QueryContext) -> Q:
         assert self.operator in ("<", "<=", "=", ">=", ">")
@@ -88,7 +88,7 @@ HAVING SUM(COALESCE(cards_userownedcard.count, 0)) {self.operator} %s
         return f"you own {self.operator} {self.number}"
 
 
-class CardUsageCountParam(CardNumericalParam):
+class CardUsageCountParam(CardSearchNumericalParameter):
     """
     The parameter for searching by how many times it has been used in a deck
     """
@@ -147,7 +147,7 @@ HAVING COUNT(cards_deck.id) {self.operator} %s
         return f"you used it in {self.operator} {self.number} decks"
 
 
-class CardMissingPauperParam(CardIsParameter):
+class CardMissingPauperParam(CardSearchBinaryParameter):
     """
     A parameter for searching for cards that the user owns a rare version of,
     but doesn't own a common or uncommon variant that they can use in pauper

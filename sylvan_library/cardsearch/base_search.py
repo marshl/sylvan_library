@@ -9,16 +9,17 @@ from django.db.models import prefetch_related_objects, QuerySet
 
 from cards.models.card import CardPrinting, Card
 from cards.models.sets import Set
-from cardsearch.parameters import (
+
+from cardsearch.parameters.base_parameters import (
+    CardSearchAnd,
+    CardSearchBranchNode,
+    QueryContext,
+    ParameterArgs,
+)
+from cardsearch.parameters.sort_parameters import (
     CardSortParam,
     CardNameSortParam,
     SearchMode,
-)
-
-from cardsearch.parameters.base_parameters import (
-    AndParam,
-    BranchParam,
-    QueryContext,
 )
 
 
@@ -75,7 +76,7 @@ class BaseSearch:
 
     def __init__(self, user: get_user_model() = None) -> None:
         self.user: get_user_model() = user
-        self.root_parameter: BranchParam = AndParam(negated=False)
+        self.root_parameter: CardSearchBranchNode = CardSearchAnd()
         self.sort_params: List[CardSortParam] = []
         self.paginator: Optional[Paginator] = None
         self.results: List[SearchResult] = []
@@ -99,7 +100,11 @@ class BaseSearch:
         print(str(queryset.query))
         queryset = Card.objects.filter(printings__in=queryset).distinct()
         # Add some default sort params to ensure stable ordering
-        self.add_sort_param(CardNameSortParam())
+        self.add_sort_param(
+            CardNameSortParam(
+                param_args=ParameterArgs(keyword="sort", operator=":", value="name"),
+            )
+        )
 
         queryset = queryset.order_by(
             *[

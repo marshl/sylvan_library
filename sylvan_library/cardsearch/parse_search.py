@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 
 from cards.models.sets import Set
 from cardsearch.base_search import BaseSearch
-from cardsearch.parameters.base_parameters import BranchParam
+from cardsearch.parameters.base_parameters import CardSearchBranchNode
 from cardsearch.parameters.card_set_parameters import CardSetParam
 from cardsearch.parser.base_parser import ParseError
 from cardsearch.parser.query_parser import CardQueryParser
@@ -34,7 +34,7 @@ class ParseSearch(BaseSearch):
         if isinstance(self.root_parameter, CardSetParam):
             return self.root_parameter.set_obj
 
-        if isinstance(self.root_parameter, BranchParam):
+        if isinstance(self.root_parameter, CardSearchBranchNode):
             for child in self.root_parameter.child_parameters:
                 if isinstance(child, CardSetParam):
                     return child.set_obj
@@ -50,7 +50,6 @@ class ParseSearch(BaseSearch):
         query_parser = CardQueryParser()
         try:
             self.root_parameter = query_parser.parse(self.query_string)
-            # TODO
-            self.sort_params = []
+            self.sort_params = self.root_parameter.get_sort_parameters()
         except (ParseError, ValueError) as error:
             self.error_message = str(error)

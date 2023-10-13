@@ -6,13 +6,13 @@ from typing import List
 from django.db.models import Q
 
 from cardsearch.parameters.base_parameters import (
-    CardTextParameter,
+    CardSearchParameter,
     QueryContext,
     CardSearchContext,
 )
 
 
-class CardFlavourTextParam(CardTextParameter):
+class CardFlavourTextParam(CardSearchParameter):
     """
     Parameter for the printing flavour text
     """
@@ -33,8 +33,9 @@ class CardFlavourTextParam(CardTextParameter):
         return CardSearchContext.PRINTING
 
     def query(self, query_context: QueryContext) -> Q:
-        query = Q(face_printings__flavour_text__icontains=self.value)
-        return ~query if self.negated else query
+        return Q(
+            face_printings__flavour_text__icontains=self.value, _negated=self.negated
+        )
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         return "flavour {} {}".format(

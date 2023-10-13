@@ -9,7 +9,7 @@ from cards.models.rarity import Rarity
 from cardsearch.parameters.base_parameters import (
     OPERATOR_MAPPING,
     OPERATOR_TO_WORDY_MAPPING,
-    CardTextParameter,
+    CardSearchParameter,
     CardSearchContext,
     ParameterArgs,
     QueryContext,
@@ -17,7 +17,7 @@ from cardsearch.parameters.base_parameters import (
 )
 
 
-class CardRarityParam(CardTextParameter):
+class CardRarityParam(CardSearchParameter):
     """
     The parameter for searching by a card's rarity
     """
@@ -37,8 +37,8 @@ class CardRarityParam(CardTextParameter):
     def get_default_search_context(self) -> CardSearchContext:
         return CardSearchContext.PRINTING
 
-    def __init__(self, negated: bool, param_args: ParameterArgs):
-        super().__init__(negated, param_args)
+    def __init__(self, param_args: ParameterArgs, negated: bool = False):
+        super().__init__(param_args, negated)
         self.rarity: Optional[Rarity] = None
         if self.operator == ":":
             self.operator = "="

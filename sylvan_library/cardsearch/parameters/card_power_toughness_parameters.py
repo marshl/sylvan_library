@@ -7,13 +7,13 @@ from django.db.models import F
 from django.db.models.query import Q
 
 from cardsearch.parameters.base_parameters import (
-    CardNumericalParam,
+    CardSearchNumericalParameter,
     CardSearchContext,
     QueryContext,
 )
 
 
-class CardNumPowerParam(CardNumericalParam):
+class CardNumPowerParam(CardSearchNumericalParameter):
     """
     The parameter for searching by a card's numerical power
     """
@@ -40,7 +40,7 @@ class CardNumPowerParam(CardNumericalParam):
         )
 
 
-class CardNumToughnessParam(CardNumericalParam):
+class CardNumToughnessParam(CardSearchNumericalParameter):
     """
     The parameter for searching by a card's numerical toughness
     """
@@ -66,7 +66,7 @@ class CardNumToughnessParam(CardNumericalParam):
         return f"the toughness {self.operator} {self.value}"
 
 
-class CardNumLoyaltyParam(CardNumericalParam):
+class CardNumLoyaltyParam(CardSearchNumericalParameter):
     """
     The parameter for searching by a card's numerical loyalty
     """

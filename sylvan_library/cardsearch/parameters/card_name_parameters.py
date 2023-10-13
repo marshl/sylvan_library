@@ -10,11 +10,11 @@ from cardsearch.parameters.base_parameters import (
     CardSearchContext,
     ParameterArgs,
     QueryContext,
-    CardTextParameter,
+    CardSearchParameter,
 )
 
 
-class CardNameParam(CardTextParameter):
+class CardNameParam(CardSearchParameter):
     """
     The parameter for searching by a card's name
     """
@@ -34,8 +34,8 @@ class CardNameParam(CardTextParameter):
     def get_search_keywords(cls) -> List[str]:
         return ["name", "n"]
 
-    def __init__(self, negated: bool, param_args: ParameterArgs):
-        super().__init__(negated, param_args)
+    def __init__(self, param_args: ParameterArgs, negated: bool = False):
+        super().__init__(param_args, negated)
         match_exact = self.operator == "="
         if self.value.startswith("!"):
             match_exact = True
@@ -48,18 +48,18 @@ class CardNameParam(CardTextParameter):
             self.regex_match = True
             self.card_name = self.value.strip("/")
             if self.match_exact:
-                self.card_name = "^" + self.card_name + "$"
+                self.card_name = "^" + self.value + "$"
 
     def query(self, query_context: QueryContext) -> Q:
         if self.regex_match:
-            query = Q(card__name__iregex=self.card_name)
+            query = Q(card__name__iregex=self.value)
         elif self.match_exact:
-            query = Q(card__name__iexact=self.card_name)
+            query = Q(card__name__iexact=self.value)
         elif self.operator == ":":
-            query = Q(card__name__icontains=self.card_name)
+            query = Q(card__name__icontains=self.value)
         else:
             django_op = OPERATOR_MAPPING[self.operator]
-            query = Q(**{"card__name" + django_op: self.card_name})
+            query = Q(**{"card__name" + django_op: self.value})
 
         return ~query if self.negated else query
 
@@ -70,5 +70,5 @@ class CardNameParam(CardTextParameter):
         :return: The pretty version of this parameter
         """
         if self.negated:
-            return f'the name does not contain "{self.card_name}"'
-        return f'the name contains "{self.card_name}"'
+            return f'the name does not contain "{self.value}"'
+        return f'the name contains "{self.value}"'

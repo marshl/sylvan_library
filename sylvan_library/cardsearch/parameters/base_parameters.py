@@ -3,7 +3,7 @@ Base parameters objects and helpers
 """
 import dataclasses
 import math
-from abc import abstractmethod
+from abc import abstractmethod, ABCMeta
 import enum
 import logging
 from abc import ABC
@@ -72,6 +72,15 @@ class CardSearchContext(enum.Enum):
     PRINTING = "PRINTING"
 
 
+class SearchMode(enum.Enum):
+    """
+    Different search modes (the model "origin" of the search, for example card, card printing)
+    """
+
+    SEARCH_MODE_CARD = "SEARCH_MODE_CARD"
+    SEARCH_MODE_PRINTING = "SEARCH_MODE_PRINTING"
+
+
 @dataclasses.dataclass
 class ParameterArgs:
     """
@@ -95,12 +104,12 @@ class QueryContext:
     user: Optional[get_user_model()]
 
 
-class CardSearchParam(ABC):
+class CardSearchTreeNode(ABC):
     """
     The base search parameter class
     """
 
-    def __init__(self, negated: bool):
+    def __init__(self, negated: bool = False):
         self.negated = negated
 
     @abstractmethod
@@ -111,7 +120,6 @@ class CardSearchParam(ABC):
         """
         raise NotImplementedError
 
-    @abstractmethod
     def validate(self, query_context: QueryContext) -> None:
         pass
 
@@ -120,7 +128,7 @@ class CardSearchParam(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_pretty_str(self, query_context: QueryContext) -> str:
+    def get_pretty_str(self, query_context: QueryContext) -> Optional[str]:
         """
         Returns a human-readable version of this parameter
         (and all sub parameters for those with children)
@@ -130,9 +138,12 @@ class CardSearchParam(ABC):
             f"Please implement get_pretty_str on {type(self).__name__}"
         )
 
+    def get_sort_parameters(self):
+        return []
 
-class CardTextParameter(CardSearchParam, ABC):
-    def __init__(self, negated: bool, param_args: ParameterArgs):
+
+class CardSearchParameter(CardSearchTreeNode, ABC):
+    def __init__(self, param_args: ParameterArgs, negated: bool = False):
         super().__init__(negated)
         self.operator = param_args.operator
         self.value = param_args.value
@@ -164,16 +175,72 @@ class CardTextParameter(CardSearchParam, ABC):
             )
 
 
-class BranchParam(CardSearchParam, ABC):
+class CardSortParam(CardSearchParameter, metaclass=ABCMeta):
+    """
+    The base sorting parameter
+    """
+
+    @classmethod
+    def get_search_operators(cls) -> List[str]:
+        return [":"]
+
+    @classmethod
+    def get_search_keywords(cls) -> List[str]:
+        return ["order", "sort"]
+
+    @classmethod
+    @abstractmethod
+    def get_sort_keywords(cls) -> List[str]:
+        raise NotImplementedError
+
+    @classmethod
+    def matches_param_args(cls, param_args: ParameterArgs) -> bool:
+        if not super().matches_param_args(param_args):
+            return False
+
+        return param_args.value in cls.get_sort_keywords()
+
+    def get_default_search_context(self) -> CardSearchContext:
+        return CardSearchContext.CARD
+
+    def get_pretty_str(self, query_context: QueryContext) -> Optional[str]:
+        return None
+
+    def query(self, query_context: QueryContext) -> Q:
+        return Q()
+
+    def get_sort_list(self, search_mode: SearchMode) -> List[str]:
+        """
+        Gets the sort list taking order into account
+        :return:
+        """
+        sort_keys = self.get_sort_keys(search_mode)
+        return [
+            F(key).desc(nulls_last=True)
+            if self.negated
+            else F(key).asc(nulls_last=True)
+            for key in sort_keys
+        ]
+
+    @abstractmethod
+    def get_sort_keys(self, search_mode: SearchMode) -> List[str]:
+        """
+        Gets the list of attributes to be sorted by
+        :return:
+        """
+        raise NotImplementedError()
+
+
+class CardSearchBranchNode(CardSearchTreeNode, ABC):
     """
     The base branching parameter class (subclassed to "and" and "or" parameters)
     """
 
-    def __init__(self, negated: bool):
+    def __init__(self, negated: bool = False):
         super().__init__(negated)
-        self.child_parameters: List[CardSearchParam] = []
+        self.child_parameters: List[CardSearchTreeNode] = []
 
-    def add_parameter(self, param: CardSearchParam) -> CardSearchParam:
+    def add_parameter(self, param: CardSearchTreeNode) -> CardSearchTreeNode:
         """
         Adds a child parameter to this node
         :param param: The child to add
@@ -193,8 +260,17 @@ class BranchParam(CardSearchParam, ABC):
         for child in self.child_parameters:
             child.validate(query_context)
 
+    def get_sort_parameters(self) -> List[CardSortParam]:
+        sort_params = []
+        for child in self.child_parameters:
+            if isinstance(child, CardSearchBranchNode):
+                sort_params += child.get_sort_parameters()
+            elif isinstance(child, CardSortParam):
+                sort_params.append(child)
+        return sort_params
 
-class AndParam(BranchParam):
+
+class CardSearchAnd(CardSearchBranchNode):
     """
     The class for combining two or more sub-parameters with an "AND" clause
     """
@@ -218,14 +294,14 @@ class AndParam(BranchParam):
 
         query = Q()
         for child in self.child_parameters:
-            if isinstance(child, CardSearchParam):
+            if isinstance(child, CardSearchTreeNode):
                 query.add(child.query(query_context), Q.AND)
 
         if self.negated:
             return ~query
         return query
 
-    def get_pretty_str(self, query_context: QueryContext) -> str:
+    def get_pretty_str(self, query_context: QueryContext) -> Optional[str]:
         """
         Returns a human-readable version of this parameter
         (and all sub parameters for those with children)
@@ -234,18 +310,19 @@ class AndParam(BranchParam):
         if len(self.child_parameters) == 1:
             return self.child_parameters[0].get_pretty_str(query_context)
 
-        result = " and ".join(
-            f"({param.get_pretty_str(query_context)})"
-            if isinstance(param, OrParam) and len(param.child_parameters) > 1
-            else param.get_pretty_str(query_context)
-            for param in self.child_parameters
-            if isinstance(param, CardSearchParam)
-        )
+        parts = []
+        for param in self.child_parameters:
+            string = param.get_pretty_str(query_context)
+            if string is not None:
+                if isinstance(param, CardSearchOr) and len(param.child_parameters) > 1:
+                    parts.append(f"({string})")
+                else:
+                    parts.append(string)
 
-        return result
+        return " and ".join(parts) if parts else None
 
 
-class OrParam(BranchParam):
+class CardSearchOr(CardSearchBranchNode):
     """
     The class for combining two or more sub-parameters with an "OR" clause
     """
@@ -261,7 +338,7 @@ class OrParam(BranchParam):
 
         return ~query if self.negated else query
 
-    def get_pretty_str(self, query_context: QueryContext) -> str:
+    def get_pretty_str(self, query_context: QueryContext) -> Optional[str]:
         """
         Returns a human-readable version of this parameter
         (and all sub parameters for those with children)
@@ -270,21 +347,22 @@ class OrParam(BranchParam):
         if len(self.child_parameters) == 1:
             return self.child_parameters[0].get_pretty_str(query_context)
 
-        return " or ".join(
-            param.get_pretty_str(query_context)
-            for param in self.child_parameters
-            if isinstance(param, CardSearchParam)
-        )
+        parts = []
+        for param in self.child_parameters:
+            string = param.get_pretty_str(query_context)
+            if string is not None:
+                parts.append(string)
+
+        return " or ".join(parts) if parts else None
 
 
-class CardNumericalParam(CardTextParameter, ABC):
-    # pylint: disable=abstract-method
+class CardSearchNumericalParameter(CardSearchParameter, ABC):
     """
     The base parameter for searching by some numerical value
     """
 
-    def __init__(self, negated: bool, param_args: ParameterArgs):
-        super().__init__(negated, param_args)
+    def __init__(self, param_args: ParameterArgs, negated: bool = False):
+        super().__init__(param_args, negated)
         self.number = None
 
     @classmethod
@@ -329,7 +407,7 @@ class CardNumericalParam(CardTextParameter, ABC):
             ) from ex
 
 
-class CardIsParameter(CardTextParameter, ABC):
+class CardSearchBinaryParameter(CardSearchParameter, ABC):
     @classmethod
     def get_search_operators(cls) -> List[str]:
         return [":"]
@@ -350,7 +428,7 @@ class CardIsParameter(CardTextParameter, ABC):
 
         return param_args.value in cls.get_is_keywords()
 
-    def __init__(self, negated: bool, param_args: ParameterArgs):
-        super().__init__(negated, param_args)
+    def __init__(self, param_args: ParameterArgs, negated: bool = False):
+        super().__init__(param_args, negated)
         if param_args.keyword == "not":
             self.negated = not self.negated

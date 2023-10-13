@@ -10,7 +10,7 @@ from typing import List, Optional, Any, Dict, Tuple
 # https://www.booleanworld.com/building-recursive-descent-parsers-definitive-guide/
 class ParseError(Exception):
     """
-    Class for an that occurs during parsing
+    Class for an error that occurs during parsing
     """
 
     def __init__(self, pos: int, msg: str, *args: Any):
