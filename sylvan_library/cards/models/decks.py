@@ -151,6 +151,10 @@ class Deck(models.Model):
                 groups["planeswalker"].append(deck_card)
                 continue
 
+            if "Battle" in first_face_types:
+                groups["battle"].append(deck_card)
+                continue
+
             groups["other"].append(deck_card)
 
         return [
@@ -203,6 +207,11 @@ class Deck(models.Model):
                 else "Planeswalkers",
                 "code": "planeswalker",
                 "cards": groups.get("planeswalker", []),
+            },
+            {
+                "name": "Battle" if len(groups.get("battle", [])) == 1 else "Battles",
+                "code": "battle",
+                "cards": groups.get("battle", []),
             },
             {"name": "Other", "cards": groups.get("other", []), "code": "other"},
         ]

@@ -292,6 +292,8 @@ class DeckForm(forms.ModelForm):
             "other spells",
             "instants and sorc.",
             "other",
+            "battle",
+            "battles",
         ):
             return None
 
