@@ -80,6 +80,10 @@
     "code": "originpwdfc"
   },
   {
+    "name": "Promotional",
+    "code": "promo"
+  },
+  {
     "name": "Shattered Glass",
     "code": "shatteredglass"
   },
@@ -90,6 +94,10 @@
   {
     "name": "Snow",
     "code": "snow"
+  },
+  {
+    "name": "Stamped",
+    "code": "stamped"
   },
   {
     "name": "Story Spotlight",
