@@ -422,6 +422,8 @@ class DeckAdmin(admin.ModelAdmin):
     """
 
     search_fields = ["name", "cards__card__name", "owner__username"]
+    list_display = ["name", "date_created", "owner", "format"]
+    list_filter = ["owner", "format"]
     inlines = [DeckCardInline]
 
 
