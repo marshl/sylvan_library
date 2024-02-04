@@ -17,6 +17,7 @@ from cards.models.card import (
     CardImage,
     UserCardChange,
     UserOwnedCard,
+    FrameEffect,
 )
 from cards.models.card_price import CardPrice
 from cards.models.decks import DeckCard, Deck
@@ -436,3 +437,8 @@ class UserOwnedCardAdmin(admin.ModelAdmin):
 class UserCardChangeAdmin(admin.ModelAdmin):
     autocomplete_fields = ["card_localisation", "owner"]
     list_display = ["card_localisation", "date", "difference"]
+
+
+@admin.register(FrameEffect)
+class FrameEffectAdmin(admin.ModelAdmin):
+    pass
