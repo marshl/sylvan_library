@@ -22,16 +22,22 @@ SET_CODES_TO_SKIP = [
     "AMH2",
     "ASTX",
     "Alchemy: Innistrad",
+    "FMB1",
     "HTR",
     "HTR16",
     "HTR17",
     "HTR18",
     "HTR19",
     "HTR20",
+    "MB1",
     "MZNR",
     "OC21",
+    "PAGL",
+    "PCTB",
     "PDWA",
+    "PHED",
     "PLGS",
+    "PLIST",
     "PPOD",
     "PWCQ",
     "PWP09",
@@ -39,6 +45,7 @@ SET_CODES_TO_SKIP = [
     "PWP11",
     "PWP12",
     "PWP21",
+    "UPLIST",
     "YMID",
 ]
 
@@ -90,7 +97,6 @@ def get_all_set_data(
 
 
 def parse_set(set_file_path: str) -> Optional[SimpleSet]:
-
     with open(set_file_path, "r", encoding="utf8") as set_file:
         set_data = json.load(set_file).get("data")
 
