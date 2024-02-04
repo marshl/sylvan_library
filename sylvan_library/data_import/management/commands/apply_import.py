@@ -72,7 +72,6 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args: Any, **options: Any):
-
         with transaction.atomic():
             # pylint: disable=too-many-boolean-expressions
             if (
