@@ -94,5 +94,9 @@
   {
     "code": "timeless",
     "name": "Timeless"
+  },
+  {
+    "name": "Standard Brawl",
+    "code": "standardbrawl"
   }
 ]
