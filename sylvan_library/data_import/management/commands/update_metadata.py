@@ -163,7 +163,7 @@ class Command(BaseCommand):
     def update_types(self) -> None:
         logger.info("Updating types")
 
-        type_dict = import_json(_paths.TYPES_JSON_PATH)["data"]["types"]
+        type_dict = import_json(_paths.TYPES_JSON_PATH)["data"]
         for type_str, children in type_dict.items():
             type_str = type_str.title()
             if not CardType.objects.filter(name=type_str).exists():
