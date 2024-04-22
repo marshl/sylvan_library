@@ -52,33 +52,45 @@ class Command(BaseCommand):
         super().__init__()
 
     def handle(self, *args, **options) -> None:
-        worlds_uri = "format?f=ST&meta=97"
-        pro_tour_uri = "format?f=ST&meta=91"
-        grand_prix_uri = "format?f=ST&meta=96"
-        for uri in [worlds_uri, pro_tour_uri, grand_prix_uri]:
-            self.parse_event_summary(self.base_uri + uri)
+        # worlds_uri = "format?f=ST&meta=97"
+        # pro_tour_uri = "format?f=ST&meta=91"
+        # grand_prix_uri = "format?f=ST&meta=96"
+        all_standard_decks_uri = "format?f=ST&meta=58"
+        # for uri in [worlds_uri, pro_tour_uri, grand_prix_uri]:
+        #     self.parse_event_summary(self.base_uri + uri)
+        self.parse_format_summary_page(self.base_uri + all_standard_decks_uri)
 
-    def parse_event_summary(self, event_summary_uri: str) -> None:
+    def parse_format_summary_page(self, format_summary_uri: str) -> None:
         """
         Parses an event summary page (which contains a list of events)
-        :param event_summary_uri: The URI of the event summary page
+        :param format_summary_uri: The URI of the event summary page
         """
         visited_pages = set()
         pages_to_visit = {1}
         while pages_to_visit:
             page = pages_to_visit.pop()
             visited_pages.add(page)
-            print(f"Parsing event list {event_summary_uri} on page {page}")
-            resp = requests.post(event_summary_uri, {"cp": page})
+            print(f"Parsing event list {format_summary_uri} on page {page}")
+            resp = requests.get(format_summary_uri, {"cp": page})
             resp.raise_for_status()
+
             soup = BeautifulSoup(resp.content, features="html.parser")
             pages_to_visit.update(self.find_event_summary_pages(soup, visited_pages))
             event_list = soup.select("table.Stable")[1]
             event_trs = event_list.find_all("tr", class_="hover_tr")
             for event in event_trs:
-                link = event.find("a")
+                href_td = event.select("td")[1]
+                link = href_td.find("a")
                 href = link.attrs["href"]
-                self.parse_event(self.base_uri + href)
+
+                star_td = event.select("td")[2]
+                star_count = len(star_td.find_all("img"))
+                if (
+                    star_count >= 3
+                    or star_td.find("img")
+                    and star_td.find("img").attrs["src"] == "/graph/bigstar.png"
+                ):
+                    self.parse_event(self.base_uri + href)
 
     # pylint: disable=no-self-use
     def find_event_summary_pages(
@@ -114,6 +126,9 @@ class Command(BaseCommand):
 
         soup = BeautifulSoup(resp.text, features="html.parser")
         summary_div = soup.select_one("div.S14")
+        if not summary_div:
+            print("No content in event")
+            return
         summary = summary_div.select("div")[1]
         date_match = re.search(r"(?P<date>\d+/\d+/\d+)", summary.text)
         if not date_match:
@@ -121,7 +136,7 @@ class Command(BaseCommand):
         event_date = datetime.strptime(date_match["date"], "%d/%m/%y")
 
         deck_links = soup.select("div.hover_tr div.S14 a, div.chosen_tr div.S14 a")
-        for link in deck_links:
+        for link in deck_links[:8]:
             href = link.attrs["href"]
             matches = re.search(r"d=(?P<deck_id>\d+)", href)
             deck_name = link.getText()
@@ -206,9 +221,12 @@ class Command(BaseCommand):
         deck_card = DeckCard()
         deck_card.deck = deck
         deck_card.count = int(matches["count"])
-        try:
-            card = Card.objects.get(name=card_name, is_token=False)
-        except Card.DoesNotExist:
+        card = (
+            Card.objects.filter(name=card_name, is_token=False)
+            .exclude(printings__set__name__startswith="Mystery Booster Playtest Cards")
+            .first()
+        )
+        if not card:
             print(f"Couldn't find card {card_name}. Testing split card")
             first_name = card_name.split("/")[0].strip()
             # card = Card.objects.get(name=first_name, is_token=False)
