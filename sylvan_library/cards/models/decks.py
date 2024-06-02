@@ -458,7 +458,7 @@ class DeckCard(models.Model):
         Metaclass for DeckCard
         """
 
-        ordering = ["card__mana_value", "card__name"]
+        ordering = ["card__name"]
 
     def as_deck_text(self) -> str:
         """
