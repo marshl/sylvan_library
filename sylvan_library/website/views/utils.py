@@ -283,7 +283,7 @@ class ScryfallLink(LinkBuilder):
         return "https://scryfall.com/search"
 
     def get_params(self, card: Card) -> dict:
-        return {"q": urllib.parse.urlencode({"name": card.name})}
+        return {"q": f'name="{card.name}"'}
 
 
 class CardKingdomLink(LinkBuilder):
