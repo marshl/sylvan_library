@@ -36,7 +36,6 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-
         output_directory = os.path.join("data_export", "output")
         username = options.get("username")[0]
 
@@ -74,7 +73,8 @@ class Command(BaseCommand):
         return suffix
 
     def export_pretty_decks(self, output_directory: str, user: get_user_model()):
-        deck = user.decks.order_by("-date_created").first()
+        # deck = user.decks.order_by("-date_created").first()
+        deck = Deck.objects.get(id=9624)
 
         template_document = docx.Document(
             os.path.join("data_export", "templates", "edh_deck_template.docx")
@@ -114,7 +114,16 @@ class Command(BaseCommand):
         for table in template_document.tables:
             header = table.rows[0]
             is_basic_land = len(header.cells) == 2
-            if not is_basic_land:
+            if is_basic_land:
+                deck_cards = [
+                    deck_card
+                    for deck_card in card_groups["land"]["cards"]
+                    if deck_card.card.faces.first()
+                    .supertypes.filter(name="Basic")
+                    .exists()
+                ]
+                group_name = "Basic Land"
+            else:
                 header_text = header.cells[0].text
                 print(header_text)
                 if header_text.endswith("General"):
@@ -125,20 +134,52 @@ class Command(BaseCommand):
                     card_group = card_groups[header_text]
 
                 deck_cards: List[DeckCard] = card_group["cards"]
-                count = sum(deck_card.count for deck_card in deck_cards)
-                header.cells[0].paragraphs[0].text = f"{count} {card_group['name']}"
+                if header_text.endswith("Nonbasic Land"):
+                    deck_cards = [
+                        deck_card
+                        for deck_card in deck_cards
+                        if not deck_card.card.faces.first().supertypes.filter(
+                            name="Basic"
+                        )
+                    ]
+                    group_name = "Nonbasic Land"
+                else:
+                    group_name = card_group["name"]
 
-                if deck_cards:
-                    first_row = table.rows[1].cells[0]
-                    first_row.paragraphs[0].text = deck_cards[0].card.name
-                    for deck_card in deck_cards[1:]:
-                        row = table.add_row()
-                        paragraph = row.cells[0].paragraphs[0]
-                        paragraph.style = first_row.paragraphs[0].style
-                        paragraph.text = deck_card.card.name
+            count = sum(deck_card.count for deck_card in deck_cards)
+            header.cells[0].paragraphs[0].text = (
+                f"{count}" if is_basic_land else f"{count} {group_name}"
+            )
 
-        template_document.save(os.path.join(output_directory, "output.docx"))
-        pass
+            if is_basic_land:
+                header.cells[1].paragraphs[0].text = "Basic Land"
+
+            if deck_cards:
+                first_row = table.rows[1]
+                if is_basic_land:
+                    first_row.cells[0].paragraphs[0].text = str(deck_cards[0].count)
+                first_row.cells[1 if is_basic_land else 0].paragraphs[
+                    0
+                ].text = deck_cards[0].card.name
+
+                for deck_card in deck_cards[1:]:
+                    row = table.add_row()
+                    row.cells[0].paragraphs[0].style = (
+                        first_row.cells[0].paragraphs[0].style
+                    )
+                    if is_basic_land:
+                        row.cells[0].paragraphs[0].text = str(deck_card.count)
+                        row.cells[1].paragraphs[0].style = (
+                            first_row.cells[0].paragraphs[0].style
+                        )
+                        # row.cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
+                    row.cells[1 if is_basic_land else 0].paragraphs[
+                        0
+                    ].text = deck_card.card.name
+
+        output_filename = os.path.join(output_directory, "output.docx")
+        logger.info("Saving output to %s", output_filename)
+        template_document.save(output_filename)
 
     def export_decks(self, output_directory: str, user: get_user_model()):
         deck: Deck
