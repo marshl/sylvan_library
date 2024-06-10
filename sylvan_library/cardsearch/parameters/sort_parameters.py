@@ -201,3 +201,18 @@ class CardColourWeightSortParam(CardSortParam):
             "card__faces__colour_sort_key",
             "card__faces__colour_weight",
         ]
+
+
+class CardReleaseDateSortParam(CardSortParam):
+    @classmethod
+    def get_sort_keywords(cls) -> List[str]:
+        return ["date", "release_date"]
+
+    @classmethod
+    def get_parameter_name(cls) -> str:
+        return "sort by release date"
+
+    def get_sort_keys(self, search_mode: SearchMode) -> List[str]:
+        if search_mode == SearchMode.SEARCH_MODE_CARD:
+            return ["printings__set__release_date"]
+        return ["set__release_date"]
