@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     # Django extension apps
     "rest_framework",
     "django_extensions",
+    "djangoql",
     "django_select2",
     "tinymce",
     "widget_tweaks",
