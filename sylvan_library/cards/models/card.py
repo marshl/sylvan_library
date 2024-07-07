@@ -231,7 +231,7 @@ class CardFace(models.Model):
     num_loyalty = models.FloatField(default=0)
 
     type_line = models.CharField(max_length=200, blank=True, null=True)
-    rules_text = models.CharField(max_length=1000, blank=True, null=True)
+    rules_text = models.CharField(max_length=1500, blank=True, null=True)
 
     hand_modifier = models.CharField(max_length=10, blank=True, null=True)
     num_hand_modifier = models.IntegerField(default=0)
@@ -571,7 +571,7 @@ class CardFaceLocalisation(models.Model):
     flavour_text = models.CharField(max_length=500, blank=True, null=True)
     type = models.CharField(max_length=200, blank=True, null=True)
 
-    text = models.CharField(max_length=1000, blank=True, null=True)
+    text = models.CharField(max_length=1500, blank=True, null=True)
 
     # Multiple CardFaceLocalisations can share the same image (split cards)
     # Transform cards will have one per side
