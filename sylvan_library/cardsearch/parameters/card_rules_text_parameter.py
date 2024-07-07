@@ -51,33 +51,36 @@ class CardRulesTextParam(CardSearchParameter):
             self.regex_match: bool = False
 
     def query(self, query_context: QueryContext) -> Q:
+        return self.get_query("card__faces__rules_text")
+
+    def get_query(self, column_name):
         if "~" not in self.value:
             if self.regex_match:
-                query = Q(card__faces__rules_text__iregex=self.value)
+                query = Q(**{f"{column_name}__iregex": self.value})
             elif self.exact_match:
-                query = Q(card__faces__rules_text__iexact=self.value)
+                query = Q(**{f"{column_name}__iexact": self.value})
             else:
-                query = Q(card__faces__rules_text__icontains=self.value)
+                query = Q(**{f"{column_name}__icontains": self.value})
             return ~query if self.negated else query
 
         chunks = [Value(c) for c in self.value.split("~")]
         params = [F("card__name")] * (len(chunks) * 2 - 1)
         params[0::2] = chunks
         if self.regex_match:
-            query = Q(card__faces__rules_text__iregex=Concat(*params))
+            query = Q(**{f"{column_name}__iregex": Concat(*params)})
         elif self.exact_match:
-            query = Q(card__faces__rules_text__iexact=Concat(*params))
+            query = Q(**{f"{column_name}__iexact": Concat(*params)})
         else:
-            query = Q(card__faces__rules_text__icontains=Concat(*params))
+            query = Q(**{f"{column_name}__icontains": Concat(*params)})
 
         params = [Value("this spell")] * (len(chunks) * 2 - 1)
         params[0::2] = chunks
         if self.regex_match:
-            query |= Q(card__faces__rules_text__iregex=Concat(*params))
+            query |= Q(**{f"{column_name}__iregex": Concat(*params)})
         elif self.exact_match:
-            query |= Q(card__faces__rules_text__iexact=Concat(*params))
+            query |= Q(**{f"{column_name}__iexact": Concat(*params)})
         else:
-            query |= Q(card__faces__rules_text__icontains=Concat(*params))
+            query |= Q(**{f"{column_name}__icontains": Concat(*params)})
 
         return ~query if self.negated else query
 
@@ -87,6 +90,33 @@ class CardRulesTextParam(CardSearchParameter):
         else:
             modifier = "is" if self.exact_match else "contains"
         return f'the rules text {modifier} "{self.value}"'
+
+
+class CardOriginalRulesTextParam(CardRulesTextParam):
+    """
+    The parameter for searching by a card's original printing rules text
+    """
+
+    @classmethod
+    def get_parameter_name(cls) -> str:
+        return "original rules text"
+
+    @classmethod
+    def get_search_keywords(cls) -> List[str]:
+        return ["otext", "orules"]
+
+    def get_default_search_context(self) -> CardSearchContext:
+        return CardSearchContext.PRINTING
+
+    def query(self, query_context: QueryContext) -> Q:
+        return self.get_query("card__faces__face_printings__original_text")
+
+    def get_pretty_str(self, query_context: QueryContext) -> str:
+        if self.negated:
+            modifier = "is not" if self.exact_match else "does not contain"
+        else:
+            modifier = "is" if self.exact_match else "contains"
+        return f'the original rules text {modifier} "{self.value}"'
 
 
 class CardProducesManaParam(CardSearchParameter):

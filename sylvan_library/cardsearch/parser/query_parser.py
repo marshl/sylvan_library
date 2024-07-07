@@ -51,6 +51,7 @@ from cardsearch.parameters.card_rules_text_parameter import (
     CardRulesTextParam,
     CardWatermarkParam,
     CardProducesManaParam,
+    CardOriginalRulesTextParam,
 )
 from cardsearch.parameters.card_set_parameters import (
     CardSetParam,
@@ -103,6 +104,7 @@ SEARCH_PARAMETERS: List[Type[CardSearchParameter]] = [
     CardNumLoyaltyParam,
     CardNumPowerParam,
     CardNumToughnessParam,
+    CardOriginalRulesTextParam,
     CardOriginalTypeParam,
     CardOwnershipCountParam,
     CardPowerSortParam,
