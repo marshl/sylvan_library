@@ -3,6 +3,7 @@ Django admin config for card app
 """
 from django import forms
 from django.contrib import admin
+from djangoql.admin import DjangoQLSearchMixin
 
 from cards.models.card import (
     CardFace,
@@ -417,7 +418,7 @@ class DeckCardInline(admin.TabularInline):
 
 
 @admin.register(Deck)
-class DeckAdmin(admin.ModelAdmin):
+class DeckAdmin(DjangoQLSearchMixin, admin.ModelAdmin):
     """
     Admin for a deck of cards
     """
@@ -434,7 +435,7 @@ class UserOwnedCardAdmin(admin.ModelAdmin):
 
 
 @admin.register(UserCardChange)
-class UserCardChangeAdmin(admin.ModelAdmin):
+class UserCardChangeAdmin(DjangoQLSearchMixin, admin.ModelAdmin):
     autocomplete_fields = ["card_localisation", "owner"]
     list_display = ["card_localisation", "date", "difference"]
 
