@@ -150,7 +150,7 @@ class CardSearchParameter(CardSearchTreeNode, ABC):
 
     @classmethod
     def matches_param_args(cls, param_args: ParameterArgs) -> bool:
-        return param_args.keyword in cls.get_search_keywords()
+        return param_args.keyword.lower() in cls.get_search_keywords()
 
     @classmethod
     @abstractmethod

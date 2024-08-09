@@ -18,6 +18,7 @@ from cardsearch.parameters.card_colour_parameters import (
 from cardsearch.parameters.card_flavour_parameters import (
     CardFlavourTextParam,
 )
+from cardsearch.parameters.card_game_parameters import CardGameParam
 from cardsearch.parameters.card_mana_cost_parameters import (
     CardManaValueParam,
     CardManaCostComplexParam,
@@ -84,6 +85,7 @@ SEARCH_PARAMETERS: List[Type[CardSearchParameter]] = [
     CardColourSortParam,
     CardComplexColourParam,
     CardFlavourTextParam,
+    CardGameParam,
     CardGenericTypeParam,
     CardHasColourIndicatorParam,
     CardHasWatermarkParam,
@@ -304,7 +306,7 @@ class CardQueryParser(Parser):
         :return: The parsed parameter
         """
         param_args = ParameterArgs(
-            keyword=keyword,
+            keyword=keyword.lower(),
             operator=operator,
             value=value,
         )
