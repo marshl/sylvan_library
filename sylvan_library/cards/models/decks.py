@@ -268,6 +268,19 @@ class Deck(models.Model):
             )
             if count > 0:
                 result[colour.symbol] = count
+
+        colourless_count = sum(
+            deck_card.count
+            for deck_card in deck_cards
+            if deck_card.card.faces.first().mana_cost
+            and not any(
+                colour.symbol in deck_card.card.faces.first().mana_cost
+                for colour in Colour.objects.all()
+            )
+        )
+        if colourless_count > 0:
+            result[Colour.colourless().symbol] = colourless_count
+
         return result
 
     def deck_avg_mana_value(self) -> float:
