@@ -10,7 +10,7 @@ import typing
 import django.db
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandParser
-from django.db import transaction, models, IntegrityError, DataError
+from django.db import transaction, models, IntegrityError, DataError, DatabaseError
 
 from cards.models.card import (
     CardPrinting,
@@ -233,9 +233,11 @@ class Command(BaseCommand):
         """
         Applies any CardFaceUpdates to CardFace objects (update/create/delete)
         """
-        self.logger.info("Creating %s card faces", UpdateCardFace.objects.count())
+        self.logger.info(
+            "Updating/creating %s card faces", UpdateCardFace.objects.count()
+        )
 
-        for card_face_update in UpdateCardFace.objects.filter():
+        for card_face_update in UpdateCardFace.objects.all():
             if card_face_update.update_mode == UpdateMode.CREATE:
                 card_face = CardFace(
                     card_id=self.get_card_id(card_face_update.scryfall_oracle_id),
@@ -264,6 +266,7 @@ class Command(BaseCommand):
                 if field == "num_power" and value == "∞":
                     value = math.inf
                 setattr(card_face, field, value)
+
             try:
                 card_face.save()
             except (ValidationError, DataError):
@@ -616,6 +619,9 @@ class Command(BaseCommand):
                 face_localisation.save()
             except (ValidationError, IntegrityError):
                 self.logger.error("Failed to validate %s", update_face_localisation)
+                raise
+            except DatabaseError:
+                self.logger.exception("Failed to save %s", update_face_localisation)
                 raise
 
         return True
