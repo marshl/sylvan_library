@@ -1,6 +1,7 @@
 """
 Card set parameters
 """
+import datetime
 from typing import List
 
 from django.db.models.query import Q
@@ -13,7 +14,30 @@ from cardsearch.parameters.base_parameters import (
     QueryContext,
     QueryValidationError,
     CardSearchParameter,
+    OPERATOR_MAPPING,
 )
+
+
+def get_set(value: str) -> Set:
+    try:
+        return Set.objects.get(code__iexact=value)
+    except Set.DoesNotExist:
+        pass
+
+    try:
+        return Set.objects.get(name__iexact=value)
+    except Set.DoesNotExist:
+        pass
+
+    try:
+        return Set.objects.get(name__icontains=value)
+    except Set.DoesNotExist as ex:
+        raise QueryValidationError(f'Unknown set "{value}"') from ex
+    except Set.MultipleObjectsReturned:
+        try:
+            return Set.objects.get(name__icontains=value).exclude(type="promo")
+        except (Set.DoesNotExist, Set.MultipleObjectsReturned) as ex:
+            raise QueryValidationError(f'Multiple sets match "{value}"') from ex
 
 
 class CardSetParam(CardSearchParameter):
@@ -42,30 +66,7 @@ class CardSetParam(CardSearchParameter):
 
     def validate(self, query_context: QueryContext) -> None:
         super().validate(query_context)
-        self.set_obj = self.get_set()
-
-    def get_set(self) -> Set:
-        try:
-            return Set.objects.get(code__iexact=self.value)
-        except Set.DoesNotExist:
-            pass
-
-        try:
-            return Set.objects.get(name__iexact=self.value)
-        except Set.DoesNotExist:
-            pass
-
-        try:
-            return Set.objects.get(name__icontains=self.value)
-        except Set.DoesNotExist as ex:
-            raise QueryValidationError(f'Unknown set "{self.value}"') from ex
-        except Set.MultipleObjectsReturned:
-            try:
-                return Set.objects.get(name__icontains=self.value).exclude(type="promo")
-            except (Set.DoesNotExist, Set.MultipleObjectsReturned) as ex:
-                raise QueryValidationError(
-                    f'Multiple sets match "{self.value}"'
-                ) from ex
+        self.set_obj = get_set(self.value)
 
     def query(self, query_context: QueryContext) -> Q:
         if self.negated:
@@ -196,4 +197,53 @@ class CardLegalityParam(CardSearchParameter):
             f"it's not {self.restriction} in {self.card_format.name}"
             if self.negated
             else f"it's {self.restriction} in {self.card_format.name}"
+        )
+
+
+class CardDateParam(CardSearchParameter):
+    def get_default_search_context(self) -> CardSearchContext:
+        return CardSearchContext.PRINTING
+
+    @classmethod
+    def get_parameter_name(cls) -> str:
+        return "date"
+
+    @classmethod
+    def get_search_operators(cls) -> List[str]:
+        return ["<", "<=", ">=", ">"]
+
+    @classmethod
+    def get_search_keywords(cls) -> List[str]:
+        return ["date", "d"]
+
+    def __init__(self, param_args: ParameterArgs, negated: bool = False):
+        super().__init__(param_args, negated)
+        # self.set_obj = None
+        self.date = None
+
+    def validate(self, query_context: QueryContext) -> None:
+        super().validate(query_context)
+        try:
+            self.date = datetime.date.fromisoformat(self.value)
+            return
+        except ValueError:
+            pass
+
+        set_obj = get_set(self.value)
+        self.date = set_obj.release_date
+
+    def query(self, query_context: QueryContext) -> Q:
+        django_op = OPERATOR_MAPPING[self.operator]
+        query = {"set__release_date" + django_op: self.date}
+
+        return Q(**query, _negated=self.negated)
+
+    def get_pretty_str(self, query_context: QueryContext) -> str:
+        return (
+            "the card "
+            + ("wasn't" if self.negated else "was")
+            + f" released "
+            + ("before" if self.operator in ("<", "<=") else "after")
+            + " "
+            + self.date.isoformat()
         )

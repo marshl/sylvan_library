@@ -58,6 +58,7 @@ from cardsearch.parameters.card_set_parameters import (
     CardSetParam,
     CardBlockParam,
     CardLegalityParam,
+    CardDateParam,
 )
 from cardsearch.parameters.card_type_parameters import (
     CardGenericTypeParam,
@@ -84,6 +85,7 @@ SEARCH_PARAMETERS: List[Type[CardSearchParameter]] = [
     CardColourCountParam,
     CardColourSortParam,
     CardComplexColourParam,
+    CardDateParam,
     CardFlavourTextParam,
     CardGameParam,
     CardGenericTypeParam,
