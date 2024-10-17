@@ -79,8 +79,8 @@ body {
 }
 
 .text-input input {
-    -webkit-appearance: textfield;
-    -moz-appearance: textfield;
+    /*-webkit-appearance: textfield;*/
+    /*-moz-appearance: textfield;*/
     /*appearance: textfield;*/
     margin: 0;
     background: #333;
