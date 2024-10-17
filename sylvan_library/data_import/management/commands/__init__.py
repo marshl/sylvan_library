@@ -199,6 +199,18 @@ def download_file(url: str, destination_path: str) -> None:
             for data in response.iter_content(chunk_size=4096):
                 data_length += len(data)
                 output.write(data)
-                done = int(50 * data_length / total_length)
-                sys.stdout.write(f'\r[{"=" * done}{" " * (50 - done)}]')
-                sys.stdout.flush()
+                print_progress(data_length / total_length)
+    sys.stdout.write("\n")
+
+
+def print_progress(progress: float) -> None:
+    """
+    Print the current progress to stdout
+    The current stdout line will be overwritten
+    :param progress: The progress from 0 to 1
+    """
+    progress = max(min(progress, 1), 0)
+    stars = 50
+    done = int(stars * progress)
+    sys.stdout.write(f'\r[{"=" * done}{" " * (stars - done)}]')
+    sys.stdout.flush()
