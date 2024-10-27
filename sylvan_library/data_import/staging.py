@@ -183,6 +183,8 @@ class StagedCard(StagedObject):
         self.layout: str = card_data.get("layout", "normal")
 
         self.rulings: List[Dict[str, str]] = card_data.get("rulings", [])
+        self.rulings.sort(key=lambda x: x["date"])
+
         self.legalities: Dict[str, str] = card_data.get("legalities", {})
         self.is_reserved: bool = bool(card_data.get("isReserved", False))
 
@@ -206,8 +208,18 @@ class StagedCard(StagedObject):
 
     def get_field_data(self):
         return super().get_all_fields(
-            fields_to_ignore={"has_other_names", "legalities", "other_names", "rulings"}
+            fields_to_ignore={
+                "has_other_names",
+                "legalities",
+                "other_names",
+                "rulings",
+                "unique_rulings",
+            }
         )
+
+    @property
+    def unique_rulings(self):
+        return list({ruling["text"]: ruling for ruling in self.rulings}.values())
 
 
 # pylint: disable=too-many-instance-attributes

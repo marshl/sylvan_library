@@ -494,7 +494,7 @@ class SetParser:
         """
         # Use prefetched rulings to save performance
         existing_rulings = list(existing_card.rulings.all()) if existing_card else []
-        for ruling in staged_card.rulings:
+        for ruling in staged_card.unique_rulings:
             if not any(
                 True
                 for existing_ruling in existing_rulings
