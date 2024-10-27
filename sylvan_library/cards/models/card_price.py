@@ -4,7 +4,7 @@ Models fo card pricing
 
 from django.db import models
 
-from cards.models.card import CardPrinting
+from cards.models.card import CardPrinting, Card
 
 
 class CardPrice(models.Model):
@@ -15,6 +15,15 @@ class CardPrice(models.Model):
     card_printing = models.ForeignKey(
         CardPrinting, on_delete=models.CASCADE, related_name="prices"
     )
+
+    cheapest_card = models.OneToOneField(
+        Card,
+        on_delete=models.SET_NULL,
+        related_name="cheapest_price",
+        blank=True,
+        null=True,
+    )
+
     date = models.DateField()
 
     paper_value = models.DecimalField(

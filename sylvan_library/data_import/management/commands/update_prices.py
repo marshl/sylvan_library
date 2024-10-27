@@ -65,6 +65,52 @@ WHERE latest_price.card_printing_id = cards_cardprinting.id
         )
 
 
+def set_cheapest_prices():
+    logger.info("Setting cheapest prices")
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+UPDATE cards_cardprice
+SET cheapest_card_id = NULL
+"""
+        )
+
+        cursor.execute(
+            """
+UPDATE cards_cardprice
+SET cheapest_card_id = cheapest_price.card_id
+FROM (
+	SELECT DISTINCT
+--	cards_card.name,
+--	price_rank.paper_value,
+	price_rank.price_id,
+	price_rank.card_id
+	FROM cards_card
+	JOIN (
+		SELECT
+		cards_cardprinting.card_id,
+		RANK() OVER (
+			PARTITION BY cards_cardprinting.card_id
+			ORDER BY cards_cardprice.paper_value ASC,
+			cards_set.release_date ASC,
+			cards_cardprinting.id) rnk,
+		cards_cardprice.paper_value,
+		cards_cardprice.id price_id
+		FROM cards_cardprinting
+		JOIN cards_cardprice
+		ON cards_cardprice.id = cards_cardprinting.latest_price_id
+		JOIN cards_set
+		ON cards_set.id = cards_cardprinting.set_id
+		WHERE cards_cardprice.paper_value IS NOT NULL
+	) price_rank
+	ON cards_card.id = price_rank.card_id
+	WHERE price_rank.rnk = 1
+) cheapest_price
+WHERE cards_cardprice.id = cheapest_price.price_id
+"""
+        )
+
+
 def update_prices(start_of_week: datetime.date):
     logger.info("Querying DB for most recent prices")
     with connection.cursor() as cursor:
@@ -195,3 +241,4 @@ class Command(BaseCommand):
                 return
             update_prices(start_of_week)
             set_latest_prices()
+            set_cheapest_prices()

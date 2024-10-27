@@ -31,10 +31,11 @@ class CardPriceParam(CardSearchNumericalParameter):
         return ["<", "<=", ">=", ">"]
 
     def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.PRINTING
+        return CardSearchContext.CARD
 
     def query(self, query_context: QueryContext) -> Q:
-        args = self.get_args("latest_price__paper_value")
+        # args = self.get_args("latest_price__paper_value")
+        args = self.get_args("card__cheapest_price__paper_value")
         return Q(**args)
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
