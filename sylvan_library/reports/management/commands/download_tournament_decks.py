@@ -56,11 +56,17 @@ class Command(BaseCommand):
         # pro_tour_uri = "format?f=ST&meta=91"
         # grand_prix_uri = "format?f=ST&meta=96"
         all_standard_decks_uri = "format?f=ST&meta=58"
+        all_modern_decks_uri = "format?f=MO&meta=44&a="
         # for uri in [worlds_uri, pro_tour_uri, grand_prix_uri]:
         #     self.parse_event_summary(self.base_uri + uri)
-        self.parse_format_summary_page(self.base_uri + all_standard_decks_uri)
+        # self.parse_format_summary_page(self.base_uri + all_standard_decks_uri, deck_format="standard")
+        self.parse_format_summary_page(
+            self.base_uri + all_modern_decks_uri, deck_format="modern"
+        )
 
-    def parse_format_summary_page(self, format_summary_uri: str) -> None:
+    def parse_format_summary_page(
+        self, format_summary_uri: str, deck_format: str
+    ) -> None:
         """
         Parses an event summary page (which contains a list of events)
         :param format_summary_uri: The URI of the event summary page
@@ -90,7 +96,7 @@ class Command(BaseCommand):
                     or star_td.find("img")
                     and star_td.find("img").attrs["src"] == "/graph/bigstar.png"
                 ):
-                    self.parse_event(self.base_uri + href)
+                    self.parse_event(self.base_uri + href, deck_format)
 
     # pylint: disable=no-self-use
     def find_event_summary_pages(
@@ -111,7 +117,7 @@ class Command(BaseCommand):
             if button_page not in visited_pages:
                 yield button_page
 
-    def parse_event(self, event_uri: str) -> None:
+    def parse_event(self, event_uri: str, deck_format: str) -> None:
         """
         Parses a single event (a tournament at a specific date with usually 8 decks)
         :param event_uri: The URI of te event page
@@ -143,7 +149,11 @@ class Command(BaseCommand):
             deck_id = matches["deck_id"]
 
             self.parse_deck(
-                self.base_uri + "event" + href, event_date, deck_name, deck_id
+                self.base_uri + "event" + href,
+                event_date,
+                deck_name,
+                deck_id,
+                deck_format=deck_format,
             )
 
         self.parsed_event_uris.append(event_uri)
@@ -151,7 +161,12 @@ class Command(BaseCommand):
         time.sleep(1)
 
     def parse_deck(
-        self, deck_uri: str, event_date: datetime.date, deck_name: str, deck_id: str
+        self,
+        deck_uri: str,
+        event_date: datetime.date,
+        deck_name: str,
+        deck_id: str,
+        deck_format: str,
     ) -> None:
         """
         Parses a single deck URI, creating a new Deck object
@@ -174,6 +189,7 @@ class Command(BaseCommand):
             deck.owner = self.deck_user
             deck.description = deck_uri
             deck.date_created = deck.last_modified = event_date
+            deck.format = deck_format
             deck.save()
 
             for line in resp.text.split("\n"):

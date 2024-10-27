@@ -140,6 +140,18 @@ class Command(BaseCommand):
         :param data: The dataframe to generate the plot for
         :param output_path: THe file output path
         """
+
+        # penguins = sns.load_dataset("penguins")
+        # plot = sns.displot(
+        #     penguins, x="flipper_length_mm", hue="species", kind="kde", multiple="stack"
+        # )
+        # plot = sns.displot(
+        #     data, x="tournament_date", hue="rarity", kind="kde", multiple="stack"
+        # )
+        #
+        # plot.savefig(output_path)
+        # return
+
         # sns.set_theme(style="whitegrid")
 
         # Load the diamonds dataset
@@ -154,7 +166,7 @@ class Command(BaseCommand):
         #     data=df,
         #     x="tournament_date",
         #     # hue="cut",
-        #     hue="rarity",
+        #     # hue="rarity",
         #     kind="kde",
         #     height=6,
         #     multiple="fill",
@@ -171,6 +183,7 @@ class Command(BaseCommand):
             "R": "#a58e4a",
             "M": "#bf4427",
         }
+        plt.figure(figsize=(15, 5))
         plt.stackplot(
             data.index,
             [
@@ -185,8 +198,9 @@ class Command(BaseCommand):
         )
         plt.legend(loc=3, fontsize="medium")
         plt.ylabel("Proportion of deck")
-
+        # plt.subplots_adjust(left=0.1, right=0.8, top=0.9, bottom=0.1)
         plt.savefig(output_path, bbox_inches="tight")
+        plt.show()
 
     #
     # def get_deck_rarity_ratios(self, deck: Deck, exclude_lands: bool = False) -> dict:
@@ -279,9 +293,9 @@ ORDER BY tournament_date ASC
         df = df.pivot_table(
             index="tournament_date", values="card_count", columns="rarity"
         )
-        df = df.fillna(0)
+        df = df.fillna(0.0)
         df = df.div(df.sum(axis=1), axis=0)
-        df = df.resample("6M").mean()
+        df = df.resample("3ME").mean()
         df = df.interpolate(method="linear")
         # df = df.interpolate(method="cubic")
         return df

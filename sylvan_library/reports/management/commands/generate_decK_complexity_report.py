@@ -177,7 +177,7 @@ ORDER BY tournament_date
         #     index="tournament_date", values="card_count", columns="rarity"
         # )
         # df = df.div(df.sum(axis=1), axis=0)
-        df = df.resample("6M").mean()
+        df = df.resample("1M").mean()
         df = df.dropna()
         # df = df.fillna(0)
         # df = df.interpolate(method="linear")
