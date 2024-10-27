@@ -1,6 +1,7 @@
 """
 Card mana cost parameters
 """
+
 from collections import Counter
 
 import typing

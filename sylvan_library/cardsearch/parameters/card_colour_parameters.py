@@ -1,6 +1,7 @@
 """
 Card colour parameters
 """
+
 from typing import List
 
 from django.db.models import F

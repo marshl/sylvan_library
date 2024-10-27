@@ -1,6 +1,7 @@
 """
 Tests for the parser (search parameter tests are elsewhere)
 """
+
 from django.test import TestCase
 
 from cards.models.colour import Colour

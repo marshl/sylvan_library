@@ -1,6 +1,7 @@
 """
 Template tags for converting objects to javascript
 """
+
 import json
 from typing import Any
 

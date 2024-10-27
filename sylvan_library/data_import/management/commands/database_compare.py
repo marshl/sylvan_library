@@ -1,6 +1,7 @@
 """
 Module for the update_database command
 """
+
 import logging
 import time
 import typing

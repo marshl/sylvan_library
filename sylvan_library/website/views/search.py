@@ -26,11 +26,12 @@ def name_search(request: WSGIRequest) -> HttpResponse:
             "page_buttons": get_page_buttons(
                 search.paginator, query_form.get_page_number(), 3
             ),
-            "page_title": f"{search.query_string} - Sylvan Library"
-            if search.query_string
-            else "Sylvan Library",
+            "page_title": (
+                f"{search.query_string} - Sylvan Library"
+                if search.query_string
+                else "Sylvan Library"
+            ),
             "pretty_query_message": search.get_pretty_str(),
             "error_message": search.error_message,
         },
     )
-

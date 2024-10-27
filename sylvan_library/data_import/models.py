@@ -1,6 +1,7 @@
 """
 Models used for updating
 """
+
 from django.db import models
 
 

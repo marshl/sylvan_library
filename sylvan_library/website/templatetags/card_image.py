@@ -1,6 +1,7 @@
 """
 Module for custom template filters to get the image paths of different card models
 """
+
 import logging
 from typing import Optional
 

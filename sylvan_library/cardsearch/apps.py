@@ -1,6 +1,7 @@
 """
 Configuration for the cardsearch app
 """
+
 from django.apps import AppConfig
 
 

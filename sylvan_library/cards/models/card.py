@@ -1,6 +1,7 @@
 """
 Module for Card related models
 """
+
 import datetime
 import logging
 import random

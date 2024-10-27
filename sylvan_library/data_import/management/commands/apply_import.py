@@ -1,6 +1,7 @@
 """
 Module for the apply_import command
 """
+
 import logging
 import math
 from typing import Any, Dict, Optional

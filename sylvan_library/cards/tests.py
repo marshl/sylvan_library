@@ -1,6 +1,7 @@
 """
 Unit tests for the cards module
 """
+
 import uuid
 from typing import Dict, Any, Optional
 

@@ -1,6 +1,7 @@
 """
 Miscellaneous card parameters (mostly the "is" and "has" parameters)
 """
+
 from typing import List
 
 from django.db.models import Q

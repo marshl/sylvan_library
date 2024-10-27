@@ -1,6 +1,7 @@
 """
 Module for custom template filters to get the image paths of different card models
 """
+
 from typing import List
 
 from django import template

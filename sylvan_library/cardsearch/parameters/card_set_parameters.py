@@ -1,6 +1,7 @@
 """
 Card set parameters
 """
+
 import datetime
 from typing import List
 

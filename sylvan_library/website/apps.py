@@ -1,6 +1,7 @@
 """
 Configuration for the website app
 """
+
 from django.apps import AppConfig
 
 

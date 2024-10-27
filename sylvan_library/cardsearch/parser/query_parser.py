@@ -1,6 +1,7 @@
 """
 Module for the card query recursive descent parser
 """
+
 from typing import Union, Optional, Callable, List, Type
 
 from cardsearch.parameters.base_parameters import (

@@ -1,6 +1,7 @@
 """
 Card serializers
 """
+
 from rest_framework import serializers
 
 from cards.models.card import Card

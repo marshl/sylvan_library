@@ -2,6 +2,7 @@
 Models for helping perform searches by tracking card statistics that would be
 hard/expensive to search for at run time
 """
+
 from django.db import models
 
 from cards.models.card import CardFace

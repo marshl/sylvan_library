@@ -1,6 +1,7 @@
 """
 Module for the reports app
 """
+
 from django.apps import AppConfig
 
 

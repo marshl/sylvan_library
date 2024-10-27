@@ -1,6 +1,7 @@
 """
 Module for flavour text parameters
 """
+
 from typing import List
 
 from django.db.models import Q

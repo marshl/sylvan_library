@@ -1,6 +1,7 @@
 """
 Module for the verify_database command
 """
+
 # pylint: disable=too-many-lines
 import math
 import sys
@@ -17,6 +18,7 @@ from cards.models.rarity import Rarity
 from cards.models.sets import Block, Set
 
 WUBRG = Colour.WHITE | Colour.BLUE | Colour.BLACK | Colour.RED | Colour.GREEN
+
 
 # pylint: disable=too-many-public-methods
 class Command(BaseCommand):

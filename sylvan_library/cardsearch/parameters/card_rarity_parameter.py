@@ -1,6 +1,7 @@
 """
 Card rarity parameters
 """
+
 from typing import List, Optional
 
 from django.db.models.query import Q

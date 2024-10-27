@@ -1,6 +1,7 @@
 """
 Configuration for the cards app
 """
+
 from django.apps import AppConfig
 
 

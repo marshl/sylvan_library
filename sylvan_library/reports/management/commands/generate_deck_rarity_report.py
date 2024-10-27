@@ -1,6 +1,7 @@
 """
 Module for the verify_database command
 """
+
 import datetime
 import os
 from datetime import date

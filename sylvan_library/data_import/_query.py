@@ -1,6 +1,7 @@
 """
 The module for the query_yes_no function
 """
+
 import sys
 
 

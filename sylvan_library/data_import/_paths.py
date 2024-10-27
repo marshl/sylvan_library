@@ -1,6 +1,7 @@
 """
 Module for all useful file paths
 """
+
 from os import path
 
 

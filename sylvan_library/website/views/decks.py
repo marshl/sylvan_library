@@ -1,4 +1,3 @@
-
 import datetime
 import random
 
@@ -19,8 +18,13 @@ from website.forms import (
     DeckForm,
 )
 from website.pagination import get_page_buttons
-from website.views.utils import get_unused_cards, get_page_number, get_unused_commanders, \
-    get_colour_info, get_unused_partner_commanders
+from website.views.utils import (
+    get_unused_cards,
+    get_page_number,
+    get_unused_commanders,
+    get_colour_info,
+    get_unused_partner_commanders,
+)
 
 
 def deck_stats(request: WSGIRequest) -> HttpResponse:
@@ -238,9 +242,11 @@ def deck_card_search(request: WSGIRequest) -> JsonResponse:
     card_name = request.GET.get("card_name", "")
     cards = list(Card.objects.filter(name__icontains=card_name, is_token=False).all())
     cards.sort(
-        key=lambda card: "0" + card.name.lower()
-        if card.name.lower().startswith(card_name.lower())
-        else "1" + card.name.lower()
+        key=lambda card: (
+            "0" + card.name.lower()
+            if card.name.lower().startswith(card_name.lower())
+            else "1" + card.name.lower()
+        )
     )
     result = [
         {"label": card.name, "value": card.name, "id": card.id} for card in cards[:10]
@@ -274,4 +280,3 @@ def deck_colour_weights(request: WSGIRequest, deck_id: int) -> JsonResponse:
     ]
 
     return JsonResponse({"land_symbols": land_symbols, "mana_symbols": mana_symbols})
-

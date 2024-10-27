@@ -1,6 +1,7 @@
 """
 Models for set related objects
 """
+
 import datetime
 
 from django.db import models

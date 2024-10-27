@@ -1,6 +1,7 @@
 """
 Module for the download_card_images command
 """
+
 import logging
 import os
 import queue

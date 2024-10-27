@@ -1,6 +1,7 @@
 """
 Module for the reset_database command
 """
+
 from typing import Type, Any
 
 from django.core.management.base import BaseCommand

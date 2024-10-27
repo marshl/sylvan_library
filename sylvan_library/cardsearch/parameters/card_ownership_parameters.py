@@ -1,6 +1,7 @@
 """
 Card ownership parameters
 """
+
 from typing import List
 
 from django.db.models import Q

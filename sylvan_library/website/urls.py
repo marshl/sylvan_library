@@ -1,6 +1,7 @@
 """
 Urls for the website app
 """
+
 from django.urls import path
 
 from website import views

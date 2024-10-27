@@ -1,6 +1,7 @@
 """
 Card ruling models
 """
+
 import datetime
 
 from django.db import models

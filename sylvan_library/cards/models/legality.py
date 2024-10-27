@@ -1,6 +1,7 @@
 """
 Card legalitiy models
 """
+
 from django.db import models
 
 from cards.models.card import Card

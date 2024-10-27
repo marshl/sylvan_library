@@ -1,6 +1,7 @@
 """
 MOdule for handling pagination of search results and decks
 """
+
 from typing import List
 from django.core.paginator import Paginator
 

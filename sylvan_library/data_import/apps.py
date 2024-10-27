@@ -1,6 +1,7 @@
 """
 Settings for data_import app
 """
+
 from django.apps import AppConfig
 
 

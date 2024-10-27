@@ -1,6 +1,7 @@
 """
 Module for the update_prices command
 """
+
 import datetime
 import logging
 import os

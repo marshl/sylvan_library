@@ -1,6 +1,7 @@
 """
 Module for the fetch_data command
 """
+
 import json
 import logging
 import os

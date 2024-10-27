@@ -1,6 +1,7 @@
 """
 Module for the param_replace template tag
 """
+
 from typing import Any
 
 from django import template

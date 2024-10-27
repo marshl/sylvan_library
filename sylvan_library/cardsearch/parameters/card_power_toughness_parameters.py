@@ -1,6 +1,7 @@
 """
 Card power, toughness and loyalty parameters
 """
+
 from typing import List
 
 from django.db.models import F

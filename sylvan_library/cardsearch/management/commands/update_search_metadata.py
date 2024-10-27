@@ -1,6 +1,7 @@
 """
 Module for the build_metadata command
 """
+
 import logging
 import re
 from typing import Any

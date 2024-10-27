@@ -1,6 +1,7 @@
 """
 Module for data_export project configuration
 """
+
 from django.apps import AppConfig
 
 

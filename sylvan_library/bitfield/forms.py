@@ -15,7 +15,7 @@ class BitFieldCheckboxSelectMultiple(CheckboxSelectMultiple):
         elif isinstance(value, int):
             real_value = []
             div = 2
-            for (k, v) in self.choices:
+            for k, v in self.choices:
                 if value % div != 0:
                     real_value.append(k)
                     value -= value % div

@@ -1,6 +1,7 @@
 """
 The module for staging tests
 """
+
 from django.test import TestCase
 from data_import.staging import (
     StagedCard,

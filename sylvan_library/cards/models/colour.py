@@ -1,6 +1,7 @@
 """
 Models for Colour objects
 """
+
 from functools import reduce
 from typing import List, Dict, Optional
 from django.db import models

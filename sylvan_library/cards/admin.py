@@ -1,6 +1,7 @@
 """
 Django admin config for card app
 """
+
 from django import forms
 from django.contrib import admin
 from djangoql.admin import DjangoQLSearchMixin

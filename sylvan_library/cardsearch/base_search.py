@@ -1,6 +1,7 @@
 """
 The module for the base search classes
 """
+
 from typing import List, Optional
 
 from django.contrib.auth import get_user_model

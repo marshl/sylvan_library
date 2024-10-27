@@ -1,6 +1,7 @@
 """
 Base parameters objects and helpers
 """
+
 import dataclasses
 import math
 from abc import abstractmethod, ABCMeta
@@ -216,9 +217,11 @@ class CardSortParam(CardSearchParameter, metaclass=ABCMeta):
         """
         sort_keys = self.get_sort_keys(search_mode)
         return [
-            F(key).desc(nulls_last=True)
-            if self.negated
-            else F(key).asc(nulls_last=True)
+            (
+                F(key).desc(nulls_last=True)
+                if self.negated
+                else F(key).asc(nulls_last=True)
+            )
             for key in sort_keys
         ]
 

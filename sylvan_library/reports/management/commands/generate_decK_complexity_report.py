@@ -1,6 +1,7 @@
 """
 Module for the verify_database command
 """
+
 import os
 from typing import Optional
 
@@ -66,7 +67,7 @@ class Command(BaseCommand):
         """
         plt.plot(
             data["average_words"],
-            label="Oracle text"
+            label="Oracle text",
             # labels=[
             #     "Average oracle words",
             #     "Average oracle words w/o reminder text",

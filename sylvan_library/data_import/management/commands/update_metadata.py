@@ -1,6 +1,7 @@
 """
 Module for the update_metadata command
 """
+
 import json
 import logging
 import time
