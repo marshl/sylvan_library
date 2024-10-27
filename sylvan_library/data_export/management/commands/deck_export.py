@@ -96,7 +96,7 @@ class Command(BaseCommand):
         for paragraph in template_document.paragraphs:
             if "<DECK_NAME>" in paragraph.text:
                 paragraph.text = paragraph.text.replace("<DECK_NAME>", deck.name)
-            if "<DECK_SUBTITLE>" in paragraph.text:
+            if "<DECK_SUBTITLE>" in paragraph.text and deck.subtitle:
                 paragraph.text = paragraph.text.replace(
                     "<DECK_SUBTITLE>", deck.subtitle
                 )
