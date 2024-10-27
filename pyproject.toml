@@ -25,9 +25,9 @@ requests = ">2,<3"
 
 [tool.poetry.group.dev.dependencies]
 beautifulsoup4 = ">4,<5"
-black = ">23,<24"
+black = ">24,<25"
 django-debug-toolbar = ">4,<5"
-pylint = ">2,<3"
+pylint = ">3,<4"
 pylint-django = ">2,<3"
 pre-commit = ">3,<4"
 scipy = ">1,<2"
