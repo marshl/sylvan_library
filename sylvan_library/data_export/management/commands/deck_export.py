@@ -177,7 +177,8 @@ class Command(BaseCommand):
                         0
                     ].text = deck_card.card.name
 
-        output_filename = os.path.join(output_directory, "output.docx")
+        deck_slug = slugify(f"{deck.date_created.isoformat()} {deck.name}")
+        output_filename = os.path.join(output_directory, f"{deck_slug}.docx")
         logger.info("Saving output to %s", output_filename)
         template_document.save(output_filename)
 
