@@ -78,7 +78,7 @@ class UpdateCardFacePrinting(models.Model):
         unique_together = ("printing_uuid", "side")
 
     def __str__(self) -> str:
-        name = f"{self.update_mode} face printing {self.card_face_name} ({self.printing_uuid})"
+        name = f"{self.update_mode} face printing {self.card_face_name} (scryfall={self.scryfall_id}) (printing={self.printing_uuid})"
         if self.side:
             name += f" ({self.card_face_name} {self.side})"
         return name

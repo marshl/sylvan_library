@@ -14,6 +14,7 @@ from data_import import _paths
 from data_import.management.commands import (
     pretty_print_json_file,
     download_file,
+    print_progress,
 )
 
 logger = logging.getLogger("django")
@@ -80,9 +81,14 @@ class Command(BaseCommand):
             json_zip_file.extractall(_paths.SET_FOLDER)
 
         # Prettify the json files
-        for set_file_path in self.get_json_files():
-            pretty_print_json_file(set_file_path)
+        logger.info("Prettifying JSON files")
 
+        json_files = self.get_json_files()
+        for idx, set_file_path in enumerate(json_files):
+            pretty_print_json_file(set_file_path)
+            print_progress(idx / len(json_files))
+
+        logger.info("Done")
         download_file(_paths.TYPES_DOWNLOAD_URL, _paths.TYPES_ZIP_PATH)
         types_zip_file = zipfile.ZipFile(_paths.TYPES_ZIP_PATH)
         types_zip_file.extractall(_paths.IMPORT_FOLDER_PATH)
