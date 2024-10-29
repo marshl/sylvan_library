@@ -72,19 +72,22 @@ class QuerySearchForm(forms.Form):
         except (TypeError, ValueError):
             return 1
 
-    def get_search(self) -> ParseSearch:
+    def get_search(self) -> Tuple[ParseSearch, QueryContext]:
         """
         Gets the search object using the data from this form
         :return:
         """
         self.full_clean()
 
-        query_context = QueryContext(user=self.user)
         search = ParseSearch(self.user, self.data.get("query_string"))
         search.build_parameters()
+        query_context = QueryContext(
+            user=self.user,
+            search_mode=search.root_parameter.get_default_search_context(),
+        )
         search.root_parameter.validate(query_context)
         search.search(query_context, self.get_page_number())
-        return search
+        return search, query_context
 
 
 class DeckForm(forms.ModelForm):

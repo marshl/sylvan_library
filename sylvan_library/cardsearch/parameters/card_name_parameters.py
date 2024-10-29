@@ -52,15 +52,22 @@ class CardNameParam(CardSearchParameter):
                 self.card_name = "^" + self.value + "$"
 
     def query(self, query_context: QueryContext) -> Q:
+
+        name_column = (
+            "name"
+            if query_context.search_mode == CardSearchContext.CARD
+            else "card__name"
+        )
+
         if self.regex_match:
-            query = Q(card__name__iregex=self.value)
+            query = Q(**{f"{name_column}__iregex": self.value})
         elif self.match_exact:
-            query = Q(card__name__iexact=self.value)
+            query = Q(**{f"{name_column}__iexact": self.value})
         elif self.operator == ":":
-            query = Q(card__name__icontains=self.value)
+            query = Q(**{f"{name_column}__icontains": self.value})
         else:
             django_op = OPERATOR_MAPPING[self.operator]
-            query = Q(**{"card__name" + django_op: self.value})
+            query = Q(**{name_column + django_op: self.value})
 
         return ~query if self.negated else query
 

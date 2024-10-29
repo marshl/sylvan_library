@@ -190,7 +190,15 @@ class CardLegalityParam(CardSearchParameter):
             format=self.card_format,
             restriction__iexact=self.restriction,
         )
-        query = Q(card__legalities__in=legality_query)
+        query = Q(
+            **{
+                (
+                    "card__legalities__in"
+                    if query_context.search_mode == CardSearchContext.PRINTING
+                    else "legalities__in"
+                ): legality_query
+            }
+        )
         return ~query if self.negated else query
 
     def get_pretty_str(self, query_context: QueryContext) -> str:

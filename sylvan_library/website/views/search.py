@@ -14,7 +14,7 @@ def name_search(request: WSGIRequest) -> HttpResponse:
     """
     query_form = QuerySearchForm(request.GET)
     query_form.user = request.user
-    search = query_form.get_search()
+    search, query_context = query_form.get_search()
     return render(
         request,
         "website/simple_search.html",
@@ -31,7 +31,7 @@ def name_search(request: WSGIRequest) -> HttpResponse:
                 if search.query_string
                 else "Sylvan Library"
             ),
-            "pretty_query_message": search.get_pretty_str(),
+            "pretty_query_message": search.get_pretty_str(query_context),
             "error_message": search.error_message,
         },
     )

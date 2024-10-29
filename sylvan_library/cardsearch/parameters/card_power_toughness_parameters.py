@@ -31,8 +31,14 @@ class CardNumPowerParam(CardSearchNumericalParameter):
         return CardSearchContext.CARD
 
     def query(self, query_context: QueryContext) -> Q:
-        args = self.get_args("card__faces__num_power")
-        query = Q(**args) & Q(card__faces__power__isnull=False)
+        prefix = (
+            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
+        )
+        args = self.get_args(
+            f"{prefix}faces__num_power",
+            query_context,
+        )
+        query = Q(**args) & Q(**{f"{prefix}faces__power__isnull": False})
         return ~query if self.negated else query
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
@@ -58,8 +64,11 @@ class CardNumToughnessParam(CardSearchNumericalParameter):
         return CardSearchContext.CARD
 
     def query(self, query_context: QueryContext) -> Q:
-        args = self.get_args("card__faces__num_toughness")
-        return Q(**args) & Q(card__faces__toughness__isnull=False)
+        prefix = (
+            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
+        )
+        args = self.get_args(f"{prefix}faces__num_toughness", query_context)
+        return Q(**args) & Q(**{f"{prefix}faces__toughness__isnull": False})
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         if isinstance(self.value, F):
@@ -84,8 +93,11 @@ class CardNumLoyaltyParam(CardSearchNumericalParameter):
         return CardSearchContext.CARD
 
     def query(self, query_context: QueryContext) -> Q:
-        args = self.get_args("card__faces__num_loyalty")
-        return Q(**args) & Q(card__faces__loyalty__isnull=False)
+        prefix = (
+            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
+        )
+        args = self.get_args(f"{prefix}faces__num_loyalty", query_context)
+        return Q(**args) & Q(**{f"{prefix}faces__loyalty__isnull": False})
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         return f"the loyalty {self.operator} {self.value}"

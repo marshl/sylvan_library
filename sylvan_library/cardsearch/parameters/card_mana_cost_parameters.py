@@ -151,13 +151,17 @@ class CardManaCostComplexParam(CardSearchParameter):
     def query(self, query_context: QueryContext) -> Q:
         query = Q()
 
+        prefix = (
+            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
+        )
         for symbol, count in dict(self.symbol_counts).items():
             if symbol.upper() not in self.symbols:
                 raise ValueError(f'Unknown symbol "{symbol}"')
 
             query &= Q(
                 **{
-                    "card__faces__search_metadata__symbol_count_"
+                    prefix
+                    + "faces__search_metadata__symbol_count_"
                     + symbol.lower().replace("/", "_")
                     + OPERATOR_MAPPING[self.operator]: count
                 }
@@ -166,7 +170,8 @@ class CardManaCostComplexParam(CardSearchParameter):
         if self.generic_mana:
             query &= Q(
                 **{
-                    "card__faces__search_metadata__symbol_count_generic"
+                    prefix
+                    + "faces__search_metadata__symbol_count_generic"
                     + OPERATOR_MAPPING[self.operator]: self.generic_mana
                 }
             )
@@ -179,7 +184,8 @@ class CardManaCostComplexParam(CardSearchParameter):
                     continue
                 query &= Q(
                     **{
-                        "card__faces__search_metadata__symbol_count_"
+                        prefix
+                        + "faces__search_metadata__symbol_count_"
                         + symbol.lower().replace("/", "_"): 0
                     }
                 )
@@ -188,7 +194,8 @@ class CardManaCostComplexParam(CardSearchParameter):
             if not self.generic_mana:
                 query &= Q(
                     **{
-                        "card__faces__search_metadata__symbol_count_generic"
+                        prefix
+                        + "faces__search_metadata__symbol_count_generic"
                         + OPERATOR_MAPPING[self.operator]: 0
                     }
                 )
@@ -246,11 +253,15 @@ class CardColourCountParam(CardSearchNumericalParameter):
         Gets the Q query object
         :return: The Q query object
         """
-        args = (
-            self.get_args("card__colour_identity_count")
-            if self.in_identity_mode
-            else self.get_args("card__faces__colour_count")
+        prefix = (
+            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
         )
+        args = (
+            self.get_args(f"{prefix}colour_identity_count", query_context)
+            if self.in_identity_mode
+            else self.get_args(f"{prefix}faces__colour_count", query_context)
+        )
+        args["_negated"] = self.negated
         return Q(**args)
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
@@ -284,10 +295,11 @@ class CardManaValueParam(CardSearchNumericalParameter):
         return CardSearchContext.CARD
 
     def query(self, query_context: QueryContext) -> Q:
-        args = self.get_args("card__mana_value")
+        prefix = (
+            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
+        )
+        args = self.get_args(f"{prefix}mana_value", query_context)
         query = Q(**args)
-        if isinstance(self.get_search_value(), F):
-            query &= Q(**{"toughness__isnull": False})
         return query
 
     def get_pretty_str(self, query_context: QueryContext) -> str:

@@ -67,7 +67,10 @@ class CardGenericTypeParam(CardSearchParameter):
             | Q(faces__subtypes__in=subtypes)
             | Q(faces__supertypes__in=supertypes)
         )
-        result = Q(card__in=Card.objects.filter(face_filter))
+        if query_context.search_mode == CardSearchContext.CARD:
+            result = face_filter
+        else:
+            result = Q(card__in=Card.objects.filter(face_filter))
 
         return ~result if self.negated else result
 

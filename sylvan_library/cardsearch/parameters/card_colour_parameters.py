@@ -74,8 +74,12 @@ class CardComplexColourParam(CardSearchParameter):
         """
         colour_flags = colours_to_int_flags(self.colours)
 
+        prefix = (
+            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
+        )
+
         if self.operator == "=":
-            result = Q(**{f"card__{self.field_name}": colour_flags})
+            result = Q(**{f"{prefix}{self.field_name}": colour_flags})
         else:
             if self.operator in (">=", ">"):
                 annotated_result = Card.objects.annotate(
@@ -96,7 +100,10 @@ class CardComplexColourParam(CardSearchParameter):
                     )
             else:
                 raise ValueError(f'Unsupported operator "{self.operator}"')
-            result = Q(card__in=annotated_result)
+            if query_context.search_mode == CardSearchContext.CARD:
+                result = Q(id__in=annotated_result.values_list("id"))
+            else:
+                result = Q(card__in=annotated_result)
 
         return ~result if self.negated else result
 
@@ -108,8 +115,19 @@ class CardComplexColourParam(CardSearchParameter):
                 else "the cards are colourless"
             )
 
-        param_type = "colour identity" if self.search_by_identity else "colours"
-        operator_text = "is" if self.operator == "=" else self.operator
+        if self.search_by_identity:
+            param_type = "colour identity"
+            if self.operator == "=":
+                operator_text = "is not" if self.negated else "is"
+            else:
+                operator_text = self.operator
+        else:
+            param_type = "colours"
+            if self.operator == "=":
+                operator_text = "are not" if self.negated else "are"
+            else:
+                operator_text = self.operator
+
         return f"the {param_type} {operator_text} {colours_to_symbols(self.colours)}"
 
 
@@ -130,6 +148,8 @@ class CardMulticolouredOnlyParam(CardSearchBinaryParameter):
         return CardSearchContext.CARD
 
     def query(self, query_context: QueryContext) -> Q:
+        if query_context.search_mode == CardSearchContext.CARD:
+            return Q(faces__colour_count__gte=2, _negated=self.negated)
         return Q(card__faces__colour_count__gte=2, _negated=self.negated)
 
     def get_pretty_str(self, query_context: QueryContext) -> str:

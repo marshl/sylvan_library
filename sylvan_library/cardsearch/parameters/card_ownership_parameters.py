@@ -4,6 +4,7 @@ Card ownership parameters
 
 from typing import List
 
+from django.db import connection
 from django.db.models import Q
 
 from cards.models.card import Card
@@ -54,8 +55,11 @@ class CardOwnershipCountParam(CardSearchNumericalParameter):
 
     def query(self, query_context: QueryContext) -> Q:
         assert self.operator in ("<", "<=", "=", ">=", ">")
-        raw = Card.objects.raw(
-            f"""
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                # raw = Card.objects.raw(
+                f"""
 SELECT cards_card.id
 FROM cards_card
 JOIN cards_cardprinting
@@ -64,13 +68,17 @@ JOIN cards_cardlocalisation
   ON cards_cardprinting.id = cards_cardlocalisation.card_printing_id
 LEFT JOIN cards_userownedcard
   ON cards_userownedcard.card_localisation_id = cards_cardlocalisation.id
-  AND cards_userownedcard.owner_id = %s
+  AND cards_userownedcard.owner_id = %(user_id)s
 GROUP BY cards_card.id
-HAVING SUM(COALESCE(cards_userownedcard.count, 0)) {self.operator} %s
+HAVING SUM(COALESCE(cards_userownedcard.count, 0)) {self.operator} %(number)s
         """,
-            [query_context.user.id, self.number],
-        )
-        return Q(card_id__in=raw)
+                {"user_id": query_context.user.id, "number": self.number},
+            )
+            rows = cursor.fetchall()
+            ids = list(sum(rows, ()))
+        if query_context.search_mode == CardSearchContext.CARD:
+            return Q(id__in=ids, _negated=self.negated)
+        return Q(card_id__in=ids, _negated=self.negated)
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         """
@@ -124,18 +132,25 @@ class CardUsageCountParam(CardSearchNumericalParameter):
         Gets the Q query object
         :return: The Q object
         """
-        raw = Card.objects.raw(
-            f"""
+        # raw = Card.objects.raw(
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"""
 SELECT cards_card.id
 FROM cards_card
 LEFT JOIN cards_deckcard ON cards_deckcard.card_id = cards_card.id
-LEFT JOIN cards_deck ON cards_deck.id = cards_deckcard.deck_id AND cards_deck.owner_id = %s
+LEFT JOIN cards_deck ON cards_deck.id = cards_deckcard.deck_id AND cards_deck.owner_id = %(user_id)s
 GROUP BY cards_card.id
-HAVING COUNT(cards_deck.id) {self.operator} %s
+HAVING COUNT(cards_deck.id) {self.operator} %(number)s
 """,
-            [query_context.user.id, self.number],
-        )
-        return Q(card_id__in=raw)
+                {"user_id": query_context.user.id, "number": self.number},
+            )
+            ids = cursor.fetchall()
+            ids = list(sum(ids, ()))
+        if query_context.search_mode == CardSearchContext.CARD:
+            return Q(id__in=ids, _negated=self.negated)
+        return Q(card_id__in=ids, _negated=self.negated)
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         """
@@ -176,8 +191,10 @@ class CardMissingPauperParam(CardSearchBinaryParameter):
         Gets the Q query object
         :return: The Q object
         """
-        raw = Card.objects.raw(
-            f"""
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"""
+-- Find cards where I have a rare or mythic version of it
 SELECT DISTINCT(cards_card.id)
 FROM cards_card
 JOIN cards_cardprinting
@@ -190,12 +207,13 @@ JOIN cards_cardlocalisation
   ON cards_cardprinting.id = cards_cardlocalisation.card_printing_id
 JOIN cards_userownedcard
   ON cards_userownedcard.card_localisation_id = cards_cardlocalisation.id
-WHERE cards_userownedcard.owner_id = %s
+WHERE cards_userownedcard.owner_id = %(user_id)s
 AND cards_rarity.symbol IN ('R', 'M')
 AND cards_set.release_date >= (SELECT release_date FROM cards_set WHERE cards_set.code = 'EXO')
 
 INTERSECT 
 
+-- And there exists a common or uncommon version of it
 SELECT DISTINCT(cards_card.id)
 FROM cards_card
 JOIN cards_cardprinting
@@ -213,6 +231,7 @@ AND cards_set.release_date >= (SELECT release_date FROM cards_set WHERE cards_se
 
 EXCEPT
 
+-- And I don't already have a common or uncommon version of it
 SELECT DISTINCT(cards_card.id)
 FROM cards_card
 JOIN cards_cardprinting
@@ -225,12 +244,19 @@ JOIN cards_cardlocalisation
   ON cards_cardprinting.id = cards_cardlocalisation.card_printing_id
 JOIN cards_userownedcard
   ON cards_userownedcard.card_localisation_id = cards_cardlocalisation.id
-WHERE cards_userownedcard.owner_id = %s
+WHERE cards_userownedcard.owner_id = %(user_id)s
 AND cards_rarity.symbol IN ('U', 'C')
 """,
-            [query_context.user.id, query_context.user.id],
+                {"user_id": query_context.user.id},
+            )
+            rows = cursor.fetchall()
+            ids = list(sum(rows, ()))
+        q = (
+            Q(id__in=ids)
+            if query_context.search_mode == CardSearchContext.CARD
+            else Q(card_id__in=ids)
         )
-        return ~Q(card_id__in=raw) if self.negated else Q(card_id__in=raw)
+        return ~q if self.negated else q
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         """

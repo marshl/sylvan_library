@@ -16,12 +16,9 @@ from cardsearch.parameters.base_parameters import (
     CardSearchBranchNode,
     QueryContext,
     ParameterArgs,
+    CardSearchContext,
 )
-from cardsearch.parameters.sort_parameters import (
-    CardSortParam,
-    CardNameSortParam,
-    SearchMode,
-)
+from cardsearch.parameters.sort_parameters import CardSortParam, CardNameSortParam
 
 
 class SearchResult:
@@ -97,9 +94,14 @@ class BaseSearch:
         """
         query = self.root_parameter.query(query_context)
         print(query)
-        queryset = CardPrinting.objects.filter(query).distinct()
-        print(str(queryset.query))
-        queryset = Card.objects.filter(printings__in=queryset).distinct()
+        if query_context.search_mode == CardSearchContext.CARD:
+            queryset = Card.objects.filter(query).distinct()
+            print(str(queryset.query))
+        else:
+            queryset = CardPrinting.objects.filter(query).distinct()
+            print(str(queryset.query))
+            queryset = Card.objects.filter(printings__in=queryset).distinct()
+
         # Add some default sort params to ensure stable ordering
         self.add_sort_param(
             CardNameSortParam(
@@ -111,7 +113,7 @@ class BaseSearch:
             *[
                 order
                 for sort_param in self.sort_params
-                for order in sort_param.get_sort_list(SearchMode.SEARCH_MODE_CARD)
+                for order in sort_param.get_sort_list(CardSearchContext.CARD)
             ]
         )
         return queryset
@@ -168,10 +170,9 @@ class BaseSearch:
         """
         self.sort_params.append(sort_param)
 
-    def get_pretty_str(self) -> str:
+    def get_pretty_str(self, query_context: QueryContext) -> str:
         """
         Gets the human readable version of the search query
         :return: The human readable string
         """
-        query_context = QueryContext(user=self.user)
         return self.root_parameter.get_pretty_str(query_context)

@@ -52,9 +52,11 @@ class CardRulesTextParam(CardSearchParameter):
             self.regex_match: bool = False
 
     def query(self, query_context: QueryContext) -> Q:
-        return self.get_query("card__faces__rules_text")
+        if query_context.search_mode == CardSearchContext.CARD:
+            return self.get_query("faces__rules_text", query_context)
+        return self.get_query("card__faces__rules_text", query_context)
 
-    def get_query(self, column_name):
+    def get_query(self, column_name: str, query_context: QueryContext):
         if "~" not in self.value:
             if self.regex_match:
                 query = Q(**{f"{column_name}__iregex": self.value})
@@ -64,8 +66,13 @@ class CardRulesTextParam(CardSearchParameter):
                 query = Q(**{f"{column_name}__icontains": self.value})
             return ~query if self.negated else query
 
+        name_column = (
+            "card__name"
+            if query_context.search_mode == CardSearchContext.PRINTING
+            else "name"
+        )
         chunks = [Value(c) for c in self.value.split("~")]
-        params = [F("card__name")] * (len(chunks) * 2 - 1)
+        params = [F(name_column)] * (len(chunks) * 2 - 1)
         params[0::2] = chunks
         if self.regex_match:
             query = Q(**{f"{column_name}__iregex": Concat(*params)})
@@ -110,7 +117,14 @@ class CardOriginalRulesTextParam(CardRulesTextParam):
         return CardSearchContext.PRINTING
 
     def query(self, query_context: QueryContext) -> Q:
-        return self.get_query("card__faces__face_printings__original_text")
+        return self.get_query(
+            (
+                "card__faces__face_printings__original_text"
+                if query_context.search_mode == CardSearchContext.PRINTING
+                else "faces__face_printings__original_text"
+            ),
+            query_context,
+        )
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         if self.negated:
@@ -150,8 +164,12 @@ class CardProducesManaParam(CardSearchParameter):
         self.operator = ">=" if self.operator == ":" else self.operator
 
     def query(self, query_context: QueryContext) -> Q:
+
+        prefix = (
+            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
+        )
         if self.any_colour:
-            query = Q(card__faces__rules_text__iregex=r"adds?\W")
+            query = Q(**{f"{prefix}faces__rules_text__iregex": r"adds?\W"})
             return ~query if self.negated else query
 
         included_colours: List[Q] = []
@@ -159,7 +177,10 @@ class CardProducesManaParam(CardSearchParameter):
 
         for c in Colour.objects.all():
             query_part = Q(
-                **{"card__faces__search_metadata__produces_" + c.symbol.lower(): True}
+                **{
+                    f"{prefix}faces__search_metadata__produces_"
+                    + c.symbol.lower(): True
+                }
             )
             included = c in self.colours
 

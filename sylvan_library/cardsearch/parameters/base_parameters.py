@@ -69,17 +69,12 @@ def and_group_queries(q_objects: List[Q]) -> Q:
 
 
 class CardSearchContext(enum.Enum):
-    CARD = "CARD"
-    PRINTING = "PRINTING"
-
-
-class SearchMode(enum.Enum):
     """
     Different search modes (the model "origin" of the search, for example card, card printing)
     """
 
-    SEARCH_MODE_CARD = "SEARCH_MODE_CARD"
-    SEARCH_MODE_PRINTING = "SEARCH_MODE_PRINTING"
+    CARD = "CARD"
+    PRINTING = "PRINTING"
 
 
 @dataclasses.dataclass
@@ -103,6 +98,7 @@ class QueryValidationError(Exception):
 @dataclasses.dataclass
 class QueryContext:
     user: Optional[get_user_model()]
+    search_mode: Optional[CardSearchContext]
 
 
 class CardSearchTreeNode(ABC):
@@ -215,12 +211,12 @@ class CardSortParam(CardSearchParameter, metaclass=ABCMeta):
     def query(self, query_context: QueryContext) -> Q:
         return Q()
 
-    def get_sort_list(self, search_mode: SearchMode) -> List[str]:
+    def get_sort_list(self, search_context: CardSearchContext) -> List[str]:
         """
         Gets the sort list taking order into account
         :return:
         """
-        sort_keys = self.get_sort_keys(search_mode)
+        sort_keys = self.get_sort_keys(search_context)
         return [
             (
                 F(key).desc(nulls_last=True)
@@ -231,7 +227,7 @@ class CardSortParam(CardSearchParameter, metaclass=ABCMeta):
         ]
 
     @abstractmethod
-    def get_sort_keys(self, search_mode: SearchMode) -> List[str]:
+    def get_sort_keys(self, search_context: CardSearchContext) -> List[str]:
         """
         Gets the list of attributes to be sorted by
         :return:
@@ -377,32 +373,37 @@ class CardSearchNumericalParameter(CardSearchParameter, ABC):
     def get_search_operators(cls) -> List[str]:
         return ["<", "<=", ":", "=", ">", ">="]
 
-    def get_args(self, field: str) -> Dict[str, Union[float, F]]:
+    def get_args(
+        self, field: str, query_context: QueryContext
+    ) -> Dict[str, Union[float, F]]:
         """
         Shortcut to generate the Q object parameters for the given field
         :param field: The card field to compare with
         :return:
         """
         django_op = OPERATOR_MAPPING[self.operator]
-        return {field + django_op: float(self.get_search_value())}
+        return {field + django_op: self.get_search_value(query_context)}
 
     def validate(self, query_context: QueryContext) -> None:
         super().validate(query_context)
         if self.number is None:
-            self.number = self.get_search_value()
+            self.number = self.get_search_value(query_context)
 
-    def get_search_value(self) -> Union[float, F]:
+    def get_search_value(self, query_context: QueryContext) -> Union[float, F]:
+        prefix = (
+            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
+        )
         if self.value in ("toughness", "tough", "tou"):
-            return F("card__faces__num_toughness")
+            return F(f"{prefix}faces__num_toughness")
 
         if self.value in ("power", "pow"):
-            return F("card__faces__num_power")
+            return F(f"{prefix}faces__num_power")
 
         if self.value in ("loyalty", "loy"):
-            return F("card__faces__num_loyalty")
+            return F(f"{prefix}faces__num_loyalty")
 
         if self.value in ("cmc", "cost", "mv", "manavalue"):
-            return F("card__mana_value")
+            return F(f"{prefix}mana_value")
 
         if self.value in ("inf", "infinity", "∞"):
             return math.inf

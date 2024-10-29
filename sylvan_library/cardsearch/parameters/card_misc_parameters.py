@@ -59,13 +59,20 @@ class CardIsPhyrexianParam(CardSearchBinaryParameter):
         return CardSearchContext.CARD
 
     def query(self, query_context: QueryContext) -> Q:
-        query = Q(card__faces__mana_cost__icontains="/p") | Q(
-            card__faces__rules_text__icontains="/p"
+        prefix = (
+            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
+        )
+        query = Q(**{f"{prefix}faces__mana_cost__icontains": "/p"}) | Q(
+            **{f"{prefix}faces__rules_text__icontains": "/p"}
         )
         return ~query if self.negated else query
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
-        return "card " + ("isn't" if self.negated else "is") + " phyrexian"
+        return (
+            "the cards "
+            + ("don't have" if self.negated else "have")
+            + " Phyrexian mana"
+        )
 
 
 class CardHasWatermarkParam(CardSearchBinaryParameter):
@@ -88,7 +95,9 @@ class CardHasWatermarkParam(CardSearchBinaryParameter):
         return Q(face_printings__watermark__isnull=self.negated)
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
-        return "card " + ("doesn't have " if self.negated else "has") + " a watermark"
+        return (
+            "the cards " + ("don't have " if self.negated else "have") + " a watermark"
+        )
 
 
 class CardIsReprintParam(CardSearchBinaryParameter):
@@ -108,10 +117,10 @@ class CardIsReprintParam(CardSearchBinaryParameter):
         return CardSearchContext.PRINTING
 
     def query(self, query_context: QueryContext) -> Q:
-        return Q(is_reprint=not self.negated)
+        return Q(is_reprint=self.negated, _negated=self.negated)
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
-        return "card " + ("isn't" if self.negated else "is") + " a reprint"
+        return "the cards " + ("aren't" if self.negated else "are") + " a reprint"
 
 
 class CardHasColourIndicatorParam(CardSearchBinaryParameter):
@@ -131,14 +140,18 @@ class CardHasColourIndicatorParam(CardSearchBinaryParameter):
         return CardSearchContext.CARD
 
     def query(self, query_context: QueryContext) -> Q:
-        query = Q(card__faces__colour_indicator=0)
+
+        prefix = (
+            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
+        )
+        query = Q(**{f"{prefix}faces__colour_indicator": 0})
         return query if self.negated else ~query
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         return (
-            "card "
-            + ("doesn't have" if self.negated else "has")
-            + " a colour indicator"
+            "the cards "
+            + ("don't have" if self.negated else "have")
+            + " colour indicators"
         )
 
 
@@ -159,7 +172,10 @@ class CardIsHybridParam(CardSearchBinaryParameter):
         return CardSearchContext.CARD
 
     def query(self, query_context: QueryContext) -> Q:
-        query = Q(card__faces__mana_cost__iregex=r"\/[wubrg]")
+        prefix = (
+            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
+        )
+        query = Q(**{f"{prefix}faces__mana_cost__iregex": r"\/[wubrg]"})
         return ~query if self.negated else query
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
@@ -185,14 +201,17 @@ class CardIsCommanderParam(CardSearchBinaryParameter):
         return CardSearchContext.CARD
 
     def query(self, query_context: QueryContext) -> Q:
+        prefix = (
+            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
+        )
         query = (
             (
-                Q(card__faces__supertypes__name="Legendary")
-                & Q(card__faces__types__name="Creature")
-                & ~Q(card__faces__types__name="Token")
+                Q(**{f"{prefix}faces__supertypes__name": "Legendary"})
+                & Q(**{f"{prefix}faces__types__name": "Creature"})
+                & ~Q(**{f"{prefix}faces__types__name": "Token"})
             )
-            | Q(card__faces__rules_text__contains="can be your commander")
-            | Q(card__faces__subtypes__name="Background")
+            | Q(**{f"{prefix}faces__rules_text__contains": "can be your commander"})
+            | Q(**{f"{prefix}faces__subtypes__name": "Background"})
         )
         return ~query if self.negated else query
 
@@ -215,13 +234,16 @@ class CardIsVanillaParam(CardSearchBinaryParameter):
         return CardSearchContext.CARD
 
     def query(self, query_context: QueryContext) -> Q:
-        query = Q(card__faces__rules_text__isnull=True) & Q(
-            card__faces__types__name="Creature"
+        prefix = (
+            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
+        )
+        query = Q(**{f"{prefix}faces__rules_text__isnull": True}) & Q(
+            **{f"{prefix}faces__types__name": "Creature"}
         )
         return ~query if self.negated else query
 
     def get_pretty_str(self, query_context: QueryContext):
-        return "the card " + ("isn't" if self.negated else "is") + " vanilla"
+        return "the cards " + ("aren't" if self.negated else "are") + " vanilla"
 
 
 class CardCollectorNumberParam(CardSearchNumericalParameter):
@@ -241,7 +263,11 @@ class CardCollectorNumberParam(CardSearchNumericalParameter):
         return CardSearchContext.PRINTING
 
     def query(self, query_context: QueryContext) -> Q:
-        args = self.get_args("card__printings__numerical_number")
+
+        prefix = (
+            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
+        )
+        args = self.get_args(f"{prefix}printings__numerical_number", query_context)
         query = Q(**args)
         return ~query if self.negated else query
 

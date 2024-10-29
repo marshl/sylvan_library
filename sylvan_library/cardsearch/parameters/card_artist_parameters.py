@@ -37,4 +37,6 @@ class CardArtistParam(CardSearchParameter):
         return Q(face_printings__artist__icontains=self.value)
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
-        return "artist " + ("isn't" if self.negated else "is") + " " + self.value
+        return "the artist name {0} {1}".format(
+            ("doesn't include" if self.negated else "includes"), self.value
+        )

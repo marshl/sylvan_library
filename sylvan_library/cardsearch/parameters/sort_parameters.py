@@ -6,7 +6,8 @@ from typing import List
 
 from cardsearch.parameters.base_parameters import (
     CardSortParam,
-    SearchMode,
+    CardSearchContext,
+    # SearchMode,
 )
 
 
@@ -23,11 +24,11 @@ class CardNameSortParam(CardSortParam):
     def get_parameter_name(cls) -> str:
         return "sort by name"
 
-    def get_sort_keys(self, search_mode: SearchMode) -> list:
+    def get_sort_keys(self, search_context: CardSearchContext) -> list:
         """
         Gets the list of attributes to be sorted by
         """
-        if search_mode == SearchMode.SEARCH_MODE_CARD:
+        if search_context == CardSearchContext.CARD:
             return ["name"]
 
         return ["card__name"]
@@ -46,11 +47,11 @@ class CardPowerSortParam(CardSortParam):
     def get_parameter_name(cls) -> str:
         return "sort by power"
 
-    def get_sort_keys(self, search_mode: SearchMode) -> list:
+    def get_sort_keys(self, search_context: CardSearchContext) -> list:
         """
         Gets the list of attributes to be sorted by
         """
-        if search_mode == SearchMode.SEARCH_MODE_CARD:
+        if search_context == CardSearchContext.CARD:
             return ["faces__num_power"]
         return ["card__faces__num_power"]
 
@@ -68,12 +69,12 @@ class CardPriceSortParam(CardSortParam):
     def get_parameter_name(cls) -> str:
         return "sort by price"
 
-    def get_sort_keys(self, search_mode: SearchMode) -> list:
+    def get_sort_keys(self, search_context: CardSearchContext) -> list:
         """
         Gets the list of attributes to be sorted by
         """
-        if search_mode == SearchMode.SEARCH_MODE_CARD:
-            return ["printings__latest_price__paper_value"]
+        if search_context == CardSearchContext.CARD:
+            return ["cheapest_price__paper_value"]
         return ["latest_price__paper_value"]
 
 
@@ -90,11 +91,11 @@ class CardManaValueSortParam(CardSortParam):
     def get_parameter_name(cls) -> str:
         return "sort by mana value"
 
-    def get_sort_keys(self, search_mode: SearchMode) -> list:
+    def get_sort_keys(self, search_context: CardSearchContext) -> list:
         """
         Gets the list of attributes to be sorted by
         """
-        if search_mode == SearchMode.SEARCH_MODE_CARD:
+        if search_context == CardSearchContext.CARD:
             return ["mana_value"]
         return ["card__mana_value"]
 
@@ -112,8 +113,8 @@ class CardCollectorNumSortParam(CardSortParam):
     def get_parameter_name(cls) -> str:
         return "sort by number"
 
-    def get_sort_keys(self, search_mode: SearchMode) -> list:
-        if search_mode == SearchMode.SEARCH_MODE_CARD:
+    def get_sort_keys(self, search_context: CardSearchContext) -> list:
+        if search_context == CardSearchContext.CARD:
             return ["printings__numerical_number", "printings__number"]
         return ["numerical_number", "number"]
 
@@ -131,8 +132,8 @@ class CardColourSortParam(CardSortParam):
     def get_parameter_name(cls) -> str:
         return "sort by colour"
 
-    def get_sort_keys(self, search_mode: SearchMode) -> List[str]:
-        if search_mode == SearchMode.SEARCH_MODE_CARD:
+    def get_sort_keys(self, search_context: CardSearchContext) -> List[str]:
+        if search_context == CardSearchContext.CARD:
             return ["faces__colour_sort_key"]
         return ["card__faces__colour_sort_key"]
 
@@ -150,8 +151,8 @@ class CardRaritySortParam(CardSortParam):
     def get_parameter_name(cls) -> str:
         return "sort by rarity"
 
-    def get_sort_keys(self, search_mode: SearchMode) -> List[str]:
-        if search_mode == SearchMode.SEARCH_MODE_CARD:
+    def get_sort_keys(self, search_context: CardSearchContext) -> List[str]:
+        if search_context == CardSearchContext.CARD:
             return ["printings__rarity__display_order"]
         return ["rarity__display_order"]
 
@@ -170,10 +171,10 @@ class CardRandomSortParam(CardSortParam):
     def get_parameter_name(cls) -> str:
         return "sort randomly"
 
-    def get_sort_list(self, search_mode: SearchMode) -> List[str]:
+    def get_sort_list(self, search_context: CardSearchContext) -> List[str]:
         return ["?"]
 
-    def get_sort_keys(self, search_mode: SearchMode) -> List[str]:
+    def get_sort_keys(self, search_context: CardSearchContext) -> List[str]:
         raise NotImplementedError
 
 
@@ -190,8 +191,8 @@ class CardColourWeightSortParam(CardSortParam):
     def get_parameter_name(cls) -> str:
         return "sort by colour weight"
 
-    def get_sort_keys(self, search_mode: SearchMode) -> list:
-        if search_mode == SearchMode.SEARCH_MODE_CARD:
+    def get_sort_keys(self, search_context: CardSearchContext) -> list:
+        if search_context == CardSearchContext.CARD:
             return [
                 "mana_value",
                 "faces__colour_sort_key",
@@ -213,7 +214,7 @@ class CardReleaseDateSortParam(CardSortParam):
     def get_parameter_name(cls) -> str:
         return "sort by release date"
 
-    def get_sort_keys(self, search_mode: SearchMode) -> List[str]:
-        if search_mode == SearchMode.SEARCH_MODE_CARD:
+    def get_sort_keys(self, search_context: CardSearchContext) -> List[str]:
+        if search_context == CardSearchContext.CARD:
             return ["printings__set__release_date"]
         return ["set__release_date"]
