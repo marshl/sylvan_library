@@ -183,7 +183,7 @@ class CardSortParam(CardSearchParameter, metaclass=ABCMeta):
 
     @classmethod
     def get_search_operators(cls) -> List[str]:
-        return [":"]
+        return [":", ">", "<"]
 
     @classmethod
     def get_search_keywords(cls) -> List[str]:
@@ -200,6 +200,11 @@ class CardSortParam(CardSearchParameter, metaclass=ABCMeta):
             return False
 
         return param_args.value in cls.get_sort_keywords()
+
+    def __init__(self, param_args: ParameterArgs, negated: bool = False):
+        super().__init__(param_args, negated)
+        if param_args.operator == "<":
+            self.negated = True
 
     def get_default_search_context(self) -> CardSearchContext:
         return CardSearchContext.CARD
