@@ -239,15 +239,13 @@ class Deck(models.Model):
         ).order_by("display_order"):
             symbol_regex = ":.*?add[^\n]*?{" + colour.symbol + "}"
             count = sum(
-                [
-                    deck_card.count
-                    for deck_card in deck_cards
-                    for card_face in deck_card.card.faces.all()
-                    for card_type in card_face.types.all()
-                    if card_face.rules_text
-                    and card_type == land_type
-                    and re.search(symbol_regex, card_face.rules_text, re.IGNORECASE)
-                ]
+                deck_card.count
+                for deck_card in deck_cards
+                for card_face in deck_card.card.faces.all()
+                for card_type in card_face.types.all()
+                if card_face.rules_text
+                and card_type == land_type
+                and re.search(symbol_regex, card_face.rules_text, re.IGNORECASE)
             )
             if count > 0:
                 result[colour.symbol] = count
