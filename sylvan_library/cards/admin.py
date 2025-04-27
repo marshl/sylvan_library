@@ -212,7 +212,7 @@ class BlockAdmin(admin.ModelAdmin):
 
 
 @admin.register(Set)
-class SetAdmin(admin.ModelAdmin):
+class SetAdmin(DjangoQLSearchMixin, admin.ModelAdmin):
     """
     Admin for a card Set
     """
