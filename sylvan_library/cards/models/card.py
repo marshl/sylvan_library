@@ -365,7 +365,7 @@ class CardPrinting(models.Model):
         ordering = ["set__release_date", "set__name", "numerical_number"]
 
     def __str__(self):
-        return f"{self.card} in {self.set} ({self.number})"
+        return f"{self.card} in {self.set.code} ({self.number})"
 
     def get_set_keyrune_code(self) -> str:
         """
