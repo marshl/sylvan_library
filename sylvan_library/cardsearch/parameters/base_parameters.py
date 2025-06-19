@@ -12,7 +12,7 @@ from functools import reduce
 from typing import List, Union, Dict, Optional
 
 from django.contrib.auth import get_user_model
-from django.db.models import F
+from django.db.models import F, OrderBy
 from django.db.models.query import Q
 
 logger = logging.getLogger("django")
@@ -436,7 +436,7 @@ class CardSearchBinaryParameter(CardSearchParameter, ABC):
         if not super().matches_param_args(param_args):
             return False
 
-        return param_args.value in cls.get_is_keywords()
+        return param_args.value.lower() in cls.get_is_keywords()
 
     def __init__(self, param_args: ParameterArgs, negated: bool = False):
         super().__init__(param_args, negated)
