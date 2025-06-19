@@ -211,17 +211,18 @@ class CardSortParam(CardSearchParameter, metaclass=ABCMeta):
     def query(self, query_context: QueryContext) -> Q:
         return Q()
 
-    def get_sort_list(self, search_context: CardSearchContext) -> List[str]:
+    def get_sort_list(self, search_context: CardSearchContext) -> List[OrderBy]:
         """
         Gets the sort list taking order into account
         :return:
         """
         sort_keys = self.get_sort_keys(search_context)
+
         return [
-            (
-                F(key).desc(nulls_last=True)
-                if self.negated
-                else F(key).asc(nulls_last=True)
+            OrderBy(
+                F(key.strip("-")),
+                descending=bool(self.negated) != bool(key.startswith("-")),
+                nulls_last=True,
             )
             for key in sort_keys
         ]
