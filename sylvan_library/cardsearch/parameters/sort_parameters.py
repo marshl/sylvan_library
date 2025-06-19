@@ -175,7 +175,7 @@ class CardRandomSortParam(CardSortParam):
         return ["?"]
 
     def get_sort_keys(self, search_context: CardSearchContext) -> List[str]:
-        raise NotImplementedError
+        return ["?"]
 
 
 class CardColourWeightSortParam(CardSortParam):

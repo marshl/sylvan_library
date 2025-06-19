@@ -80,7 +80,6 @@ class BaseSearch:
         self.results: List[SearchResult] = []
         self.page: Optional[int] = None
 
-    # pylint: disable=no-self-use
     def build_parameters(self) -> None:
         """
         Build the parameters tree for this search object
@@ -94,20 +93,32 @@ class BaseSearch:
         """
         query = self.root_parameter.query(query_context)
         print(query)
-        if query_context.search_mode == CardSearchContext.CARD:
-            queryset = Card.objects.filter(query).distinct()
-            print(str(queryset.query))
-        else:
-            queryset = CardPrinting.objects.filter(query).distinct()
-            print(str(queryset.query))
-            queryset = Card.objects.filter(printings__in=queryset).distinct()
-
-        # Add some default sort params to ensure stable ordering
-        self.add_sort_param(
+        self.sort_params.append(
             CardNameSortParam(
                 param_args=ParameterArgs(keyword="sort", operator=":", value="name"),
             )
         )
+
+        distinct_fields = [
+            k.strip("-")
+            for p in self.sort_params
+            for k in p.get_sort_keys(CardSearchContext.CARD)
+        ]
+        if "name" in distinct_fields:
+            # idx = distinct_fields.index("name")
+            # distinct_fields.remove("name")
+            distinct_fields.append("scryfall_oracle_id")
+
+        if query_context.search_mode == CardSearchContext.CARD:
+            queryset = Card.objects.filter(query)
+            print(str(queryset.query))
+        else:
+            queryset = CardPrinting.objects.filter(query)  # .distinct()
+            print(str(queryset.query))
+            queryset = Card.objects.filter(printings__in=queryset)
+
+        if "?" not in distinct_fields:
+            queryset = queryset.distinct(*distinct_fields)
 
         queryset = queryset.order_by(
             *[
@@ -161,14 +172,6 @@ class BaseSearch:
         :return:
         """
         raise NotImplementedError()
-
-    def add_sort_param(self, sort_param: CardSortParam) -> None:
-        """
-        Adds a sort parameter
-        :param sort_param:
-        :return:
-        """
-        self.sort_params.append(sort_param)
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         """
