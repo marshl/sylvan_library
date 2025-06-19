@@ -171,7 +171,14 @@ class CardMissingPauperParam(CardSearchBinaryParameter):
 
     @classmethod
     def get_is_keywords(cls) -> List[str]:
-        return ["missing-pauper", "missingpauper", "nopauper"]
+        return [
+            "missing-pauper",
+            "missingpauper",
+            "nopauper",
+            "missing-peasant",
+            "missingpeasant",
+            "nopeasant",
+        ]
 
     @classmethod
     def get_parameter_name(cls) -> str:
@@ -192,6 +199,15 @@ class CardMissingPauperParam(CardSearchBinaryParameter):
         :return: The Q object
         """
         with connection.cursor() as cursor:
+
+            include_rarities = ["C"]
+            exclude_rarities = ["R", "M", "S"]
+
+            if self.value in ["missing-pauper", "missingpauper", "nopauper"]:
+                exclude_rarities.append("U")
+            else:
+                include_rarities.append("U")
+
             cursor.execute(
                 f"""
 -- Find cards where I have a rare or mythic version of it
@@ -208,7 +224,7 @@ JOIN cards_cardlocalisation
 JOIN cards_userownedcard
   ON cards_userownedcard.card_localisation_id = cards_cardlocalisation.id
 WHERE cards_userownedcard.owner_id = %(user_id)s
-AND cards_rarity.symbol IN ('R', 'M')
+AND cards_rarity.symbol = ANY(%(exclude_rarities)s)
 AND cards_set.release_date >= (SELECT release_date FROM cards_set WHERE cards_set.code = 'EXO')
 
 INTERSECT 
@@ -224,7 +240,7 @@ JOIN cards_rarity
   ON cards_rarity.id = cards_cardprinting.rarity_id
 JOIN cards_cardlocalisation
   ON cards_cardprinting.id = cards_cardlocalisation.card_printing_id
-WHERE cards_rarity.symbol IN ('U', 'C')
+WHERE cards_rarity.symbol = ANY(%(include_rarities)s)
 AND NOT cards_set.is_online_only
 AND cards_set.code NOT IN ('30A')
 AND cards_set.release_date >= (SELECT release_date FROM cards_set WHERE cards_set.code = 'EXO')
@@ -245,9 +261,13 @@ JOIN cards_cardlocalisation
 JOIN cards_userownedcard
   ON cards_userownedcard.card_localisation_id = cards_cardlocalisation.id
 WHERE cards_userownedcard.owner_id = %(user_id)s
-AND cards_rarity.symbol IN ('U', 'C')
+AND cards_rarity.symbol = ANY(%(include_rarities)s)
 """,
-                {"user_id": query_context.user.id},
+                {
+                    "user_id": query_context.user.id,
+                    "include_rarities": include_rarities,
+                    "exclude_rarities": exclude_rarities,
+                },
             )
             rows = cursor.fetchall()
             ids = list(sum(rows, ()))
