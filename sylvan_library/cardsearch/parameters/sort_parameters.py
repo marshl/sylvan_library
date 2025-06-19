@@ -153,8 +153,8 @@ class CardRaritySortParam(CardSortParam):
 
     def get_sort_keys(self, search_context: CardSearchContext) -> List[str]:
         if search_context == CardSearchContext.CARD:
-            return ["printings__rarity__display_order"]
-        return ["rarity__display_order"]
+            return ["-printings__rarity__display_order"]
+        return ["-rarity__display_order"]
 
 
 class CardRandomSortParam(CardSortParam):
