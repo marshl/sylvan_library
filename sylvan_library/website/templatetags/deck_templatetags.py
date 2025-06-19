@@ -44,7 +44,8 @@ def deck_owner_preferred_card(deck_card: DeckCard) -> CardPrinting:
     try:
         return (
             deck_card.card.printings.filter(
-                localisations__ownerships__owner=deck_card.deck.owner
+                localisations__ownerships__owner=deck_card.deck.owner,
+                set__release_date__lte=deck_card.deck.date_created,
             )
             .order_by("set__release_date")
             .last()
