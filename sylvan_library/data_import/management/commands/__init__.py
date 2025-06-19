@@ -184,14 +184,15 @@ def pretty_print_json_file(set_file_path: str) -> None:
         json.dump(set_data, set_file, indent=2)
 
 
-def download_file(url: str, destination_path: str) -> None:
+def download_file(url: str, destination_path: str, timeout_seconds: int = 180) -> None:
     """
     Downloads a file from the given URL to the given destination
     :param url: The download URL
     :param destination_path: The path for where the file should go
+    :param timeout_seconds: The number of seconds to wait for the request before raising an error
     """
     logger.info("Downloading %s", url)
-    response = requests.get(url, stream=True)
+    response = requests.get(url, stream=True, timeout=timeout_seconds)
     total_length = response.headers.get("content-length")
     logger.info(
         "Writing json data to file %s: %s bytes", destination_path, total_length
