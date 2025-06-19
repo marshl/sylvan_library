@@ -9,8 +9,8 @@ from typing import Any
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from cards.models.card import CardFace
-from cardsearch.models import CardFaceSearchMetadata
+from cards.models.card import CardFace, Card
+from cardsearch.models import CardFaceSearchMetadata, CardSearchMetadata
 
 logger = logging.getLogger("django")
 
@@ -150,6 +150,49 @@ def build_metadata_for_card_face(card_face: CardFace) -> None:
         metadata.save()
 
 
+def is_card_commander(card: Card):
+    face = card.faces.first()
+
+    # if face.supertypes.filter(name="Token").exists():
+    if any(_type.name == "Token" for _type in face.types.all()):
+        return False
+
+    if face.rules_text:
+        if " can be your commander" in face.rules_text:
+            return True
+
+    # if face.types.filter(name="Background").exists():
+    if any(_type.name == "Background" for _type in face.types.all()):
+        return True
+
+    if any(
+        supertype.name == "Legendary" for supertype in face.supertypes.all()
+    ) and any(_type.name == "Creature" for _type in face.types.all()):
+        return True
+
+    if card.name == "Grist, the Hunger Tide":
+        return True
+
+    return False
+
+
+def build_metadata_for_card(card: Card) -> None:
+    if hasattr(card, "search_metadata"):
+        metadata = card.search_metadata
+        changed = False
+    else:
+        metadata = CardSearchMetadata(card=card)
+        changed = True
+
+    is_commander = is_card_commander(card)
+    if metadata.is_commander != is_commander:
+        changed = True
+        metadata.is_commander = is_commander
+
+    if changed:
+        metadata.save()
+
+
 class Command(BaseCommand):
     """
     The command for updating search metadata
@@ -159,6 +202,7 @@ class Command(BaseCommand):
 
     def handle(self, *args: Any, **options: Any):
         card_face_count = CardFace.objects.count()
+        card_count = Card.objects.count()
         with transaction.atomic():
             for idx, card_face in enumerate(
                 CardFace.objects.prefetch_related("search_metadata").all()
@@ -166,3 +210,12 @@ class Command(BaseCommand):
                 build_metadata_for_card_face(card_face)
                 if idx % (card_face_count // 10) == 0:
                     logger.info("Indexed %s of %s card faces", idx + 1, card_face_count)
+
+            for idx, card in enumerate(
+                Card.objects.prefetch_related(
+                    "search_metadata", "faces", "faces__types", "faces__supertypes"
+                ).all()
+            ):
+                build_metadata_for_card(card)
+                if idx % (card_count // 10) == 0:
+                    logger.info("Indexed %s of %s cards", idx + 1, card_face_count)

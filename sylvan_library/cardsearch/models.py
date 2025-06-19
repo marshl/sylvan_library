@@ -5,13 +5,21 @@ hard/expensive to search for at run time
 
 from django.db import models
 
-from cards.models.card import CardFace
+from cards.models.card import CardFace, Card
+
+
+class CardSearchMetadata(models.Model):
+    card = models.OneToOneField(
+        Card, related_name="search_metadata", on_delete=models.CASCADE
+    )
+
+    is_commander = models.BooleanField(default=False)
 
 
 class CardFaceSearchMetadata(models.Model):
     """
     This object stores additional information a card face that is used during searches.
-    This has a one to one relationship with a CardFace, and could be stored on the face itself,
+    This has a one-to-one relationship with a CardFace, and could be stored on the face itself,
     however it is probably better to reduce clutter on the main object where possible
     """
 

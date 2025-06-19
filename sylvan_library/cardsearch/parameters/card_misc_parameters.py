@@ -201,18 +201,16 @@ class CardIsCommanderParam(CardSearchBinaryParameter):
         return CardSearchContext.CARD
 
     def query(self, query_context: QueryContext) -> Q:
-        prefix = (
-            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
+        query = Q(
+            **{
+                (
+                    "search_metadata__is_commander"
+                    if query_context.search_mode == CardSearchContext.CARD
+                    else "card__search_metadata__is_commander"
+                ): True
+            }
         )
-        query = (
-            (
-                Q(**{f"{prefix}faces__supertypes__name": "Legendary"})
-                & Q(**{f"{prefix}faces__types__name": "Creature"})
-                & ~Q(**{f"{prefix}faces__types__name": "Token"})
-            )
-            | Q(**{f"{prefix}faces__rules_text__contains": "can be your commander"})
-            | Q(**{f"{prefix}faces__subtypes__name": "Background"})
-        )
+
         return ~query if self.negated else query
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
