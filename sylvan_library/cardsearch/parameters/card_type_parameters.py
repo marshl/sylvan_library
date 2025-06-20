@@ -68,11 +68,14 @@ class CardGenericTypeParam(CardSearchParameter):
             | Q(faces__supertypes__in=supertypes)
         )
         if query_context.search_mode == CardSearchContext.CARD:
-            result = face_filter
+            result = Q(
+                id__in=Card.objects.filter(face_filter).values_list("id", flat=True)
+            )
         else:
             result = Q(card__in=Card.objects.filter(face_filter))
 
-        return ~result if self.negated else result
+        result.negated = self.negated
+        return result
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         """
