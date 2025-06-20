@@ -2,6 +2,7 @@
 Module for the apply_import command
 """
 
+import dataclasses
 import logging
 import math
 from typing import Any, Dict, Optional
@@ -43,6 +44,13 @@ from data_import.models import (
     UpdateCardLocalisation,
     UpdateCardFaceLocalisation,
 )
+
+
+@dataclasses.dataclass
+class DuplicateCardPrinting:
+    scryfall_id: str
+    update_card_printing: UpdateCardPrinting
+    existing_printings: list[CardPrinting]
 
 
 class Command(BaseCommand):
@@ -393,8 +401,21 @@ class Command(BaseCommand):
         set_map = {set_obj.code: set_obj for set_obj in Set.objects.all()}
         rarity_map = {rarity.name.lower(): rarity for rarity in Rarity.objects.all()}
         update_card_printing: UpdateCardPrinting
+        duplicate_card_printings: list[DuplicateCardPrinting] = []
         for update_card_printing in UpdateCardPrinting.objects.all():
             if update_card_printing.update_mode == UpdateMode.CREATE:
+                existing_printings = CardPrinting.objects.filter(
+                    scryfall_id=update_card_printing.scryfall_id
+                )
+                if existing_printings.exists():
+                    duplicate_card_printings.append(
+                        DuplicateCardPrinting(
+                            scryfall_id=update_card_printing.scryfall_id,
+                            update_card_printing=update_card_printing,
+                            existing_printings=list(existing_printings),
+                        )
+                    )
+                    continue
                 printing = CardPrinting(
                     card_id=self.get_card_id(
                         update_card_printing.card_scryfall_oracle_id
@@ -445,6 +466,17 @@ class Command(BaseCommand):
             except IntegrityError:
                 self.logger.exception("Failed to created %s", update_card_printing)
                 raise
+        if duplicate_card_printings:
+            for duplicate in duplicate_card_printings:
+                self.logger.error(
+                    "Duplicate Scryfall ID %s when trying to %s: Already exists for %s",
+                    duplicate.scryfall_id,
+                    duplicate.update_card_printing,
+                    duplicate.existing_printings,
+                )
+
+            raise Exception("Cannot create card printings with duplicate scryfall IDs")
+
         return True
 
     def update_card_face_printings(self) -> bool:
@@ -484,7 +516,7 @@ class Command(BaseCommand):
                 )
             except CardFacePrinting.DoesNotExist:
                 logging.error(
-                    f"Could not find card printing %s for %s",
+                    "Could not find card printing %s for %s",
                     update_card_face_printing.printing_uuid,
                     update_card_face_printing,
                 )
