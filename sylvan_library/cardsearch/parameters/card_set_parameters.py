@@ -70,9 +70,16 @@ class CardSetParam(CardSearchParameter):
         self.set_obj = get_set(self.value)
 
     def query(self, query_context: QueryContext) -> Q:
-        if self.negated:
-            return ~Q(set=self.set_obj)
-        return Q(set=self.set_obj)
+        return Q(
+            **{
+                (
+                    "set"
+                    if query_context.search_mode == CardSearchContext.PRINTING
+                    else "printings__set"
+                ): self.set_obj,
+                "_negated": self.negated,
+            }
+        )
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         return (
