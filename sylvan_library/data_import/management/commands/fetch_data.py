@@ -91,6 +91,6 @@ class Command(BaseCommand):
 
         logger.info("Done")
         download_file(_paths.TYPES_DOWNLOAD_URL, _paths.TYPES_ZIP_PATH)
-        types_zip_file = zipfile.ZipFile(_paths.TYPES_ZIP_PATH)
-        types_zip_file.extractall(_paths.IMPORT_FOLDER_PATH)
+        with zipfile.ZipFile(_paths.TYPES_ZIP_PATH) as types_zip_file:
+            types_zip_file.extractall(_paths.IMPORT_FOLDER_PATH)
         pretty_print_json_file(_paths.TYPES_JSON_PATH)

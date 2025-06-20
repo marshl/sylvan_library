@@ -74,9 +74,7 @@ class Command(BaseCommand):
                     username=username, date_joined=date_joined, password="password"
                 )
 
-    def import_user_owned_cards(
-        self, connection: psycopg2._psycopg.connection, remove_existing: bool
-    ):
+    def import_user_owned_cards(self, connection, remove_existing: bool):
         cur = connection.cursor()
 
         cur.execute(

@@ -3,7 +3,6 @@ Module for the update_prices command
 """
 
 import logging
-from decimal import Decimal
 from typing import Any
 
 import ijson

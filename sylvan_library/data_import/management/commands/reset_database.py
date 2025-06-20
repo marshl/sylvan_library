@@ -44,7 +44,7 @@ def truncate_model(model_obj: Type[models.Model]) -> None:
     Truncates the table of the given model
     :param model_obj: The model to truncate
     """
-    print("Truncating {0}... ".format(model_obj.__name__), end="")
+    print(f"Truncating {model_obj.__name__}... ", end="")
     model_obj.objects.all().delete()
     # pylint: disable=protected-access
     reset_sequence(model_obj.objects.model._meta.db_table)

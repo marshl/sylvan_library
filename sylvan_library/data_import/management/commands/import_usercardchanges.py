@@ -5,7 +5,7 @@ The module for the import_usercardchanges command
 import logging
 from datetime import datetime
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from pytz import utc
 
@@ -43,8 +43,10 @@ class Command(BaseCommand):
         filename = options.get("filename")[0]
 
         try:
-            self.user = User.objects.get(username=options.get("username")[0])
-        except User.DoesNotExist:
+            self.user = get_user_model().objects.get(
+                username=options.get("username")[0]
+            )
+        except get_user_model().DoesNotExist:
             logger.error('Cannot find user with name "%s"', options.get("username")[0])
             return
 
