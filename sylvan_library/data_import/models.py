@@ -114,7 +114,10 @@ class UpdateCardFaceLocalisation(models.Model):
     field_data = models.JSONField()
 
     def __str__(self) -> str:
-        return f"{self.update_mode} {self.language_code} face localisation {self.printing_scryfall_id} ({self.face_name})"
+        return (
+            f"{self.update_mode} {self.language_code} "
+            f"face localisation {self.printing_scryfall_id} ({self.face_name})"
+        )
 
 
 class UpdateSet(models.Model):

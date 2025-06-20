@@ -422,7 +422,11 @@ class StagedSet(StagedObject):
 
         if existing_set.release_date != self.release_date:
             differences["release_date"] = {
-                "from": existing_set.release_date.strftime("%Y-%m-%d"),
+                "from": (
+                    existing_set.release_date.strftime("%Y-%m-%d")
+                    if existing_set.release_date
+                    else None
+                ),
                 "to": self.release_date.strftime("%Y-%m-%d"),
             }
         return differences

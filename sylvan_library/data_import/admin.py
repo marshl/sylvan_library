@@ -64,7 +64,13 @@ class UpdateCardRulingModelForm(forms.ModelForm):
 
     class Meta:
         model = UpdateCardRuling
-        exclude = []
+        fields = [
+            "update_mode",
+            "card_name",
+            "scryfall_oracle_id",
+            "ruling_date",
+            "ruling_text",
+        ]
 
 
 @admin.register(UpdateCardRuling)
