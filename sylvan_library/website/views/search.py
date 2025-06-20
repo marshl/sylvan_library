@@ -1,4 +1,5 @@
 from django.core.handlers.wsgi import WSGIRequest
+from django.db import connection, reset_queries
 from django.http import HttpResponse
 from django.shortcuts import render
 
@@ -12,9 +13,15 @@ def name_search(request: WSGIRequest) -> HttpResponse:
     :param request: The user's request
     :return: The HTTP Response
     """
+    reset_queries()
     query_form = QuerySearchForm(request.GET)
     query_form.user = request.user
     search, query_context = query_form.get_search()
+
+    # Run your query here
+    # print(connection.queries)
+    for query in connection.queries:
+        print(query)
     return render(
         request,
         "website/simple_search.html",
