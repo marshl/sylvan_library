@@ -2,22 +2,16 @@
 Module for the verify_database command
 """
 
-import datetime
 import os
 from datetime import date
 from typing import List, Optional
 
 import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sns
-from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, OutputWrapper
 from django.db import connection
 from django.db.models.query import QuerySet
 from pandas.plotting import register_matplotlib_converters
-
-from cards.models.decks import Deck
-from reports.management.commands import download_tournament_decks
 
 
 class Command(BaseCommand):

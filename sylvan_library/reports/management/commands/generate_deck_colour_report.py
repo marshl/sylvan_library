@@ -12,7 +12,7 @@ import pandas as pd
 import seaborn as sns
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, OutputWrapper
-from django.db.models import Sum, Q, Count, F
+from django.db.models import Sum, F
 from django.db.models.query import QuerySet
 
 from cards.models.colour import Colour

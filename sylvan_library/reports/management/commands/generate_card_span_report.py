@@ -13,7 +13,11 @@ class Command(BaseCommand):
 
 """
 WITH card_and_date AS (
-	SELECT cards_cardprinting.card_id, cards_card.name, cards_set.release_date, cards_set.name AS set_name
+	SELECT
+	cards_cardprinting.card_id,
+	cards_card.name,
+	cards_set.release_date,
+	cards_set.name AS set_name
 	FROM cards_cardprinting			   
 	JOIN cards_set
 	ON cards_set.id = cards_cardprinting.set_id
