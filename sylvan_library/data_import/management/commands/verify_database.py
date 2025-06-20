@@ -216,8 +216,12 @@ class Command(BaseCommand):
         )
         self.assert_false(
             high_count_single_face_cards.exists(),
-            f"Only two faced cards should have multiple faces: {high_count_single_face_cards}",
+            f"Only two faced cards should have multiple faces",
         )
+        if high_count_single_face_cards.exists():
+            print()
+            for high_count_single_face_card in high_count_single_face_cards:
+                print(high_count_single_face_card)
 
     # def test_unique_images(self) -> None:
     #     """
@@ -332,7 +336,7 @@ class Command(BaseCommand):
         :return:
         """
         # Normal cards
-        self.assert_card_mana_value_eq("Tarmogoyf", 2)
+        self.assert_card_mana_value_eq("Edge of Autumn", 2)
         self.assert_card_mana_value_eq("Black Lotus", 0)
 
         # Costless card
@@ -498,8 +502,8 @@ class Command(BaseCommand):
         self.assert_card_face_types_eq("Kird Ape", ["Creature"])
         self.assert_card_face_types_eq("Forest", ["Land"])
         self.assert_card_face_types_eq("Masticore", ["Artifact", "Creature"])
-        self.assert_card_face_types_eq("Tarmogoyf", ["Creature"])
-        self.assert_card_face_types_eq("Lignify", ["Tribal", "Enchantment"])
+        self.assert_card_face_types_eq("Lhurgoyf", ["Creature"])
+        self.assert_card_face_types_eq("Lignify", ["Kindred", "Enchantment"])
         self.assert_card_face_types_eq("Sen Triplets", ["Artifact", "Creature"])
         self.assert_card_face_types_eq("Walking Atlas", ["Artifact", "Creature"])
         self.assert_card_face_types_eq("Soul Net", ["Artifact"])
@@ -543,7 +547,7 @@ class Command(BaseCommand):
         self.assert_card_power_eq("Spinal Parasite", "-1")
 
         # + Cards
-        self.assert_card_power_eq("Tarmogoyf", "*")
+        self.assert_card_power_eq("Lhurgoyf", "*")
         self.assert_card_power_eq("Gaea's Avenger", "1+*")
         self.assert_card_power_eq("Zombified", "+2")
         self.assert_card_power_eq("S.N.O.T.", "*²")
@@ -581,7 +585,7 @@ class Command(BaseCommand):
         self.assert_card_face_num_power_eq("Elvish Archers", 2)
 
         # + Cards
-        self.assert_card_face_num_power_eq("Tarmogoyf", 0)
+        self.assert_card_face_num_power_eq("Mortivore", 0)
         self.assert_card_face_num_power_eq("Haunting Apparition", 1)
 
     def test_card_toughness(self) -> None:
@@ -600,7 +604,7 @@ class Command(BaseCommand):
         self.assert_card_face_toughness_eq("Spinal Parasite", "-1")
 
         # + Cards
-        self.assert_card_face_toughness_eq("Tarmogoyf", "1+*")
+        self.assert_card_face_toughness_eq("Lhurgoyf", "1+*")
         self.assert_card_face_toughness_eq("Gaea's Avenger", "1+*")
         self.assert_card_face_toughness_eq("Half-Orc, Half-", "+1")
         self.assert_card_face_toughness_eq("S.N.O.T.", "*²")
@@ -632,7 +636,7 @@ class Command(BaseCommand):
         self.assert_card_face_num_toughness_eq("Elvish Archers", 1)
 
         # + Cards
-        self.assert_card_face_num_toughness_eq("Tarmogoyf", 1)
+        self.assert_card_face_num_toughness_eq("Lhurgoyf", 1)
         self.assert_card_face_num_toughness_eq("Angry Mob", 2)
         self.assert_card_face_num_toughness_eq("S.N.O.T.", 0)
 
