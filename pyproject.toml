@@ -7,9 +7,9 @@ readme = "README.md"
 packages = [{include = "sylvan_library"}]
 
 [tool.poetry.dependencies]
-python = "3.10.*"
+python = "3.12.*"
 arrow = ">1,<2"
-django = ">4.2,<5"
+django = ">5,<6"
 django-environ = ">=0.10,<1"
 django-extensions = ">3,<4"
 django-select2 = ">8,<9"
