@@ -143,7 +143,7 @@ class CardSearchParameter(CardSearchTreeNode, ABC):
     def __init__(self, param_args: ParameterArgs, negated: bool = False):
         super().__init__(negated)
         self.operator = param_args.operator
-        self.value = param_args.value
+        self.value = param_args.value.lower()
 
     @classmethod
     def matches_param_args(cls, param_args: ParameterArgs) -> bool:
