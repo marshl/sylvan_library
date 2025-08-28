@@ -25,7 +25,7 @@ requests = ">2,<3"
 
 [tool.poetry.group.dev.dependencies]
 beautifulsoup4 = ">4,<5"
-black = ">24,<25"
+black = ">25,<26"
 django-debug-toolbar = ">4,<5"
 pylint = ">3,<4"
 pylint-django = ">2,<3"
