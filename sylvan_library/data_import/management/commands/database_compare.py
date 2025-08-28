@@ -383,6 +383,7 @@ class SetParser:
         if (
             not staged_card.scryfall_oracle_id
             or staged_card.layout == "reversible_card"
+            or staged_card_face.name in ("Punchcard", "Ability Punchcard")
         ):
             return
 
