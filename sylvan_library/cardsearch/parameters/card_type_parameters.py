@@ -114,7 +114,7 @@ class CardOriginalTypeParam(CardSearchParameter):
 
     @classmethod
     def get_search_keywords(cls) -> List[str]:
-        return ["originaltype", "ot"]
+        return ["originaltype", "otype", "ot"]
 
     def query(self, query_context: QueryContext) -> Q:
         """
@@ -150,4 +150,4 @@ class CardOriginalTypeParam(CardSearchParameter):
                 inclusion = "match"
             else:
                 inclusion = "include"
-        return f'the card types {inclusion} "{self.value}"'
+        return f'the card\'s original types {inclusion} "{self.value}"'
