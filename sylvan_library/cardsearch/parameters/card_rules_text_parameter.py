@@ -43,13 +43,7 @@ class CardRulesTextParam(CardSearchParameter):
     def __init__(self, param_args: ParameterArgs, negated: bool = False):
         super().__init__(param_args, negated)
         self.exact_match = self.operator == "="
-        if self.value.startswith("/") and self.value.endswith("/"):
-            self.regex_match: bool = True
-            self.value = self.value.strip("/")
-            if self.exact_match:
-                self.value = f"^{self.value}$"
-        else:
-            self.regex_match: bool = False
+        self.regex_match = param_args.is_regex
 
     def query(self, query_context: QueryContext) -> Q:
         if query_context.search_mode == CardSearchContext.CARD:
@@ -93,10 +87,16 @@ class CardRulesTextParam(CardSearchParameter):
         return ~query if self.negated else query
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
-        if self.negated:
-            modifier = "is not" if self.exact_match else "does not contain"
+        if self.is_regex:
+            if self.negated:
+                modifier = "doesn't match the regex"
+            else:
+                modifier = "matches the regex"
         else:
-            modifier = "is" if self.exact_match else "contains"
+            if self.negated:
+                modifier = "is not" if self.exact_match else "does not contain"
+            else:
+                modifier = "is" if self.exact_match else "contains"
         return f'the rules text {modifier} "{self.value}"'
 
 

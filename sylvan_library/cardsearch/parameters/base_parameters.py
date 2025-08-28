@@ -86,6 +86,7 @@ class ParameterArgs:
     keyword: str
     operator: str
     value: str
+    is_regex: bool = False
 
 
 class QueryValidationError(Exception):
@@ -144,6 +145,7 @@ class CardSearchParameter(CardSearchTreeNode, ABC):
         super().__init__(negated)
         self.operator = param_args.operator
         self.value = param_args.value.lower()
+        self.is_regex = param_args.is_regex
 
     @classmethod
     def matches_param_args(cls, param_args: ParameterArgs) -> bool:

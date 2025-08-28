@@ -220,6 +220,7 @@ class CardQueryParser(Parser):
         parameter = self.match(
             "simple_word_group_parameter",
             "quoted_name_parameter",
+            "regex_parameter",
             "normal_parameter",
             "unquoted_name_parameter",
         )
@@ -254,6 +255,18 @@ class CardQueryParser(Parser):
         operator = self.match("operator")
         parameter_value = self.match("quoted_string", "unquoted_complex")
         return self.parse_param(parameter_type, operator, parameter_value)
+
+    def regex_parameter(self) -> CardSearchTreeNode:
+        """
+        Attempts to parse a parameter with a type, operator and value
+        :return: THe parsed parameter
+        """
+        parameter_type = self.match("param_type")
+        operator = self.match("operator")
+        parameter_value = self.match("regex_string")
+        return self.parse_param(
+            parameter_type, operator, parameter_value, is_regex=True
+        )
 
     def quoted_name_parameter(self) -> CardSearchTreeNode:
         """
@@ -299,19 +312,25 @@ class CardQueryParser(Parser):
         return self.parse_param("name", ":", parameter_value)
 
     def parse_param(
-        self, keyword: str, operator: str, value: str
+        self,
+        keyword: str,
+        operator: str,
+        value: str,
+        is_regex: bool = False,
     ) -> Optional[CardSearchTreeNode]:
         """
         Returns a parameter based on the given parameter type
         :param keyword: The type of the parameter
         :param operator: The parameter operator
         :param value: The parameter alue
+        :param is_regex: Whether the parameter contains a regular expression string or not
         :return: The parsed parameter
         """
         param_args = ParameterArgs(
             keyword=keyword.lower(),
             operator=operator,
             value=value,
+            is_regex=is_regex,
         )
 
         matching_parameters = [
@@ -351,7 +370,6 @@ class CardQueryParser(Parser):
         :return: The contents of the unquoted string
         """
         acceptable_chars = "0-9A-Za-z!$%&*+.,/;<=>?^_`|~{}[]/:'\\-"
-        # acceptable_chars = r"\S"
         chars = [self.char(acceptable_chars)]
 
         while True:
@@ -384,6 +402,18 @@ class CardQueryParser(Parser):
         :return: The contents of the double-quoted string (including the quotes)
         """
         quote = self.char("\"'")
+        return self.generic_string(quote)
+
+    def regex_string(self) -> str:
+        """
+        Attempts to parse a double-quoted string
+        Spaces are allowed inside the string
+        :return: The contents of the double-quoted string (including the quotes)
+        """
+        quote = self.char("/")
+        return self.generic_string(quote)
+
+    def generic_string(self, quote: str):
         chars = []
 
         escape_sequences = {"b": "\b", "f": "\f", "n": "\n", "r": "\r", "t": "\t"}
