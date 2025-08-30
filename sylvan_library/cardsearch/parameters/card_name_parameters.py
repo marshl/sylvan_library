@@ -43,13 +43,7 @@ class CardNameParam(CardSearchParameter):
             self.value = self.value[1:]
 
         self.match_exact = match_exact
-        self.regex_match: bool = False
-
-        if self.value.startswith("/") and self.value.endswith("/"):
-            self.regex_match = True
-            self.card_name = self.value.strip("/")
-            if self.match_exact:
-                self.card_name = "^" + self.value + "$"
+        self.regex_match: bool = param_args.is_regex
 
     def query(self, query_context: QueryContext) -> Q:
 
