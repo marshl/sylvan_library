@@ -13,7 +13,7 @@
                 {% endif %}
                 <div class="result-count-container">
                     <div class="results-count">
-                        {{ result_count }} results found where {{ pretty_query_message }}
+                        {{ result_count }} result {% if result_count != 1 %}s{% endif %} found where {{ pretty_query_message }}
                     </div>
                 </div>
                 <div class="select-group">

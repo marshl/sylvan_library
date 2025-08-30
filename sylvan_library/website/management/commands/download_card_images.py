@@ -24,6 +24,8 @@ logger = logging.getLogger("django")
 
 SCRYFALL_API_SLEEP_SECONDS = 0.5
 
+USER_AGENT = "github.com/marshl/sylvan_library"
+
 
 class Command(BaseCommand):
     """
@@ -100,7 +102,9 @@ def download_images(root_dir: str) -> None:
     """
     for card_image in CardImage.objects.filter(file_path__isnull=True):
         try:
-            stream = requests.get(card_image.scryfall_image_url)
+            stream = requests.get(
+                card_image.scryfall_image_url, headers={"User-Agent": USER_AGENT}
+            )
             stream.raise_for_status()
         except requests.HTTPError:
             logger.exception(
@@ -224,7 +228,7 @@ def get_scryfall_set(set_code: str) -> dict:
     """
     url = f"https://api.scryfall.com/sets/{set_code}"
     logger.info("Getting set data from %s", url)
-    response = requests.get(url)
+    response = requests.get(url, headers={"User-Agent": USER_AGENT})
     response.raise_for_status()
     time.sleep(SCRYFALL_API_SLEEP_SECONDS)
     return response.json()
@@ -241,7 +245,7 @@ def get_scryfall_cards(set_code: str) -> list:
     cards = []
     while True:
         logger.info("Searching for cards %s", search_uri)
-        response = requests.get(search_uri)
+        response = requests.get(search_uri, headers={"User-Agent": USER_AGENT})
         response.raise_for_status()
         response_json = response.json()
         cards += response_json["data"]
