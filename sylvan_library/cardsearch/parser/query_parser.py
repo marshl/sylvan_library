@@ -60,6 +60,7 @@ from cardsearch.parameters.card_set_parameters import (
     CardBlockParam,
     CardLegalityParam,
     CardDateParam,
+    CardUniversesBeyondParam,
 )
 from cardsearch.parameters.card_type_parameters import (
     CardGenericTypeParam,
@@ -122,6 +123,7 @@ SEARCH_PARAMETERS: List[Type[CardSearchParameter]] = [
     CardReleaseDateSortParam,
     CardRulesTextParam,
     CardSetParam,
+    CardUniversesBeyondParam,
     CardUsageCountParam,
     CardWatermarkParam,
 ]

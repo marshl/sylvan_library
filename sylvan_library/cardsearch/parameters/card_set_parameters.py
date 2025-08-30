@@ -16,6 +16,7 @@ from cardsearch.parameters.base_parameters import (
     QueryValidationError,
     CardSearchParameter,
     OPERATOR_MAPPING,
+    CardSearchBinaryParameter,
 )
 
 
@@ -263,3 +264,60 @@ class CardDateParam(CardSearchParameter):
             + " "
             + self.date.isoformat()
         )
+
+
+class CardUniversesBeyondParam(CardSearchBinaryParameter):
+    """
+    A parameter for searching for cards that have been in a Universes Beyond set
+    For example, Doctor Who, Lord of the Rings (and commander)
+    """
+
+    @classmethod
+    def get_is_keywords(cls) -> List[str]:
+        return ["ub", "universes-beyond"]
+
+    @classmethod
+    def get_parameter_name(cls) -> str:
+        return "is universes beyond"
+
+    def get_default_search_context(self) -> CardSearchContext:
+        return CardSearchContext.PRINTING
+
+    def query(self, query_context: QueryContext) -> Q:
+        return Q(
+            **{
+                (
+                    "set__code__in"
+                    if query_context.search_mode == CardSearchContext.PRINTING
+                    else "printings__set__code__in"
+                ): list(
+                    {
+                        "40K",
+                        "ACR",
+                        "BOT",
+                        "FCA",
+                        "FIC",
+                        "FIN",
+                        "LTC",
+                        "LTR",
+                        "PIP",
+                        "REX",
+                        "SPC",
+                        "SPE",
+                        "SPM",
+                        "SPM",
+                        "T40K",
+                        "TFIC",
+                        "TFIN",
+                        "TLA",
+                        "TWHO",
+                        "WHO",
+                    }
+                ),
+                "_negated": self.negated,
+            }
+        )
+
+    def get_pretty_str(self, query_context: QueryContext) -> str:
+        verb = "isn't" if self.negated else "is"
+        return f"card {verb} multicoloured"
