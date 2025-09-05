@@ -19,7 +19,7 @@ class ParseSearch(BaseSearch):
     Search that consumes a query string
     """
 
-    def __init__(self, user: get_user_model(), query_string: str):
+    def __init__(self, query_string: str, user: get_user_model() | None = None):
         super().__init__(user)
         self.query_string: str = query_string
         self.error_message: Optional[str] = None

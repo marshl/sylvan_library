@@ -79,7 +79,7 @@ class QuerySearchForm(forms.Form):
         """
         self.full_clean()
 
-        search = ParseSearch(self.user, self.data.get("query_string"))
+        search = ParseSearch(self.data.get("query_string"), self.user)
         search.build_parameters()
         query_context = QueryContext(
             user=self.user,
