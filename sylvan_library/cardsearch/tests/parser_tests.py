@@ -11,7 +11,11 @@ from cards.tests import (
     create_test_card_printing,
     create_test_card_face,
 )
-from cardsearch.parameters.base_parameters import CardSearchAnd, CardSearchOr
+from cardsearch.parameters.base_parameters import (
+    CardSearchAnd,
+    CardSearchOr,
+    QueryContext,
+)
 from cardsearch.parameters.card_colour_parameters import (
     CardComplexColourParam,
 )
@@ -45,11 +49,11 @@ class ParserTests(TestCase):
         """
         root_param = self.parser.parse("foo")
         self.assertIsInstance(root_param, CardNameParam)
-        self.assertEqual(root_param.card_name, "foo")
+        self.assertEqual(root_param.value, "foo")
 
     def test_and_param(self) -> None:
         """
-        Tests that the and keyword in a query string is converted to a parameter group
+        Tests that the keyword in a query string is converted to a parameter group
         """
         root_param = self.parser.parse("foo and bar")
         self.assertIsInstance(root_param, CardSearchAnd)
@@ -57,8 +61,8 @@ class ParserTests(TestCase):
         foo_param, bar_param = root_param.child_parameters
         self.assertIsInstance(foo_param, CardNameParam)
         self.assertIsInstance(bar_param, CardNameParam)
-        self.assertEqual(foo_param.card_name, "foo")
-        self.assertEqual(bar_param.card_name, "bar")
+        self.assertEqual(foo_param.value, "foo")
+        self.assertEqual(bar_param.value, "bar")
 
     def test_or_param(self) -> None:
         """
@@ -70,8 +74,8 @@ class ParserTests(TestCase):
         foo_param, bar_param = root_param.child_parameters
         self.assertIsInstance(foo_param, CardNameParam)
         self.assertIsInstance(bar_param, CardNameParam)
-        self.assertEqual(foo_param.card_name, "foo")
-        self.assertEqual(bar_param.card_name, "bar")
+        self.assertEqual(foo_param.value, "foo")
+        self.assertEqual(bar_param.value, "bar")
 
     def test_and_or_param(self) -> None:
         """
@@ -83,13 +87,13 @@ class ParserTests(TestCase):
         foo_param, or_param = root_param.child_parameters
         self.assertIsInstance(foo_param, CardNameParam)
         self.assertIsInstance(or_param, CardSearchOr)
-        self.assertEqual(foo_param.card_name, "foo")
+        self.assertEqual(foo_param.value, "foo")
         self.assertEqual(len(or_param.child_parameters), 2)
         bar_param, baz_param = or_param.child_parameters
         self.assertIsInstance(bar_param, CardNameParam)
         self.assertIsInstance(baz_param, CardNameParam)
-        self.assertEqual(bar_param.card_name, "bar")
-        self.assertEqual(baz_param.card_name, "baz")
+        self.assertEqual(bar_param.value, "bar")
+        self.assertEqual(baz_param.value, "baz")
 
     def test_double_unquoted_param(self) -> None:
         """
@@ -104,8 +108,8 @@ class ParserTests(TestCase):
         second_param = root_param.child_parameters[1]
         self.assertIsInstance(first_param, CardNameParam)
         self.assertIsInstance(second_param, CardNameParam)
-        self.assertEqual(first_param.card_name, "foo")
-        self.assertEqual(second_param.card_name, "bar")
+        self.assertEqual(first_param.value, "foo")
+        self.assertEqual(second_param.value, "bar")
 
     def test_negated_param(self) -> None:
         """
@@ -113,7 +117,7 @@ class ParserTests(TestCase):
         """
         root_param = self.parser.parse("-foo")
         self.assertIsInstance(root_param, CardNameParam)
-        self.assertEqual(root_param.card_name, "foo")
+        self.assertEqual(root_param.value, "foo")
         self.assertTrue(root_param.negated)
 
     def test_negated_bracketed_param(self) -> None:
@@ -122,7 +126,7 @@ class ParserTests(TestCase):
         """
         root_param = self.parser.parse("-(name:foo)")
         self.assertIsInstance(root_param, CardNameParam)
-        self.assertEqual(root_param.card_name, "foo")
+        self.assertEqual(root_param.value, "foo")
         self.assertTrue(root_param.negated)
 
     def test_color_rg_param(self) -> None:
@@ -170,7 +174,7 @@ class ParserTests(TestCase):
         self.assertFalse(esper_param.negated)
 
         self.assertIsInstance(instant_param, CardGenericTypeParam)
-        self.assertEqual(instant_param.card_type, "instant")
+        self.assertEqual(instant_param.value, "instant")
         self.assertFalse(instant_param.negated)
 
     def test_no_colour_id_and_type_param(self) -> None:
@@ -187,7 +191,7 @@ class ParserTests(TestCase):
         self.assertEqual(id_param.operator, "<=")
 
         self.assertEqual(type_param.operator, ":")
-        self.assertEqual(type_param.card_type, "land")
+        self.assertEqual(type_param.value, "land")
 
     def test_legendary_merfolk_param(self) -> None:
         """
@@ -201,10 +205,10 @@ class ParserTests(TestCase):
         self.assertIsInstance(merfolk_param, CardGenericTypeParam)
 
         self.assertEqual(legend_param.operator, ":")
-        self.assertEqual(legend_param.card_type, "legend")
+        self.assertEqual(legend_param.value, "legend")
 
         self.assertEqual(merfolk_param.operator, ":")
-        self.assertEqual(merfolk_param.card_type, "merfolk")
+        self.assertEqual(merfolk_param.value, "merfolk")
 
     def test_noncreature_goblins_param(self) -> None:
         """
@@ -218,10 +222,10 @@ class ParserTests(TestCase):
         self.assertIsInstance(noncreature_param, CardGenericTypeParam)
 
         self.assertEqual(goblin_param.operator, ":")
-        self.assertEqual(goblin_param.card_type, "goblin")
+        self.assertEqual(goblin_param.value, "goblin")
 
         self.assertEqual(noncreature_param.operator, ":")
-        self.assertEqual(noncreature_param.card_type, "creature")
+        self.assertEqual(noncreature_param.value, "creature")
         self.assertTrue(noncreature_param.negated)
 
     def test_creature_draw_param(self) -> None:
@@ -236,10 +240,10 @@ class ParserTests(TestCase):
         self.assertIsInstance(draw_param, CardRulesTextParam)
 
         self.assertEqual(creature_param.operator, ":")
-        self.assertEqual(creature_param.card_type, "creature")
+        self.assertEqual(creature_param.value, "creature")
 
         self.assertFalse(draw_param.exact_match)
-        self.assertEqual(draw_param.card_rules, "draw")
+        self.assertEqual(draw_param.value, "draw")
 
     def test_card_name_enters_param(self) -> None:
         """
@@ -249,7 +253,7 @@ class ParserTests(TestCase):
         root_param = self.parser.parse('o:"~ enters the battlefield tapped"')
         self.assertIsInstance(root_param, CardRulesTextParam)
         self.assertFalse(root_param.exact_match)
-        self.assertEqual(root_param.card_rules, "~ enters the battlefield tapped")
+        self.assertEqual(root_param.value, "~ enters the battlefield tapped")
 
     def test_mana_gu_param(self) -> None:
         """
@@ -257,6 +261,7 @@ class ParserTests(TestCase):
         """
         root_param = self.parser.parse("mana:{G}{U}")
         self.assertIsInstance(root_param, CardManaCostComplexParam)
+        root_param.validate(QueryContext())
         self.assertFalse(root_param.negated)
         self.assertEqual(root_param.generic_mana, 0)
         self.assertEqual(root_param.symbol_counts["g"], 1)
@@ -269,6 +274,7 @@ class ParserTests(TestCase):
         """
         root_param = self.parser.parse("m:2WW")
         self.assertIsInstance(root_param, CardManaCostComplexParam)
+        root_param.validate(QueryContext())
         self.assertFalse(root_param.negated)
         self.assertEqual(root_param.generic_mana, 2)
         self.assertEqual(root_param.symbol_counts["w"], 2)
@@ -283,6 +289,7 @@ class ParserTests(TestCase):
         """
         root_param = self.parser.parse("mana>3wu")
         self.assertIsInstance(root_param, CardManaCostComplexParam)
+        root_param.validate(QueryContext())
         self.assertFalse(root_param.negated)
         self.assertEqual(root_param.operator, ">")
         self.assertEqual(root_param.generic_mana, 3)
@@ -344,8 +351,6 @@ class ColourContainsTestCase(TestCase):
             self.blue_red_card, self.set_obj, {}
         )
 
-        self.parse_search = ParseSearch()
-
     def tearDown(self) -> None:
         self.red_card.delete()
         self.green_card.delete()
@@ -354,9 +359,10 @@ class ColourContainsTestCase(TestCase):
         """
         Test colour match
         """
-        self.parse_search.query_string = "color=rg"
-        self.parse_search.build_parameters()
-        results = self.parse_search.get_queryset().all()
+        parse_search = ParseSearch("color=rg")
+        parse_search.build_parameters()
+        query_context = QueryContext()
+        results = parse_search.get_queryset(query_context).all()
         self.assertNotIn(self.red_card, results)
         self.assertNotIn(self.green_card, results)
         self.assertIn(self.red_green_card, results)
@@ -367,9 +373,9 @@ class ColourContainsTestCase(TestCase):
         """
         Test colour match
         """
-        self.parse_search.query_string = "color:rg"
-        self.parse_search.build_parameters()
-        results = self.parse_search.get_queryset().all()
+        parse_search = ParseSearch("color:rg")
+        parse_search.build_parameters()
+        results = parse_search.get_queryset(QueryContext()).all()
         self.assertNotIn(self.red_card, results)
         self.assertNotIn(self.green_card, results)
         self.assertIn(self.red_green_card, results)
@@ -380,9 +386,9 @@ class ColourContainsTestCase(TestCase):
         """
         Test colour match
         """
-        self.parse_search.query_string = "color>rg"
-        self.parse_search.build_parameters()
-        results = self.parse_search.get_queryset().all()
+        parse_search = ParseSearch("color>rg")
+        parse_search.build_parameters()
+        results = parse_search.get_queryset(QueryContext()).all()
         self.assertNotIn(self.red_card, results)
         self.assertNotIn(self.green_card, results)
         self.assertNotIn(self.red_green_card, results)
@@ -394,9 +400,9 @@ class ColourContainsTestCase(TestCase):
         """
         Test colour match
         """
-        self.parse_search.query_string = "color<=rg"
-        self.parse_search.build_parameters()
-        results = self.parse_search.get_queryset().all()
+        parse_search = ParseSearch("color<=rg")
+        parse_search.build_parameters()
+        results = parse_search.get_queryset(QueryContext()).all()
         self.assertIn(self.red_card, results)
         self.assertIn(self.green_card, results)
         self.assertIn(self.red_green_card, results)
@@ -408,9 +414,9 @@ class ColourContainsTestCase(TestCase):
         """
         Test colour match
         """
-        self.parse_search.query_string = "color<rg"
-        self.parse_search.build_parameters()
-        results = self.parse_search.get_queryset().all()
+        parse_search = ParseSearch("color<rg")
+        parse_search.build_parameters()
+        results = parse_search.get_queryset(QueryContext()).all()
         self.assertIn(self.red_card, results)
         self.assertIn(self.green_card, results)
         self.assertNotIn(self.red_green_card, results)

@@ -36,10 +36,12 @@ def get_set(value: str) -> Set:
     except Set.DoesNotExist as ex:
         raise QueryValidationError(f'Unknown set "{value}"') from ex
     except Set.MultipleObjectsReturned:
-        try:
-            return Set.objects.get(name__icontains=value).exclude(type="promo")
-        except (Set.DoesNotExist, Set.MultipleObjectsReturned) as ex:
-            raise QueryValidationError(f'Multiple sets match "{value}"') from ex
+        pass
+
+    try:
+        return Set.objects.get(name__icontains=value).exclude(type="promo")
+    except (Set.DoesNotExist, Set.MultipleObjectsReturned) as ex:
+        raise QueryValidationError(f'Multiple sets match "{value}"') from ex
 
 
 class CardSetParam(CardSearchParameter):
@@ -189,8 +191,8 @@ class CardLegalityParam(CardSearchParameter):
 
         try:
             self.card_format = Format.objects.get(name__iexact=self.value)
-        except Format.DoesNotExist:
-            raise QueryValidationError(f'Format "{self.value}" does not exist.')
+        except Format.DoesNotExist as ex:
+            raise QueryValidationError(f'Format "{self.value}" does not exist.') from ex
 
     def query(self, query_context: QueryContext) -> Q:
         assert self.card_format
@@ -235,7 +237,6 @@ class CardDateParam(CardSearchParameter):
 
     def __init__(self, param_args: ParameterArgs, negated: bool = False):
         super().__init__(param_args, negated)
-        # self.set_obj = None
         self.date = None
 
     def validate(self, query_context: QueryContext) -> None:

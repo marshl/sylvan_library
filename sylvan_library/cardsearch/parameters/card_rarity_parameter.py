@@ -49,8 +49,8 @@ class CardRarityParam(CardSearchParameter):
             self.rarity = Rarity.objects.get(
                 Q(symbol__iexact=self.value) | Q(name__iexact=self.value)
             )
-        except Rarity.DoesNotExist:
-            raise QueryValidationError(f'Couldn\'t find rarity "{self.value}"')
+        except Rarity.DoesNotExist as ex:
+            raise QueryValidationError(f'Couldn\'t find rarity "{self.value}"') from ex
 
     def query(self, query_context: QueryContext) -> Q:
         if self.operator == "=":

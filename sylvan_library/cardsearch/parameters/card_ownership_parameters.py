@@ -50,9 +50,6 @@ class CardOwnershipCountParam(CardSearchNumericalParameter):
 
         super().validate(query_context)
 
-    def __init__(self, param_args: ParameterArgs, negated: bool = False):
-        super().__init__(param_args, negated)
-
     def query(self, query_context: QueryContext) -> Q:
         assert self.operator in ("<", "<=", "=", ">=", ">")
 

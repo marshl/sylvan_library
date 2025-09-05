@@ -98,8 +98,8 @@ class QueryValidationError(Exception):
 
 @dataclasses.dataclass
 class QueryContext:
-    user: Optional[get_user_model()]
-    search_mode: Optional[CardSearchContext]
+    user: Optional[get_user_model()] = None
+    search_mode: Optional[CardSearchContext] = CardSearchContext.CARD
 
 
 class CardSearchTreeNode(ABC):

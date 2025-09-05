@@ -7,7 +7,6 @@ from collections import Counter
 import typing
 from typing import List
 
-from django.db.models import F
 from django.db.models.query import Q
 
 from cardsearch.parameters.base_parameters import (
