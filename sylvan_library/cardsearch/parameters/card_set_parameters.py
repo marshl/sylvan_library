@@ -242,6 +242,14 @@ class CardDateParam(CardSearchParameter):
     def validate(self, query_context: QueryContext) -> None:
         super().validate(query_context)
         try:
+            year = int(self.value)
+        except ValueError:
+            pass
+        else:
+            self.date = datetime.date(year, 1, 1)
+            return
+
+        try:
             self.date = datetime.date.fromisoformat(self.value)
             return
         except ValueError:
