@@ -195,6 +195,16 @@ class Command(BaseCommand):
             f"Multi-faced cards should have multiple faces: {low_count_cards}",
         )
 
+    def test_at_least_one_face(self):
+        zero_face_cards = Card.objects.annotate(face_count=Count("faces")).filter(
+            face_count=0
+        )
+
+        self.assert_false(
+            zero_face_cards.exists(),
+            f"Every card should have at least one face: {zero_face_cards}",
+        )
+
     def test_maximum_faces(self) -> None:
         high_count_single_face_cards = (
             Card.objects.exclude(
