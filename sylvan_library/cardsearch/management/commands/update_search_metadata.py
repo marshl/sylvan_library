@@ -115,11 +115,10 @@ def build_produces_counts(metadata: CardFaceSearchMetadata) -> bool:
     changed = False
     produces_every_colour = bool(RE_PRODUCES_ANY.search(metadata.card_face.rules_text))
     for symbol, regex in RE_PRODUCES_MAP.items():
-        does_produce_colour = (
-            symbol != "c"
-            if produces_every_colour
-            else bool(regex.search(metadata.card_face.rules_text))
-        )
+        if produces_every_colour and symbol != "c":
+            does_produce_colour = True
+        else:
+            does_produce_colour = bool(regex.search(metadata.card_face.rules_text))
         attr_name = "produces_" + symbol
         if getattr(metadata, attr_name) != does_produce_colour:
             setattr(metadata, attr_name, does_produce_colour)
