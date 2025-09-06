@@ -137,6 +137,8 @@ class CardSearchTreeNode(ABC):
         )
 
     def get_sort_parameters(self):
+        if isinstance(self, CardSortParam):
+            return [self]
         return []
 
 
@@ -270,10 +272,7 @@ class CardSearchBranchNode(CardSearchTreeNode, ABC):
     def get_sort_parameters(self) -> List[CardSortParam]:
         sort_params = []
         for child in self.child_parameters:
-            if isinstance(child, CardSearchBranchNode):
-                sort_params += child.get_sort_parameters()
-            elif isinstance(child, CardSortParam):
-                sort_params.append(child)
+            sort_params += child.get_sort_parameters()
         return sort_params
 
 
