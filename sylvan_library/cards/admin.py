@@ -431,8 +431,8 @@ class DeckAdmin(DjangoQLSearchMixin, admin.ModelAdmin):
 
 
 @admin.register(UserOwnedCard)
-class UserOwnedCardAdmin(admin.ModelAdmin):
-    pass
+class UserOwnedCardAdmin(DjangoQLSearchMixin, admin.ModelAdmin):
+    autocomplete_fields = ["card_localisation", "owner"]
 
 
 @admin.register(UserCardChange)
