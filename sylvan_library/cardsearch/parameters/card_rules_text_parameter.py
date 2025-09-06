@@ -156,7 +156,7 @@ class CardProducesManaParam(CardSearchParameter):
 
     def __init__(self, param_args: ParameterArgs, negated: bool = False):
         super().__init__(param_args, negated)
-        self.any_colour = "any"
+        self.any_colour = self.value == "any"
         if self.any_colour:
             self.colours = []
         else:
