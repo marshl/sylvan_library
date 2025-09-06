@@ -76,6 +76,7 @@ from cardsearch.parameters.sort_parameters import (
     CardRandomSortParam,
     CardRaritySortParam,
     CardReleaseDateSortParam,
+    CardSuperKeySortParam,
 )
 from cardsearch.parser.base_parser import Parser, ParseError
 
@@ -123,6 +124,7 @@ SEARCH_PARAMETERS: List[Type[CardSearchParameter]] = [
     CardReleaseDateSortParam,
     CardRulesTextParam,
     CardSetParam,
+    CardSuperKeySortParam,
     CardUniversesBeyondParam,
     CardUsageCountParam,
     CardWatermarkParam,

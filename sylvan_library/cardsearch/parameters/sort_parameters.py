@@ -218,3 +218,18 @@ class CardReleaseDateSortParam(CardSortParam):
         if search_context == CardSearchContext.CARD:
             return ["printings__set__release_date"]
         return ["set__release_date"]
+
+
+class CardSuperKeySortParam(CardSortParam):
+    @classmethod
+    def get_sort_keywords(cls) -> List[str]:
+        return ["key", "superkey"]
+
+    @classmethod
+    def get_parameter_name(cls) -> str:
+        return "sort by super key"
+
+    def get_sort_keys(self, search_context: CardSearchContext) -> List[str]:
+        if search_context == CardSearchContext.CARD:
+            return ["search_metadata__super_sort_key"]
+        return ["card__search_metadata__super_sort_key"]
