@@ -18,43 +18,8 @@ from cards.models.card import (
     CardFaceLocalisation,
     Card,
 )
-from cards.models.colour import Colour
+from cards.models.colour import Colour, COLOUR_TO_SORT_KEY
 from cards.models.sets import Set
-
-COLOUR_TO_SORT_KEY = {
-    Colour.COLOURLESS: 0,
-    Colour.WHITE: 1,
-    Colour.BLUE: 2,
-    Colour.BLACK: 3,
-    Colour.RED: 4,
-    Colour.GREEN: 5,
-    Colour.WHITE | Colour.BLUE: 6,
-    Colour.BLUE | Colour.BLACK: 7,
-    Colour.BLACK | Colour.RED: 8,
-    Colour.RED | Colour.GREEN: 9,
-    Colour.GREEN | Colour.WHITE: 10,
-    Colour.WHITE | Colour.BLACK: 11,
-    Colour.BLUE | Colour.RED: 12,
-    Colour.BLACK | Colour.GREEN: 13,
-    Colour.RED | Colour.WHITE: 14,
-    Colour.GREEN | Colour.BLUE: 15,
-    Colour.WHITE | Colour.BLUE | Colour.BLACK: 16,
-    Colour.BLUE | Colour.BLACK | Colour.RED: 17,
-    Colour.BLACK | Colour.RED | Colour.GREEN: 18,
-    Colour.RED | Colour.GREEN | Colour.WHITE: 19,
-    Colour.GREEN | Colour.WHITE | Colour.BLUE: 20,
-    Colour.WHITE | Colour.BLACK | Colour.GREEN: 21,
-    Colour.BLUE | Colour.RED | Colour.WHITE: 22,
-    Colour.BLACK | Colour.GREEN | Colour.BLUE: 23,
-    Colour.RED | Colour.WHITE | Colour.BLACK: 24,
-    Colour.GREEN | Colour.BLUE | Colour.RED: 25,
-    Colour.WHITE | Colour.BLUE | Colour.BLACK | Colour.RED: 26,
-    Colour.BLUE | Colour.BLACK | Colour.RED | Colour.GREEN: 27,
-    Colour.BLACK | Colour.RED | Colour.GREEN | Colour.WHITE: 28,
-    Colour.RED | Colour.GREEN | Colour.WHITE | Colour.BLUE: 29,
-    Colour.GREEN | Colour.WHITE | Colour.BLUE | Colour.BLACK: 30,
-    Colour.WHITE | Colour.BLUE | Colour.BLACK | Colour.RED | Colour.GREEN: 31,
-}
 
 
 def convert_number_field_to_numerical(val: str) -> float:

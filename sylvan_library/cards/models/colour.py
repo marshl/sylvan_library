@@ -140,6 +140,42 @@ COLOUR_SYMBOLS_TO_CODES = {
 }
 
 
+COLOUR_TO_SORT_KEY = {
+    Colour.COLOURLESS: 0,
+    Colour.WHITE: 1,
+    Colour.BLUE: 2,
+    Colour.BLACK: 3,
+    Colour.RED: 4,
+    Colour.GREEN: 5,
+    Colour.WHITE | Colour.BLUE: 6,
+    Colour.BLUE | Colour.BLACK: 7,
+    Colour.BLACK | Colour.RED: 8,
+    Colour.RED | Colour.GREEN: 9,
+    Colour.GREEN | Colour.WHITE: 10,
+    Colour.WHITE | Colour.BLACK: 11,
+    Colour.BLUE | Colour.RED: 12,
+    Colour.BLACK | Colour.GREEN: 13,
+    Colour.RED | Colour.WHITE: 14,
+    Colour.GREEN | Colour.BLUE: 15,
+    Colour.WHITE | Colour.BLUE | Colour.BLACK: 16,
+    Colour.BLUE | Colour.BLACK | Colour.RED: 17,
+    Colour.BLACK | Colour.RED | Colour.GREEN: 18,
+    Colour.RED | Colour.GREEN | Colour.WHITE: 19,
+    Colour.GREEN | Colour.WHITE | Colour.BLUE: 20,
+    Colour.WHITE | Colour.BLACK | Colour.GREEN: 21,
+    Colour.BLUE | Colour.RED | Colour.WHITE: 22,
+    Colour.BLACK | Colour.GREEN | Colour.BLUE: 23,
+    Colour.RED | Colour.WHITE | Colour.BLACK: 24,
+    Colour.GREEN | Colour.BLUE | Colour.RED: 25,
+    Colour.WHITE | Colour.BLUE | Colour.BLACK | Colour.RED: 26,
+    Colour.BLUE | Colour.BLACK | Colour.RED | Colour.GREEN: 27,
+    Colour.BLACK | Colour.RED | Colour.GREEN | Colour.WHITE: 28,
+    Colour.RED | Colour.GREEN | Colour.WHITE | Colour.BLUE: 29,
+    Colour.GREEN | Colour.WHITE | Colour.BLUE | Colour.BLACK: 30,
+    Colour.WHITE | Colour.BLUE | Colour.BLACK | Colour.RED | Colour.GREEN: 31,
+}
+
+
 # ALL_COLOURS = list(Colour.objects.all().order_by("display_order"))
 # WHITE, BLUE, BLACK, RED, GREEN, COLOURLESS = ALL_COLOURS
 
@@ -154,9 +190,6 @@ def colours_to_int_flags(colours: List[Colour]) -> int:
     return reduce(lambda x, y: x | y, (c.bit_value for c in colours))
 
 
-_COLOUR_NAME_LOOKUP: Optional[Dict[str, List[Colour]]] = None
-
-
 def get_colours_for_nickname(colour_name: str) -> List[Colour]:
     """
     Converts text to a list of colour flag
@@ -165,68 +198,68 @@ def get_colours_for_nickname(colour_name: str) -> List[Colour]:
     :return: The colours or'd together
     """
     # pylint: disable=global-statement
-    global _COLOUR_NAME_LOOKUP
-    if not _COLOUR_NAME_LOOKUP:
-        _COLOUR_NAME_LOOKUP = {
-            "colourless": [Colour.colourless()],
-            "c": [Colour.colourless()],
-            "white": [Colour.white()],
-            "w": [Colour.white()],
-            "blue": [Colour.blue()],
-            "u": [Colour.blue()],
-            "black": [Colour.black()],
-            "b": [Colour.black()],
-            "red": [Colour.red()],
-            "r": [Colour.red()],
-            "green": [Colour.green()],
-            "g": [Colour.green()],
-            "azorius": [Colour.white(), Colour.blue()],
-            "dimir": [Colour.blue(), Colour.black()],
-            "rakdos": [Colour.black(), Colour.red()],
-            "gruul": [Colour.red(), Colour.green()],
-            "selesnya": [Colour.green(), Colour.white()],
-            "orzhov": [Colour.white(), Colour.black()],
-            "izzet": [Colour.blue(), Colour.red()],
-            "golgari": [Colour.black(), Colour.green()],
-            "boros": [Colour.red(), Colour.white()],
-            "simic": [Colour.green(), Colour.blue()],
-            "esper": [Colour.white(), Colour.blue(), Colour.black()],
-            "grixis": [Colour.blue(), Colour.black(), Colour.red()],
-            "jund": [Colour.black(), Colour.red(), Colour.green()],
-            "naya": [Colour.red(), Colour.green(), Colour.white()],
-            "bant": [Colour.green(), Colour.white(), Colour.blue()],
-            "abzan": [Colour.white(), Colour.black(), Colour.green()],
-            "jeskai": [Colour.blue(), Colour.red(), Colour.white()],
-            "sultai": [Colour.black(), Colour.green(), Colour.blue()],
-            "mardu": [Colour.red(), Colour.white(), Colour.black()],
-            "temur": [Colour.green(), Colour.blue(), Colour.red()],
-            "chaos": [Colour.blue(), Colour.black(), Colour.red(), Colour.green()],
-            "aggression": [
-                Colour.black(),
-                Colour.red(),
-                Colour.green(),
-                Colour.white(),
-            ],
-            "altruism": [Colour.red(), Colour.green(), Colour.white(), Colour.blue()],
-            "growth": [Colour.green(), Colour.white(), Colour.blue(), Colour.black()],
-            "artifice": [Colour.white(), Colour.blue(), Colour.black(), Colour.red()],
-            "all": [
-                Colour.white(),
-                Colour.blue(),
-                Colour.black(),
-                Colour.red(),
-                Colour.green(),
-            ],
-        }
+    # global _COLOUR_NAME_LOOKUP
+    # if not _COLOUR_NAME_LOOKUP:
+    _COLOUR_NAME_LOOKUP = {
+        "colourless": [Colour.colourless()],
+        "c": [Colour.colourless()],
+        "white": [Colour.white()],
+        "w": [Colour.white()],
+        "blue": [Colour.blue()],
+        "u": [Colour.blue()],
+        "black": [Colour.black()],
+        "b": [Colour.black()],
+        "red": [Colour.red()],
+        "r": [Colour.red()],
+        "green": [Colour.green()],
+        "g": [Colour.green()],
+        "azorius": [Colour.white(), Colour.blue()],
+        "dimir": [Colour.blue(), Colour.black()],
+        "rakdos": [Colour.black(), Colour.red()],
+        "gruul": [Colour.red(), Colour.green()],
+        "selesnya": [Colour.green(), Colour.white()],
+        "orzhov": [Colour.white(), Colour.black()],
+        "izzet": [Colour.blue(), Colour.red()],
+        "golgari": [Colour.black(), Colour.green()],
+        "boros": [Colour.red(), Colour.white()],
+        "simic": [Colour.green(), Colour.blue()],
+        "esper": [Colour.white(), Colour.blue(), Colour.black()],
+        "grixis": [Colour.blue(), Colour.black(), Colour.red()],
+        "jund": [Colour.black(), Colour.red(), Colour.green()],
+        "naya": [Colour.red(), Colour.green(), Colour.white()],
+        "bant": [Colour.green(), Colour.white(), Colour.blue()],
+        "abzan": [Colour.white(), Colour.black(), Colour.green()],
+        "jeskai": [Colour.blue(), Colour.red(), Colour.white()],
+        "sultai": [Colour.black(), Colour.green(), Colour.blue()],
+        "mardu": [Colour.red(), Colour.white(), Colour.black()],
+        "temur": [Colour.green(), Colour.blue(), Colour.red()],
+        "chaos": [Colour.blue(), Colour.black(), Colour.red(), Colour.green()],
+        "aggression": [
+            Colour.black(),
+            Colour.red(),
+            Colour.green(),
+            Colour.white(),
+        ],
+        "altruism": [Colour.red(), Colour.green(), Colour.white(), Colour.blue()],
+        "growth": [Colour.green(), Colour.white(), Colour.blue(), Colour.black()],
+        "artifice": [Colour.white(), Colour.blue(), Colour.black(), Colour.red()],
+        "all": [
+            Colour.white(),
+            Colour.blue(),
+            Colour.black(),
+            Colour.red(),
+            Colour.green(),
+        ],
+    }
 
-    text = colour_name.lower()
-    if text in _COLOUR_NAME_LOOKUP:
-        return _COLOUR_NAME_LOOKUP[text]
+    colour_name = colour_name.lower()
+    if colour_name in _COLOUR_NAME_LOOKUP:
+        return _COLOUR_NAME_LOOKUP[colour_name]
 
     result = []
-    for char in text:
+    for char in colour_name:
         if char not in _COLOUR_NAME_LOOKUP:
-            raise ValueError(f"Unknown colour {text}")
+            raise ValueError(f"Unknown colour {colour_name}")
 
         result += _COLOUR_NAME_LOOKUP[char]
     return result

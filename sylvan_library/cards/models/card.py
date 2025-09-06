@@ -7,7 +7,6 @@ import logging
 import random
 from typing import Optional
 
-
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Sum, IntegerField, Case, When
@@ -139,8 +138,8 @@ class Card(models.Model):
 
     def has_other_half(self) -> bool:
         """
-        Gets whether this card has another half (flip, split, transform etc)
-        :return: True if this card has anther half, otherwise False
+        Gets whether this card has another half (flip, split, transform etc.)
+        :return: True if this card has another half, otherwise False
         """
         return self.layout in (
             "flip",
@@ -154,7 +153,7 @@ class Card(models.Model):
 
     def is_land(self, only_land: bool = False) -> bool:
         """
-        Returns whether or not this is a land card
+        Returns whether this is a land card
         :return: True if this is a land card, otherwise False
         """
         generator = (
