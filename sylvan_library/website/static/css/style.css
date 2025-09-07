@@ -100,8 +100,7 @@ body {
 }
 
 .select-group select {
-    -webkit-appearance: none;
-    -moz-appearance: none;
+    appearance: none;
     background: #333;
     padding: 6px 30px 6px 10px;
     border: 1px solid #444;
