@@ -31,6 +31,7 @@ SET_CODES_TO_SKIP = [
     "HTR18",
     "HTR19",
     "HTR20",
+    "LMAR",
     "MB1",
     "MZNR",
     "OC21",
@@ -56,7 +57,7 @@ SET_CODES_TO_SKIP = [
 ]
 
 
-class SimpleSet:
+class SetFile:
     def __init__(
         self, set_code: str, name: str, path: str, release_date: datetime.date
     ):
@@ -73,7 +74,7 @@ def get_all_set_data(
     Gets set data from the sets directory and returns each one as a parsed dict
     :return: The set data as a dict
     """
-    set_list: List[SimpleSet] = []
+    set_list: List[SetFile] = []
 
     for set_file_path in [
         os.path.join(_paths.SET_FOLDER, s) for s in os.listdir(_paths.SET_FOLDER)
@@ -102,7 +103,7 @@ def get_all_set_data(
         yield set_data.get("data")
 
 
-def parse_set(set_file_path: str) -> Optional[SimpleSet]:
+def parse_set(set_file_path: str) -> Optional[SetFile]:
     with open(set_file_path, "r", encoding="utf8") as set_file:
         set_data = json.load(set_file).get("data")
 
@@ -117,7 +118,7 @@ def parse_set(set_file_path: str) -> Optional[SimpleSet]:
     ):
         return None
 
-    return SimpleSet(
+    return SetFile(
         set_code=set_code,
         name=set_name,
         path=set_file_path,
@@ -125,7 +126,7 @@ def parse_set(set_file_path: str) -> Optional[SimpleSet]:
     )
 
 
-def check_for_duplicate_sets(set_list: List[SimpleSet]):
+def check_for_duplicate_sets(set_list: List[SetFile]):
     name_dict = defaultdict(list)
     for set_obj in set_list:
         name_dict[set_obj.name].append(set_obj.set_code)
@@ -139,7 +140,7 @@ def check_for_duplicate_sets(set_list: List[SimpleSet]):
         raise Exception(f"The following sets have duplicate names: {name_dict}")
 
 
-def check_for_setcode_mismatches(set_list: List[SimpleSet]):
+def check_for_setcode_mismatches(set_list: List[SetFile]):
     for simple_set in set_list:
         try:
             actual_set = Set.objects.get(name=simple_set.name)
@@ -152,7 +153,7 @@ def check_for_setcode_mismatches(set_list: List[SimpleSet]):
             continue
 
 
-def check_for_missing_sets(set_list: List[SimpleSet]) -> None:
+def check_for_missing_sets(set_list: List[SetFile]) -> None:
     for set_obj in Set.objects.all():
         if set_obj.type == "token":
             continue
@@ -163,7 +164,7 @@ def check_for_missing_sets(set_list: List[SimpleSet]) -> None:
             )
 
 
-def check_for_name_duplicates(set_list: List[SimpleSet]):
+def check_for_name_duplicates(set_list: List[SetFile]):
     set_names = set()
     for simple_set in set_list:
         if simple_set.name in set_names:
