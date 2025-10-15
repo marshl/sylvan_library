@@ -170,7 +170,11 @@ class SetFileParser:
 
         # If the set has tokens, and isn't a dedicated token set, then create a separate set just
         # for the tokens of that set
-        if self.set_data.get("tokens") and self.set_data.get("type") != "token":
+        if (
+            self.set_data.get("tokens")
+            and self.set_data.get("cards")
+            and self.set_data.get("type") != "token"
+        ):
             set_parser = SetParser(
                 staged_set=StagedSet(self.set_data, for_token=True),
                 set_file_parser=self,
