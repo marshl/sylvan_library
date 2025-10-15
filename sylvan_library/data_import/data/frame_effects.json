@@ -1,5 +1,9 @@
 [
   {
+    "name": "Boosterfun",
+    "code": "boosterfun"
+  },
+  {
     "name": "Borderless",
     "code": "borderless"
   },
@@ -130,6 +134,10 @@
   {
     "name": "Upside-down DFC",
     "code": "upsidedowndfc"
+  },
+  {
+    "name": "Wanted",
+    "code": "wanted"
   },
   {
     "name": "Waxing and Waning Moon DFC",
