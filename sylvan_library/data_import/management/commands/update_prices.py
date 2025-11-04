@@ -66,8 +66,8 @@ WHERE latest_price.card_printing_id = cards_cardprinting.id
 
 
 def set_cheapest_prices():
-    logger.info("Setting cheapest prices")
     with connection.cursor() as cursor:
+        logger.info("Unsetting cheapest prices")
         cursor.execute(
             """
 UPDATE cards_cardprice
@@ -75,14 +75,13 @@ SET cheapest_card_id = NULL
 """
         )
 
+        logger.info("Setting cheapest prices")
         cursor.execute(
             """
 UPDATE cards_cardprice
 SET cheapest_card_id = cheapest_price.card_id
 FROM (
 	SELECT DISTINCT
---	cards_card.name,
---	price_rank.paper_value,
 	price_rank.price_id,
 	price_rank.card_id
 	FROM cards_card
