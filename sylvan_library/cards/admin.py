@@ -105,6 +105,25 @@ class CardFacePrintingInline(admin.TabularInline):
         return False
 
 
+class UserOwnedCardInline(admin.TabularInline):
+    """
+    Model Inline Admin for UserOwnedCard
+    """
+
+    model = UserOwnedCard
+
+    show_change_link = True
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
 class CardLocalisationInline(admin.TabularInline):
     """
     Inline admin for CardLocalisation
@@ -112,6 +131,7 @@ class CardLocalisationInline(admin.TabularInline):
 
     model = CardLocalisation
     show_change_link = True
+    inlines = [UserOwnedCardInline]
 
     def has_change_permission(self, request, obj=None):
         return False
