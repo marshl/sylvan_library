@@ -6,10 +6,12 @@ import logging
 from collections import defaultdict
 
 from django.core.management.base import BaseCommand
+from django.db.models import Count
 
 from cards.models.card import (
     CardPrinting,
     UserOwnedCard,
+    Card,
 )
 from cards.models.sets import Set
 from data_import._query import query_yes_no
@@ -97,3 +99,14 @@ class Command(BaseCommand):
                 CardPrinting.objects.filter(
                     scryfall_id__in=missing_scryfall_ids
                 ).delete()
+
+        cards_without_printings = Card.objects.annotate(
+            printing_count=Count("printings")
+        ).filter(printing_count=0)
+        if cards_without_printings.exists():
+            print("The following cards have no printings:")
+            for card in cards_without_printings:
+                print(f"\t{card}")
+
+            if query_yes_no("Would you like to delete them all?"):
+                cards_without_printings.delete()
