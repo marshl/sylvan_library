@@ -3,7 +3,7 @@ Models for Colour objects
 """
 
 from functools import reduce
-from typing import List, Dict, Optional
+from typing import List
 from django.db import models
 
 
