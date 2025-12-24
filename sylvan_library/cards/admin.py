@@ -400,13 +400,25 @@ class CardFaceLocalisationAdmin(admin.ModelAdmin):
     form = CardFaceLocalisationModelForm
 
 
+class CardImageAdminForm(forms.ModelForm):
+    """
+    Form for a Card Image
+    """
+
+    # Override teh file_path field so it doesn't need to match a real file
+    file_path = forms.FileField(widget=forms.TextInput, required=False)
+
+
 @admin.register(CardImage)
-class CardImageAdmin(admin.ModelAdmin):
+class CardImageAdmin(DjangoQLSearchMixin, admin.ModelAdmin):
     """
     Admin for a Card Image model
     """
 
+    form = CardImageAdminForm
+
     search_fields = ["file_path", "scryfall_image_url"]
+    inlines = [CardFaceLocalisationInline]
 
 
 @admin.register(CardPrice)
