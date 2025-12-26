@@ -81,6 +81,8 @@
     transition: .8s;
     color: #ddd;
     font-size: 18px;
+    line-height: 20px;
+    margin: 0 0 5px;
 }
 
 .filter-link {
@@ -126,11 +128,6 @@
     padding: 10px 10px 0;
 }
 
-.search-result-title {
-    line-height: 20px;
-    margin: 0 0 5px;
-    font-size: 18px;
-}
 
 .search-result-mana-cost {
     white-space: nowrap;
@@ -349,4 +346,9 @@
 
 .set-row-4>td:first-child{
     padding-left: 4.5em;
+}
+
+
+.copy-text-link {
+    cursor: pointer;
 }

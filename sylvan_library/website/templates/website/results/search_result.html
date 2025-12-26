@@ -36,7 +36,10 @@
                 {% for face in result.card.faces.all %}
                     <div class="search-result-base-details" style="display:inline-block;">
                         <h2 class="search-result-title">
-                            <a target="_blank">{{ face.name }}</a>
+                            {{ face.name }}
+                            <i class="fa fa-copy copy-text-link"
+                               onclick='navigator.clipboard.writeText("{{ face.name }}")'></i>
+
                             {% if face.mana_cost %}
                                 <span class="search-result-mana-cost">
                                 {{ face.mana_cost | replace_mana_symbols | shadowed | safe }}
