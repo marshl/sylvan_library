@@ -20,28 +20,24 @@ from cardsearch.parameters.base_parameters import (
 )
 
 
-def get_set(value: str) -> Set:
-    try:
-        return Set.objects.get(code__iexact=value)
-    except Set.DoesNotExist:
-        pass
+def user_query_to_set(value: str) -> Set:
+    # Search by code EXACT
+    matching_sets = Set.objects.filter(Q(code__iexact=value) | Q(name__iexact=value))
+    if matching_sets.exists():
+        return matching_sets.first()
 
-    try:
-        return Set.objects.get(name__iexact=value)
-    except Set.DoesNotExist:
-        pass
+    matching_sets = Set.objects.filter(name__icontains=value)
 
-    try:
-        return Set.objects.get(name__icontains=value)
-    except Set.DoesNotExist as ex:
+    if not matching_sets.exists():
         raise QueryValidationError(f'Unknown set "{value}"') from ex
-    except Set.MultipleObjectsReturned:
-        pass
 
-    try:
-        return Set.objects.get(name__icontains=value).exclude(type="promo")
-    except (Set.DoesNotExist, Set.MultipleObjectsReturned) as ex:
-        raise QueryValidationError(f'Multiple sets match "{value}"') from ex
+    if matching_sets.count() > 1:
+        matching_sets = matching_sets.exclude(type="promo")
+
+    if matching_sets.count() > 1:
+        raise QueryValidationError(f'Multiple sets match "{value}"')
+
+    return matching_sets.first()
 
 
 class CardSetParam(CardSearchParameter):
@@ -70,7 +66,7 @@ class CardSetParam(CardSearchParameter):
 
     def validate(self, query_context: QueryContext) -> None:
         super().validate(query_context)
-        self.set_obj = get_set(self.value)
+        self.set_obj = user_query_to_set(self.value)
 
     def query(self, query_context: QueryContext) -> Q:
         return Q(
@@ -255,7 +251,7 @@ class CardDateParam(CardSearchParameter):
         except ValueError:
             pass
 
-        set_obj = get_set(self.value)
+        set_obj = user_query_to_set(self.value)
         self.date = set_obj.release_date
 
     def query(self, query_context: QueryContext) -> Q:
