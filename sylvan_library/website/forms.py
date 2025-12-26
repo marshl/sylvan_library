@@ -6,6 +6,7 @@ import re
 from typing import Dict, Optional, List, Tuple, Any
 
 from django import forms
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db.models import Func, Value, F
@@ -18,10 +19,12 @@ from cards.models.language import Language
 from cardsearch.parameters.base_parameters import QueryContext
 from cardsearch.parse_search import ParseSearch
 
+User = get_user_model()
+
 
 class ChangeCardOwnershipForm(forms.Form):
     """
-    A for mfor changing the number of cards that a user owns
+    A form for changing the number of cards that a user owns
     """
 
     count = forms.IntegerField()
@@ -56,10 +59,6 @@ class QuerySearchForm(forms.Form):
     The search form for searching by a query string
     """
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.user = None
-
     query_string = forms.CharField(required=False)
 
     def get_page_number(self) -> int:
@@ -72,17 +71,17 @@ class QuerySearchForm(forms.Form):
         except (TypeError, ValueError):
             return 1
 
-    def get_search(self) -> Tuple[ParseSearch, QueryContext]:
+    def get_search(self, user: User) -> Tuple[ParseSearch, QueryContext]:
         """
         Gets the search object using the data from this form
         :return:
         """
         self.full_clean()
 
-        search = ParseSearch(self.data.get("query_string"), self.user)
+        search = ParseSearch(self.data.get("query_string"), user)
         search.build_parameters()
         query_context = QueryContext(
-            user=self.user,
+            user=user,
             search_mode=search.root_parameter.get_default_search_context(),
         )
         search.root_parameter.validate(query_context)
