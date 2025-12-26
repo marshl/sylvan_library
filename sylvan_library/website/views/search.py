@@ -1,30 +1,22 @@
-from django.core.handlers.wsgi import WSGIRequest
-from django.db import connection, reset_queries
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpRequest
 from django.shortcuts import render
 
 from website.forms import QuerySearchForm
 from website.pagination import get_page_buttons
 
 
-def name_search(request: WSGIRequest) -> HttpResponse:
+def card_search(request: HttpRequest) -> HttpResponse:
     """
     The view for when a user searches by card name
     :param request: The user's request
     :return: The HTTP Response
     """
-    reset_queries()
     query_form = QuerySearchForm(request.GET)
-    query_form.user = request.user
-    search, query_context = query_form.get_search()
+    search, query_context = query_form.get_search(user=request.user)
 
-    # Run your query here
-    # print(connection.queries)
-    for query in connection.queries:
-        print(query)
     return render(
         request,
-        "website/simple_search.html",
+        "website/search.html",
         {
             "query_form": query_form,
             "results": search.results,

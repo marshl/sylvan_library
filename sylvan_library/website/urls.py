@@ -10,7 +10,7 @@ from website import views
 app_name = "website"
 urlpatterns = [
     path("", views.index, name="index"),
-    path("name_search/", views.name_search, name="name_search"),
+    path("search/", views.card_search, name="card_search"),
     path("set_list/", views.set_list, name="set_list"),
     path(
         "ajax/search_result_details/<int:printing_id>/",

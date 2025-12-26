@@ -28,5 +28,5 @@ from website.views.results import (
     ajax_change_card_ownership,
     ajax_card_printing_image,
 )
-from website.views.search import name_search
+from website.views.search import card_search
 from website.views.sets import set_list

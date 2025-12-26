@@ -17,9 +17,7 @@ from cards.models.card import (
 )
 from cards.models.decks import DeckCard
 from cards.models.language import Language
-from website.forms import (
-    ChangeCardOwnershipForm,
-)
+from website.forms import ChangeCardOwnershipForm
 from website.views.utils import (
     TCGPlayerLink,
     EDHRecLink,
