@@ -19,9 +19,8 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path("website/", include("website.urls")),
+    path("", include("website.urls")),
     path("api/cards/", include("cards.urls")),
-    path("", include("frontend.urls")),
     path("admin/", admin.site.urls),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
     path("tinymce/", include("tinymce.urls")),

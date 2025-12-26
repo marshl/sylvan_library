@@ -78,24 +78,24 @@ $(function () {
 
     function loadTabDataForPrinting($tabContainer, card_id, printing_id) {
 
-        $.ajax('/website/ajax/search_result_details/' + printing_id)
+        $.ajax('/ajax/search_result_details/' + printing_id)
             .done(function (result) {
                 $tabContainer.find('.js-card-result-tab-content[data-tab-type="details"]').html(result);
             });
 
-        $.ajax('/website/ajax/search_result_rulings/' + card_id)
+        $.ajax('/ajax/search_result_rulings/' + card_id)
             .done(function (result) {
                 $tabContainer.find('.js-card-result-tab-content[data-tab-type="rulings"]').html(result);
             });
 
-        $.ajax('/website/ajax/search_result_languages/' + printing_id)
+        $.ajax('/ajax/search_result_languages/' + printing_id)
             .done(function (result) {
                 $tabContainer.find('.js-card-result-tab-content[data-tab-type="languages"]').html(result);
             });
 
         if (IS_LOGGED_IN) {
             loadOwnershipTab($tabContainer, card_id);
-            $.ajax('/website/ajax/search_result_add/' + printing_id)
+            $.ajax('/ajax/search_result_add/' + printing_id)
                 .done(function (result) {
                     let $tab = $tabContainer.find('.js-card-result-tab-content[data-tab-type="add"]');
                     $tab.html(result);
@@ -105,33 +105,33 @@ $(function () {
                 });
 
 
-            $.ajax('/website/ajax/search_result_decks/' + card_id)
+            $.ajax('/ajax/search_result_decks/' + card_id)
                 .done(function (result) {
                     $tabContainer.find('.js-card-result-tab-content[data-tab-type="decks"]').html(result);
                 });
         }
 
-        $.ajax('/website/ajax/search_result_links/' + card_id)
+        $.ajax('/ajax/search_result_links/' + card_id)
             .done(function (result) {
                 $tabContainer.find('.js-card-result-tab-content[data-tab-type="links"]').html(result);
             });
 
 
-        $.ajax('/website/ajax/search_result_prices/' + printing_id)
+        $.ajax('/ajax/search_result_prices/' + printing_id)
             .done(function (result) {
                 $tabContainer.find('.js-card-result-tab-content[data-tab-type="prices"]').html(result);
             });
     }
 
     function loadOwnershipTab($tabContainer, card_id) {
-        $.ajax('/website/ajax/search_result_ownership/' + card_id)
+        $.ajax('/ajax/search_result_ownership/' + card_id)
             .done(function (result) {
                 $tabContainer.find('.js-card-result-tab-content[data-tab-type="ownership"]').html(result);
             });
     }
 
     function loadOwnershipSummary(card_id) {
-        $.ajax('/website/ajax/ownership_summary/' + card_id)
+        $.ajax('/ajax/ownership_summary/' + card_id)
             .done(function (result) {
                 $('#card-result-' + card_id).find('.js-ownership-summary').html(result);
             });
@@ -139,7 +139,7 @@ $(function () {
 
     function loadSetSummary(card_id, printing_id) {
         $.ajax({
-            url: '/website/ajax/search_result_set_summary/' + printing_id
+            url: '/ajax/search_result_set_summary/' + printing_id
         })
             .done(function (result) {
                 let $summary = $('#card-result-' + card_id).find('.js-card-result-set-summary');
