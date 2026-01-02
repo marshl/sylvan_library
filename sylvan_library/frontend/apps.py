@@ -6,4 +6,4 @@ class FrontendConfig(AppConfig):
     Config for the frontend app
     """
 
-    name = "frontend"
+    name = "sylvan_library.frontend"
