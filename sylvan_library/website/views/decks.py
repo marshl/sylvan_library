@@ -9,16 +9,12 @@ from django.db import transaction
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 
-from cards.models.card import (
-    Card,
-)
-from cards.models.decks import Deck
-from cards.models.user import UserProps
-from website.forms import (
-    DeckForm,
-)
-from website.pagination import get_page_buttons
-from website.views.utils import (
+from sylvan_library.cards.models.card import Card
+from sylvan_library.cards.models.decks import Deck
+from sylvan_library.cards.models.user import UserProps
+from sylvan_library.website.forms import DeckForm
+from sylvan_library.website.pagination import get_page_buttons
+from sylvan_library.website.views.utils import (
     get_unused_cards,
     get_page_number,
     get_unused_commanders,

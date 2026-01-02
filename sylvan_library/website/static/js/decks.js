@@ -67,7 +67,7 @@ $(function () {
         let ctx = $chartContainer.get(0).getContext('2d');
         let $deckId = $chartContainer.data('deck-id');
         $.ajax({
-            url: '/decks/' + $deckId + '/colour_weights',
+            url: '/website/decks/' + $deckId + '/colour_weights',
         }).done(function (result) {
             let manaSymbols = result['mana_symbols'];
             let landSymbols = result['land_symbols'];

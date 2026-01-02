@@ -5,7 +5,7 @@ Django admin config for card app
 from django.contrib import admin
 from djangoql.admin import DjangoQLSearchMixin
 
-from cardsearch.models import CardSearchMetadata, CardFaceSearchMetadata
+from sylvan_library.cardsearch.models import CardSearchMetadata, CardFaceSearchMetadata
 
 
 @admin.register(CardSearchMetadata)

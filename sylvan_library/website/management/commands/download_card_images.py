@@ -15,9 +15,9 @@ from django.db import transaction
 from django.db.models import Count
 from requests import HTTPError
 
-from cards.models.card import CardFaceLocalisation, CardImage
-from cards.models.language import Language
-from cards.models.sets import Set
+from sylvan_library.cards.models.card import CardFaceLocalisation, CardImage
+from sylvan_library.cards.models.language import Language
+from sylvan_library.cards.models.sets import Set
 
 logger = logging.getLogger("django")
 

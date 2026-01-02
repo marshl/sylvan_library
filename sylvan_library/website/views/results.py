@@ -8,17 +8,17 @@ from django.db.models import Sum, Count
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
-from cards.models.card import (
+from sylvan_library.cards.models.card import (
     CardPrinting,
     Card,
     UserOwnedCard,
     CardLocalisation,
     UserCardChange,
 )
-from cards.models.decks import DeckCard
-from cards.models.language import Language
-from website.forms import ChangeCardOwnershipForm
-from website.views.utils import (
+from sylvan_library.cards.models.decks import DeckCard
+from sylvan_library.cards.models.language import Language
+from sylvan_library.website.forms import ChangeCardOwnershipForm
+from sylvan_library.website.views.utils import (
     TCGPlayerLink,
     EDHRecLink,
     DeckStatsLink,

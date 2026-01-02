@@ -6,12 +6,12 @@ from typing import Optional
 
 from django.contrib.auth import get_user_model
 
-from cards.models.sets import Set
-from cardsearch.base_search import BaseSearch
-from cardsearch.parameters.base_parameters import CardSearchBranchNode
-from cardsearch.parameters.card_set_parameters import CardSetParam
-from cardsearch.parser.base_parser import ParseError
-from cardsearch.parser.query_parser import CardQueryParser
+from sylvan_library.cards.models.sets import Set
+from sylvan_library.cardsearch.base_search import BaseSearch
+from sylvan_library.cardsearch.parameters.base_parameters import CardSearchBranchNode
+from sylvan_library.cardsearch.parameters.card_set_parameters import CardSetParam
+from sylvan_library.cardsearch.parser.base_parser import ParseError
+from sylvan_library.cardsearch.parser.query_parser import CardQueryParser
 
 
 class ParseSearch(BaseSearch):

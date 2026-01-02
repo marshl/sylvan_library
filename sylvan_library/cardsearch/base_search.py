@@ -8,17 +8,22 @@ from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator, EmptyPage
 from django.db.models import prefetch_related_objects, QuerySet
 
-from cards.models.card import CardPrinting, Card
-from cards.models.sets import Set
+from sylvan_library.cards.models.card import CardPrinting, Card
+from sylvan_library.cards.models.sets import Set
 
-from cardsearch.parameters.base_parameters import (
+from sylvan_library.cardsearch.parameters.base_parameters import (
     CardSearchAnd,
     CardSearchBranchNode,
     QueryContext,
     ParameterArgs,
     CardSearchContext,
 )
-from cardsearch.parameters.sort_parameters import CardSortParam, CardNameSortParam
+from sylvan_library.cardsearch.parameters.sort_parameters import (
+    CardSortParam,
+    CardNameSortParam,
+)
+
+User = get_user_model()
 
 
 class SearchResult:
@@ -60,7 +65,7 @@ class SearchResult:
 
     def can_rotate(self) -> bool:
         """
-        Returns whether or not this card should have be able to rotate its image
+        Returns whether this card should be able to rotate its image
         :return: True if this card can rotate, otherwise False
         """
         return self.card.layout in ("split", "aftermath", "planar")
@@ -72,8 +77,8 @@ class BaseSearch:
     all use a single root node with parameters hanging off of it
     """
 
-    def __init__(self, user: get_user_model() = None) -> None:
-        self.user: get_user_model() = user
+    def __init__(self, user: User = None) -> None:
+        self.user: User = user
         self.root_parameter: CardSearchBranchNode = CardSearchAnd()
         self.sort_params: List[CardSortParam] = []
         self.paginator: Optional[Paginator] = None
@@ -145,7 +150,7 @@ class BaseSearch:
         except EmptyPage:
             return
         cards = list(self.page)
-        # prefetch_related_objects(cards, "printings__face_printings")
+
         prefetch_related_objects(cards, "printings__localisations__ownerships")
         prefetch_related_objects(cards, "printings__localisations__language")
         prefetch_related_objects(

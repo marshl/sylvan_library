@@ -4,7 +4,7 @@ Urls for the website app
 
 from django.urls import path
 
-from website import views
+from sylvan_library.website import views
 
 # pylint: disable=invalid-name
 app_name = "website"

@@ -6,14 +6,14 @@ from typing import List
 
 from django.db.models.query import Q
 
-from cards.models.card import (
+from sylvan_library.cards.models.card import (
     CardSubtype,
     CardSupertype,
     CardType,
     CardFacePrinting,
     Card,
 )
-from cardsearch.parameters.base_parameters import (
+from sylvan_library.cardsearch.parameters.base_parameters import (
     CardSearchContext,
     QueryContext,
     CardSearchParameter,

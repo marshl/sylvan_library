@@ -7,8 +7,8 @@ from typing import List
 from django import template
 
 # pylint: disable=invalid-name
-from cards.models.card import CardPrinting
-from cards.models.decks import DeckCard, Deck
+from sylvan_library.cards.models.card import CardPrinting
+from sylvan_library.cards.models.decks import DeckCard, Deck
 
 register = template.Library()
 

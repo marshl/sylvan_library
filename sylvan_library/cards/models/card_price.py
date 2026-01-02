@@ -4,7 +4,7 @@ Models fo card pricing
 
 from django.db import models
 
-from cards.models.card import CardPrinting, Card
+from sylvan_library.cards.models.card import CardPrinting, Card
 
 
 class CardPrice(models.Model):

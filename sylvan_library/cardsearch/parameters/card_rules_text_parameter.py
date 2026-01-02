@@ -8,9 +8,9 @@ from django.db.models import F, Value
 from django.db.models.functions import Concat
 from django.db.models.query import Q
 
-from cards.models import colour
-from cards.models.colour import Colour, colours_to_symbols
-from cardsearch.parameters.base_parameters import (
+from sylvan_library.cards.models import colour
+from sylvan_library.cards.models.colour import Colour, colours_to_symbols
+from sylvan_library.cardsearch.parameters.base_parameters import (
     and_group_queries,
     or_group_queries,
     CardSearchContext,

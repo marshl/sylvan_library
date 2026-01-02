@@ -5,7 +5,7 @@ hard/expensive to search for at run time
 
 from django.db import models
 
-from cards.models.card import CardFace, Card
+from sylvan_library.cards.models.card import CardFace, Card
 
 
 class CardSearchMetadata(models.Model):

@@ -2,7 +2,7 @@
 Module for all website views
 """
 
-from website.views.decks import (
+from sylvan_library.website.views.decks import (
     deck_card_search,
     deck_list,
     deck_create,
@@ -12,8 +12,8 @@ from website.views.decks import (
     deck_colour_weights,
     change_unused_decks,
 )
-from website.views.index import index
-from website.views.results import (
+from sylvan_library.website.views.index import index
+from sylvan_library.website.views.results import (
     ajax_search_result_links,
     ajax_search_result_add,
     ajax_search_result_decks,
@@ -28,5 +28,5 @@ from website.views.results import (
     ajax_change_card_ownership,
     ajax_card_printing_image,
 )
-from website.views.search import card_search
-from website.views.sets import set_list
+from sylvan_library.website.views.search import card_search
+from sylvan_library.website.views.sets import set_list

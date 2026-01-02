@@ -5,7 +5,7 @@ Data import admin
 from django import forms
 from django.contrib import admin
 
-from data_import.models import (
+from sylvan_library.data_import.models import (
     UpdateBlock,
     UpdateSet,
     UpdateCard,

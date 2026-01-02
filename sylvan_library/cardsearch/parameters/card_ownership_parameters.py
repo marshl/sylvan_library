@@ -7,12 +7,10 @@ from typing import List
 from django.db import connection
 from django.db.models import Q
 
-from cards.models.card import Card
-from cardsearch.parameters.base_parameters import (
+from sylvan_library.cardsearch.parameters.base_parameters import (
     CardSearchNumericalParameter,
     CardSearchContext,
     QueryContext,
-    ParameterArgs,
     QueryValidationError,
     CardSearchBinaryParameter,
 )

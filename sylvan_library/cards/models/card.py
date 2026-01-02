@@ -11,11 +11,11 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Sum, IntegerField, Case, When
 
-from bitfield import BitField
-from cards.models.colour import Colour
-from cards.models.language import Language
-from cards.models.rarity import Rarity
-from cards.models.sets import Set
+from sylvan_library.bitfield import BitField
+from sylvan_library.cards.models.colour import Colour
+from sylvan_library.cards.models.language import Language
+from sylvan_library.cards.models.rarity import Rarity
+from sylvan_library.cards.models.sets import Set
 
 CARD_LAYOUT_CHOICES = (
     ("normal", "Normal"),

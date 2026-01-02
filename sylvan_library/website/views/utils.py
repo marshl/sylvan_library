@@ -7,12 +7,12 @@ from django.contrib.auth.models import User
 from django.core.handlers.wsgi import WSGIRequest
 from django.db.models import Q
 
-from cards.models.card import (
+from sylvan_library.cards.models.card import (
     Card,
     CardFace,
 )
-from cards.models.colour import Colour
-from cards.models.user import UserProps
+from sylvan_library.cards.models.colour import Colour
+from sylvan_library.cards.models.user import UserProps
 
 
 def get_page_number(request: WSGIRequest, param_name: str = "page") -> int:

@@ -7,9 +7,9 @@ from typing import List
 
 from django.db.models.query import Q
 
-from cards.models.legality import CardLegality
-from cards.models.sets import Set, Block, Format
-from cardsearch.parameters.base_parameters import (
+from sylvan_library.cards.models.legality import CardLegality
+from sylvan_library.cards.models.sets import Set, Block, Format
+from sylvan_library.cardsearch.parameters.base_parameters import (
     CardSearchContext,
     ParameterArgs,
     QueryContext,

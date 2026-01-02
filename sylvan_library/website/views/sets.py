@@ -3,7 +3,7 @@ from typing import List
 from django.core.handlers.wsgi import WSGIRequest
 from django.shortcuts import render
 
-from cards.models.sets import Set
+from sylvan_library.cards.models.sets import Set
 
 
 def set_list(request: WSGIRequest):

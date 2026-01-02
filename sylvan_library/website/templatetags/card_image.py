@@ -8,14 +8,14 @@ from typing import Optional
 from django import template
 from django.contrib.staticfiles import finders
 
-from cards.models.card import (
+from sylvan_library.cards.models.card import (
     CardLocalisation,
     CardFacePrinting,
     CardFaceLocalisation,
     CardPrinting,
     Card,
 )
-from cards.models.language import Language
+from sylvan_library.cards.models.language import Language
 
 logger = logging.getLogger("django")
 

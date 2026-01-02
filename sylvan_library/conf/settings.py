@@ -19,11 +19,6 @@ DATABASES = {
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
-# if (
-#     "test" in sys.argv or "test_coverage" in sys.argv
-# ):  # Covers regular testing and django-coverage
-#     DATABASES["default"]["ENGINE"] = "django.db.backends.sqlite3"
-
 public_root = root.path("public/")
 
 MEDIA_ROOT = public_root("media")
@@ -51,14 +46,14 @@ INSTALLED_APPS = [
     "tinymce",
     "widget_tweaks",
     # my apps
-    "bitfield.apps.BitFieldAppConfig",
-    "cards.apps.CardsConfig",
-    "cardsearch.apps.CardsearchConfig",
-    "data_export.apps.DataExportConfig",
-    "data_import.apps.DataImportConfig",
-    "reports.apps.ReportsConfig",
-    "website.apps.WebsiteConfig",
-    "frontend.apps.FrontendConfig",
+    "sylvan_library.bitfield.apps.BitFieldAppConfig",
+    "sylvan_library.cards.apps.CardsConfig",
+    "sylvan_library.cardsearch.apps.CardsearchConfig",
+    "sylvan_library.data_export.apps.DataExportConfig",
+    "sylvan_library.data_import.apps.DataImportConfig",
+    "sylvan_library.reports.apps.ReportsConfig",
+    "sylvan_library.website.apps.WebsiteConfig",
+    "sylvan_library.frontend.apps.FrontendConfig",
 ]
 
 if DEBUG_TOOLBAR:

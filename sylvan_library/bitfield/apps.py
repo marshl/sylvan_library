@@ -3,5 +3,5 @@ from django.apps import AppConfig
 
 
 class BitFieldAppConfig(AppConfig):
-    name = "bitfield"
+    name = "sylvan_library.bitfield"
     verbose_name = "Bit Field"

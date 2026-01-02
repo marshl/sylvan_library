@@ -11,9 +11,9 @@ from django.db import models
 from django.db.models import Sum, Avg, Q
 from django.contrib.auth import get_user_model
 
-from cards.models.card import Card, CardType
-from cards.models.colour import Colour
-from cards.models.rarity import Rarity
+from sylvan_library.cards.models.card import Card, CardType
+from sylvan_library.cards.models.colour import Colour
+from sylvan_library.cards.models.rarity import Rarity
 
 
 class Deck(models.Model):

@@ -31,7 +31,7 @@
         let ctx = $chartContainer.get(0).getContext('2d');
 
         $.ajax({
-            url: '/ajax/search_result_price_json/{{ printing.id }}/'
+            url: '/website/ajax/search_result_price_json/{{ printing.id }}/'
         }).done(function (result) {
             let datasets = [];
             Object.keys(result).map(function (key) {

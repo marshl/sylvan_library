@@ -6,8 +6,8 @@ from typing import List, Optional
 
 from django.db.models.query import Q
 
-from cards.models.rarity import Rarity
-from cardsearch.parameters.base_parameters import (
+from sylvan_library.cards.models.rarity import Rarity
+from sylvan_library.cardsearch.parameters.base_parameters import (
     OPERATOR_MAPPING,
     OPERATOR_TO_WORDY_MAPPING,
     CardSearchParameter,

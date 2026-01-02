@@ -6,7 +6,7 @@ import datetime
 
 from django.db import models
 
-from cards.models.card import Card
+from sylvan_library.cards.models.card import Card
 
 
 class CardRuling(models.Model):
