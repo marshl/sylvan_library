@@ -5,7 +5,7 @@ from django.forms import CheckboxSelectMultiple, IntegerField, ValidationError
 
 from django.utils.encoding import force_str
 
-from bitfield.types import BitHandler
+from sylvan_library.bitfield.types import BitHandler
 
 
 class BitFieldCheckboxSelectMultiple(CheckboxSelectMultiple):

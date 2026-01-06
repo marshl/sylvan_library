@@ -12,8 +12,8 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.utils.text import slugify
 
-from cards.models.decks import Deck, DeckCard
-from cards.models.sets import Set
+from sylvan_library.cards.models.decks import Deck, DeckCard
+from sylvan_library.cards.models.sets import Set
 from website.templatetags.deck_templatetags import deck_card_group_count
 
 logger = logging.getLogger("django")

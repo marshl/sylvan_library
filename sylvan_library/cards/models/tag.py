@@ -5,7 +5,7 @@ Card Tag models
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from cards.models.card import Card
+from sylvan_library.cards.models.card import Card
 
 
 class CardTag(models.Model):

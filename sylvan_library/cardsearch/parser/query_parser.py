@@ -4,28 +4,28 @@ Module for the card query recursive descent parser
 
 from typing import Union, Optional, Callable, List, Type
 
-from cardsearch.parameters.base_parameters import (
+from sylvan_library.cardsearch.parameters.base_parameters import (
     CardSearchTreeNode,
     CardSearchOr,
     CardSearchAnd,
     ParameterArgs,
     CardSearchParameter,
 )
-from cardsearch.parameters.card_artist_parameters import CardArtistParam
-from cardsearch.parameters.card_colour_parameters import (
+from sylvan_library.cardsearch.parameters.card_artist_parameters import CardArtistParam
+from sylvan_library.cardsearch.parameters.card_colour_parameters import (
     CardMulticolouredOnlyParam,
     CardComplexColourParam,
 )
-from cardsearch.parameters.card_flavour_parameters import (
+from sylvan_library.cardsearch.parameters.card_flavour_parameters import (
     CardFlavourTextParam,
 )
-from cardsearch.parameters.card_game_parameters import CardGameParam
-from cardsearch.parameters.card_mana_cost_parameters import (
+from sylvan_library.cardsearch.parameters.card_game_parameters import CardGameParam
+from sylvan_library.cardsearch.parameters.card_mana_cost_parameters import (
     CardManaValueParam,
     CardManaCostComplexParam,
     CardColourCountParam,
 )
-from cardsearch.parameters.card_misc_parameters import (
+from sylvan_library.cardsearch.parameters.card_misc_parameters import (
     CardHasColourIndicatorParam,
     CardHasWatermarkParam,
     CardIsPhyrexianParam,
@@ -36,37 +36,37 @@ from cardsearch.parameters.card_misc_parameters import (
     CardIsVanillaParam,
     CardCollectorNumberParam,
 )
-from cardsearch.parameters.card_name_parameters import CardNameParam
-from cardsearch.parameters.card_ownership_parameters import (
+from sylvan_library.cardsearch.parameters.card_name_parameters import CardNameParam
+from sylvan_library.cardsearch.parameters.card_ownership_parameters import (
     CardOwnershipCountParam,
     CardUsageCountParam,
     CardMissingPauperParam,
 )
-from cardsearch.parameters.card_power_toughness_parameters import (
+from sylvan_library.cardsearch.parameters.card_power_toughness_parameters import (
     CardNumToughnessParam,
     CardNumPowerParam,
     CardNumLoyaltyParam,
 )
-from cardsearch.parameters.card_price_parameters import CardPriceParam
-from cardsearch.parameters.card_rarity_parameter import CardRarityParam
-from cardsearch.parameters.card_rules_text_parameter import (
+from sylvan_library.cardsearch.parameters.card_price_parameters import CardPriceParam
+from sylvan_library.cardsearch.parameters.card_rarity_parameter import CardRarityParam
+from sylvan_library.cardsearch.parameters.card_rules_text_parameter import (
     CardRulesTextParam,
     CardWatermarkParam,
     CardProducesManaParam,
     CardOriginalRulesTextParam,
 )
-from cardsearch.parameters.card_set_parameters import (
+from sylvan_library.cardsearch.parameters.card_set_parameters import (
     CardSetParam,
     CardBlockParam,
     CardLegalityParam,
     CardDateParam,
     CardUniversesBeyondParam,
 )
-from cardsearch.parameters.card_type_parameters import (
+from sylvan_library.cardsearch.parameters.card_type_parameters import (
     CardGenericTypeParam,
     CardOriginalTypeParam,
 )
-from cardsearch.parameters.sort_parameters import (
+from sylvan_library.cardsearch.parameters.sort_parameters import (
     CardColourSortParam,
     CardCollectorNumSortParam,
     CardManaValueSortParam,
@@ -78,7 +78,7 @@ from cardsearch.parameters.sort_parameters import (
     CardReleaseDateSortParam,
     CardSuperKeySortParam,
 )
-from cardsearch.parser.base_parser import Parser, ParseError
+from sylvan_library.cardsearch.parser.base_parser import Parser, ParseError
 
 SEARCH_PARAMETERS: List[Type[CardSearchParameter]] = [
     CardArtistParam,

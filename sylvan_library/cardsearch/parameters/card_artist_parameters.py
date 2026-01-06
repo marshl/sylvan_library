@@ -6,7 +6,7 @@ from typing import List
 
 from django.db.models.query import Q
 
-from cardsearch.parameters.base_parameters import (
+from sylvan_library.cardsearch.parameters.base_parameters import (
     CardSearchParameter,
     CardSearchContext,
     QueryContext,

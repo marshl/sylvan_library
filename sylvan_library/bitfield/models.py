@@ -6,9 +6,9 @@ import six
 from django.db.models import signals
 from django.db.models.fields import Field, BigIntegerField
 
-from bitfield.forms import BitFormField
-from bitfield.query import BitQueryLookupWrapper
-from bitfield.types import BitHandler, Bit
+from sylvan_library.bitfield.forms import BitFormField
+from sylvan_library.bitfield.query import BitQueryLookupWrapper
+from sylvan_library.bitfield.types import BitHandler, Bit
 
 # Count binary capacity. Truncate "0b" prefix from binary form.
 # Twice faster than bin(i)[2:] or math.floor(math.log(i))

@@ -8,7 +8,7 @@ from typing import Any
 import ijson
 from django.core.management.base import BaseCommand
 
-from cards.models.card import CardPrinting, Card
+from sylvan_library.cards.models.card import CardPrinting, Card
 from data_import import _paths
 
 logger = logging.getLogger("django")

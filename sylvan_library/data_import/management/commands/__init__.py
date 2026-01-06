@@ -12,7 +12,7 @@ from typing import Generator, Dict, Any, List, Optional
 
 import requests
 
-from cards.models.sets import Set
+from sylvan_library.cards.models.sets import Set
 from data_import import _paths
 
 logger = logging.getLogger("django")

@@ -9,16 +9,16 @@ import time
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from cards.models.card import (
+from sylvan_library.cards.models.card import (
     CardType,
     CardSubtype,
     CardSupertype,
     FrameEffect,
 )
-from cards.models.colour import Colour
-from cards.models.language import Language
-from cards.models.rarity import Rarity
-from cards.models.sets import Format
+from sylvan_library.cards.models.colour import Colour
+from sylvan_library.cards.models.language import Language
+from sylvan_library.cards.models.rarity import Rarity
+from sylvan_library.cards.models.sets import Format
 from data_import import _paths
 from data_import._paths import (
     COLOUR_JSON_PATH,

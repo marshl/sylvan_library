@@ -7,7 +7,7 @@ import re
 
 from django.core.management.base import BaseCommand
 
-from cards.models.sets import Set
+from sylvan_library.cards.models.sets import Set
 
 
 class Command(BaseCommand):

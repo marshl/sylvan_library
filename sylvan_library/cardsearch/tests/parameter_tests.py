@@ -4,22 +4,24 @@ The module for searching tests
 
 from django.test import TestCase
 
-from cards.models.card import CardPrinting, Card
-from cards.tests import (
+from sylvan_library.cards.models.card import CardPrinting, Card
+from sylvan_library.cards.tests import (
     create_test_card,
     create_test_card_printing,
     create_test_set,
     create_test_card_face,
 )
-from cardsearch.parameters.base_parameters import (
+from sylvan_library.cardsearch.parameters.base_parameters import (
     CardSearchAnd,
     ParameterArgs,
     QueryContext,
     CardSearchContext,
 )
-from cardsearch.parameters.card_name_parameters import CardNameParam
-from cardsearch.parameters.card_rules_text_parameter import CardRulesTextParam
-from cardsearch.parameters.card_set_parameters import CardSetParam
+from sylvan_library.cardsearch.parameters.card_name_parameters import CardNameParam
+from sylvan_library.cardsearch.parameters.card_rules_text_parameter import (
+    CardRulesTextParam,
+)
+from sylvan_library.cardsearch.parameters.card_set_parameters import CardSetParam
 
 
 class CardNameParamTestCase(TestCase):

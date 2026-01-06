@@ -1,5 +1,5 @@
-from cards.models.card import Card
-from cards.models.sets import Set, Block
+from sylvan_library.cards.models.card import Card
+from sylvan_library.cards.models.sets import Set, Block
 from data_import.models import (
     UpdateSet,
     UpdateBlock,

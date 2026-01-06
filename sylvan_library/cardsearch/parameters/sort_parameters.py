@@ -4,7 +4,7 @@ The module for all search parameters
 
 from typing import List
 
-from cardsearch.parameters.base_parameters import (
+from sylvan_library.cardsearch.parameters.base_parameters import (
     CardSortParam,
     CardSearchContext,
     # SearchMode,

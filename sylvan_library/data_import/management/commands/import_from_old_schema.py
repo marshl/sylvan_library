@@ -5,15 +5,15 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction
 
-from cards.models.card import (
+from sylvan_library.cards.models.card import (
     UserOwnedCard,
     UserCardChange,
     CardLocalisation,
     CardPrinting,
     Card,
 )
-from cards.models.colour import Colour
-from cards.models.decks import Deck, DeckCard
+from sylvan_library.cards.models.colour import Colour
+from sylvan_library.cards.models.decks import Deck, DeckCard
 from data_import._query import query_yes_no
 
 logger = logging.getLogger("django")

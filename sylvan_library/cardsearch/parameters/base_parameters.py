@@ -68,7 +68,7 @@ def and_group_queries(q_objects: List[Q]) -> Q:
     return reduce(lambda a, b: a & b, q_objects)
 
 
-class CardSearchContext(enum.Enum):
+class CardSearchContext(enum.StrEnum):
     """
     Different search modes (the model "origin" of the search, for example card, card printing)
     """

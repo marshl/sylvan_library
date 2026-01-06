@@ -8,7 +8,7 @@ from django.core.management.base import BaseCommand
 from django.db import connection
 from django.db import models
 
-from cards.models.card import (
+from sylvan_library.cards.models.card import (
     CardFace,
     Card,
     CardPrinting,
@@ -17,14 +17,14 @@ from cards.models.card import (
     UserOwnedCard,
     UserCardChange,
 )
-from cards.models.colour import Colour
-from cards.models.decks import DeckCard, Deck
-from cards.models.language import Language
-from cards.models.legality import CardLegality
-from cards.models.rarity import Rarity
-from cards.models.ruling import CardRuling
-from cards.models.sets import Set, Block, Format
-from cards.models.tag import CardTag
+from sylvan_library.cards.models.colour import Colour
+from sylvan_library.cards.models.decks import DeckCard, Deck
+from sylvan_library.cards.models.language import Language
+from sylvan_library.cards.models.legality import CardLegality
+from sylvan_library.cards.models.rarity import Rarity
+from sylvan_library.cards.models.ruling import CardRuling
+from sylvan_library.cards.models.sets import Set, Block, Format
+from sylvan_library.cards.models.tag import CardTag
 from data_import import _query
 
 

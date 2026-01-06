@@ -8,12 +8,12 @@ from collections import defaultdict
 from django.core.management.base import BaseCommand
 from django.db.models import Count
 
-from cards.models.card import (
+from sylvan_library.cards.models.card import (
     CardPrinting,
     UserOwnedCard,
     Card,
 )
-from cards.models.sets import Set
+from sylvan_library.cards.models.sets import Set
 from data_import._query import query_yes_no
 from data_import.management.commands import get_all_set_data
 from data_import.parsers.set_file_parser import SetFileParser

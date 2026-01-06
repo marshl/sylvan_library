@@ -2,8 +2,12 @@ import re
 
 from django.utils.text import slugify
 
-from cards.models.card import Card, CardFace
-from cards.models.colour import Colour, COLOUR_SYMBOLS_TO_CODES, COLOUR_TO_SORT_KEY
+from sylvan_library.cards.models.card import Card, CardFace
+from sylvan_library.cards.models.colour import (
+    Colour,
+    COLOUR_SYMBOLS_TO_CODES,
+    COLOUR_TO_SORT_KEY,
+)
 
 RE_GENERIC_MANA = re.compile(r"{(\d+)}")
 

@@ -8,15 +8,15 @@ from typing import Dict, Any, Optional
 from django.test import TestCase
 
 from django.contrib.auth import get_user_model
-from cards.models.card import (
+from sylvan_library.cards.models.card import (
     Card,
     CardFace,
     CardPrinting,
     CardLocalisation,
 )
-from cards.models.language import Language
-from cards.models.rarity import Rarity
-from cards.models.sets import Set
+from sylvan_library.cards.models.language import Language
+from sylvan_library.cards.models.rarity import Rarity
+from sylvan_library.cards.models.sets import Set
 
 
 def create_test_card(fields: Optional[Dict[str, Any]] = None) -> Card:

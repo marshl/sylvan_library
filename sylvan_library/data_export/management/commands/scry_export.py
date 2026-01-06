@@ -11,8 +11,8 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from django.db.models import Min
 
-from cards.models.card import Card
-from cards.models.sets import Block, Set
+from sylvan_library.cards.models.card import Card
+from sylvan_library.cards.models.sets import Block, Set
 
 logger = logging.getLogger("django")
 

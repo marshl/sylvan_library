@@ -4,8 +4,8 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db.models.query import QuerySet
 
-from cards.models.card import UserOwnedCard
-from cards.models.decks import Deck
+from sylvan_library.cards.models.card import UserOwnedCard
+from sylvan_library.cards.models.decks import Deck
 from reports.management.commands import download_tournament_decks
 
 

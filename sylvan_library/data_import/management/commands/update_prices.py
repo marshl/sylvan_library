@@ -15,7 +15,7 @@ import ijson
 from django.core.management.base import BaseCommand
 from django.db import transaction, connection
 
-from cards.models.card_price import CardPrice
+from sylvan_library.cards.models.card_price import CardPrice
 from data_import import _paths
 from data_import.management.commands import download_file
 

@@ -9,8 +9,8 @@ from django.test import TestCase
 
 from bitfield import BitHandler, Bit, BitField
 
-from bitfield.tests.forms import BitFieldTestModelForm
-from bitfield.tests.models import (
+from sylvan_library.bitfield.tests.forms import BitFieldTestModelForm
+from sylvan_library.bitfield.tests.models import (
     BitFieldTestModel,
     CompositeBitFieldTestModel,
 )

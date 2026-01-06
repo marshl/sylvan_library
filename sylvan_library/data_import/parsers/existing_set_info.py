@@ -1,6 +1,6 @@
 from django.db.models import F
 
-from cards.models.card import (
+from sylvan_library.cards.models.card import (
     Card,
     CardFace,
     CardPrinting,

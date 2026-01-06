@@ -15,7 +15,7 @@ from django.core.management.base import BaseCommand, OutputWrapper
 from django.db import connection
 from pandas.plotting import register_matplotlib_converters
 
-from cards.models.decks import Deck
+from sylvan_library.cards.models.decks import Deck
 from data_import.management.commands import print_progress
 from reports.management.commands import download_tournament_decks
 

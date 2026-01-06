@@ -26,10 +26,15 @@ MEDIA_URL = "media/"
 STATIC_ROOT = public_root("static")
 STATIC_URL = "/static/"
 
+# Add the frontend static directory to STATICFILES_DIRS
+# STATICFILES_DIRS = [
+#     root("sylvan_library", "frontend", "static"),
+# ]
+
 # Raises ImproperlyConfigured exception if SECRET_KEY not in os.environ
 SECRET_KEY = env("SECRET_KEY")
 
-ROOT_URLCONF = "conf.urls"
+ROOT_URLCONF = "sylvan_library.conf.urls"
 
 INSTALLED_APPS = [
     "django.contrib.admin",

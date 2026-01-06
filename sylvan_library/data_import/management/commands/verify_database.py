@@ -12,10 +12,10 @@ from django.core.management.base import BaseCommand
 from django.db import models
 from django.db.models import Count
 
-from cards.models.card import Card, CardFace, CardPrinting
-from cards.models.colour import Colour
-from cards.models.rarity import Rarity
-from cards.models.sets import Block, Set
+from sylvan_library.cards.models.card import Card, CardFace, CardPrinting
+from sylvan_library.cards.models.colour import Colour
+from sylvan_library.cards.models.rarity import Rarity
+from sylvan_library.cards.models.sets import Block, Set
 
 WUBRG = Colour.WHITE | Colour.BLUE | Colour.BLACK | Colour.RED | Colour.GREEN
 

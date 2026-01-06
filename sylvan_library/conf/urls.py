@@ -16,12 +16,13 @@ Including another URLconf
 
 from django.conf import settings
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
+from sylvan_library.frontend import views as frontend_views
 
 urlpatterns = [
-    path("", include("frontend.urls")),
-    path("website/", include("website.urls")),
-    path("api/cards/", include("cards.urls")),
+    # Django and API routes should come first
+    path("website/", include("sylvan_library.website.urls")),
+    path("api/cards/", include("sylvan_library.cards.urls")),
     path("admin/", admin.site.urls),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
     path("tinymce/", include("tinymce.urls")),
@@ -31,3 +32,7 @@ if settings.DEBUG_TOOLBAR:
     import debug_toolbar
 
     urlpatterns.append(path("__debug__/", include(debug_toolbar.urls)))
+
+# A catch-all route to render the React application.
+# This should be the last pattern in the list.
+urlpatterns.append(re_path(r"^.*$", frontend_views.index, name="react-app"))

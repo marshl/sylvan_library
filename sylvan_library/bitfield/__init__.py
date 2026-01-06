@@ -5,7 +5,7 @@ django-bitfield
 """
 from __future__ import absolute_import
 
-from bitfield.models import (
+from sylvan_library.bitfield.models import (
     Bit,
     BitHandler,
     CompositeBitField,

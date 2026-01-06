@@ -15,8 +15,8 @@ from django.core.management.base import BaseCommand, OutputWrapper
 from django.db.models import Sum
 from django.db.models.query import QuerySet
 
-from cards.models.colour import Colour
-from cards.models.decks import DeckCard, Deck
+from sylvan_library.cards.models.colour import Colour
+from sylvan_library.cards.models.decks import DeckCard, Deck
 from reports.management.commands import download_tournament_decks
 
 

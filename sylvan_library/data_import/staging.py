@@ -10,7 +10,7 @@ from typing import List, Optional, Dict, Any
 import arrow
 from django.db import models
 
-from cards.models.card import (
+from sylvan_library.cards.models.card import (
     CardFace,
     CardPrinting,
     CardFacePrinting,
@@ -18,8 +18,8 @@ from cards.models.card import (
     CardFaceLocalisation,
     Card,
 )
-from cards.models.colour import Colour, COLOUR_TO_SORT_KEY
-from cards.models.sets import Set
+from sylvan_library.cards.models.colour import Colour, COLOUR_TO_SORT_KEY
+from sylvan_library.cards.models.sets import Set
 
 
 def convert_number_field_to_numerical(val: str) -> float:

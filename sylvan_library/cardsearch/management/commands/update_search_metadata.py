@@ -10,9 +10,9 @@ from typing import Any
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from cards.models.card import CardFace, Card
-from cardsearch.models import CardFaceSearchMetadata, CardSearchMetadata
-from cardsearch.sort_key import get_sort_key
+from sylvan_library.cards.models.card import CardFace, Card
+from sylvan_library.cardsearch.models import CardFaceSearchMetadata, CardSearchMetadata
+from sylvan_library.cardsearch.sort_key import get_sort_key
 
 logger = logging.getLogger("django")
 
