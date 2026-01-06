@@ -35,4 +35,4 @@ if settings.DEBUG_TOOLBAR:
 
 # A catch-all route to render the React application.
 # This should be the last pattern in the list.
-urlpatterns.append(re_path(r"^.*$", frontend_views.index, name="react-app"))
+urlpatterns.append(re_path(r"^react/.*$", frontend_views.index, name="react-app"))

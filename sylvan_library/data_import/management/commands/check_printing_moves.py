@@ -14,9 +14,9 @@ from sylvan_library.cards.models.card import (
     Card,
 )
 from sylvan_library.cards.models.sets import Set
-from data_import._query import query_yes_no
-from data_import.management.commands import get_all_set_data
-from data_import.parsers.set_file_parser import SetFileParser
+from sylvan_library.data_import._query import query_yes_no
+from sylvan_library.data_import.management.commands import get_all_set_data
+from sylvan_library.data_import.parsers.set_file_parser import SetFileParser
 
 logger = logging.getLogger("django")
 

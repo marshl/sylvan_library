@@ -31,7 +31,7 @@ from sylvan_library.cards.models.legality import CardLegality
 from sylvan_library.cards.models.rarity import Rarity
 from sylvan_library.cards.models.ruling import CardRuling
 from sylvan_library.cards.models.sets import Set, Block, Format
-from data_import.models import (
+from sylvan_library.data_import.models import (
     UpdateBlock,
     UpdateSet,
     UpdateMode,

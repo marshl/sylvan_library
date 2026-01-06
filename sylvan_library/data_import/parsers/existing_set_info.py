@@ -8,7 +8,7 @@ from sylvan_library.cards.models.card import (
     CardLocalisation,
     CardFaceLocalisation,
 )
-from data_import.staging import StagedSet
+from sylvan_library.data_import.staging import StagedSet
 
 
 class ExistingSetInfo:

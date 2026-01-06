@@ -20,7 +20,7 @@ from sylvan_library.cards.models.language import Language
 from sylvan_library.cards.models.rarity import Rarity
 from sylvan_library.cards.models.sets import Format
 from data_import import _paths
-from data_import._paths import (
+from sylvan_library.data_import._paths import (
     COLOUR_JSON_PATH,
     RARITY_JSON_PATH,
     LANGUAGE_JSON_PATH,

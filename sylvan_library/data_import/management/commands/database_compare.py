@@ -9,8 +9,8 @@ import typing
 from django.core.management.base import BaseCommand
 from django.db import transaction, models
 
-from data_import.management.commands import get_all_set_data
-from data_import.models import (
+from sylvan_library.data_import.management.commands import get_all_set_data
+from sylvan_library.data_import.models import (
     UpdateSet,
     UpdateCard,
     UpdateBlock,
@@ -23,8 +23,8 @@ from data_import.models import (
     UpdateCardRuling,
     UpdateCardLegality,
 )
-from data_import.parsers.set_file_parser import SetFileParser
-from data_import.parsers.parse_counter import ParseCounter
+from sylvan_library.data_import.parsers.set_file_parser import SetFileParser
+from sylvan_library.data_import.parsers.parse_counter import ParseCounter
 
 logger = logging.getLogger("django")
 

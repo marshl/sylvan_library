@@ -1,7 +1,7 @@
-from data_import.parsers.parse_counter import ParseCounter
-from data_import.parsers.existing_set_info import ExistingSetInfo
-from data_import.parsers.set_parser import SetParser
-from data_import.staging import StagedSet
+from sylvan_library.data_import.parsers.parse_counter import ParseCounter
+from sylvan_library.data_import.parsers.existing_set_info import ExistingSetInfo
+from sylvan_library.data_import.parsers.set_parser import SetParser
+from sylvan_library.data_import.staging import StagedSet
 
 
 class SetFileParser:

@@ -1,6 +1,6 @@
 from sylvan_library.cards.models.card import Card
 from sylvan_library.cards.models.sets import Set, Block
-from data_import.models import (
+from sylvan_library.data_import.models import (
     UpdateSet,
     UpdateBlock,
     UpdateCard,
@@ -13,9 +13,9 @@ from data_import.models import (
     UpdateCardLegality,
     UpdateMode,
 )
-from data_import.parsers.existing_set_info import ExistingSetInfo
-from data_import.parsers.parse_counter import ParseCounter
-from data_import.staging import (
+from sylvan_library.data_import.parsers.existing_set_info import ExistingSetInfo
+from sylvan_library.data_import.parsers.parse_counter import ParseCounter
+from sylvan_library.data_import.staging import (
     StagedSet,
     StagedCard,
     StagedCardFace,

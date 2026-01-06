@@ -14,7 +14,7 @@ from sylvan_library.cards.models.card import (
 )
 from sylvan_library.cards.models.colour import Colour
 from sylvan_library.cards.models.decks import Deck, DeckCard
-from data_import._query import query_yes_no
+from sylvan_library.data_import._query import query_yes_no
 
 logger = logging.getLogger("django")
 

@@ -17,7 +17,7 @@ from django.db import transaction, connection
 
 from sylvan_library.cards.models.card_price import CardPrice
 from data_import import _paths
-from data_import.management.commands import download_file
+from sylvan_library.data_import.management.commands import download_file
 
 logger = logging.getLogger("django")
 

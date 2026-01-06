@@ -16,7 +16,7 @@ from django.db import connection
 from pandas.plotting import register_matplotlib_converters
 
 from sylvan_library.cards.models.decks import Deck
-from data_import.management.commands import print_progress
+from sylvan_library.data_import.management.commands import print_progress
 from reports.management.commands import download_tournament_decks
 
 

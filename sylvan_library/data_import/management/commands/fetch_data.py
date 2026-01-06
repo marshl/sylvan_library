@@ -12,7 +12,7 @@ import requests
 from django.core.management.base import BaseCommand
 
 from data_import import _paths
-from data_import.management.commands import (
+from sylvan_library.data_import.management.commands import (
     pretty_print_json_file,
     download_file,
     print_progress,

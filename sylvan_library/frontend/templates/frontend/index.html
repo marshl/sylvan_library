@@ -8,6 +8,15 @@
 </head>
 <body>
     <div id="root"></div>
-    <script src="{% static 'frontend/main.js' %}"></script>
+
+    {% if debug %}
+        <!-- Load the Vite client for HMR -->
+        <script type="module" src="http://localhost:5173/@vite/client"></script>
+        <!-- Load the main entry point from the Vite dev server -->
+        <script type="module" src="http://localhost:5173/app/index.tsx"></script>
+    {% else %}
+        <!-- Load the built script in production -->
+        <script src="{% static 'main.js' %}"></script>
+    {% endif %}
 </body>
 </html>

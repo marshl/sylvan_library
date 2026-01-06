@@ -16,7 +16,7 @@ from sylvan_library.cards.models.card import (
 )
 from sylvan_library.cards.models.language import Language
 from sylvan_library.cards.models.sets import Set
-from data_import._query import query_yes_no
+from sylvan_library.data_import._query import query_yes_no
 
 logger = logging.getLogger("django")
 
