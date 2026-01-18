@@ -1,15 +1,12 @@
-import re
-
 from django.utils.text import slugify
 
+from sylvan_library.cardsearch.colours import RE_GENERIC_MANA, get_card_face_produces
 from sylvan_library.cards.models.card import Card, CardFace
 from sylvan_library.cards.models.colour import (
     Colour,
     COLOUR_SYMBOLS_TO_CODES,
     COLOUR_TO_SORT_KEY,
 )
-
-RE_GENERIC_MANA = re.compile(r"{(\d+)}")
 
 
 def get_sort_key(card: Card) -> str:
@@ -58,15 +55,11 @@ def get_land_sort_key_parts(card: Card, sortable_faces: list[CardFace]) -> list[
                 and "onto the battlefield" in lower_rules
             ):
                 search_identity |= flag
-
     produces_mana = 0
-    for symbol, flag in COLOUR_SYMBOLS_TO_CODES.items():
-        for face in sortable_faces:
-            result = re.search(
-                r"adds?\W[^\n.]*?{" + symbol + "}", face.rules_text, re.IGNORECASE
-            )
-            if result:
-                produces_mana |= flag
+    for face in sortable_faces:
+        for symbol, does_produce in get_card_face_produces(face).items():
+            if does_produce and symbol != "c":
+                produces_mana |= COLOUR_SYMBOLS_TO_CODES[symbol.upper()]
 
     is_basic = any(
         supertype.name == "Basic"
@@ -75,8 +68,15 @@ def get_land_sort_key_parts(card: Card, sortable_faces: list[CardFace]) -> list[
     )
 
     parts.append(1 if is_basic else 0)
-    parts.append(50 - COLOUR_TO_SORT_KEY[colour_identity | search_identity])
-    parts.append(50 - COLOUR_TO_SORT_KEY[produces_mana | search_identity])
+    colour_key = colour_identity | search_identity | produces_mana
+    # parts.append(COLOUR_TO_SORT_KEY[])
+    # produces_key = produces_mana | search_identity
+    if colour_key == 0:
+        parts.append(32)
+    else:
+        parts.append(COLOUR_TO_SORT_KEY[colour_key])
+
+    parts.append(32 - COLOUR_TO_SORT_KEY[produces_mana | search_identity])
 
     return parts
 

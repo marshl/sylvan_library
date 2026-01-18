@@ -70,3 +70,6 @@ class CardFaceSearchMetadata(models.Model):
     produces_r = models.BooleanField(default=False)
     produces_g = models.BooleanField(default=False)
     produces_c = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.card_face} Search Metadata"
