@@ -5,8 +5,10 @@ Card ownership parameters
 from typing import List
 
 from django.db import connection
-from django.db.models import Q
+from django.db.models import Q, Sum, Subquery, OuterRef
+from django.db.models.functions import Coalesce
 
+from sylvan_library.cards.models.card import Card
 from sylvan_library.cardsearch.parameters.base_parameters import (
     CardSearchNumericalParameter,
     CardSearchContext,
@@ -49,31 +51,52 @@ class CardOwnershipCountParam(CardSearchNumericalParameter):
         super().validate(query_context)
 
     def query(self, query_context: QueryContext) -> Q:
+
         assert self.operator in ("<", "<=", "=", ">=", ">")
 
-        with connection.cursor() as cursor:
-            cursor.execute(
-                # raw = Card.objects.raw(
-                f"""
-SELECT cards_card.id
-FROM cards_card
-JOIN cards_cardprinting
-  ON cards_cardprinting.card_id = cards_card.id
-JOIN cards_cardlocalisation
-  ON cards_cardprinting.id = cards_cardlocalisation.card_printing_id
-LEFT JOIN cards_userownedcard
-  ON cards_userownedcard.card_localisation_id = cards_cardlocalisation.id
-  AND cards_userownedcard.owner_id = %(user_id)s
-GROUP BY cards_card.id
-HAVING SUM(COALESCE(cards_userownedcard.count, 0)) {self.operator} %(number)s
-        """,
-                {"user_id": query_context.user.id, "number": self.number},
+        # Create a subquery to calculate the total ownership count for each card
+        # for the given user.
+        ownership_subquery = (
+            Card.objects.filter(pk=OuterRef("pk"))
+            .annotate(
+                total_count=Sum(
+                    "printings__localisations__ownerships__count",
+                    filter=Q(
+                        printings__localisations__ownerships__owner=query_context.user
+                    ),
+                )
             )
-            rows = cursor.fetchall()
-            ids = list(sum(rows, ()))
+            .values("total_count")
+        )
+
+        # Annotate the main queryset with the ownership count, coalescing nulls to 0
+        annotated_cards = Card.objects.annotate(
+            ownership_count=Coalesce(Subquery(ownership_subquery), 0)
+        )
+
+        # Build the filter condition based on the user's operator and number
+        filter_condition = {f"ownership_count{self.get_filter_operator()}": self.number}
+
+        # Get the IDs of the cards that match the condition
+        card_ids = annotated_cards.filter(**filter_condition).values_list(
+            "id", flat=True
+        )
+
         if query_context.search_mode == CardSearchContext.CARD:
-            return Q(id__in=ids, _negated=self.negated)
-        return Q(card_id__in=ids, _negated=self.negated)
+            return Q(id__in=card_ids, _negated=self.negated)
+        return Q(card_id__in=card_ids, _negated=self.negated)
+
+    def get_filter_operator(self) -> str:
+        """
+        Returns the Django ORM filter operator corresponding to the user's input.
+        """
+        return {
+            "<": "__lt",
+            "<=": "__lte",
+            "=": "",
+            ">=": "__gte",
+            ">": "__gt",
+        }[self.operator]
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         """
@@ -261,7 +284,7 @@ AND cards_rarity.symbol = ANY(%(include_rarities)s)
                 {
                     "user_id": query_context.user.id,
                     "include_rarities": include_rarities,
-                    "exclude_rarities": exclude_rarities,
+                    "exclude_rararities": exclude_rarities,
                 },
             )
             rows = cursor.fetchall()
