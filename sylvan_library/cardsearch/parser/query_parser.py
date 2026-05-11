@@ -2,6 +2,7 @@
 Module for the card query recursive descent parser
 """
 
+import codecs
 from typing import Union, Optional, Callable, List, Type
 
 from sylvan_library.cardsearch.parameters.base_parameters import (
@@ -419,18 +420,17 @@ class CardQueryParser(Parser):
 
     def generic_string(self, quote: str):
         chars = []
-
-        escape_sequences = {"b": "\b", "f": "\f", "n": "\n", "r": "\r", "t": "\t"}
-
         while True:
             char = self.char()
+            if char == "\\":
+                char = self.char()
+                interpreted_char = codecs.decode("\\" + char, "unicode_escape")
+                chars.append(interpreted_char)
+                continue
             if char == quote:
                 break
 
-            if char == "\\":
-                chars.append(escape_sequences.get(char, char))
-            else:
-                chars.append(char)
+            chars.append(char)
 
         return "".join(chars)
 
