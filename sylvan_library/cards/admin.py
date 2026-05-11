@@ -311,7 +311,7 @@ class FormatAdmin(admin.ModelAdmin):
 
 
 @admin.register(CardPrinting)
-class CardPrintingAdmin(admin.ModelAdmin):
+class CardPrintingAdmin(DjangoQLSearchMixin, admin.ModelAdmin):
     """
     Admin for a Card Printing (card in a set)
     """
@@ -347,7 +347,7 @@ class CardFacePrintingModelForm(forms.ModelForm):
 
 
 @admin.register(CardFacePrinting)
-class CardFacePrintingAdmin(admin.ModelAdmin):
+class CardFacePrintingAdmin(DjangoQLSearchMixin, admin.ModelAdmin):
     """
     Admin for a Card Face Printing (one side of a card, printed in a set)
     """
