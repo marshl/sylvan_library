@@ -17,6 +17,7 @@ from sylvan_library.cards.models.card import (
     CardLocalisation,
 )
 from sylvan_library.cards.models.card_price import CardPrice
+from sylvan_library.cards.models.decks import Deck
 from sylvan_library.cards.models.language import Language
 
 
@@ -106,4 +107,14 @@ class CardSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Card
+        fields = "__all__"
+
+
+class DeckSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Deck object
+    """
+
+    class Meta:
+        model = Deck
         fields = "__all__"
