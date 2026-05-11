@@ -19,6 +19,7 @@ from sylvan_library.cardsearch.parameters.base_parameters import (
     QueryContext,
     CardSearchParameter,
     ParameterArgs,
+    get_value_f_equivalent,
 )
 
 
@@ -42,6 +43,9 @@ class CardComplexColourParam(CardSearchParameter):
     @classmethod
     def matches_param_args(cls, param_args: ParameterArgs) -> bool:
         if not super().matches_param_args(param_args):
+            return False
+
+        if get_value_f_equivalent(param_args.value, CardSearchContext.CARD) is not None:
             return False
 
         try:

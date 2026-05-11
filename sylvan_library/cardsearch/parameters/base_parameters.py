@@ -392,23 +392,9 @@ class CardSearchNumericalParameter(CardSearchParameter, ABC):
             self.number = self.get_search_value(query_context)
 
     def get_search_value(self, query_context: QueryContext) -> Union[float, F]:
-        prefix = (
-            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
-        )
-        if self.value in ("toughness", "tough", "tou"):
-            return F(f"{prefix}faces__num_toughness")
-
-        if self.value in ("power", "pow"):
-            return F(f"{prefix}faces__num_power")
-
-        if self.value in ("loyalty", "loy"):
-            return F(f"{prefix}faces__num_loyalty")
-
-        if self.value in ("cmc", "cost", "mv", "manavalue"):
-            return F(f"{prefix}mana_value")
-
-        if self.value in ("inf", "infinity", "∞"):
-            return math.inf
+        f_value = get_value_f_equivalent(self.value, query_context.search_mode)
+        if f_value:
+            return f_value
 
         try:
             return float(self.value)
@@ -443,3 +429,39 @@ class CardSearchBinaryParameter(CardSearchParameter, ABC):
         super().__init__(param_args, negated)
         if param_args.keyword == "not":
             self.negated = not self.negated
+
+
+def get_value_f_equivalent(
+    value: str, card_search_context: CardSearchContext
+) -> F | float | None:
+    """
+    Try to convert the given string value into a Django F object if any apply.
+    For example, "power>toughness" can be converted to "cards where its numerical power is greater than its numerical toughness"
+    If there is no F equivalent, then None is returned
+    :param value: The value to  convert
+    :param card_search_context:
+    :return: An F object for the matching column, otherwise None
+    """
+    prefix = "card__" if card_search_context == CardSearchContext.PRINTING else ""
+    if value in ("toughness", "tough", "tou"):
+        return F(f"{prefix}faces__num_toughness")
+
+    if value in ("power", "pow"):
+        return F(f"{prefix}faces__num_power")
+
+    if value in ("loyalty", "loy"):
+        return F(f"{prefix}faces__num_loyalty")
+
+    if value in ("cmc", "cost", "mv", "manavalue"):
+        return F(f"{prefix}mana_value")
+
+    if value in ("inf", "infinity", "∞"):
+        return math.inf
+
+    if value in ("id", "cid"):
+        return F(f"{prefix}colour_identity_count")
+
+    if value in ("colour", "color"):
+        return F(f"{prefix}faces__colour_count")
+
+    return None

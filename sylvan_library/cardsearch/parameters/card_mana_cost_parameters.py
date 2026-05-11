@@ -17,6 +17,7 @@ from sylvan_library.cardsearch.parameters.base_parameters import (
     QueryContext,
     QueryValidationError,
     CardSearchParameter,
+    get_value_f_equivalent,
 )
 
 
@@ -235,6 +236,9 @@ class CardColourCountParam(CardSearchNumericalParameter):
         if not super().matches_param_args(param_args):
             return False
 
+        if get_value_f_equivalent(param_args.value, CardSearchContext.CARD) is not None:
+            return True
+
         try:
             int(param_args.value)
             return True
@@ -243,7 +247,7 @@ class CardColourCountParam(CardSearchNumericalParameter):
 
     def __init__(self, param_args: ParameterArgs, negated: bool = False):
         super().__init__(param_args, negated)
-        self.in_identity_mode = param_args.keyword in ["identity", "di", "id"]
+        self.in_identity_mode = param_args.keyword in ["identity", "cid", "id"]
         if self.in_identity_mode and self.operator == ":":
             self.operator = "="
 
