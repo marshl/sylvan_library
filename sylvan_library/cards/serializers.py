@@ -3,6 +3,7 @@ Card serializers
 """
 
 from rest_framework import serializers
+from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import StringRelatedField
 
 from sylvan_library.cards.models.card import (
@@ -53,9 +54,15 @@ class RaritySerializer(serializers.ModelSerializer):
 
 
 class SetSerializer(serializers.ModelSerializer):
+
+    child_sets = SerializerMethodField()
+
     class Meta:
         model = Set
         fields = "__all__"
+
+    def get_child_sets(self, obj: Set):
+        return SetSerializer(obj.child_sets, many=True).data
 
 
 class CardFacePrintingSerializer(serializers.ModelSerializer):
