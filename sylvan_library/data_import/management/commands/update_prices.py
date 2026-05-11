@@ -49,63 +49,44 @@ def set_latest_prices():
     with connection.cursor() as cursor:
         cursor.execute(
             """
+WITH latest AS (
+    SELECT DISTINCT ON (card_printing_id)
+        id,
+        card_printing_id
+    FROM cards_cardprice
+    ORDER BY card_printing_id, date DESC
+)
 UPDATE cards_cardprinting
-SET latest_price_id = latest_price.id
-FROM (
-    SELECT *
-    FROM (
-        SELECT cardprice.*,
-        RANK() OVER (PARTITION BY card_printing_id ORDER BY date DESC) rnk
-        FROM cards_cardprice cardprice
-    ) ranked_prices
-    WHERE rnk = 1
-) latest_price
-WHERE latest_price.card_printing_id = cards_cardprinting.id
+SET latest_price_id = latest.id
+FROM latest
+WHERE cards_cardprinting.id = latest.card_printing_id;
 """
         )
 
 
 def set_cheapest_prices():
     with connection.cursor() as cursor:
-        logger.info("Unsetting cheapest prices")
-        cursor.execute(
-            """
-UPDATE cards_cardprice
-SET cheapest_card_id = NULL
-"""
-        )
-
         logger.info("Setting cheapest prices")
         cursor.execute(
             """
+WITH cheapest AS (
+    SELECT DISTINCT ON (cp.card_id)
+        cp.card_id,
+        cprice.id AS price_id
+    FROM cards_cardprinting cp
+    JOIN cards_cardprice cprice ON cprice.id = cp.latest_price_id
+    JOIN cards_set s ON s.id = cp.set_id
+    WHERE cprice.paper_value IS NOT NULL
+    ORDER BY 
+        cp.card_id, 
+        cprice.paper_value ASC, 
+        s.release_date ASC, 
+        cp.id ASC
+)
 UPDATE cards_cardprice
-SET cheapest_card_id = cheapest_price.card_id
-FROM (
-	SELECT DISTINCT
-	price_rank.price_id,
-	price_rank.card_id
-	FROM cards_card
-	JOIN (
-		SELECT
-		cards_cardprinting.card_id,
-		RANK() OVER (
-			PARTITION BY cards_cardprinting.card_id
-			ORDER BY cards_cardprice.paper_value ASC,
-			cards_set.release_date ASC,
-			cards_cardprinting.id) rnk,
-		cards_cardprice.paper_value,
-		cards_cardprice.id price_id
-		FROM cards_cardprinting
-		JOIN cards_cardprice
-		ON cards_cardprice.id = cards_cardprinting.latest_price_id
-		JOIN cards_set
-		ON cards_set.id = cards_cardprinting.set_id
-		WHERE cards_cardprice.paper_value IS NOT NULL
-	) price_rank
-	ON cards_card.id = price_rank.card_id
-	WHERE price_rank.rnk = 1
-) cheapest_price
-WHERE cards_cardprice.id = cheapest_price.price_id
+SET cheapest_card_id = cheapest.card_id
+FROM cheapest
+WHERE cards_cardprice.id = cheapest.price_id;
 """
         )
 
