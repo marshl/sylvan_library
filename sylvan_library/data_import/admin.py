@@ -101,12 +101,15 @@ class UpdateCardFacePrintingAdmin(admin.ModelAdmin):
     """
 
     search_fields = ["card_name", "scryfall_id", "scryfall_oracle_id", "printing_uuid"]
+    list_filter = [
+        "update_mode",
+    ]
 
 
 @admin.register(UpdateCardLocalisation)
 class UpdateCardLocalisationAdmin(admin.ModelAdmin):
     """
-    Admin for the UPdateCardLocalisation model
+    Admin for the UpdateCardLocalisation model
     """
 
     search_fields = ["card_name", "printing_scryfall_id"]
