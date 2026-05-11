@@ -1,29 +1,46 @@
 """
-Module for all useful file paths
+A module for centralising all file paths and ensuring their existence.
 """
 
-from os import path
+from pathlib import Path
 
+# The root directory for all data_import files and folders.
+DATA_DIR = Path(__file__).parent.resolve() / "data"
 
+# Define primary data folders
+DOWNLOADS_DIR = DATA_DIR / "downloads"
+SETS_DIR = DATA_DIR / "sets"
+IMPORT_DIR = DATA_DIR / "import"
+
+# --- MTGJSON Download URLs ---
 JSON_ZIP_DOWNLOAD_URL = "https://mtgjson.com/api/v5/AllSetFiles.zip"
-DATA_FOLDER = path.abspath("data_import/data")
-SET_FOLDER = path.join(DATA_FOLDER, "sets")
-DOWNLOADS_FOLDER_PATH = path.join(DATA_FOLDER, "downloads")
-IMPORT_FOLDER_PATH = path.join(DATA_FOLDER, "import")
-META_DOWNLOAD_URL = "https://mtgjson.com/api/v5/Meta.json"
-META_JSON_PATH = path.join(DOWNLOADS_FOLDER_PATH, "Meta.json")
-
-JSON_ZIP_PATH = path.join(DATA_FOLDER, "AllSetFiles.zip")
-TYPES_DOWNLOAD_URL = "https://mtgjson.com/api/v5/CardTypes.json.zip"
-TYPES_ZIP_PATH = path.join(DOWNLOADS_FOLDER_PATH, "CardTypes.json.zip")
-TYPES_JSON_PATH = path.join(IMPORT_FOLDER_PATH, "CardTypes.json")
-
 PRICES_ZIP_DOWNLOAD_URL = "https://mtgjson.com/api/v5/AllPrices.json.zip"
-PRICES_ZIP_PATH = path.join(DOWNLOADS_FOLDER_PATH, "AllPrices.json.zip")
-PRICES_JSON_PATH = path.join(IMPORT_FOLDER_PATH, "AllPrices.json")
+TYPES_DOWNLOAD_URL = "https://mtgjson.com/api/v5/CardTypes.json.zip"
+META_DOWNLOAD_URL = "https://mtgjson.com/api/v5/Meta.json"
 
-LANGUAGE_JSON_PATH = path.join(DATA_FOLDER, "languages.json")
-COLOUR_JSON_PATH = path.join(DATA_FOLDER, "colours.json")
-RARITY_JSON_PATH = path.join(DATA_FOLDER, "rarities.json")
-FORMAT_JSON_PATH = path.join(DATA_FOLDER, "formats.json")
-FRAME_EFFECT_JSON_PATH = path.join(DATA_FOLDER, "frame_effects.json")
+# --- Local File Paths ---
+
+# Downloaded zip files
+JSON_ZIP_PATH = DOWNLOADS_DIR / "AllSetFiles.zip"
+PRICES_ZIP_PATH = DOWNLOADS_DIR / "AllPrices.json.zip"
+TYPES_ZIP_PATH = DOWNLOADS_DIR / "CardTypes.json.zip"
+
+# Extracted/processed JSON files
+META_JSON_PATH = DOWNLOADS_DIR / "Meta.json"
+PRICES_JSON_PATH = IMPORT_DIR / "AllPrices.json"
+TYPES_JSON_PATH = IMPORT_DIR / "CardTypes.json"
+
+# Static data files
+LANGUAGE_JSON_PATH = DATA_DIR / "languages.json"
+COLOUR_JSON_PATH = DATA_DIR / "colours.json"
+RARITY_JSON_PATH = DATA_DIR / "rarities.json"
+FORMAT_JSON_PATH = DATA_DIR / "formats.json"
+FRAME_EFFECT_JSON_PATH = DATA_DIR / "frame_effects.json"
+
+
+def get_set_files() -> list[Path]:
+    """
+    Gets all json files in the set data directory
+    :return: A list of Path objects for the set files
+    """
+    return list(SETS_DIR.glob("*.json"))

@@ -8,10 +8,12 @@ import logging
 import os
 import sys
 from collections import defaultdict
+from pathlib import Path
 from typing import Generator, Dict, Any, List, Optional
 
 import requests
 
+from data_import._paths import get_set_files
 from sylvan_library.cards.models.sets import Set
 from data_import import _paths
 
@@ -22,7 +24,6 @@ SET_CODES_TO_SKIP = [
     "AAFR",
     "AMH2",
     "ASTX",
-    "Alchemy: Innistrad",
     "DA1",
     "FMB1",
     "HTR",
@@ -52,14 +53,14 @@ SET_CODES_TO_SKIP = [
     "PWP11",
     "PWP12",
     "PWP21",
+    "RMH1",
     "UPLIST",
-    "YMID",
 ]
 
 
 class SetFile:
     def __init__(
-        self, set_code: str, name: str, path: str, release_date: datetime.date
+        self, set_code: str, name: str, path: Path, release_date: datetime.date
     ):
         self.set_code = set_code
         self.name = name
@@ -68,7 +69,7 @@ class SetFile:
 
 
 def get_all_set_data(
-    set_codes: Optional[List[str]] = None,
+    set_code_filter: Optional[List[str]] = None,
 ) -> Generator[Dict[str, Any], None, None]:
     """
     Gets set data from the sets directory and returns each one as a parsed dict
@@ -76,21 +77,16 @@ def get_all_set_data(
     """
     set_list: List[SetFile] = []
 
-    for set_file_path in [
-        os.path.join(_paths.SET_FOLDER, s) for s in os.listdir(_paths.SET_FOLDER)
-    ]:
-        if not set_file_path.endswith(".json"):
-            continue
-
+    for set_file_path in get_set_files():
         set_code = os.path.basename(set_file_path).split(".")[0].strip("_")
-        if set_codes and set_code not in set_codes:
+        if set_code_filter and set_code not in set_code_filter:
             continue
 
         set_obj = parse_set(set_file_path)
         if set_obj is not None:
             set_list.append(set_obj)
 
-    if not set_codes:
+    if not set_code_filter:
         check_for_duplicate_sets(set_list)
         check_for_setcode_mismatches(set_list)
         check_for_missing_sets(set_list)
@@ -103,19 +99,30 @@ def get_all_set_data(
         yield set_data.get("data")
 
 
-def parse_set(set_file_path: str) -> Optional[SetFile]:
+def parse_set(set_file_path: Path) -> Optional[SetFile]:
     with open(set_file_path, "r", encoding="utf8") as set_file:
         set_data = json.load(set_file).get("data")
 
     set_code = set_data["code"]
     set_name = set_data["name"]
-    if (
-        set_data.get("isPreview")
-        or set_data.get("isPartialPreview")
-        or set_name.endswith("Minigames")
-        or set_name.endswith("Art Series")
-        or set_code in SET_CODES_TO_SKIP
-    ):
+    if set_data.get("isPreview") or set_data.get("isPartialPreview"):
+        logger.info(
+            "Skipping set %s (%s) as it is a partial preview", set_name, set_code
+        )
+        return None
+
+    if set_name.endswith("Minigames"):
+        logger.info("Skipping set %s (%s) as it is a minigame set", set_name, set_code)
+        return None
+
+    if set_name.endswith("Art Series"):
+        logger.info(
+            "Skipping set %s (%s) as it is an art serie set", set_name, set_code
+        )
+        return None
+
+    if set_code in SET_CODES_TO_SKIP:
+        logger.info("Skipping set %s (%s) as it is blacklisted", set_name, set_code)
         return None
 
     return SetFile(
