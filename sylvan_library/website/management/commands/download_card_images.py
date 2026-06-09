@@ -106,7 +106,14 @@ def download_images(root_dir: str) -> None:
                 card_image.scryfall_image_url, headers={"User-Agent": USER_AGENT}
             )
             stream.raise_for_status()
-        except requests.HTTPError:
+        except requests.HTTPError as ex:
+            if ex.response.status_code == 404:
+                logger.warning(
+                    "Cannot find image for %s at %s. Skipping...",
+                    card_image,
+                    ex.request.url,
+                )
+                continue
             logger.exception(
                 "Could not download %s for %s",
                 card_image.scryfall_image_url,
