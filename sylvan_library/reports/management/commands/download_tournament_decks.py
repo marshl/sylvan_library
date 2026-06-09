@@ -52,14 +52,11 @@ class Command(BaseCommand):
         super().__init__()
 
     def handle(self, *args, **options) -> None:
-        # worlds_uri = "format?f=ST&meta=97"
-        # pro_tour_uri = "format?f=ST&meta=91"
-        # grand_prix_uri = "format?f=ST&meta=96"
         all_standard_decks_uri = "format?f=ST&meta=58"
         all_modern_decks_uri = "format?f=MO&meta=44&a="
-        # for uri in [worlds_uri, pro_tour_uri, grand_prix_uri]:
-        #     self.parse_event_summary(self.base_uri + uri)
-        # self.parse_format_summary_page(self.base_uri + all_standard_decks_uri, deck_format="standard")
+        self.parse_format_summary_page(
+            self.base_uri + all_standard_decks_uri, deck_format="standard"
+        )
         self.parse_format_summary_page(
             self.base_uri + all_modern_decks_uri, deck_format="modern"
         )
