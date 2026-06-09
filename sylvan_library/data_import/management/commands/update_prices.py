@@ -31,7 +31,8 @@ def download_prices(start_of_week: datetime.date) -> bool:
             date = arrow.get(meta_data["date"]).date()
             if date >= arrow.get(start_of_week).shift(weeks=-1).date():
                 logger.info(
-                    "The price file is up to date, no need to download them again"
+                    "The price file is up to date with a date of %s, no need to download them again",
+                    date,
                 )
                 return False
     logger.info("Downloading prices")
@@ -39,7 +40,7 @@ def download_prices(start_of_week: datetime.date) -> bool:
 
     logger.info("Extracting price file")
     with zipfile.ZipFile(_paths.PRICES_ZIP_PATH) as prices_zip_file:
-        prices_zip_file.extractall(_paths.IMPORT_FOLDER_PATH)
+        prices_zip_file.extractall(_paths.IMPORT_DIR)
 
     return True
 
@@ -216,9 +217,14 @@ class Command(BaseCommand):
         # So the latest date that can be considered is the start of this week
         # The data for that week will be lumped into the date of the start of the previous week
         start_of_week = arrow.utcnow().floor("week").date()
+        try:
+            most_recent_price = CardPrice.objects.order_by("-date").first().date
+            print(most_recent_price)
+        except CardPrice.DoesNotExist:
+            pass
+
         with transaction.atomic():
-            if not download_prices(start_of_week):
-                return
+            download_prices(start_of_week)
             update_prices(start_of_week)
             set_latest_prices()
             set_cheapest_prices()
