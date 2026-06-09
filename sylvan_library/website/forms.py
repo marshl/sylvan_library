@@ -303,11 +303,11 @@ class DeckForm(forms.ModelForm):
         try:
             # We have to ignore tokens, as otherwise Earthshaker Khenra would return two results
             # But you shouldn't be putting tokens in a deck anyway
-            # We also have to ignore "Battle the Horde" which includes cards with the same
-            # name as normal cards
-            card: Card = Card.objects.exclude(printings__set__code="TBTH").get(
-                name__iexact=card_name, is_token=False
-            )
+            # We also have to ignore "Battle the Horde" and "Unknown Event" sets which both include cards
+            # with the same name as normal cards
+            card: Card = Card.objects.exclude(
+                printings__set__code__in=("TBTH", "UNK")
+            ).get(name__iexact=card_name, is_token=False)
         except Card.DoesNotExist as ex:
             stripped_name = re.sub(r"\W", "", card_name)
             card_matches = (
