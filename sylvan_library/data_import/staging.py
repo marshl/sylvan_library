@@ -413,6 +413,11 @@ class StagedCardPrinting(StagedObject):
         self.border_colour = card_data.get("borderColor")
         self.duel_deck_side = card_data.get("duelDeck")
 
+        self.original_release_date = (
+            datetime.date.fromisoformat(card_data["originalReleaseDate"])
+            if card_data.get("originalReleaseDate")
+            else None
+        )
         self.frame_version = card_data.get("frameVersion")
         self.has_foil = card_data.get("hasFoil", True)
         self.has_non_foil = card_data.get("hasNonFoil", True)
@@ -480,13 +485,31 @@ class StagedCardPrinting(StagedObject):
         """
         differences = self.get_object_differences(
             existing_printing,
-            {"id", "set_id", "rarity_id", "card_id", "latest_price_id"},
+            fields_to_ignore={
+                "id",
+                "set_id",
+                "rarity_id",
+                "card_id",
+                "latest_price_id",
+                "original_release_date",
+            },
         )
         if self.rarity.lower() != existing_printing.rarity.name.lower():
             differences["rarity"] = {
                 "from": existing_printing.rarity.name.lower(),
                 "to": self.rarity,
             }
+
+        if existing_printing.original_release_date != self.original_release_date:
+            differences["original_release_date"] = {
+                "from": (
+                    existing_printing.original_release_date.strftime("%Y-%m-%d")
+                    if existing_printing.original_release_date
+                    else None
+                ),
+                "to": self.original_release_date.strftime("%Y-%m-%d"),
+            }
+
         return differences
 
     def get_field_data(self):

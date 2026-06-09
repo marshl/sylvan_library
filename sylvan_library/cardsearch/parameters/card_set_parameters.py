@@ -5,8 +5,10 @@ Card set parameters
 import datetime
 from typing import List
 
-from django.db.models.query import Q
+from django.db.models import Q, F
+from django.db.models.functions import Coalesce
 
+from sylvan_library.cards.models.card import CardPrinting
 from sylvan_library.cards.models.legality import CardLegality
 from sylvan_library.cards.models.sets import Set, Block, Format
 from sylvan_library.cardsearch.parameters.base_parameters import (
@@ -29,7 +31,7 @@ def user_query_to_set(value: str) -> Set:
     matching_sets = Set.objects.filter(name__icontains=value)
 
     if not matching_sets.exists():
-        raise QueryValidationError(f'Unknown set "{value}"') from ex
+        raise QueryValidationError(f'Unknown set "{value}"')
 
     if matching_sets.count() > 1:
         matching_sets = matching_sets.exclude(type="promo")
@@ -256,9 +258,14 @@ class CardDateParam(CardSearchParameter):
 
     def query(self, query_context: QueryContext) -> Q:
         django_op = OPERATOR_MAPPING[self.operator]
-        query = {"set__release_date" + django_op: self.date}
-
-        return Q(**query, _negated=self.negated)
+        annotated_queryset = CardPrinting.objects.annotate(
+            effective_date=Coalesce(F("original_release_date"), F("set__release_date"))
+        )
+        # Filter on the annotated field
+        filtered_queryset = annotated_queryset.filter(
+            **{f"effective_date{django_op}": self.date}
+        )
+        return Q(pk__in=filtered_queryset.values("pk"), _negated=self.negated)
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         return (

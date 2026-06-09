@@ -272,6 +272,8 @@ class CardPrinting(models.Model):
 
     frame_version = models.CharField(max_length=50, blank=True, null=True)
 
+    original_release_date = models.DateField(blank=True, null=True)
+
     set = models.ForeignKey(
         Set, related_name="card_printings", on_delete=models.CASCADE
     )
