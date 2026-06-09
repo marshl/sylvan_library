@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+html,
+body {
+  @apply bg-white dark:bg-gray-950;
+
+  @media (prefers-color-scheme: dark) {
+    color-scheme: dark;
+  }
+}
+
+.set-table {
+
+}
+.set-table tr:nth-child(2n) {
+  background-color: #333;
+}
+.set-table tr a {
+  display: block;
+}
+
+.set-table tr:hover {
+  background-color: #ccc;
+}
+
+.set-table thead tr:hover {
+  background-color: unset;
+}
+
+
+.set-table thead {
+  background: none;
+}
+
+.indent a::before {
+  content: "↳";
+  color: #DDD;
+  margin-right: 1em
+}
+
+.indent-1 a::before {
+  margin-left: 1em
+}
+.indent-2 a::before {
+  margin-left: 2em
+}
+.indent-3 a::before {
+  margin-left: 3em
+}
+.indent-4 a::before {
+  margin-left: 4em
+}

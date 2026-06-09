@@ -1,41 +1,34 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import Layout from './components/Layout';
+import Search from './components/Search';
+import SetList from './components/SetList';
+import Decks from './components/Decks';
 import "./app.css";
 
-// Define some simple components for the routes as an example
 function Home() {
-  return <h2>React Home Page</h2>;
-}
-
-function About() {
-  return <h2>React About Page</h2>;
+  return (
+    <div>
+      <h1>Welcome to Sylvan Library</h1>
+      <p>
+        This is a placeholder home page. You can navigate to the other pages
+        using the links in the top bar.
+      </p>
+    </div>
+  );
 }
 
 export default function App() {
   return (
-    // Set the basename for all routes
     <BrowserRouter basename="/react">
-      <nav>
-        <ul>
-          <li>
-            {/* This will correctly link to "/react/" */}
-            <Link to="/">Home</Link>
-          </li>
-          <li>
-            {/* This will correctly link to "/react/about" */}
-            <Link to="/about">About</Link>
-          </li>
-        </ul>
-      </nav>
-      <hr />
-      <main>
+      <Layout>
         <Routes>
-          {/* This will match "/react/" */}
           <Route path="/" element={<Home />} />
-          {/* This will match "/react/about" */}
-          <Route path="/about" element={<About />} />
+          <Route path="/search" element={<Search />} />
+          <Route path="/sets" element={<SetList />} />
+          <Route path="/decks" element={<Decks />} />
         </Routes>
-      </main>
+      </Layout>
     </BrowserRouter>
   );
 }

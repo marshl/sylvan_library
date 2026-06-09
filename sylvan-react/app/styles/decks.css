@@ -1,0 +1,70 @@
+
+.group-container {
+    display: flex;
+    flex-direction: column;
+    background: #333;
+    border-radius: 0.5em;
+    padding: 1em;
+    margin-bottom: 1em;
+}
+
+.group-container .row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding-bottom: 2em;
+}
+
+.group-container .column {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-bottom: 2em;
+}
+
+.group-container .row:last-child {
+    padding-bottom: 0;
+}
+
+
+.group-container .field-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-right: 1em;
+}
+
+.group-container .field-container:last-child {
+    margin-right: 0;
+}
+
+.field-container label {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.deck-card-list {
+    column-count: 3;
+}
+
+.deck-card-list .card-group {
+    break-inside: avoid;
+    margin-top: 15px;
+}
+
+.deck-card-list .card-group .group-title {
+    font-weight: bold;
+}
+
+.deck-card-list .deck-card {
+    margin-top: 2px;
+}
+
+.deck-action-bar {
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.deck-action-bar .action-button {
+    margin-left: 15px;
+}
