@@ -135,8 +135,13 @@ class CardUsageCountParam(CardSearchNumericalParameter):
         if not query_context.user or query_context.user.is_anonymous:
             raise QueryValidationError("Can't search by deck usage if not logged in")
 
+        self.only_commanders = False
         if self.operator == ":":
-            if self.value in ("any", "ever"):
+            if self.value == "commander":
+                self.operator = ">="
+                self.number = 1
+                self.only_commanders = True
+            elif self.value in ("any", "ever"):
                 self.operator = ">="
                 self.number = 1
             elif self.value == "never":
@@ -150,19 +155,23 @@ class CardUsageCountParam(CardSearchNumericalParameter):
         Gets the Q query object
         :return: The Q object
         """
-        # raw = Card.objects.raw(
-
         with connection.cursor() as cursor:
             cursor.execute(
                 f"""
 SELECT cards_card.id
 FROM cards_card
 LEFT JOIN cards_deckcard ON cards_deckcard.card_id = cards_card.id
-LEFT JOIN cards_deck ON cards_deck.id = cards_deckcard.deck_id AND cards_deck.owner_id = %(user_id)s
+LEFT JOIN cards_deck ON cards_deck.id = cards_deckcard.deck_id 
+WHERE cards_deck.owner_id = %(user_id)s
+AND cards_deckcard.is_commander OR NOT %(only_commanders)s
 GROUP BY cards_card.id
 HAVING COUNT(cards_deck.id) {self.operator} %(number)s
 """,
-                {"user_id": query_context.user.id, "number": self.number},
+                {
+                    "user_id": query_context.user.id,
+                    "number": self.number,
+                    "only_commanders": self.only_commanders,
+                },
             )
             ids = cursor.fetchall()
             ids = list(sum(ids, ()))
