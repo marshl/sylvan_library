@@ -50,7 +50,7 @@ def get_unused_cards(user: User):
     rand = random.Random(user.userprops.unused_cards_seed)
     unused_cards = list(users_cards.exclude(id__in=users_deck_cards).order_by("id"))
     rand.shuffle(unused_cards)
-    unused_cards = unused_cards[:10]
+    unused_cards = unused_cards[:25]
     unused_cards = [
         {
             "card": card,
