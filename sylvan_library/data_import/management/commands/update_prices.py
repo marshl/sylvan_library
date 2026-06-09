@@ -67,6 +67,14 @@ WHERE cards_cardprinting.id = latest.card_printing_id;
 
 def set_cheapest_prices():
     with connection.cursor() as cursor:
+        logger.info("Unsetting cheapest prices")
+        cursor.execute(
+            """
+UPDATE cards_cardprice
+SET cheapest_card_id = NULL
+WHERE cheapest_card_id IS NOT NULL
+            """
+        )
         logger.info("Setting cheapest prices")
         cursor.execute(
             """
