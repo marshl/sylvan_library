@@ -299,7 +299,7 @@ AND cards_rarity.symbol = ANY(%(include_rarities)s)
                 {
                     "user_id": query_context.user.id,
                     "include_rarities": include_rarities,
-                    "exclude_rararities": exclude_rarities,
+                    "exclude_rarities": exclude_rarities,
                 },
             )
             rows = cursor.fetchall()
