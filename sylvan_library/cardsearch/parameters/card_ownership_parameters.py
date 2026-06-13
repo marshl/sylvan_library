@@ -15,6 +15,7 @@ from sylvan_library.cardsearch.parameters.base_parameters import (
     QueryContext,
     QueryValidationError,
     CardSearchBinaryParameter,
+    ParameterArgs,
 )
 
 
@@ -120,6 +121,10 @@ class CardUsageCountParam(CardSearchNumericalParameter):
     The parameter for searching by how many times it has been used in a deck
     """
 
+    def __init__(self, param_args: ParameterArgs, negated: bool = False):
+        super().__init__(param_args, negated)
+        self.only_commanders = False
+
     @classmethod
     def get_parameter_name(cls) -> str:
         return "usage"
@@ -135,7 +140,6 @@ class CardUsageCountParam(CardSearchNumericalParameter):
         if not query_context.user or query_context.user.is_anonymous:
             raise QueryValidationError("Can't search by deck usage if not logged in")
 
-        self.only_commanders = False
         if self.operator == ":":
             if self.value == "commander":
                 self.operator = ">="
@@ -160,10 +164,12 @@ class CardUsageCountParam(CardSearchNumericalParameter):
                 f"""
 SELECT cards_card.id
 FROM cards_card
-LEFT JOIN cards_deckcard ON cards_deckcard.card_id = cards_card.id
-LEFT JOIN cards_deck ON cards_deck.id = cards_deckcard.deck_id 
-WHERE cards_deck.owner_id = %(user_id)s
-AND cards_deckcard.is_commander OR NOT %(only_commanders)s
+LEFT JOIN cards_deckcard 
+ON cards_deckcard.card_id = cards_card.id
+AND (cards_deckcard.is_commander OR NOT %(only_commanders)s)
+LEFT JOIN cards_deck 
+ON cards_deck.id = cards_deckcard.deck_id 
+AND cards_deck.owner_id = %(user_id)s
 GROUP BY cards_card.id
 HAVING COUNT(cards_deck.id) {self.operator} %(number)s
 """,
