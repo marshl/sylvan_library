@@ -234,7 +234,7 @@ class CardMissingPauperParam(CardSearchBinaryParameter):
         with connection.cursor() as cursor:
 
             include_rarities = ["C"]
-            exclude_rarities = ["R", "M", "S"]
+            exclude_rarities = ["R", "M"]
 
             if self.value in ["missing-pauper", "missingpauper", "nopauper"]:
                 exclude_rarities.append("U")
