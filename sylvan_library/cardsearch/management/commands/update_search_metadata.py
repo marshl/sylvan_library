@@ -71,6 +71,7 @@ class Command(BaseCommand):
                     "faces__types",
                     "faces__supertypes",
                     "faces__subtypes",
+                    "printings",
                 ).all()
             ):
                 card_change_count += build_metadata_for_card(card)

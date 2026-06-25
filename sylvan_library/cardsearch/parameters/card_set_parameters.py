@@ -278,58 +278,27 @@ class CardDateParam(CardSearchParameter):
         )
 
 
-class CardUniversesBeyondParam(CardSearchBinaryParameter):
+class CardIsUniversesBeyondParam(CardSearchBinaryParameter):
     """
-    A parameter for searching for cards that have been in a Universes Beyond set
-    For example, Doctor Who, Lord of the Rings (and commander)
+    Parameter for whether a printing is in a universe beyond set, or
+    if the card itself is only ever in a universes beyond set.
     """
 
     @classmethod
-    def get_is_keywords(cls) -> List[str]:
-        return ["ub", "universes-beyond"]
+    def get_is_keywords(cls) -> list[str]:
+        return ["ub", "universes-beyond", "universe_beyond"]
 
     @classmethod
     def get_parameter_name(cls) -> str:
         return "is universes beyond"
 
     def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.PRINTING
+        return CardSearchContext.CARD
 
     def query(self, query_context: QueryContext) -> Q:
-        return Q(
-            **{
-                (
-                    "set__code__in"
-                    if query_context.search_mode == CardSearchContext.PRINTING
-                    else "printings__set__code__in"
-                ): list(
-                    {
-                        "40K",
-                        "ACR",
-                        "BOT",
-                        "FCA",
-                        "FIC",
-                        "FIN",
-                        "LTC",
-                        "LTR",
-                        "PIP",
-                        "REX",
-                        "SPC",
-                        "SPE",
-                        "SPM",
-                        "SPM",
-                        "T40K",
-                        "TFIC",
-                        "TFIN",
-                        "TLA",
-                        "TWHO",
-                        "WHO",
-                    }
-                ),
-                "_negated": self.negated,
-            }
-        )
+        return Q(search_metadata__is_universes_beyond=True, _negated=self.negated)
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
-        verb = "isn't" if self.negated else "is"
-        return f"card {verb} multicoloured"
+        return (
+            "the cards " + ("aren't" if self.negated else "are") + " Universes Beyond"
+        )

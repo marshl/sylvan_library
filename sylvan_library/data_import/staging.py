@@ -436,6 +436,7 @@ class StagedCardPrinting(StagedObject):
         self.is_timeshifted = (
             "isTimeshifted" in card_data and card_data["isTimeshifted"]
         )
+        self.is_universes_beyond = "universesbeyond" in card_data.get("promoTypes", [])
         self.mtg_stocks_id = card_data.get("mtgStocksId")
         self.number = card_data.get("number")
         self.other_languages = card_data.get("foreignData", [])

@@ -13,6 +13,7 @@ class CardSearchMetadata(models.Model):
         Card, related_name="search_metadata", on_delete=models.CASCADE
     )
 
+    is_universes_beyond = models.BooleanField(default=False)
     is_commander = models.BooleanField(default=False)
     super_sort_key = models.CharField(max_length=256, blank=True)
 

@@ -61,7 +61,7 @@ from sylvan_library.cardsearch.parameters.card_set_parameters import (
     CardBlockParam,
     CardLegalityParam,
     CardDateParam,
-    CardUniversesBeyondParam,
+    CardIsUniversesBeyondParam,
 )
 from sylvan_library.cardsearch.parameters.card_type_parameters import (
     CardGenericTypeParam,
@@ -99,6 +99,7 @@ SEARCH_PARAMETERS: List[Type[CardSearchParameter]] = [
     CardIsHybridParam,
     CardIsPhyrexianParam,
     CardIsReprintParam,
+    CardIsUniversesBeyondParam,
     CardIsVanillaParam,
     CardLayoutParameter,
     CardLegalityParam,
@@ -126,7 +127,6 @@ SEARCH_PARAMETERS: List[Type[CardSearchParameter]] = [
     CardRulesTextParam,
     CardSetParam,
     CardSuperKeySortParam,
-    CardUniversesBeyondParam,
     CardUsageCountParam,
     CardWatermarkParam,
 ]

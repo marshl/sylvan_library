@@ -299,6 +299,8 @@ class CardPrinting(models.Model):
 
     is_timeshifted = models.BooleanField()
 
+    is_universes_beyond = models.BooleanField(default=False)
+
     # Can the card be found in foil?
     has_foil = models.BooleanField(default=True)
     # Can the card be found in non-foil?

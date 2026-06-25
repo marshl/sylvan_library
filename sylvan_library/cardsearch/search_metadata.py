@@ -139,6 +139,22 @@ def build_metadata_for_card(card: Card) -> bool:
         changed = True
         metadata.super_sort_key = super_sort_key
 
+    is_universe_beyond = is_card_universes_beyond(card)
+    if metadata.is_universes_beyond != is_universe_beyond:
+        changed = True
+        metadata.is_universes_beyond = is_universe_beyond
+
     if changed:
         metadata.save()
     return changed
+
+
+def is_card_universes_beyond(card: Card) -> bool:
+    """
+    Return whether a card has only universes beyond printings
+    A card printed at least once outside a Universe Beyond set can be considered
+    to be Universe sWithin
+    :param card: The card to check
+    :return: Whether it is only universes beyond
+    """
+    return all(printing.is_universes_beyond for printing in card.printings.all())
