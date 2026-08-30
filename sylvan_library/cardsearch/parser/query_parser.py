@@ -79,6 +79,7 @@ from sylvan_library.cardsearch.parameters.sort_parameters import (
     CardRaritySortParam,
     CardReleaseDateSortParam,
     CardSuperKeySortParam,
+    CardOwnershipSortParam,
 )
 from sylvan_library.cardsearch.parser.base_parser import Parser, ParseError
 
@@ -118,6 +119,7 @@ SEARCH_PARAMETERS: List[Type[CardSearchParameter]] = [
     CardOriginalRulesTextParam,
     CardOriginalTypeParam,
     CardOwnershipCountParam,
+    CardOwnershipSortParam,
     CardPowerSortParam,
     CardPriceParam,
     CardPriceSortParam,

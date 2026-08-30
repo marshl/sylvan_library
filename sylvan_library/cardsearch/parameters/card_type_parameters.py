@@ -121,17 +121,11 @@ class CardOriginalTypeParam(CardSearchParameter):
         Gets the query object
         :return: The search Q object
         """
-        if self.negated:
-            return ~Q(
-                face_printings__in=CardFacePrinting.objects.filter(
-                    Q(original_type__isnull=True)
-                    | Q(original_type__icontains=self.value)
-                )
-            )
         return Q(
             face_printings__in=CardFacePrinting.objects.filter(
                 original_type__icontains=self.value
-            )
+            ),
+            _negated=self.negated,
         )
 
     def get_pretty_str(self, query_context: QueryContext) -> str:

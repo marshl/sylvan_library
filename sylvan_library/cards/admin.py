@@ -464,15 +464,25 @@ class DeckAdmin(DjangoQLSearchMixin, admin.ModelAdmin):
 
 @admin.register(UserOwnedCard)
 class UserOwnedCardAdmin(DjangoQLSearchMixin, admin.ModelAdmin):
+    """
+    Admin for a card owned by a user
+    """
+
     autocomplete_fields = ["card_localisation", "owner"]
 
 
 @admin.register(UserCardChange)
 class UserCardChangeAdmin(DjangoQLSearchMixin, admin.ModelAdmin):
+    """
+    Admin for a user card change
+    """
+
     autocomplete_fields = ["card_localisation", "owner"]
     list_display = ["card_localisation", "date", "difference"]
 
 
 @admin.register(FrameEffect)
 class FrameEffectAdmin(admin.ModelAdmin):
-    pass
+    """
+    Admin for a card printings frame effect
+    """

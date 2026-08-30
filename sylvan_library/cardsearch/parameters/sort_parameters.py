@@ -233,3 +233,18 @@ class CardSuperKeySortParam(CardSortParam):
         if search_context == CardSearchContext.CARD:
             return ["search_metadata__super_sort_key"]
         return ["card__search_metadata__super_sort_key"]
+
+
+class CardOwnershipSortParam(CardSortParam):
+    @classmethod
+    def get_sort_keywords(cls) -> List[str]:
+        return ["bought", "owned"]
+
+    @classmethod
+    def get_parameter_name(cls) -> str:
+        return "sort by date first owned"
+
+    def get_sort_keys(self, search_context: CardSearchContext) -> List[str]:
+        if search_context == CardSearchContext.CARD:
+            return ["printings__localisations__user_changes__date"]
+        return ["card__printings__localisations__user_changes__date"]
