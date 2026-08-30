@@ -5,6 +5,7 @@ Module for the card query recursive descent parser
 import codecs
 from typing import Union, Optional, Callable, List, Type
 
+from sylvan_library.cardsearch.parameters.card_deck_parameters import CardDeckParam
 from sylvan_library.cardsearch.parameters.base_parameters import (
     CardSearchTreeNode,
     CardSearchOr,
@@ -90,6 +91,7 @@ SEARCH_PARAMETERS: List[Type[CardSearchParameter]] = [
     CardColourSortParam,
     CardComplexColourParam,
     CardDateParam,
+    CardDeckParam,
     CardFlavourTextParam,
     CardGameParam,
     CardGenericTypeParam,

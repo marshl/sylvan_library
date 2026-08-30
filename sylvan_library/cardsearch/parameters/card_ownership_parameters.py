@@ -131,7 +131,7 @@ class CardUsageCountParam(CardSearchNumericalParameter):
 
     @classmethod
     def get_search_keywords(cls) -> List[str]:
-        return ["used", "decks", "deck"]
+        return ["used"]
 
     def get_default_search_context(self) -> CardSearchContext:
         return CardSearchContext.CARD
