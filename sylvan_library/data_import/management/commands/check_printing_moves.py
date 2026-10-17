@@ -60,15 +60,24 @@ class Command(BaseCommand):
                 moves[(set_code, new_set_code)].append(scryfall_id)
 
         for (old_set_code, new_set_code), scryfall_ids in moves.items():
+            filtered_scryfall_ids = CardPrinting.objects.filter(
+                scryfall_id__in=scryfall_ids
+            ).values_list("scryfall_id", flat=True)
+            if not filtered_scryfall_ids:
+                continue
+
             print(
                 f"The following cards have been moved from {old_set_code} to {new_set_code}:"
             )
-            for scryfall_id in scryfall_ids:
-                printing = CardPrinting.objects.get(scryfall_id=scryfall_ids)
-                print(f"\t{printing} ({scryfall_id}")
+            for scryfall_id in filtered_scryfall_ids:
+                try:
+                    printing = CardPrinting.objects.get(scryfall_id=scryfall_id)
+                    print(f"\t{printing} ({scryfall_id})")
+                except CardPrinting.DoesNotExist:
+                    print(f"\t{scryfall_id}")
 
             if query_yes_no("Would you like to move them all?"):
-                for scryfall_id in scryfall_ids:
+                for scryfall_id in filtered_scryfall_ids:
                     existing_printing = CardPrinting.objects.get(
                         scryfall_id=scryfall_id
                     )
