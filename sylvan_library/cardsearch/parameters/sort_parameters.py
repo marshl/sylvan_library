@@ -4,6 +4,9 @@ The module for all search parameters
 
 from typing import List
 
+from django.db.models import F, QuerySet
+from django.db.models.functions import Coalesce
+
 from sylvan_library.cardsearch.parameters.base_parameters import (
     CardSortParam,
     CardSearchContext,
@@ -214,10 +217,22 @@ class CardReleaseDateSortParam(CardSortParam):
     def get_parameter_name(cls) -> str:
         return "sort by release date"
 
-    def get_sort_keys(self, search_context: CardSearchContext) -> List[str]:
+    def annotate_queryset(
+        self, queryset: QuerySet, search_context: CardSearchContext
+    ) -> QuerySet:
         if search_context == CardSearchContext.CARD:
-            return ["printings__set__release_date"]
-        return ["set__release_date"]
+            return queryset.annotate(
+                effective_date=Coalesce(
+                    F("printings__original_release_date"),
+                    F("printings__set__release_date"),
+                )
+            )
+        return queryset.annotate(
+            effective_date=Coalesce(F("original_release_date"), F("set__release_date"))
+        )
+
+    def get_sort_keys(self, search_context: CardSearchContext) -> List[str]:
+        return ["effective_date"]
 
 
 class CardSuperKeySortParam(CardSortParam):

@@ -12,7 +12,7 @@ from functools import reduce
 from typing import List, Union, Dict, Optional
 
 from django.contrib.auth import get_user_model
-from django.db.models import F, OrderBy
+from django.db.models import F, OrderBy, QuerySet
 from django.db.models.query import Q
 
 logger = logging.getLogger("django")
@@ -238,6 +238,11 @@ class CardSortParam(CardSearchParameter, metaclass=ABCMeta):
         :return:
         """
         raise NotImplementedError()
+
+    def annotate_queryset(
+        self, queryset: QuerySet, search_context: CardSearchContext
+    ) -> QuerySet:
+        return queryset
 
 
 class CardSearchBranchNode(CardSearchTreeNode, ABC):

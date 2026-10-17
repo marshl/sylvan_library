@@ -125,6 +125,11 @@ class BaseSearch:
         if "?" not in distinct_fields:
             queryset = queryset.distinct(*distinct_fields)
 
+        for sort_param in self.sort_params:
+            queryset = sort_param.annotate_queryset(
+                queryset, search_context=CardSearchContext.CARD
+            )
+
         queryset = queryset.order_by(
             *[
                 order
