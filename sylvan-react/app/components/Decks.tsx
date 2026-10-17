@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 interface Deck {
   id: number;
@@ -28,7 +28,7 @@ function DeckList({ decks }: { decks: Deck[] }) {
           </div>
           <div>
             <h2 className="search-result-title">
-              <Link to={`/react/decks/${deck.id}`}>
+              <Link to={`/decks/${deck.id}`}>
                 {deck.is_prototype ? (
                   <em>{deck.name} [prototype]</em>
                 ) : (
@@ -93,10 +93,10 @@ export default function Decks() {
     <div className="main-content">
       <h1>Your Decks</h1>
       <div style={{ margin: '15px' }}>
-        <Link to="/react/decks/create" className="action-button">
+        <Link to="/decks/create" className="action-button">
           Create New Deck
         </Link>
-        <Link to="/react/decks/stats" className="action-button">
+        <Link to="/decks/stats" className="action-button">
           Deck Stats
         </Link>
       </div>

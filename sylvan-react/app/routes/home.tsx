@@ -1,13 +1,17 @@
 import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
 
 export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
-  ];
+  return [{ title: "Sylvan Library" }];
 }
 
 export default function Home() {
-  return <Welcome />;
+  return (
+    <div>
+      <h1>Welcome to Sylvan Library</h1>
+      <p>
+        This is a placeholder home page. You can navigate to the other pages
+        using the links in the top bar.
+      </p>
+    </div>
+  );
 }

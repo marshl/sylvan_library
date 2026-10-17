@@ -2,15 +2,16 @@
 Views
 """
 
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins
 
-from sylvan_library.cards.models.card import Card
+from sylvan_library.cards.models.card import Card, CardPrinting
 from sylvan_library.cards.models.decks import Deck
 from sylvan_library.cards.models.sets import Set
 from sylvan_library.cards.serializers import (
     CardSerializer,
     SetSerializer,
     DeckSerializer,
+    CardPrintingDetailsSerializer,
 )
 
 
@@ -60,6 +61,17 @@ class AllSetsViewSet(viewsets.ModelViewSet):
     )
     serializer_class = SetSerializer
     pagination_class = None
+
+
+class CardPrintingDetailsViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    """
+    Read-only endpoint that surfaces the data for the search-result Details tab.
+    """
+
+    queryset = CardPrinting.objects.select_related("set", "card").prefetch_related(
+        "face_printings", "card__legalities__format"
+    )
+    serializer_class = CardPrintingDetailsSerializer
 
 
 class DeckViewSet(viewsets.ModelViewSet):

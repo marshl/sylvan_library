@@ -1,39 +1,31 @@
+import { reactRouter } from "@react-router/dev/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import path from "path";
 
-export default defineConfig({
-  plugins: [tailwindcss(), tsconfigPaths()],
-  // Explicitly set the project root
+const DJANGO_BACKEND = process.env.DJANGO_BACKEND || "http://localhost:8000";
+
+// React Router requires Vite's `base` to be a prefix of `basename`.
+// - In dev, the app is served at http://localhost:5173/react/, so base == basename.
+// - In prod, Django's built HTML lives under /static/react/, but the app URL is /react/;
+//   at build time we set base to /static/react/ so hashed asset URLs resolve through
+//   Django's staticfiles handler.  The dev-only prefix check doesn't run at build time.
+export default defineConfig(({ command }) => ({
+  plugins: [reactRouter(), tailwindcss(), tsconfigPaths()],
   root: path.resolve(__dirname),
-  // Configure the dev server
+  base: command === "serve" ? "/react/" : "/static/react/",
   server: {
-    // The base URL for assets during development
-    base: "/static/frontend/",
-    // The port for the Vite dev server
     port: 5173,
-    // Enable strict port checking
     strictPort: true,
-  },
-  build: {
-    // Set the output directory for the build
-    outDir: path.resolve(__dirname, "../sylvan_library/frontend/static"),
-    // Ensure the output directory is emptied before each build
-    emptyOutDir: true,
-    // The base URL for assets in the production build
-    base: "/static/frontend/",
-    rollupOptions: {
-      // Specify the entry point of your React application
-      input: path.resolve(__dirname, "app/index.tsx"),
-      output: {
-        // Define the name of the output file to match the Django template
-        entryFileNames: "main.js",
-        // Define the names for any additional chunks (if any)
-        chunkFileNames: "[name].js",
-        // Define the names for any assets
-        assetFileNames: "[name].[ext]",
-      },
+    proxy: {
+      "/api": { target: DJANGO_BACKEND, changeOrigin: true },
+      "/static": { target: DJANGO_BACKEND, changeOrigin: true },
+      "/website": { target: DJANGO_BACKEND, changeOrigin: true },
     },
   },
-});
+  build: {
+    outDir: path.resolve(__dirname, "../sylvan_library/frontend/static/react"),
+    emptyOutDir: true,
+  },
+}));

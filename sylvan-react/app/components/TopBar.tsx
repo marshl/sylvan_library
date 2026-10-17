@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 export default function TopBar() {
   return (
@@ -16,7 +16,7 @@ export default function TopBar() {
           </form>
         </div>
         <div className="profile-button">
-          <Link to="/react/decks" className="action-button">
+          <Link to="/decks" className="action-button">
             Decks
           </Link>
         </div>

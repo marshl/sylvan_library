@@ -8,7 +8,15 @@ import {
 } from "react-router";
 
 import type { Route } from "./+types/root";
-import "./app.css";
+import SiteLayout from "./components/Layout";
+import "./styles/app.css";
+import "./styles/style.css";
+import "./styles/top-bar.css";
+import "./styles/results.css";
+import "./styles/sets.css";
+import "./styles/decks.css";
+import "./styles/pager.css";
+import "./styles/tabs.css";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -29,6 +37,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Sylvan Library</title>
         <Meta />
         <Links />
       </head>
@@ -42,7 +51,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <SiteLayout>
+      <Outlet />
+    </SiteLayout>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
