@@ -76,6 +76,11 @@ MIDDLEWARE = [
 if DEBUG_TOOLBAR:
     MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
 
+if DEBUG:
+    # The Vite dev server proxies to Django, so POSTs from the React app
+    # arrive with the Vite origin rather than Django's
+    CSRF_TRUSTED_ORIGINS = ["http://localhost:5173"]
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -109,27 +114,27 @@ if not DEBUG:
     REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = (
         "rest_framework.renderers.JSONRenderer",
     )
-
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "console": {
-            "level": "DEBUG",
-            "class": "logging.StreamHandler",
-        },
-        # Optional: Save queries to a file
-        "file": {
-            "level": "DEBUG",
-            "class": "logging.FileHandler",
-            "filename": "sql_queries.log",
-        },
-    },
-    "loggers": {
-        "django.db.backends": {
-            "handlers": ["console", "file"],  # Choose where you want to output them
-            "level": "DEBUG",
-            "propagate": False,
-        },
-    },
-}
+#
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "handlers": {
+#         "console": {
+#             "level": "DEBUG",
+#             "class": "logging.StreamHandler",
+#         },
+#         # Optional: Save queries to a file
+#         "file": {
+#             "level": "DEBUG",
+#             "class": "logging.FileHandler",
+#             "filename": "sql_queries.log",
+#         },
+#     },
+#     "loggers": {
+#         "django.db.backends": {
+#             "handlers": ["console", "file"],  # Choose where you want to output them
+#             "level": "DEBUG",
+#             "propagate": False,
+#         },
+#     },
+# }

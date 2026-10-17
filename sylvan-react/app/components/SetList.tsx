@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { fetchJson } from '../api';
 
 interface Set {
   id: number;
@@ -33,14 +34,9 @@ export default function SetList() {
   useEffect(() => {
     async function fetchSets() {
       try {
-        const response = await fetch('/api/cards/all-sets/');
-        if (!response.ok) {
-          throw new Error('Failed to fetch sets');
-        }
-        const data = await response.json();
-        setSets(data);
-      } catch (error) {
-        setError(error.message);
+        setSets(await fetchJson<Set[]>('/api/cards/all-sets/'));
+      } catch (err) {
+        setError((err as Error).message);
       } finally {
         setLoading(false);
       }

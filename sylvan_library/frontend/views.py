@@ -2,7 +2,13 @@ from pathlib import Path
 
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseRedirect
+from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import ensure_csrf_cookie
+from rest_framework.permissions import AllowAny
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 
 BUILT_INDEX = Path(__file__).resolve().parent / "static" / "react" / "index.html"
@@ -26,3 +32,25 @@ def index(request):
             content_type="text/plain",
         )
     return HttpResponse(html, content_type="text/html")
+
+
+@method_decorator(ensure_csrf_cookie, name="dispatch")
+class CurrentUserView(APIView):
+    """
+    Tells the React app who is logged in. This is the first request the app
+    makes, so it also sets the csrftoken cookie that later POSTs need.
+    """
+
+    permission_classes = [AllowAny]
+
+    def get(self, request: Request) -> Response:
+        """
+        Returns the current user, or is_authenticated: false for anonymous users
+        """
+        user = request.user
+        return Response(
+            {
+                "is_authenticated": user.is_authenticated,
+                "username": user.get_username() if user.is_authenticated else None,
+            }
+        )

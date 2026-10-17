@@ -24,6 +24,7 @@ urlpatterns = [
     path("website/", include("sylvan_library.website.urls")),
     path("api/cards/", include("sylvan_library.cards.urls")),
     path("api/search/", include("sylvan_library.cardsearch.urls")),
+    path("api/me/", frontend_views.CurrentUserView.as_view(), name="current_user"),
     path("admin/", admin.site.urls),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
     path("tinymce/", include("tinymce.urls")),

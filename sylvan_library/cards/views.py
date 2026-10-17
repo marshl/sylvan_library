@@ -84,6 +84,6 @@ class DeckViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        if self.request.user:
-            return queryset.filter(owner=self.request.user)
-        return queryset
+        if not self.request.user.is_authenticated:
+            return queryset.none()
+        return queryset.filter(owner=self.request.user)

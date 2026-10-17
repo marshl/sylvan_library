@@ -9,6 +9,7 @@ import {
 
 import type { Route } from "./+types/root";
 import SiteLayout from "./components/Layout";
+import { UserProvider } from "./user";
 import "./styles/app.css";
 import "./styles/style.css";
 import "./styles/top-bar.css";
@@ -52,9 +53,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <SiteLayout>
-      <Outlet />
-    </SiteLayout>
+    <UserProvider>
+      <SiteLayout>
+        <Outlet />
+      </SiteLayout>
+    </UserProvider>
   );
 }
 

@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "react-router build",
+    "build": "react-router build && rm -rf ../sylvan_library/frontend/static/react && cp -r build/client ../sylvan_library/frontend/static/react",
     "dev": "react-router dev",
     "typecheck": "react-router typegen && tsc"
   },

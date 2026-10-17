@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router';
+import { fetchJson } from '../api';
+import { loginUrl, useCurrentUser } from '../user';
 
 interface Deck {
   id: number;
@@ -55,6 +57,20 @@ function DeckList({ decks }: { decks: Deck[] }) {
 }
 
 export default function Decks() {
+  const { user, loading: userLoading } = useCurrentUser();
+
+  if (userLoading) return <div>Loading...</div>;
+  if (!user?.is_authenticated) {
+    return (
+      <div className="main-content">
+        <a href={loginUrl()}>Log in</a> to see your decks.
+      </div>
+    );
+  }
+  return <DeckLists />;
+}
+
+function DeckLists() {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,14 +78,10 @@ export default function Decks() {
   useEffect(() => {
     async function fetchDecks() {
       try {
-        const response = await fetch('/api/cards/deck/');
-        if (!response.ok) {
-          throw new Error('Failed to fetch decks');
-        }
-        const data = await response.json();
+        const data = await fetchJson<{ results: Deck[] }>('/api/cards/deck/');
         setDecks(data.results);
-      } catch (error) {
-        setError(error.message);
+      } catch (err) {
+        setError((err as Error).message);
       } finally {
         setLoading(false);
       }

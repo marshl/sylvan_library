@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { fetchJson, isAbortError } from '../api';
 
 interface Legality {
   format: string;
@@ -51,16 +52,14 @@ function DetailsTab({ printingId }: { printingId: number }) {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(
-          `/api/cards/printing-details/${printingId}/`,
-          { signal: controller.signal },
+        setData(
+          await fetchJson<DetailsPayload>(
+            `/api/cards/printing-details/${printingId}/`,
+            { signal: controller.signal },
+          ),
         );
-        if (!response.ok) {
-          throw new Error(`Details request failed (${response.status})`);
-        }
-        setData(await response.json());
       } catch (err) {
-        if ((err as Error).name === 'AbortError') return;
+        if (isAbortError(err)) return;
         setError((err as Error).message);
       } finally {
         setLoading(false);

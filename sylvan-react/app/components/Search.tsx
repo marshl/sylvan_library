@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router';
 import Pager from './Pager';
 import CardResultDetails from './CardResultDetails';
-
-const PAGE_SIZE = 10;
+import { fetchJson, isAbortError } from '../api';
 
 interface CardFace {
   id: number;
@@ -46,6 +45,11 @@ interface SearchResult {
 
 interface SearchResponse {
   count: number;
+  page: number;
+  page_size: number;
+  num_pages: number;
+  pretty_query_message: string | null;
+  error_message: string | null;
   results: SearchResult[];
 }
 
@@ -56,8 +60,7 @@ export default function Search() {
   const [query, setQuery] = useState(urlQuery);
   const submittedQuery = urlQuery;
   const page = urlPage;
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [count, setCount] = useState(0);
+  const [response, setResponse] = useState<SearchResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,8 +70,7 @@ export default function Search() {
 
   useEffect(() => {
     if (!submittedQuery) {
-      setResults([]);
-      setCount(0);
+      setResponse(null);
       return;
     }
     const controller = new AbortController();
@@ -80,17 +82,13 @@ export default function Search() {
           q: submittedQuery,
           page: String(page),
         });
-        const response = await fetch(`/api/search/search/?${params}`, {
-          signal: controller.signal,
-        });
-        if (!response.ok) {
-          throw new Error(`Search failed (${response.status})`);
-        }
-        const data: SearchResponse = await response.json();
-        setResults(data.results);
-        setCount(data.count);
+        setResponse(
+          await fetchJson<SearchResponse>(`/api/search/search/?${params}`, {
+            signal: controller.signal,
+          }),
+        );
       } catch (err) {
-        if ((err as Error).name === 'AbortError') return;
+        if (isAbortError(err)) return;
         setError((err as Error).message);
       } finally {
         setLoading(false);
@@ -117,6 +115,10 @@ export default function Search() {
     setSearchParams(params);
   }
 
+  const results = response?.results ?? [];
+  const count = response?.count ?? 0;
+  const pageSize = response?.page_size ?? 25;
+
   return (
     <div className="results-page">
       <form className="search-form" onSubmit={onSubmit}>
@@ -135,11 +137,24 @@ export default function Search() {
       {submittedQuery && !error && (
         <>
           <div className="action-bar">
-            <div className="results-count">
-              {loading ? 'Searching…' : `${count} result${count === 1 ? '' : 's'} found`}
+            <div className="action-bar-row">
+              {response?.error_message && (
+                <div className="result-count-container">{response.error_message}</div>
+              )}
+              <div className="result-count-container">
+                <div className="results-count">
+                  {loading || !response
+                    ? 'Searching…'
+                    : `${count} result${count === 1 ? '' : 's'} found${
+                        response.pretty_query_message
+                          ? ` where ${response.pretty_query_message}`
+                          : ''
+                      }`}
+                </div>
+              </div>
             </div>
           </div>
-          <Pager count={count} page={page} pageSize={PAGE_SIZE} onPageChange={setPage} />
+          <Pager count={count} page={page} pageSize={pageSize} onPageChange={setPage} />
           <div className="search-result-list">
             {results.map(({ card, selected_printing }) => {
               const facePrintings = selected_printing?.face_printings ?? [];
@@ -199,7 +214,7 @@ export default function Search() {
               );
             })}
           </div>
-          <Pager count={count} page={page} pageSize={PAGE_SIZE} onPageChange={setPage} />
+          <Pager count={count} page={page} pageSize={pageSize} onPageChange={setPage} />
         </>
       )}
     </div>
