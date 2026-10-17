@@ -35,7 +35,7 @@
                 <b>Release date: </b>
             </span>
             <div class="subtitle" style="display:inline-flex;">
-                {{ printing.set.release_date }}
+                {{ printing.original_release_date | default:printing.set.release_date }}
             </div>
             <br/>
             <span class="subtitle">
