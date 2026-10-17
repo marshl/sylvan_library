@@ -9,7 +9,10 @@
   },
   "dependencies": {
     "@react-router/node": "^7.2.0",
+    "font-awesome": "^4.7.0",
     "isbot": "^5.1.31",
+    "keyrune": "^3.19.0",
+    "mana-font": "^1.18.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-router": "^7.2.0"

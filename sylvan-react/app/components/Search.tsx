@@ -1,57 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router';
 import Pager from './Pager';
-import CardResultDetails from './CardResultDetails';
+import SearchResult from './SearchResult';
 import { fetchJson, isAbortError } from '../api';
-
-interface CardFace {
-  id: number;
-  name: string;
-  mana_cost: string | null;
-  type_line: string | null;
-  rules_text: string | null;
-  power: string | null;
-  toughness: string | null;
-  loyalty: string | null;
-}
-
-interface Card {
-  id: number;
-  name: string;
-  faces: CardFace[];
-}
-
-interface CardFacePrinting {
-  id: number;
-  image_url: string;
-}
-
-interface CardSet {
-  id: number;
-  name: string;
-  code: string;
-}
-
-interface CardPrinting {
-  id: number;
-  set: CardSet;
-  face_printings: CardFacePrinting[];
-}
-
-interface SearchResult {
-  card: Card;
-  selected_printing: CardPrinting;
-}
-
-interface SearchResponse {
-  count: number;
-  page: number;
-  page_size: number;
-  num_pages: number;
-  pretty_query_message: string | null;
-  error_message: string | null;
-  results: SearchResult[];
-}
+import type { SearchResponse } from '../types';
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -63,6 +15,7 @@ export default function Search() {
   const [response, setResponse] = useState<SearchResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expandedCardId, setExpandedCardId] = useState<number | null>(null);
 
   useEffect(() => {
     setQuery(urlQuery);
@@ -82,11 +35,12 @@ export default function Search() {
           q: submittedQuery,
           page: String(page),
         });
-        setResponse(
-          await fetchJson<SearchResponse>(`/api/search/search/?${params}`, {
-            signal: controller.signal,
-          }),
-        );
+        const data = await fetchJson<SearchResponse>(`/api/search/search/?${params}`, {
+          signal: controller.signal,
+        });
+        setResponse(data);
+        // A single result is almost certainly the card being looked for
+        setExpandedCardId(data.results.length === 1 ? data.results[0].card.id : null);
       } catch (err) {
         if (isAbortError(err)) return;
         setError((err as Error).message);
@@ -113,6 +67,7 @@ export default function Search() {
     if (submittedQuery) params.query = submittedQuery;
     if (nextPage > 1) params.page = String(nextPage);
     setSearchParams(params);
+    window.scrollTo(0, 0);
   }
 
   const results = response?.results ?? [];
@@ -156,63 +111,16 @@ export default function Search() {
           </div>
           <Pager count={count} page={page} pageSize={pageSize} onPageChange={setPage} />
           <div className="search-result-list">
-            {results.map(({ card, selected_printing }) => {
-              const facePrintings = selected_printing?.face_printings ?? [];
-              return (
-                <div key={card.id} className="search-result">
-                  <div className="search-result-images">
-                    {facePrintings.map((fp) => (
-                      <img
-                        key={fp.id}
-                        className="search-result-image"
-                        src={fp.image_url}
-                        alt={card.name}
-                        loading="lazy"
-                      />
-                    ))}
-                  </div>
-                  <div className="search-result-faces">
-                    {card.faces.map((face) => (
-                      <div key={face.id} className="search-result-base-details">
-                        <div className="search-result-title">
-                          <span className="face-name">{face.name}</span>
-                          {face.mana_cost && (
-                            <span className="search-result-mana-cost">
-                              {' '}
-                              {face.mana_cost}
-                            </span>
-                          )}
-                        </div>
-                        {face.type_line && (
-                          <div className="search-result-subtitle">{face.type_line}</div>
-                        )}
-                        {face.rules_text && (
-                          <div className="search-result-text">{face.rules_text}</div>
-                        )}
-                        {face.power !== null && face.toughness !== null && (
-                          <div className="search-result-pow-tuff">
-                            {face.power}/{face.toughness}
-                          </div>
-                        )}
-                        {face.loyalty !== null && (
-                          <div className="search-result-loyalty">
-                            Loyalty: {face.loyalty}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                    {selected_printing?.set && (
-                      <div className="search-result-set">
-                        {selected_printing.set.name} ({selected_printing.set.code})
-                      </div>
-                    )}
-                    {selected_printing?.id && (
-                      <CardResultDetails printingId={selected_printing.id} />
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+            {results.map((result) => (
+              <SearchResult
+                // Keyed on the page too so a card's local state (selected printing,
+                // ownership refreshes) doesn't leak between searches
+                key={`${submittedQuery}:${page}:${result.card.id}`}
+                result={result}
+                expanded={expandedCardId === result.card.id}
+                onExpand={() => setExpandedCardId(result.card.id)}
+              />
+            ))}
           </div>
           <Pager count={count} page={page} pageSize={pageSize} onPageChange={setPage} />
         </>

@@ -10,6 +10,9 @@ import {
 import type { Route } from "./+types/root";
 import SiteLayout from "./components/Layout";
 import { UserProvider } from "./user";
+import "keyrune/css/keyrune.min.css";
+import "mana-font/css/mana.min.css";
+import "font-awesome/css/font-awesome.min.css";
 import "./styles/app.css";
 import "./styles/style.css";
 import "./styles/top-bar.css";
@@ -20,6 +23,7 @@ import "./styles/pager.css";
 import "./styles/tabs.css";
 
 export const links: Route.LinksFunction = () => [
+  { rel: "icon", href: `${import.meta.env.BASE_URL}favicon.ico` },
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
     rel: "preconnect",

@@ -94,16 +94,40 @@ class CardFacePrintingSerializer(serializers.ModelSerializer):
         return settings.STATIC_URL + path
 
 
+def get_context_user(serializer: serializers.Serializer):
+    """
+    Gets the logged in user from the serializer's request context, if there is one
+    """
+    request = serializer.context.get("request")
+    if request and request.user.is_authenticated:
+        return request.user
+    return None
+
+
 class CardPrintingSerializer(serializers.ModelSerializer):
     set = SetSerializer()
     rarity = RaritySerializer()
     latest_price = CardPriceSerializer()
     face_printings = CardFacePrintingSerializer(many=True)
     localisations = CardLocalisationSerializer(many=True)
+    keyrune_code = SerializerMethodField()
+    owned_count = SerializerMethodField()
 
     class Meta:
         model = CardPrinting
         fields = "__all__"
+
+    def get_keyrune_code(self, obj: CardPrinting) -> str:
+        return obj.get_set_keyrune_code()
+
+    def get_owned_count(self, obj: CardPrinting) -> int | None:
+        """
+        How many of this printing the user owns, or None for anonymous users
+        """
+        user = get_context_user(self)
+        if not user:
+            return None
+        return obj.get_user_ownership_count(user, prefetched=True)
 
 
 class CardFaceSerializer(serializers.ModelSerializer):
@@ -124,10 +148,20 @@ class CardSerializer(serializers.ModelSerializer):
 
     faces = CardFaceSerializer(many=True, read_only=True)
     printings = CardPrintingSerializer(many=True, read_only=True)
+    owned_count = SerializerMethodField()
 
     class Meta:
         model = Card
         fields = "__all__"
+
+    def get_owned_count(self, obj: Card) -> int | None:
+        """
+        How many of this card the user owns across all printings, or None for anonymous users
+        """
+        user = get_context_user(self)
+        if not user:
+            return None
+        return obj.get_user_ownership_count(user, prefetched=True)
 
 
 class DeckSerializer(serializers.ModelSerializer):

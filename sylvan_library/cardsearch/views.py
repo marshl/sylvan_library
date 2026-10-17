@@ -74,6 +74,8 @@ class CardSearchView(APIView):
                 "num_pages": search.paginator.num_pages,
                 "pretty_query_message": search.get_pretty_str(query_context),
                 "error_message": None,
-                "results": SearchResultSerializer(search.results, many=True).data,
+                "results": SearchResultSerializer(
+                    search.results, many=True, context={"request": request}
+                ).data,
             }
         )

@@ -1,6 +1,4 @@
 import logging
-import urllib.parse
-import urllib.request
 
 from django.core.handlers.wsgi import WSGIRequest
 from django.db import transaction
@@ -8,6 +6,7 @@ from django.db.models import Sum, Count
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
+from sylvan_library.cards.links import get_card_links
 from sylvan_library.cards.models.card import (
     CardPrinting,
     Card,
@@ -16,17 +15,7 @@ from sylvan_library.cards.models.card import (
     UserCardChange,
 )
 from sylvan_library.cards.models.decks import DeckCard
-from sylvan_library.cards.models.language import Language
 from sylvan_library.website.forms import ChangeCardOwnershipForm
-from sylvan_library.website.views.utils import (
-    TCGPlayerLink,
-    EDHRecLink,
-    DeckStatsLink,
-    MTGTop8Link,
-    ScryfallLink,
-    CardKingdomLink,
-    StarCityGamesLink,
-)
 
 logger = logging.getLogger("django")
 
@@ -211,34 +200,7 @@ def ajax_search_result_links(request: WSGIRequest, card_id: int) -> HttpResponse
     :return: The link HTML
     """
     card: Card = Card.objects.get(pk=card_id)
-    link_builders = [
-        TCGPlayerLink(),
-        EDHRecLink(),
-        DeckStatsLink(),
-        MTGTop8Link(),
-        StarCityGamesLink(),
-        ScryfallLink(),
-        CardKingdomLink(),
-    ]
-
-    links = [link_builder.build_link(card) for link_builder in link_builders]
-
-    localisation = (
-        CardLocalisation.objects.filter(card_printing__card=card)
-        .filter(multiverse_id__isnull=False)
-        .filter(language=Language.english())
-        .order_by("card_printing__set__release_date")
-        .last()
-    )
-    if localisation:
-        links.insert(
-            0,
-            {
-                "name": "View on Gatherer",
-                "url": f"https://gatherer.wizards.com/Pages/Card/Details.aspx?{urllib.parse.urlencode({'multiverseid': localisation.multiverse_id})}",
-            },
-        )
-
+    links = get_card_links(card)
     return render(request, "website/results/search_result_links.html", {"links": links})
 
 
