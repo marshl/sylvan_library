@@ -110,15 +110,26 @@ if not DEBUG:
         "rest_framework.renderers.JSONRenderer",
     )
 
-# LOGGING = {
-#     "version": 1,
-#     "filters": {"require_debug_true": {"()": "django.utils.log.RequireDebugTrue"}},
-#     "handlers": {
-#         "console": {
-#             "level": "DEBUG",
-#             "filters": ["require_debug_true"],
-#             "class": "logging.StreamHandler",
-#         }
-#     },
-#     "loggers": {"django.db.backends": {"level": "DEBUG", "handlers": ["console"]}},
-# }
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+        },
+        # Optional: Save queries to a file
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "sql_queries.log",
+        },
+    },
+    "loggers": {
+        "django.db.backends": {
+            "handlers": ["console", "file"],  # Choose where you want to output them
+            "level": "DEBUG",
+            "propagate": False,
+        },
+    },
+}
