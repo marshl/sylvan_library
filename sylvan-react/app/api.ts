@@ -1,9 +1,12 @@
 export class ApiError extends Error {
   status: number;
+  // The parsed JSON error response, e.g. DRF's {field: [messages]}
+  body: unknown;
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, body: unknown = null) {
     super(message);
     this.status = status;
+    this.body = body;
   }
 }
 
@@ -51,13 +54,15 @@ export async function fetchJson<T>(
   });
   if (!response.ok) {
     let detail = `Request failed (${response.status})`;
+    let data: unknown = null;
     try {
-      const data = await response.json();
-      if (data?.detail) detail = data.detail;
+      data = await response.json();
+      const body = data as { detail?: string };
+      if (body?.detail) detail = body.detail;
     } catch {
       // not a JSON error body
     }
-    throw new ApiError(response.status, detail);
+    throw new ApiError(response.status, detail, data);
   }
   if (response.status === 204) return undefined as T;
   return response.json();

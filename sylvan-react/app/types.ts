@@ -67,3 +67,60 @@ export interface SearchResponse {
   error_message: string | null;
   results: SearchResult[];
 }
+
+export interface DeckSummary {
+  id: number;
+  name: string;
+  subtitle: string | null;
+  description: string | null;
+  date_created: string;
+  format: string;
+  is_prototype: boolean;
+  is_private: boolean;
+}
+
+export interface Paginated<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
+export interface DeckCard {
+  id: number;
+  count: number;
+  board: string;
+  is_commander: boolean;
+  card_id: number;
+  card_name: string;
+  layout: string;
+  side: string | null;
+  // A mana-font icon name such as "ability-companion"
+  icon: string | null;
+  image_url: string;
+}
+
+export type BoardKey = 'main' | 'side' | 'maybe' | 'acquire';
+
+export interface DeckDetail extends DeckSummary {
+  last_modified: string;
+  format_display: string;
+  exclude_colours: number[];
+  card_groups: { name: string; code: string; count: number; cards: DeckCard[] }[];
+  sideboard: DeckCard[];
+  mainboard_count: number;
+  total_land_count: number;
+  boards: Record<BoardKey, string>;
+}
+
+export interface ColourCount {
+  count: number;
+  name: string;
+  symbol: string;
+  chart_colour: string;
+}
+
+export interface ColourWeights {
+  mana_symbols: ColourCount[];
+  land_symbols: ColourCount[];
+}

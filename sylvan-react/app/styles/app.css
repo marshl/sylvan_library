@@ -1,17 +1,22 @@
-@import "tailwindcss";
+/* Tailwind's theme and utilities without its base reset (preflight), which
+   strips the browser default styles that the rest of these stylesheets rely on */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
-html,
-body {
-  @apply bg-white dark:bg-gray-950;
+html {
+  background-color: #151515;
+  color-scheme: dark;
+}
 
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
-  }
+/* Stops a short page leaving the html background showing below the footer */
+.main-layout {
+  min-height: 100vh;
 }
 
 .set-table {

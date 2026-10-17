@@ -5,12 +5,10 @@ Views
 from rest_framework import viewsets, mixins
 
 from sylvan_library.cards.models.card import Card, CardPrinting
-from sylvan_library.cards.models.decks import Deck
 from sylvan_library.cards.models.sets import Set
 from sylvan_library.cards.serializers import (
     CardSerializer,
     SetSerializer,
-    DeckSerializer,
     CardPrintingDetailsSerializer,
 )
 
@@ -72,18 +70,3 @@ class CardPrintingDetailsViewSet(mixins.RetrieveModelMixin, viewsets.GenericView
         "face_printings", "card__legalities__format"
     )
     serializer_class = CardPrintingDetailsSerializer
-
-
-class DeckViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint for decks
-    """
-
-    queryset = Deck.objects.all().order_by("-last_modified")
-    serializer_class = DeckSerializer
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        if not self.request.user.is_authenticated:
-            return queryset.none()
-        return queryset.filter(owner=self.request.user)

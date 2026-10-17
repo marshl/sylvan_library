@@ -14,13 +14,13 @@ from sylvan_library.cards.models.decks import Deck
 from sylvan_library.cards.models.user import UserProps
 from sylvan_library.website.forms import DeckForm
 from sylvan_library.website.pagination import get_page_buttons
-from sylvan_library.website.views.utils import (
+from sylvan_library.cards.deck_stats import (
     get_unused_cards,
-    get_page_number,
     get_unused_commanders,
     get_colour_info,
     get_unused_partner_commanders,
 )
+from sylvan_library.website.views.utils import get_page_number
 
 
 def deck_stats(request: WSGIRequest) -> HttpResponse:

@@ -1,121 +1,97 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router';
-import { fetchJson } from '../api';
-import { loginUrl, useCurrentUser } from '../user';
+import React from 'react';
+import { Link, useSearchParams } from 'react-router';
+import type { DeckSummary, Paginated } from '../types';
+import { useApi } from '../useApi';
+import ColourBars from './ColourBars';
+import Pager from './Pager';
+import RequireLogin from './RequireLogin';
 
-interface Deck {
-  id: number;
-  name: string;
-  subtitle: string;
-  description: string;
-  is_prototype: boolean;
+// Matches PAGE_SIZE in the DRF settings
+const PAGE_SIZE = 10;
+
+/**
+ * The description as plain text, cut down to a preview length. Descriptions are
+ * HTML from the rich text editor.
+ */
+function descriptionPreview(html: string, length = 200): string {
+  const text = new DOMParser().parseFromString(html, 'text/html').body.textContent ?? '';
+  return text.length > length ? `${text.slice(0, length)}...` : text;
 }
 
-function DeckList({ decks }: { decks: Deck[] }) {
-  return (
-    <div className="search-result-list">
-      {decks.map((deck) => (
-        <div
-          key={deck.id}
-          className="search-result js-deck-result"
-          style={{ flexDirection: 'row' }}
-          data-deck-id={deck.id}
-        >
-          <div>
-            <canvas
-              className="js-mini-deck-chart"
-              height="75px"
-              data-deck-id={deck.id}
-            ></canvas>
-          </div>
-          <div>
-            <h2 className="search-result-title">
-              <Link to={`/decks/${deck.id}`}>
-                {deck.is_prototype ? (
-                  <em>{deck.name} [prototype]</em>
-                ) : (
-                  deck.name
-                )}
-              </Link>
-            </h2>
+function DeckList({
+  isPrototype,
+  pageParam,
+}: {
+  isPrototype: boolean;
+  // The URL param holding this list's page, so both lists can be paged separately
+  pageParam: string;
+}) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = Number(searchParams.get(pageParam) ?? '1') || 1;
+  const { data, loading, error } = useApi<Paginated<DeckSummary>>(
+    `/api/cards/deck/?${new URLSearchParams({
+      is_prototype: String(isPrototype),
+      page: String(page),
+    })}`,
+  );
 
-            {deck.subtitle && (
-              <h3 className="search-result-subtitle">{deck.subtitle}</h3>
-            )}
-            {deck.description && (
-              <h3 className="subtitle">
-                {deck.description.length > 200
-                  ? `${deck.description.slice(0, 200)}...`
-                  : deck.description}
-              </h3>
-            )}
+  function setPage(nextPage: number) {
+    setSearchParams((params) => {
+      if (nextPage > 1) params.set(pageParam, String(nextPage));
+      else params.delete(pageParam);
+      return params;
+    });
+  }
+
+  if (error) return <div className="error">Error: {error}</div>;
+  if (loading || !data) return <div>Loading...</div>;
+  if (data.results.length === 0) return <div className="subtitle">No decks yet</div>;
+
+  return (
+    <>
+      <div className="search-result-list">
+        {data.results.map((deck) => (
+          <div key={deck.id} className="search-result" style={{ flexDirection: 'row', gap: 16 }}>
+            <div style={{ width: 260, flexShrink: 0, padding: 8 }}>
+              <ColourBars deckId={deck.id} />
+            </div>
+            <div>
+              <h2 className="search-result-title">
+                <Link to={`/decks/${deck.id}`}>
+                  {deck.is_prototype ? <em>{deck.name} [prototype]</em> : deck.name}
+                </Link>
+              </h2>
+              {deck.subtitle && <h3 className="search-result-subtitle">{deck.subtitle}</h3>}
+              {deck.description && (
+                <h3 className="subtitle">{descriptionPreview(deck.description)}</h3>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+      <Pager count={data.count} page={page} pageSize={PAGE_SIZE} onPageChange={setPage} />
+    </>
   );
 }
 
 export default function Decks() {
-  const { user, loading: userLoading } = useCurrentUser();
-
-  if (userLoading) return <div>Loading...</div>;
-  if (!user?.is_authenticated) {
-    return (
-      <div className="main-content">
-        <a href={loginUrl()}>Log in</a> to see your decks.
-      </div>
-    );
-  }
-  return <DeckLists />;
-}
-
-function DeckLists() {
-  const [decks, setDecks] = useState<Deck[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchDecks() {
-      try {
-        const data = await fetchJson<{ results: Deck[] }>('/api/cards/deck/');
-        setDecks(data.results);
-      } catch (err) {
-        setError((err as Error).message);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchDecks();
-  }, []);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
-  const finalDecks = decks.filter((d) => !d.is_prototype);
-  const prototypeDecks = decks.filter((d) => d.is_prototype);
-
   return (
-    <div className="main-content">
-      <h1>Your Decks</h1>
-      <div style={{ margin: '15px' }}>
-        <Link to="/decks/create" className="action-button">
-          Create New Deck
-        </Link>
-        <Link to="/decks/stats" className="action-button">
-          Deck Stats
-        </Link>
-      </div>
-      <DeckList decks={finalDecks} />
+    <RequireLogin what="see your decks">
+      <div className="main-content">
+        <h1>Your Decks</h1>
+        <div style={{ margin: '15px' }}>
+          <Link to="/decks/create" className="action-button">
+            Create New Deck
+          </Link>{' '}
+          <Link to="/decks/stats" className="action-button">
+            Deck Stats
+          </Link>
+        </div>
+        <DeckList isPrototype={false} pageParam="page" />
 
-      <h1>Prototype Decks</h1>
-      <DeckList decks={prototypeDecks} />
-    </div>
+        <h1>Prototype Decks</h1>
+        <DeckList isPrototype pageParam="prototype_page" />
+      </div>
+    </RequireLogin>
   );
 }

@@ -18,7 +18,6 @@ from sylvan_library.cards.models.card import (
     CardLocalisation,
 )
 from sylvan_library.cards.models.card_price import CardPrice
-from sylvan_library.cards.models.decks import Deck
 from sylvan_library.cards.models.language import Language
 from sylvan_library.cards.models.legality import CardLegality
 
@@ -68,6 +67,38 @@ class SetSerializer(serializers.ModelSerializer):
         return SetSerializer(obj.child_sets, many=True).data
 
 
+def face_printing_image_url(face_printing: CardFacePrinting) -> str:
+    """
+    Gets the image URL of a face printing, preferring the English image and falling back
+    to the card back if no image has been downloaded
+    """
+    english_id = Language.english().id
+    localised_faces = list(face_printing.localised_faces.all())
+    english = next(
+        (lf for lf in localised_faces if lf.localisation.language_id == english_id),
+        None,
+    )
+    path = english.get_image_path() if english else None
+    if not path:
+        for lf in localised_faces:
+            path = lf.get_image_path()
+            if path:
+                break
+    if not path:
+        path = "card_back.jpg"
+    return settings.STATIC_URL + path
+
+
+def printing_image_url(printing: CardPrinting | None) -> str:
+    """
+    Gets the image URL of the front face of a printing
+    """
+    face_printing = printing.face_printings.first() if printing else None
+    if not face_printing:
+        return settings.STATIC_URL + "card_back.jpg"
+    return face_printing_image_url(face_printing)
+
+
 class CardFacePrintingSerializer(serializers.ModelSerializer):
     localised_faces = CardFaceLocalisationSerializer(many=True)
     image_url = SerializerMethodField()
@@ -77,21 +108,7 @@ class CardFacePrintingSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def get_image_url(self, obj: CardFacePrinting) -> str:
-        english_id = Language.english().id
-        localised_faces = list(obj.localised_faces.all())
-        english = next(
-            (lf for lf in localised_faces if lf.localisation.language_id == english_id),
-            None,
-        )
-        path = english.get_image_path() if english else None
-        if not path:
-            for lf in localised_faces:
-                path = lf.get_image_path()
-                if path:
-                    break
-        if not path:
-            path = "card_back.jpg"
-        return settings.STATIC_URL + path
+        return face_printing_image_url(obj)
 
 
 def get_context_user(serializer: serializers.Serializer):
@@ -162,16 +179,6 @@ class CardSerializer(serializers.ModelSerializer):
         if not user:
             return None
         return obj.get_user_ownership_count(user, prefetched=True)
-
-
-class DeckSerializer(serializers.ModelSerializer):
-    """
-    Serializer for the Deck object
-    """
-
-    class Meta:
-        model = Deck
-        fields = "__all__"
 
 
 class CardLegalitySerializer(serializers.ModelSerializer):
