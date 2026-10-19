@@ -225,12 +225,6 @@ class Command(BaseCommand):
         # So the latest date that can be considered is the start of this week
         # The data for that week will be lumped into the date of the start of the previous week
         start_of_week = arrow.utcnow().floor("week").date()
-        try:
-            most_recent_price = CardPrice.objects.order_by("-date").first().date
-            print(most_recent_price)
-        except CardPrice.DoesNotExist:
-            pass
-
         with transaction.atomic():
             download_prices(start_of_week)
             update_prices(start_of_week)
