@@ -48,8 +48,11 @@ export default function PriceChart({ title, points }: { title: string; points: P
     const plotWidth = WIDTH - MARGIN.left - MARGIN.right;
     const plotHeight = HEIGHT - MARGIN.top - MARGIN.bottom;
 
+    // A single price sits in the middle rather than on the left edge
     const x = (date: Date) =>
-      MARGIN.left + ((date.getTime() - minTime) / (maxTime - minTime || 1)) * plotWidth;
+      maxTime === minTime
+        ? MARGIN.left + plotWidth / 2
+        : MARGIN.left + ((date.getTime() - minTime) / (maxTime - minTime)) * plotWidth;
     const y = (value: number) => MARGIN.top + plotHeight - (value / yMax) * plotHeight;
 
     const yTicks: number[] = [];
@@ -132,7 +135,15 @@ export default function PriceChart({ title, points }: { title: string; points: P
               y={HEIGHT - 6}
               fill={TEXT_COLOUR}
               fontSize={11}
-              textAnchor={i === 0 ? 'start' : i === chart.data.length - 1 ? 'end' : 'middle'}
+              textAnchor={
+                chart.data.length === 1
+                  ? 'middle'
+                  : i === 0
+                    ? 'start'
+                    : i === chart.data.length - 1
+                      ? 'end'
+                      : 'middle'
+              }
             >
               {formatDate(chart.data[i].date)}
             </text>
@@ -145,6 +156,9 @@ export default function PriceChart({ title, points }: { title: string; points: P
             strokeLinejoin="round"
             strokeLinecap="round"
           />
+          {chart.data.length === 1 && (
+            <circle cx={chart.x(latest.date)} cy={chart.y(latest.value)} r={4} fill={LINE_COLOUR} />
+          )}
           {hovered && (
             <>
               <line

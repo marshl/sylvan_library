@@ -449,7 +449,7 @@ function PricesTab({ printingId }: { printingId: number }) {
             <span className="subtitle">
               <b>MTGO Foil: </b> {formatPrice(data.latest.mtgo_foil)}
             </span>
-            {data.paper_history.length > 1 && (
+            {data.paper_history.length > 0 && (
               <PriceChart title="Paper price" points={data.paper_history} />
             )}
           </>
