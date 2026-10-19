@@ -20,13 +20,9 @@ Activate the virtual environment
 ```bash
 pipenv shell
 ```
-Install node modules via npm
+Install the React frontend's node modules via npm (this needs Node 20.19 or newer)
 ```bash
-npm install --prefix ./sylvan_library/website/static
-```
-TO update the node modules run:
-```bash
-npm update --prefix ./sylvan_library/website/static --save
+npm install --prefix ./sylvan-react
 ```
 
 ## Database Initialisation
@@ -73,10 +69,20 @@ To run the server in debug mode use this command
 ```bash
 python manage.py runserver
 ```
+In debug mode Django sends page requests on to the Vite dev server, so run that too and
+open http://localhost:5173/
+```bash
+npm run dev --prefix ./sylvan-react
+```
+Without debug mode, Django serves the built React app. Build it with
+```bash
+npm run build --prefix ./sylvan-react
+```
 
 ## Projects
  - **cards**: The cards project is where the primary database models are stored, and is designed to be consumed by either an api or a website project
  - **cardsearch**: The cardsearch project contains classes for filtering cards using complex parameter trees
  - **data_import**: The data_import project contains commands and staging zones for importing data from external sources into the database
  - **reports**: The reports project contains Report and graph generation for offline data analysis
- - **website**: The website project contains views and controllers for rendering the sylvan_library front-end
+ - **frontend**: The frontend project serves the built React app and tells it who is logged in
+ - **sylvan-react** (outside the Django project): The React front-end, which talks to the Django REST API

@@ -193,8 +193,7 @@ class CardLegalitySerializer(serializers.ModelSerializer):
 
 class CardPrintingDetailsSerializer(serializers.ModelSerializer):
     """
-    Payload for the search-result "Details" tab.  Mirrors
-    website/results/search_result_details.html.
+    Payload for the search-result "Details" tab
     """
 
     flavour_text = SerializerMethodField()

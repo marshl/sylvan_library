@@ -1,87 +1,31 @@
-# Welcome to React Router!
+# Sylvan Library frontend
 
-A modern, production-ready template for building full-stack React applications using React Router.
+The React app for Sylvan Library. It's a single-page app using React Router, and gets
+all its data from the Django REST API.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+Needs Node 20.19 or newer.
 
-## Features
-
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
-
-## Getting Started
-
-### Installation
-
-Install the dependencies:
+## Development
 
 ```bash
 npm install
-```
-
-### Development
-
-Start the development server with HMR:
-
-```bash
 npm run dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+Then open http://localhost:5173/. Vite passes API, admin and static requests on to
+Django at http://localhost:8000 (or `DJANGO_BACKEND`), so run `manage.py runserver` as
+well.
 
-## Building for Production
-
-Create a production build:
+## Building
 
 ```bash
 npm run build
 ```
 
-## Deployment
+This builds the app and copies it into `sylvan_library/frontend/static/react/`, where
+Django serves it when not in debug mode.
 
-### Docker Deployment
+## Other commands
 
-To build and run using Docker:
-
-```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
-```
-
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
+- `npm run typecheck` checks the TypeScript
+- `npx prettier --write .` formats the code
