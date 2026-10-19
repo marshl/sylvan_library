@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useSearchParams } from 'react-router';
+import { descriptionHtml, linkifyHtml } from '../html';
 import type { DeckSummary, Paginated } from '../types';
 import { useApi } from '../useApi';
 import ColourBars from './ColourBars';
@@ -79,8 +80,10 @@ function DeckList({
               {deck.subtitle && <h3 className="search-result-subtitle">{deck.subtitle}</h3>}
               {deck.description && (
                 <h3
-                  className="subtitle"
-                  dangerouslySetInnerHTML={{ __html: descriptionPreview(deck.description) }}
+                  className="subtitle rich-text"
+                  dangerouslySetInnerHTML={{
+                    __html: linkifyHtml(descriptionPreview(descriptionHtml(deck.description))),
+                  }}
                 />
               )}
             </div>

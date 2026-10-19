@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
+import { descriptionHtml, linkifyHtml } from '../html';
 import type { DeckCard, DeckDetail } from '../types';
 import { useApi } from '../useApi';
 import CardLink from './CardLink';
@@ -45,7 +46,10 @@ export default function DeckView({ deckId }: { deckId: number }) {
         {deck.description && (
           // The description is HTML the owner wrote in the deck editor, and only
           // the owner can see the deck
-          <div className="field-container" dangerouslySetInnerHTML={{ __html: deck.description }} />
+          <div
+            className="field-container rich-text"
+            dangerouslySetInnerHTML={{ __html: linkifyHtml(descriptionHtml(deck.description)) }}
+          />
         )}
         <div className="field-container">
           {deck.format_display} · {deck.date_created}
