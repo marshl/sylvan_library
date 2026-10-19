@@ -130,8 +130,10 @@ def download_images(root_dir: str) -> None:
 
         url_parts = url_parts[url_parts.index("normal") :]
 
-        image_rel_path = os.path.join("card_images", *url_parts)
-        full_download_path = os.path.join(root_dir, image_rel_path)
+        # The stored path is relative to the static folder and always uses forward
+        # slashes, so it works as a URL and on any system
+        image_rel_path = "/".join(["card_images", *url_parts])
+        full_download_path = os.path.join(root_dir, "card_images", *url_parts)
         logger.info(
             "Downloading %s to %s", card_image.scryfall_image_url, full_download_path
         )

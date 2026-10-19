@@ -82,11 +82,7 @@ def face_printing_image_url(face_printing: CardFacePrinting) -> str:
     )
     for lf in localised_faces:
         path = lf.get_image_path()
-        if not path:
-            continue
-        # Paths saved on Windows use backslashes
-        path = path.replace("\\", "/")
-        if finders.find(path):
+        if path and finders.find(path):
             return settings.STATIC_URL + path
     return settings.STATIC_URL + "card_back.jpg"
 
