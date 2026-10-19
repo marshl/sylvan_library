@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { ApiError, fetchJson } from '../api';
+import { descriptionHtml } from '../html';
 import type { BoardKey, DeckDetail } from '../types';
 import { useApi } from '../useApi';
+import RichTextEditor from './RichTextEditor';
 
 interface DeckOptions {
   formats: { value: string; label: string }[];
@@ -53,7 +55,7 @@ function fromDeck(deck: DeckDetail): DeckFormState {
     subtitle: deck.subtitle ?? '',
     format: deck.format,
     date_created: deck.date_created,
-    description: deck.description ?? '',
+    description: descriptionHtml(deck.description ?? ''),
     exclude_colours: deck.exclude_colours,
     is_prototype: deck.is_prototype,
     is_private: deck.is_private,
@@ -252,12 +254,11 @@ function DeckForm({ deckId, initial }: { deckId: number | null; initial: DeckFor
         </div>
         <div className="row">
           <div className="field-container">
-            <label htmlFor="deck-description">Description (HTML)</label>
-            <textarea
-              id="deck-description"
-              rows={5}
-              value={form.description}
-              onChange={(e) => update('description', e.target.value)}
+            <label id="deck-description-label">Description</label>
+            <RichTextEditor
+              labelId="deck-description-label"
+              initialValue={initial.description}
+              onChange={(html) => update('description', html)}
             />
           </div>
         </div>
