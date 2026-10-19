@@ -14,7 +14,6 @@ from django.utils.text import slugify
 
 from sylvan_library.cards.models.decks import Deck, DeckCard
 from sylvan_library.cards.models.sets import Set
-from website.templatetags.deck_templatetags import deck_card_group_count
 
 logger = logging.getLogger("django")
 
@@ -222,9 +221,8 @@ class Command(BaseCommand):
                 for card_group in deck.get_card_groups():
                     if not card_group["cards"]:
                         continue
-                    file.write(
-                        f"// {deck_card_group_count(card_group['cards'])} {card_group['name']}\n"
-                    )
+                    card_count = sum(card.count for card in card_group["cards"])
+                    file.write(f"// {card_count} {card_group['name']}\n")
                     for card in card_group["cards"]:
                         file.write(f"{card.as_deck_text()}\n")
 

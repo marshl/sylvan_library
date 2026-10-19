@@ -10,6 +10,7 @@ from typing import Optional, List
 from urllib.parse import urlparse
 
 import requests
+from django.apps import apps
 from django.core.management.base import BaseCommand, OutputWrapper
 from django.db import transaction
 from django.db.models import Count
@@ -43,7 +44,7 @@ class Command(BaseCommand):
         no_color: bool = False,
     ) -> None:
         self.image_download_queue = queue.Queue()
-        self.root_dir = os.path.join("website", "static")
+        self.root_dir = os.path.join(apps.get_app_config("cards").path, "static")
         super().__init__(stdout=stdout, stderr=stderr, no_color=no_color)
 
     def add_arguments(self, parser):

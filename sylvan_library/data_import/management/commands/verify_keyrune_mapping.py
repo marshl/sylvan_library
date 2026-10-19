@@ -5,6 +5,7 @@ Module for the verify_keyrune_mapping command
 import os
 import re
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from sylvan_library.cards.models.sets import Set
@@ -22,28 +23,26 @@ class Command(BaseCommand):
         super().__init__()
 
     def handle(self, *args, **options) -> None:
-        sass_path = os.path.join(
-            "website", "static", "node_modules", "keyrune", "sass", "_variables.scss"
+        icons_path = os.path.join(
+            settings.SITE_ROOT,
+            "sylvan-react",
+            "node_modules",
+            "keyrune",
+            "less",
+            "icons.less",
         )
+        # Lines look like '.@{ss-prefix}-lea:before { content: "\e600"; } // Alpha',
+        # but several codes can share one icon, with the comment on only one line
         sets = {}
-        with open(sass_path, encoding="utf8") as sass_file:
-            for line in sass_file:
-                if "$mtg_setlist:" not in line:
-                    continue
-
-                for set_line in sass_file:
-                    if "//" in set_line:
-                        continue
-
-                    if set_line.startswith(")"):
-                        break
-
-                    groups = re.search(
-                        '.+?"(?P<set_name>.+?)", *[\'"](?P<set_code>.+?)[\'"]', set_line
+        with open(icons_path, encoding="utf8") as icons_file:
+            for line in icons_file:
+                comment = re.search(r"//\s*(?P<set_name>.+)$", line)
+                for set_code in re.findall(
+                    r"\.@\{ss-prefix\}-([a-z0-9]+):before", line
+                ):
+                    sets[set_code] = (
+                        comment["set_name"].strip() if comment else set_code
                     )
-
-                    if groups:
-                        sets[groups["set_code"]] = groups["set_name"]
 
         for card_set in Set.objects.all().order_by("code"):
             if card_set.keyrune_code.lower() not in sets:
