@@ -12,13 +12,13 @@ Navigate into the folder
 ```bash
 cd ./sylvan_library
 ```
-Create the python virtual environment and install th dependencies
+Create the python virtual environment and install the dependencies with [Poetry](https://python-poetry.org/)
 ```bash
-pipenv install --dev
+poetry install
 ```
 Activate the virtual environment
 ```bash
-pipenv shell
+eval $(poetry env activate)
 ```
 Install the React frontend's node modules via npm (this needs Node 20.19 or newer)
 ```bash
