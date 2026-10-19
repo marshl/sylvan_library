@@ -130,6 +130,66 @@ function CardNameInput({
   );
 }
 
+/**
+ * Deletes the deck after a second click to confirm, then goes back to the deck list
+ */
+function DeleteDeckButton({
+  deckId,
+  disabled,
+  onError,
+}: {
+  deckId: number;
+  disabled: boolean;
+  onError: (messages: string[]) => void;
+}) {
+  const navigate = useNavigate();
+  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  async function deleteDeck() {
+    setDeleting(true);
+    try {
+      await fetchJson(`/api/cards/deck/${deckId}/`, { method: 'DELETE' });
+      navigate('/decks');
+    } catch (err) {
+      onError(errorMessages(err));
+      setDeleting(false);
+      setConfirming(false);
+    }
+  }
+
+  if (!confirming) {
+    return (
+      <input
+        type="button"
+        value="Delete deck"
+        className="delete-button"
+        disabled={disabled}
+        onClick={() => setConfirming(true)}
+      />
+    );
+  }
+  return (
+    <span className="subtitle" style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
+      Delete this deck for good?
+      <input
+        type="button"
+        value={deleting ? 'Deleting…' : 'Yes, delete it'}
+        className="delete-button"
+        disabled={deleting}
+        onClick={deleteDeck}
+        autoFocus
+      />
+      <input
+        type="button"
+        value="Keep it"
+        disabled={deleting}
+        onClick={() => setConfirming(false)}
+      />
+    </span>
+  );
+}
+
 function DeckForm({ deckId, initial }: { deckId: number | null; initial: DeckFormState }) {
   const navigate = useNavigate();
   const options = useApi<DeckOptions>('/api/cards/deck-options/');
@@ -397,6 +457,11 @@ function DeckForm({ deckId, initial }: { deckId: number | null; initial: DeckFor
           />
           <Link to={deckId === null ? '/decks' : `/decks/${deckId}`}>Cancel</Link>
           {savedMessage && <span className="subtitle">{savedMessage}</span>}
+          {deckId !== null && (
+            <span style={{ marginLeft: 'auto' }}>
+              <DeleteDeckButton deckId={deckId} disabled={saving} onError={setErrors} />
+            </span>
+          )}
         </div>
       </div>
     </form>
