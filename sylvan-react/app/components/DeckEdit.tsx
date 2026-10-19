@@ -69,7 +69,8 @@ function errorMessages(err: unknown): string[] {
   if (!err.body || typeof err.body !== 'object') return [err.message];
   return Object.entries(err.body as Record<string, unknown>).flatMap(([field, messages]) => {
     const list = Array.isArray(messages) ? messages : [messages];
-    const prefix = field === 'cards' || field === 'non_field_errors' || field === 'detail' ? '' : `${field}: `;
+    const prefix =
+      field === 'cards' || field === 'non_field_errors' || field === 'detail' ? '' : `${field}: `;
     return list.map((m) => `${prefix}${typeof m === 'string' ? m : JSON.stringify(m)}`);
   });
 }
@@ -146,7 +147,10 @@ function DeckForm({ deckId, initial }: { deckId: number | null; initial: DeckFor
     if (!name) return;
     const line = `${Number(quantity) > 0 ? Number(quantity) : 1}x ${name}`;
     const current = form.boards[board];
-    update('boards', { ...form.boards, [board]: current ? `${current.replace(/\n+$/, '')}\n${line}` : line });
+    update('boards', {
+      ...form.boards,
+      [board]: current ? `${current.replace(/\n+$/, '')}\n${line}` : line,
+    });
     setCardName('');
     cardInput.current?.focus();
   }
@@ -278,7 +282,8 @@ function DeckForm({ deckId, initial }: { deckId: number | null; initial: DeckFor
             </div>
             <div className="row">
               <button type="button" onClick={addCardToBoard}>
-                Add card to {BOARDS.find((b) => b.key === board)!.label.toLowerCase()} board &gt;&gt;
+                Add card to {BOARDS.find((b) => b.key === board)!.label.toLowerCase()} board
+                &gt;&gt;
               </button>
             </div>
           </div>

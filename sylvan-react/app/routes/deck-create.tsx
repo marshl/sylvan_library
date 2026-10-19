@@ -1,9 +1,9 @@
-import type { Route } from "./+types/deck-create";
-import DeckEdit from "../components/DeckEdit";
-import RequireLogin from "../components/RequireLogin";
+import type { Route } from './+types/deck-create';
+import DeckEdit from '../components/DeckEdit';
+import RequireLogin from '../components/RequireLogin';
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: "New deck — Sylvan Library" }];
+  return [{ title: 'New deck — Sylvan Library' }];
 }
 
 export default function DeckCreateRoute() {

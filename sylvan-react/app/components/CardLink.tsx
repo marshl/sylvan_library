@@ -36,7 +36,10 @@ export default function CardLink({
     if (left + POPUP_WIDTH > window.innerWidth) left = rect.left - offset - POPUP_WIDTH;
     const top = Math.max(
       8,
-      Math.min(rect.top + rect.height / 2 - POPUP_HEIGHT / 2, window.innerHeight - POPUP_HEIGHT - 8),
+      Math.min(
+        rect.top + rect.height / 2 - POPUP_HEIGHT / 2,
+        window.innerHeight - POPUP_HEIGHT - 8,
+      ),
     );
     setPopup({ top, left });
   }

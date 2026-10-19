@@ -1,10 +1,10 @@
-import { reactRouter } from "@react-router/dev/vite";
-import tailwindcss from "@tailwindcss/vite";
-import { defineConfig } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
-import path from "path";
+import { reactRouter } from '@react-router/dev/vite';
+import tailwindcss from '@tailwindcss/vite';
+import { defineConfig } from 'vite';
+import tsconfigPaths from 'vite-tsconfig-paths';
+import path from 'path';
 
-const DJANGO_BACKEND = process.env.DJANGO_BACKEND || "http://localhost:8000";
+const DJANGO_BACKEND = process.env.DJANGO_BACKEND || 'http://localhost:8000';
 
 // React Router requires Vite's `base` to be a prefix of `basename`.
 // - In dev, the app is served at http://localhost:5173/react/, so base == basename.
@@ -15,16 +15,16 @@ const DJANGO_BACKEND = process.env.DJANGO_BACKEND || "http://localhost:8000";
 export default defineConfig(({ command }) => ({
   plugins: [reactRouter(), tailwindcss(), tsconfigPaths()],
   root: path.resolve(__dirname),
-  base: command === "serve" ? "/react/" : "/static/react/",
+  base: command === 'serve' ? '/react/' : '/static/react/',
   server: {
     port: 5173,
     strictPort: true,
     proxy: {
-      "/api": { target: DJANGO_BACKEND, changeOrigin: true },
-      "/static": { target: DJANGO_BACKEND, changeOrigin: true },
-      "/website": { target: DJANGO_BACKEND, changeOrigin: true },
-      "/api-auth": { target: DJANGO_BACKEND, changeOrigin: true },
-      "/admin": { target: DJANGO_BACKEND, changeOrigin: true },
+      '/api': { target: DJANGO_BACKEND, changeOrigin: true },
+      '/static': { target: DJANGO_BACKEND, changeOrigin: true },
+      '/website': { target: DJANGO_BACKEND, changeOrigin: true },
+      '/api-auth': { target: DJANGO_BACKEND, changeOrigin: true },
+      '/admin': { target: DJANGO_BACKEND, changeOrigin: true },
     },
   },
 }));

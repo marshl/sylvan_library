@@ -131,12 +131,10 @@ export default function SearchResult({
   // Bumped after the user adds or removes cards so ownership-based tabs reload
   const [ownershipVersion, setOwnershipVersion] = useState(0);
 
-  const printing =
-    card.printings.find((p) => p.id === printingId) ?? result.selected_printing;
+  const printing = card.printings.find((p) => p.id === printingId) ?? result.selected_printing;
   const layout = card.layout;
   const isDoubleFaced = DOUBLE_FACED_LAYOUTS.includes(layout);
-  const showTransform =
-    isDoubleFaced && !(layout === 'meld' && card.faces[0]?.side === 'c');
+  const showTransform = isDoubleFaced && !(layout === 'meld' && card.faces[0]?.side === 'c');
 
   async function onOwnershipChanged() {
     setOwnershipVersion((v) => v + 1);
@@ -149,9 +147,7 @@ export default function SearchResult({
 
   return (
     <div
-      className={`search-result ${card.owned_count ? 'owned' : ''} ${
-        expanded ? 'expanded' : ''
-      }`}
+      className={`search-result ${card.owned_count ? 'owned' : ''} ${expanded ? 'expanded' : ''}`}
       onClick={onExpand}
     >
       <div className="card-image-container">

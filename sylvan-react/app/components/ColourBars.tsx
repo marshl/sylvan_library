@@ -16,10 +16,7 @@ function Bar({ label, counts, noun }: { label: string; counts: ColourCount[]; no
         {label}
       </span>
       <div style={{ position: 'relative', flex: 1 }}>
-        <div
-          style={{ display: 'flex', gap: 2, height: 20 }}
-          onMouseLeave={() => setHovered(null)}
-        >
+        <div style={{ display: 'flex', gap: 2, height: 20 }} onMouseLeave={() => setHovered(null)}>
           {total === 0 ? (
             <div style={{ flex: 1, background: '#444', borderRadius: 4 }} />
           ) : (

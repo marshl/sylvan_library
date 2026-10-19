@@ -118,9 +118,11 @@ export default function RulesText({
 
         const chapters = isSaga && rest.match(/^((?:[IV]+)(?:, [IV]+)*) — /);
         if (chapters) {
-          prefix = chapters[1].split(', ').map((numeral) => (
-            <i key={numeral} className={`ms ms-saga ms-saga-${ROMAN[numeral]} ms-2x`} />
-          ));
+          prefix = chapters[1]
+            .split(', ')
+            .map((numeral) => (
+              <i key={numeral} className={`ms ms-saga ms-saga-${ROMAN[numeral]} ms-2x`} />
+            ));
           rest = rest.slice(chapters[1].length);
         }
 

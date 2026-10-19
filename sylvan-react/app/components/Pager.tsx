@@ -38,13 +38,7 @@ function getPageButtons(page: number, pageCount: number, span: number): PageButt
   return buttons;
 }
 
-export default function Pager({
-  count,
-  page,
-  pageSize,
-  onPageChange,
-  pageSpan = 3,
-}: PagerProps) {
+export default function Pager({ count, page, pageSize, onPageChange, pageSpan = 3 }: PagerProps) {
   const pageCount = Math.max(1, Math.ceil(count / pageSize));
   if (pageCount <= 1) return null;
 

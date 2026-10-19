@@ -11,9 +11,7 @@ export class ApiError extends Error {
 }
 
 function getCookie(name: string): string | null {
-  const match = document.cookie
-    .split('; ')
-    .find((row) => row.startsWith(`${name}=`));
+  const match = document.cookie.split('; ').find((row) => row.startsWith(`${name}=`));
   return match ? decodeURIComponent(match.split('=')[1]) : null;
 }
 

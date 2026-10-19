@@ -72,7 +72,10 @@ export default function PriceChart({ title, points }: { title: string; points: P
     const pointerX = ((e.clientX - rect.left) / rect.width) * WIDTH;
     let nearest = 0;
     chart.data.forEach((d, i) => {
-      if (Math.abs(chart.x(d.date) - pointerX) < Math.abs(chart.x(chart.data[nearest].date) - pointerX)) {
+      if (
+        Math.abs(chart.x(d.date) - pointerX) <
+        Math.abs(chart.x(chart.data[nearest].date) - pointerX)
+      ) {
         nearest = i;
       }
     });
