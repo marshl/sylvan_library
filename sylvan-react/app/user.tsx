@@ -4,7 +4,19 @@ import { fetchJson } from './api';
 export interface CurrentUser {
   is_authenticated: boolean;
   username: string | null;
+  email: string | null;
+  // An ISO date
+  date_joined: string | null;
+  is_staff: boolean;
 }
+
+const ANONYMOUS_USER: CurrentUser = {
+  is_authenticated: false,
+  username: null,
+  email: null,
+  date_joined: null,
+  is_staff: false,
+};
 
 interface UserState {
   user: CurrentUser | null;
@@ -19,12 +31,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     fetchJson<CurrentUser>('/api/me/')
       .then((user) => setState({ user, loading: false }))
-      .catch(() =>
-        setState({
-          user: { is_authenticated: false, username: null },
-          loading: false,
-        }),
-      );
+      .catch(() => setState({ user: ANONYMOUS_USER, loading: false }));
   }, []);
 
   return <UserContext.Provider value={state}>{children}</UserContext.Provider>;

@@ -42,6 +42,43 @@
   text-decoration: underline;
 }
 
+.profile-details {
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #34547f;
+}
+
+.profile-details p {
+  margin: 4px 0;
+  overflow-wrap: anywhere;
+}
+
+.profile-container ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.profile-menu-item {
+  display: block;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 3px;
+  background: none;
+  color: white;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.profile-container .profile-menu-item:hover,
+.profile-container .profile-menu-item:focus-visible {
+  background-color: #34547f;
+  text-decoration: none;
+  outline: none;
+}
+
 .search-icon {
   flex: 0 20px;
   opacity: 0.3;

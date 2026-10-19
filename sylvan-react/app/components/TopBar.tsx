@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { Form, Link, useSearchParams } from 'react-router';
 import { isTypingTarget } from '../keyboard';
-import { loginUrl, logout, useCurrentUser } from '../user';
+import { loginUrl, useCurrentUser } from '../user';
+import ProfileMenu from './ProfileMenu';
 
 export default function TopBar() {
   const { user } = useCurrentUser();
@@ -47,10 +48,7 @@ export default function TopBar() {
             <Link to="/decks" className="action-button">
               Decks
             </Link>
-            <span className="action-button profile-button">{user.username}</span>
-            <button type="button" className="action-button" onClick={logout}>
-              Log out
-            </button>
+            <ProfileMenu user={user} />
           </>
         ) : (
           user && (

@@ -48,9 +48,22 @@ class CurrentUserView(APIView):
         Returns the current user, or is_authenticated: false for anonymous users
         """
         user = request.user
+        if not user.is_authenticated:
+            return Response(
+                {
+                    "is_authenticated": False,
+                    "username": None,
+                    "email": None,
+                    "date_joined": None,
+                    "is_staff": False,
+                }
+            )
         return Response(
             {
-                "is_authenticated": user.is_authenticated,
-                "username": user.get_username() if user.is_authenticated else None,
+                "is_authenticated": True,
+                "username": user.get_username(),
+                "email": user.email or None,
+                "date_joined": user.date_joined.date(),
+                "is_staff": user.is_staff,
             }
         )
