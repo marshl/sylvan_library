@@ -62,15 +62,19 @@ function fromDeck(deck: DeckDetail): DeckFormState {
 }
 
 /**
- * DRF validation errors as a flat list of messages, prefixed with the field they're for
+ * DRF validation errors as a flat list of messages, prefixed with the field they're for,
+ * e.g. "date_created" becomes "Date created: "
  */
 function errorMessages(err: unknown): string[] {
   if (!(err instanceof ApiError)) return [(err as Error).message];
   if (!err.body || typeof err.body !== 'object') return [err.message];
   return Object.entries(err.body as Record<string, unknown>).flatMap(([field, messages]) => {
     const list = Array.isArray(messages) ? messages : [messages];
+    const label = field.replace(/_/g, ' ');
     const prefix =
-      field === 'cards' || field === 'non_field_errors' || field === 'detail' ? '' : `${field}: `;
+      field === 'cards' || field === 'non_field_errors' || field === 'detail'
+        ? ''
+        : `${label.charAt(0).toUpperCase()}${label.slice(1)}: `;
     return list.map((m) => `${prefix}${typeof m === 'string' ? m : JSON.stringify(m)}`);
   });
 }

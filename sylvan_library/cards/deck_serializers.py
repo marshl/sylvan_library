@@ -4,10 +4,12 @@ Serializers for decks
 
 from typing import List, Optional
 
+from django.core.exceptions import NON_FIELD_ERRORS
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
+from rest_framework.settings import api_settings
 
 from sylvan_library.cards.deck_text import BOARDS, get_board_text, get_deck_cards
 from sylvan_library.cards.models.card import CardPrinting
@@ -214,8 +216,21 @@ class DeckWriteSerializer(serializers.ModelSerializer):
             setattr(deck, field, value)
 
         try:
+            deck.full_clean()
+        except DjangoValidationError as error:
+            raise serializers.ValidationError(
+                {
+                    (
+                        api_settings.NON_FIELD_ERRORS_KEY
+                        if field == NON_FIELD_ERRORS
+                        else field
+                    ): messages
+                    for field, messages in error.message_dict.items()
+                }
+            ) from error
+
+        try:
             with transaction.atomic():
-                deck.full_clean()
                 deck.save()
                 if exclude_colours is not None:
                     deck.exclude_colours.set(exclude_colours)
