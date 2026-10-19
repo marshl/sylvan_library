@@ -9,6 +9,7 @@ from sylvan_library.cards.models.card import Card, CardPrinting
 from sylvan_library.cards.models.sets import Set
 from sylvan_library.cards.serializers import (
     CardSerializer,
+    card_prefetches,
     SetSerializer,
     CardPrintingDetailsSerializer,
 )
@@ -20,23 +21,12 @@ class CardViewSet(viewsets.ModelViewSet):
     API endpoint that allows users to be viewed or edited.
     """
 
-    queryset = (
-        Card.objects.all()
-        .prefetch_related(
-            "printings__rarity",
-            "printings__localisations__ownerships",
-            "printings__localisations__language",
-            "printings__localisations__localised_faces__image",
-            "printings__face_printings__localised_faces__image",
-            "printings__face_printings__localised_faces__localisation",
-            "printings__set",
-            "printings__rarity",
-            "faces",
-        )
-        .order_by("id")
-    )
-
+    queryset = Card.objects.order_by("id")
     serializer_class = CardSerializer
+
+    def get_queryset(self):
+        user = self.request.user if self.request.user.is_authenticated else None
+        return super().get_queryset().prefetch_related(*card_prefetches(user))
 
 
 class SetViewSet(viewsets.ModelViewSet):

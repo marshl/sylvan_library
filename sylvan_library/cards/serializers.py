@@ -5,7 +5,9 @@ Card serializers
 from datetime import date
 
 from django.conf import settings
+from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.staticfiles import finders
+from django.db.models import Prefetch, Q, Sum
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import StringRelatedField
@@ -18,44 +20,21 @@ from sylvan_library.cards.models.card import (
     Rarity,
     CardFacePrinting,
     CardFaceLocalisation,
-    CardLocalisation,
 )
-from sylvan_library.cards.models.card_price import CardPrice
 from sylvan_library.cards.models.language import Language
 from sylvan_library.cards.models.legality import CardLegality
-
-
-class CardLanguageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Language
-        fields = "__all__"
-
-
-class CardLocalisationSerializer(serializers.ModelSerializer):
-
-    language = CardLanguageSerializer()
-
-    class Meta:
-        model = CardLocalisation
-        fields = "__all__"
-
-
-class CardFaceLocalisationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CardFaceLocalisation
-        fields = "__all__"
-
-
-class CardPriceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CardPrice
-        fields = "__all__"
 
 
 class RaritySerializer(serializers.ModelSerializer):
     class Meta:
         model = Rarity
-        fields = "__all__"
+        fields = ("id", "name", "symbol")
+
+
+class PrintingSetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Set
+        fields = ("id", "name", "code")
 
 
 class SetSerializer(serializers.ModelSerializer):
@@ -98,12 +77,11 @@ def printing_image_url(printing: CardPrinting | None) -> str:
 
 
 class CardFacePrintingSerializer(serializers.ModelSerializer):
-    localised_faces = CardFaceLocalisationSerializer(many=True)
     image_url = SerializerMethodField()
 
     class Meta:
         model = CardFacePrinting
-        fields = "__all__"
+        fields = ("id", "image_url")
 
     def get_image_url(self, obj: CardFacePrinting) -> str:
         return face_printing_image_url(obj)
@@ -120,17 +98,28 @@ def get_context_user(serializer: serializers.Serializer):
 
 
 class CardPrintingSerializer(serializers.ModelSerializer):
-    set = SetSerializer()
+    """
+    A printing as shown in a search result. Cards like basic lands have hundreds of
+    printings, so this only has what the result needs.
+    """
+
+    set = PrintingSetSerializer()
     rarity = RaritySerializer()
-    latest_price = CardPriceSerializer()
     face_printings = CardFacePrintingSerializer(many=True)
-    localisations = CardLocalisationSerializer(many=True)
     keyrune_code = SerializerMethodField()
     owned_count = SerializerMethodField()
 
     class Meta:
         model = CardPrinting
-        fields = "__all__"
+        fields = (
+            "id",
+            "number",
+            "set",
+            "rarity",
+            "keyrune_code",
+            "owned_count",
+            "face_printings",
+        )
 
     def get_keyrune_code(self, obj: CardPrinting) -> str:
         return obj.get_set_keyrune_code()
@@ -139,10 +128,9 @@ class CardPrintingSerializer(serializers.ModelSerializer):
         """
         How many of this printing the user owns, or None for anonymous users
         """
-        user = get_context_user(self)
-        if not user:
+        if not get_context_user(self):
             return None
-        return obj.get_user_ownership_count(user, prefetched=True)
+        return obj.user_owned_count or 0
 
 
 class CardFaceSerializer(serializers.ModelSerializer):
@@ -156,9 +144,39 @@ class CardFaceSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+def card_prefetches(user: AbstractBaseUser | None) -> list:
+    """
+    The related objects CardSerializer uses, to prefetch on a list or queryset of cards.
+    Cards like basic lands have thousands of localisations, so rather than fetch those,
+    each printing gets the user's owned count added up by the database as
+    user_owned_count, and only localised faces with a downloaded image are fetched.
+    """
+    printings = CardPrinting.objects.select_related("set", "rarity")
+    if user:
+        printings = printings.annotate(
+            user_owned_count=Sum(
+                "localisations__ownerships__count",
+                filter=Q(localisations__ownerships__owner=user),
+            )
+        )
+    faces_with_images = CardFaceLocalisation.objects.filter(
+        image__file_path__isnull=False
+    ).select_related("image", "localisation")
+    return [
+        "faces__types",
+        "faces__subtypes",
+        "faces__supertypes",
+        Prefetch("printings", queryset=printings),
+        "printings__face_printings",
+        Prefetch(
+            "printings__face_printings__localised_faces", queryset=faces_with_images
+        ),
+    ]
+
+
 class CardSerializer(serializers.ModelSerializer):
     """
-    Serialiser for the card object
+    Serialiser for the card object. Prefetch card_prefetches() first.
     """
 
     faces = CardFaceSerializer(many=True, read_only=True)
@@ -173,10 +191,9 @@ class CardSerializer(serializers.ModelSerializer):
         """
         How many of this card the user owns across all printings, or None for anonymous users
         """
-        user = get_context_user(self)
-        if not user:
+        if not get_context_user(self):
             return None
-        return obj.get_user_ownership_count(user, prefetched=True)
+        return sum(p.user_owned_count or 0 for p in obj.printings.all())
 
 
 class CardLegalitySerializer(serializers.ModelSerializer):

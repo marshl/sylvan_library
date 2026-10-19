@@ -10,6 +10,7 @@ from django.db.models import prefetch_related_objects, QuerySet
 
 from sylvan_library.cards.models.card import CardPrinting, Card
 from sylvan_library.cards.models.sets import Set
+from sylvan_library.cards.serializers import card_prefetches
 
 from sylvan_library.cardsearch.parameters.base_parameters import (
     CardSearchAnd,
@@ -151,21 +152,7 @@ class BaseSearch:
         except EmptyPage:
             return
         cards = list(self.page)
-
-        prefetch_related_objects(cards, "printings__localisations__ownerships")
-        prefetch_related_objects(cards, "printings__localisations__language")
-        prefetch_related_objects(
-            cards, "printings__localisations__localised_faces__image"
-        )
-        prefetch_related_objects(
-            cards, "printings__face_printings__localised_faces__image"
-        )
-        prefetch_related_objects(
-            cards, "printings__face_printings__localised_faces__localisation"
-        )
-        prefetch_related_objects(cards, "faces")
-        prefetch_related_objects(cards, "printings__set")
-        prefetch_related_objects(cards, "printings__rarity")
+        prefetch_related_objects(cards, *card_prefetches(self.user))
 
         preferred_set = self.get_preferred_set()
         self.results = [
