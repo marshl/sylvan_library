@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router';
 import { fetchJson } from '../api';
 
 interface Set {
@@ -14,7 +15,11 @@ function SetRow({ cardSet, depth }: { cardSet: Set; depth: number }) {
   return (
     <>
       <tr className={`set-row-${depth}`}>
-        <td style={{ paddingLeft: `${depth * 1.5}em` }}>{cardSet.name}</td>
+        <td style={{ paddingLeft: `${depth * 1.5}em` }}>
+          <Link to={`/search?query=${encodeURIComponent(`set:${cardSet.code}`)}`}>
+            {cardSet.name}
+          </Link>
+        </td>
         <td>{cardSet.total_set_size}</td>
         <td>{cardSet.release_date}</td>
       </tr>
