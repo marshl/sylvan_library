@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router';
-import { ApiError, fetchJson } from '../api';
-import { useApi } from '../useApi';
-import { useCurrentUser } from '../user';
-import PriceChart, { type PricePoint } from './PriceChart';
+import React, { useEffect, useRef, useState } from "react";
+import { Link } from "react-router";
+import { ApiError, fetchJson } from "../api";
+import { useApi } from "../useApi";
+import { useCurrentUser } from "../user";
+import PriceChart, { type PricePoint } from "./PriceChart";
 
 interface Legality {
   format: string;
@@ -82,27 +82,27 @@ interface PricesPayload {
 }
 
 type TabKey =
-  | 'details'
-  | 'rulings'
-  | 'languages'
-  | 'ownership'
-  | 'add'
-  | 'decks'
-  | 'links'
-  | 'prices';
+  | "details"
+  | "rulings"
+  | "languages"
+  | "ownership"
+  | "add"
+  | "decks"
+  | "links"
+  | "prices";
 
 const TABS: { key: TabKey; label: string; loginRequired?: boolean }[] = [
-  { key: 'details', label: 'Details' },
-  { key: 'rulings', label: 'Rulings' },
-  { key: 'languages', label: 'Languages' },
-  { key: 'ownership', label: 'Ownership', loginRequired: true },
-  { key: 'add', label: 'Add cards', loginRequired: true },
-  { key: 'decks', label: 'Decks', loginRequired: true },
-  { key: 'links', label: 'Links' },
-  { key: 'prices', label: 'Prices' },
+  { key: "details", label: "Details" },
+  { key: "rulings", label: "Rulings" },
+  { key: "languages", label: "Languages" },
+  { key: "ownership", label: "Ownership", loginRequired: true },
+  { key: "add", label: "Add cards", loginRequired: true },
+  { key: "decks", label: "Decks", loginRequired: true },
+  { key: "links", label: "Links" },
+  { key: "prices", label: "Prices" },
 ];
 
-const SELECTED_TAB_KEY = 'selected_tab';
+const SELECTED_TAB_KEY = "selected_tab";
 
 function loadSelectedTab(): TabKey {
   try {
@@ -111,7 +111,7 @@ function loadSelectedTab(): TabKey {
   } catch {
     // storage blocked
   }
-  return 'details';
+  return "details";
 }
 
 function saveSelectedTab(tab: TabKey) {
@@ -133,11 +133,18 @@ function TabBody<T>({
   children: (data: T) => React.ReactNode;
 }) {
   if (state.error) return <div className="error">Error: {state.error}</div>;
-  if (state.loading || state.data === null) return <div className="subtitle">Loading…</div>;
+  if (state.loading || state.data === null)
+    return <div className="subtitle">Loading…</div>;
   return <div className="extraDetails">{children(state.data)}</div>;
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div>
       <span className="subtitle">
@@ -149,7 +156,9 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 function DetailsTab({ printingId }: { printingId: number }) {
-  const state = useApi<DetailsPayload>(`/api/cards/printing-details/${printingId}/`);
+  const state = useApi<DetailsPayload>(
+    `/api/cards/printing-details/${printingId}/`,
+  );
   return (
     <TabBody state={state}>
       {(data) => (
@@ -159,15 +168,29 @@ function DetailsTab({ printingId }: { printingId: number }) {
               <i>{data.flavour_text}</i>
             </Field>
           )}
-          {data.artist && <Field label="Artist">{data.artist}</Field>}
+          {data.artist && (
+            <Field label="Artist">
+              <Link
+                to={`/search?query=${encodeURIComponent(`artist:"${data.artist.replace(/[\\"]/g, "\\$&")}"`)}`}
+              >
+                {data.artist}
+              </Link>
+            </Field>
+          )}
           <Field label="Set">
-            {data.set.name} ({data.set.code})
+            <Link
+              to={`/search?query=${encodeURIComponent(`set:${data.set.code}`)}`}
+            >
+              {data.set.name}
+            </Link>
           </Field>
-          {data.set.release_date && <Field label="Release date">{data.set.release_date}</Field>}
+          {data.set.release_date && (
+            <Field label="Release date">{data.set.release_date}</Field>
+          )}
           {data.number && (
             <Field label="Number">
               {data.number}
-              {data.set.total_set_size ? `/${data.set.total_set_size}` : ''}
+              {data.set.total_set_size ? `/${data.set.total_set_size}` : ""}
             </Field>
           )}
           {data.legalities.length > 0 && (
@@ -216,7 +239,9 @@ function RulingsTab({ cardId }: { cardId: number }) {
 }
 
 function LanguagesTab({ printingId }: { printingId: number }) {
-  const state = useApi<Localisation[]>(`/api/cards/printing/${printingId}/languages/`);
+  const state = useApi<Localisation[]>(
+    `/api/cards/printing/${printingId}/languages/`,
+  );
   return (
     <TabBody state={state}>
       {(localisations) =>
@@ -235,11 +260,20 @@ function LanguagesTab({ printingId }: { printingId: number }) {
 }
 
 function localisationLabel(l: LocalisationSummary): string {
-  return `${l.language} ${l.set_name} (${l.set_code}${l.number ? ` #${l.number}` : ''})`;
+  return `${l.language} ${l.set_name} (${l.set_code}${l.number ? ` #${l.number}` : ""})`;
 }
 
-function OwnershipTab({ cardId, version }: { cardId: number; version: number }) {
-  const state = useApi<OwnershipPayload>(`/api/cards/card/${cardId}/ownership/`, version);
+function OwnershipTab({
+  cardId,
+  version,
+}: {
+  cardId: number;
+  version: number;
+}) {
+  const state = useApi<OwnershipPayload>(
+    `/api/cards/card/${cardId}/ownership/`,
+    version,
+  );
   return (
     <TabBody state={state}>
       {(data) => (
@@ -253,7 +287,9 @@ function OwnershipTab({ cardId, version }: { cardId: number; version: number }) 
                 <div key={o.localisation_id}>
                   <i
                     className={`setIcon ss ss-2x ss-${o.keyrune_code} ${
-                      o.set_code === 'TSB' ? 'ss-timeshifted' : `ss-${o.rarity.toLowerCase()}`
+                      o.set_code === "TSB"
+                        ? "ss-timeshifted"
+                        : `ss-${o.rarity.toLowerCase()}`
                     }`}
                   />
                   <span className="subtitle">
@@ -273,8 +309,9 @@ function OwnershipTab({ cardId, version }: { cardId: number; version: number }) 
               {data.changes.map((c, i) => (
                 <div key={i}>
                   <span className="subtitle">
-                    {c.difference > 0 ? '+' : ''}
-                    {c.difference} {new Date(c.date).toLocaleString()} {localisationLabel(c)}
+                    {c.difference > 0 ? "+" : ""}
+                    {c.difference} {new Date(c.date).toLocaleString()}{" "}
+                    {localisationLabel(c)}
                   </span>
                 </div>
               ))}
@@ -295,8 +332,10 @@ function AddCardsTab({
   printingLabel: string;
   onChanged: () => void;
 }) {
-  const state = useApi<Localisation[]>(`/api/cards/printing/${printingId}/languages/`);
-  const [count, setCount] = useState('');
+  const state = useApi<Localisation[]>(
+    `/api/cards/printing/${printingId}/languages/`,
+  );
+  const [count, setCount] = useState("");
   const [localisationId, setLocalisationId] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -318,19 +357,22 @@ function AddCardsTab({
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     const change = Number(count);
-    if (!Number.isInteger(change) || change === 0 || selectedId === null) return;
+    if (!Number.isInteger(change) || change === 0 || selectedId === null)
+      return;
     setSubmitting(true);
     setMessage(null);
     try {
-      await fetchJson('/api/cards/ownership-changes/', {
-        method: 'POST',
+      await fetchJson("/api/cards/ownership-changes/", {
+        method: "POST",
         body: { count: change, localisation: selectedId },
       });
-      setCount('');
-      setMessage(`${change > 0 ? 'Added' : 'Removed'} ${Math.abs(change)}`);
+      setCount("");
+      setMessage(`${change > 0 ? "Added" : "Removed"} ${Math.abs(change)}`);
       onChanged();
     } catch (err) {
-      setMessage(err instanceof ApiError ? err.message : 'Something went wrong');
+      setMessage(
+        err instanceof ApiError ? err.message : "Something went wrong",
+      );
     } finally {
       setSubmitting(false);
       countInput.current?.focus();
@@ -355,7 +397,7 @@ function AddCardsTab({
           </span>
           <span className="select-group">
             <select
-              value={selectedId ?? ''}
+              value={selectedId ?? ""}
               onChange={(e) => setLocalisationId(Number(e.target.value))}
               disabled={submitting}
               aria-label="Language"
@@ -381,22 +423,27 @@ function AddCardsTab({
 }
 
 function DecksTab({ cardId, version }: { cardId: number; version: number }) {
-  const state = useApi<DecksPayload>(`/api/cards/card/${cardId}/decks/`, version);
+  const state = useApi<DecksPayload>(
+    `/api/cards/card/${cardId}/decks/`,
+    version,
+  );
   return (
     <TabBody state={state}>
       {(data) =>
         data.deck_cards.length === 0 ? (
-          <span className="subtitle">You have never used this card in a deck</span>
+          <span className="subtitle">
+            You have never used this card in a deck
+          </span>
         ) : (
           <>
             {data.card_count} used in {data.deck_count} decks
             {data.deck_cards.map((dc, i) => (
               <div key={i}>
                 <span className="subtitle">
-                  {dc.count}x in{' '}
+                  {dc.count}x in{" "}
                   <Link to={`/decks/${dc.deck_id}`} className="card-link">
-                    {dc.deck_name} {dc.deck_subtitle ?? ''} ({dc.date_created})
-                    {dc.board !== 'main' && <em> ({dc.board_display}board)</em>}
+                    {dc.deck_name} {dc.deck_subtitle ?? ""} ({dc.date_created})
+                    {dc.board !== "main" && <em> ({dc.board_display}board)</em>}
                   </Link>
                 </span>
               </div>
@@ -416,8 +463,14 @@ function LinksTab({ cardId }: { cardId: number }) {
         links.map((link) => (
           <div key={link.url}>
             <span className="subtitle">
-              <a href={link.url} target="_blank" rel="noreferrer" className="card-link">
-                {link.name} <i className="fa fa-external-link" aria-hidden="true" />
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noreferrer"
+                className="card-link"
+              >
+                {link.name}{" "}
+                <i className="fa fa-external-link" aria-hidden="true" />
               </a>
             </span>
           </div>
@@ -428,11 +481,13 @@ function LinksTab({ cardId }: { cardId: number }) {
 }
 
 function formatPrice(value: number | null): string {
-  return value === null ? '–' : `$${value.toFixed(2)}`;
+  return value === null ? "–" : `$${value.toFixed(2)}`;
 }
 
 function PricesTab({ printingId }: { printingId: number }) {
-  const state = useApi<PricesPayload>(`/api/cards/printing/${printingId}/prices/`);
+  const state = useApi<PricesPayload>(
+    `/api/cards/printing/${printingId}/prices/`,
+  );
   return (
     <TabBody state={state}>
       {(data) =>
@@ -442,13 +497,13 @@ function PricesTab({ printingId }: { printingId: number }) {
           <>
             <span className="subtitle">
               <b>Paper: </b> {formatPrice(data.latest.paper)}
-            </span>{' '}
+            </span>{" "}
             <span className="subtitle">
               <b>Paper Foil: </b> {formatPrice(data.latest.paper_foil)}
-            </span>{' '}
+            </span>{" "}
             <span className="subtitle">
               <b>MTGO: </b> {formatPrice(data.latest.mtgo)}
-            </span>{' '}
+            </span>{" "}
             <span className="subtitle">
               <b>MTGO Foil: </b> {formatPrice(data.latest.mtgo_foil)}
             </span>
@@ -483,7 +538,7 @@ export default function CardResultDetails({
   const { user } = useCurrentUser();
   const [tab, setTab] = useState<TabKey>(loadSelectedTab);
   const tabs = TABS.filter((t) => !t.loginRequired || user?.is_authenticated);
-  const activeTab = tabs.some((t) => t.key === tab) ? tab : 'details';
+  const activeTab = tabs.some((t) => t.key === tab) ? tab : "details";
 
   function selectTab(key: TabKey) {
     setTab(key);
@@ -499,7 +554,7 @@ export default function CardResultDetails({
           tabIndex={0}
           onClick={onExpand}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') onExpand();
+            if (e.key === "Enter" || e.key === " ") onExpand();
           }}
         >
           Details ▼
@@ -518,10 +573,10 @@ export default function CardResultDetails({
               role="tab"
               aria-selected={t.key === activeTab}
               tabIndex={0}
-              className={`tab ${t.key === activeTab ? 'selected' : ''}`}
+              className={`tab ${t.key === activeTab ? "selected" : ""}`}
               onClick={() => selectTab(t.key)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') selectTab(t.key);
+                if (e.key === "Enter" || e.key === " ") selectTab(t.key);
               }}
             >
               {t.label}
@@ -529,22 +584,26 @@ export default function CardResultDetails({
           ))}
         </ul>
         <div className="tab-content" role="tabpanel">
-          {activeTab === 'details' && <DetailsTab printingId={printingId} />}
-          {activeTab === 'rulings' && <RulingsTab cardId={cardId} />}
-          {activeTab === 'languages' && <LanguagesTab printingId={printingId} />}
-          {activeTab === 'ownership' && (
+          {activeTab === "details" && <DetailsTab printingId={printingId} />}
+          {activeTab === "rulings" && <RulingsTab cardId={cardId} />}
+          {activeTab === "languages" && (
+            <LanguagesTab printingId={printingId} />
+          )}
+          {activeTab === "ownership" && (
             <OwnershipTab cardId={cardId} version={ownershipVersion} />
           )}
-          {activeTab === 'add' && (
+          {activeTab === "add" && (
             <AddCardsTab
               printingId={printingId}
               printingLabel={printingLabel}
               onChanged={onOwnershipChanged}
             />
           )}
-          {activeTab === 'decks' && <DecksTab cardId={cardId} version={ownershipVersion} />}
-          {activeTab === 'links' && <LinksTab cardId={cardId} />}
-          {activeTab === 'prices' && <PricesTab printingId={printingId} />}
+          {activeTab === "decks" && (
+            <DecksTab cardId={cardId} version={ownershipVersion} />
+          )}
+          {activeTab === "links" && <LinksTab cardId={cardId} />}
+          {activeTab === "prices" && <PricesTab printingId={printingId} />}
         </div>
       </div>
     </div>
