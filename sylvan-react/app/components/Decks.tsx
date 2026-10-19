@@ -10,12 +10,27 @@ import RequireLogin from './RequireLogin';
 const PAGE_SIZE = 10;
 
 /**
- * The description as plain text, cut down to a preview length. Descriptions are
- * HTML from the rich text editor.
+ * The description HTML cut down to a preview length of visible text, keeping its
+ * formatting. Descriptions are HTML from the rich text editor.
  */
 function descriptionPreview(html: string, length = 200): string {
-  const text = new DOMParser().parseFromString(html, 'text/html').body.textContent ?? '';
-  return text.length > length ? `${text.slice(0, length)}...` : text;
+  const body = new DOMParser().parseFromString(html, 'text/html').body;
+  const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT);
+  let remaining = length;
+  while (walker.nextNode()) {
+    const text = walker.currentNode as Text;
+    if (text.data.length <= remaining) {
+      remaining -= text.data.length;
+      continue;
+    }
+    text.data = `${text.data.slice(0, remaining)}...`;
+    // Drop everything after the cut, at every level up to the body
+    for (let node: Node | null = text; node && node !== body; node = node.parentNode) {
+      while (node.nextSibling) node.nextSibling.remove();
+    }
+    break;
+  }
+  return body.innerHTML;
 }
 
 function DeckList({
@@ -63,7 +78,10 @@ function DeckList({
               </h2>
               {deck.subtitle && <h3 className="search-result-subtitle">{deck.subtitle}</h3>}
               {deck.description && (
-                <h3 className="subtitle">{descriptionPreview(deck.description)}</h3>
+                <h3
+                  className="subtitle"
+                  dangerouslySetInnerHTML={{ __html: descriptionPreview(deck.description) }}
+                />
               )}
             </div>
           </div>
