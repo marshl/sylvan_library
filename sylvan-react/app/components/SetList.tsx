@@ -14,8 +14,8 @@ interface Set {
 function SetRow({ cardSet, depth }: { cardSet: Set; depth: number }) {
   return (
     <>
-      <tr className={`set-row-${depth}`}>
-        <td style={{ paddingLeft: `${depth * 1.5}em` }}>
+      <tr>
+        <td style={{ paddingLeft: `${(depth - 1) * 1.5}em` }}>
           <Link to={`/search?query=${encodeURIComponent(`set:${cardSet.code}`)}`}>
             {cardSet.name}
           </Link>
