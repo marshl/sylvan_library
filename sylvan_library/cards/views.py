@@ -2,6 +2,7 @@
 Views
 """
 
+from django.db.models import Prefetch
 from rest_framework import viewsets, mixins
 
 from sylvan_library.cards.models.card import Card, CardPrinting
@@ -54,7 +55,16 @@ class AllSetsViewSet(viewsets.ModelViewSet):
 
     queryset = (
         Set.objects.filter(parent_set__isnull=True)
-        .prefetch_related("child_sets__child_sets__child_sets")
+        .prefetch_related(
+            *(
+                Prefetch(lookup, queryset=Set.objects.order_by("-release_date"))
+                for lookup in (
+                    "child_sets",
+                    "child_sets__child_sets",
+                    "child_sets__child_sets__child_sets",
+                )
+            )
+        )
         .order_by("-release_date")
     )
     serializer_class = SetSerializer
