@@ -1,10 +1,23 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Form, Link, useSearchParams } from 'react-router';
+import { isTypingTarget } from '../keyboard';
 import { loginUrl, logout, useCurrentUser } from '../user';
 
 export default function TopBar() {
   const { user } = useCurrentUser();
   const [searchParams] = useSearchParams();
+  const searchInput = useRef<HTMLInputElement>(null);
+
+  // Pressing f jumps to the search box, unless the user is typing somewhere else
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key !== 'f' || e.ctrlKey || e.metaKey || e.altKey || isTypingTarget(e.target)) return;
+      searchInput.current?.focus();
+      e.preventDefault();
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   return (
     <div className="top-bar">
@@ -15,6 +28,7 @@ export default function TopBar() {
         <div className="header-search-container">
           <Form action="/search" method="get">
             <input
+              ref={searchInput}
               type="text"
               name="query"
               className="search-input"
