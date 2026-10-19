@@ -81,6 +81,7 @@ export default function Search() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onFocus={(e) => e.currentTarget.select()}
           placeholder="Search cards (e.g. lightning bolt)"
           aria-label="Card search"
         />

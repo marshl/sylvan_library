@@ -21,6 +21,7 @@ export default function TopBar() {
               placeholder="Search for a card..."
               key={searchParams.get('query') ?? ''}
               defaultValue={searchParams.get('query') ?? ''}
+              onFocus={(e) => e.currentTarget.select()}
             />
           </Form>
         </div>
