@@ -122,6 +122,11 @@ export default function Search() {
               />
             ))}
           </div>
+          {response && !loading && results.length === 0 && (
+            <div className="no-search-results">
+              <div className="no-search-results-content">No results found</div>
+            </div>
+          )}
           <Pager count={count} page={page} pageSize={pageSize} onPageChange={setPage} />
         </>
       )}
