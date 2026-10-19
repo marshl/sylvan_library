@@ -391,7 +391,12 @@ function DecksTab({ cardId, version }: { cardId: number; version: number }) {
               <div key={i}>
                 <span className="subtitle">
                   {dc.count}x in{' '}
-                  <Link to={`/decks/${dc.deck_id}`} className="card-link">
+                  <Link
+                    to={`/decks/${dc.deck_id}`}
+                    target="_blank"
+                    rel="noopener"
+                    className="card-link"
+                  >
                     {dc.deck_name} {dc.deck_subtitle ?? ''} ({dc.date_created})
                     {dc.board !== 'main' && <em> ({dc.board_display}board)</em>}
                   </Link>
