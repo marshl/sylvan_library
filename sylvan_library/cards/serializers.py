@@ -5,6 +5,7 @@ Card serializers
 from datetime import date
 
 from django.conf import settings
+from django.contrib.staticfiles import finders
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import StringRelatedField
@@ -72,23 +73,22 @@ class SetSerializer(serializers.ModelSerializer):
 def face_printing_image_url(face_printing: CardFacePrinting) -> str:
     """
     Gets the image URL of a face printing, preferring the English image and falling back
-    to the card back if no image has been downloaded
+    to the card back if no image file is on disk
     """
     english_id = Language.english().id
-    localised_faces = list(face_printing.localised_faces.all())
-    english = next(
-        (lf for lf in localised_faces if lf.localisation.language_id == english_id),
-        None,
+    localised_faces = sorted(
+        face_printing.localised_faces.all(),
+        key=lambda lf: lf.localisation.language_id != english_id,
     )
-    path = english.get_image_path() if english else None
-    if not path:
-        for lf in localised_faces:
-            path = lf.get_image_path()
-            if path:
-                break
-    if not path:
-        path = "card_back.jpg"
-    return settings.STATIC_URL + path
+    for lf in localised_faces:
+        path = lf.get_image_path()
+        if not path:
+            continue
+        # Paths saved on Windows use backslashes
+        path = path.replace("\\", "/")
+        if finders.find(path):
+            return settings.STATIC_URL + path
+    return settings.STATIC_URL + "card_back.jpg"
 
 
 def printing_image_url(printing: CardPrinting | None) -> str:
