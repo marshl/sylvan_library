@@ -21,13 +21,11 @@ from sylvan_library.frontend import views as frontend_views
 
 urlpatterns = [
     # Django and API routes should come first
-    path("website/", include("sylvan_library.website.urls")),
     path("api/cards/", include("sylvan_library.cards.urls")),
     path("api/search/", include("sylvan_library.cardsearch.urls")),
     path("api/me/", frontend_views.CurrentUserView.as_view(), name="current_user"),
     path("admin/", admin.site.urls),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
-    path("tinymce/", include("tinymce.urls")),
 ]
 
 if settings.DEBUG_TOOLBAR:
@@ -40,7 +38,7 @@ if settings.DEBUG_TOOLBAR:
 # This should be the last pattern in the list.
 urlpatterns.append(
     re_path(
-        r"^(?!api/|api-auth/|admin/|static/|tinymce/|__debug__/).*$",
+        r"^(?!api/|api-auth/|admin/|static/|__debug__/).*$",
         frontend_views.index,
         name="react-app",
     )

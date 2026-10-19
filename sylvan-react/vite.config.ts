@@ -22,7 +22,6 @@ export default defineConfig(({ command }) => ({
     proxy: {
       '/api': { target: DJANGO_BACKEND, changeOrigin: true },
       '/static': { target: DJANGO_BACKEND, changeOrigin: true },
-      '/website': { target: DJANGO_BACKEND, changeOrigin: true },
       '/api-auth': { target: DJANGO_BACKEND, changeOrigin: true },
       '/admin': { target: DJANGO_BACKEND, changeOrigin: true },
     },

@@ -26,11 +26,6 @@ MEDIA_URL = "media/"
 STATIC_ROOT = public_root("static")
 STATIC_URL = "/static/"
 
-# Add the frontend static directory to STATICFILES_DIRS
-# STATICFILES_DIRS = [
-#     root("sylvan_library", "frontend", "static"),
-# ]
-
 # Raises ImproperlyConfigured exception if SECRET_KEY not in os.environ
 SECRET_KEY = env("SECRET_KEY")
 
@@ -47,9 +42,6 @@ INSTALLED_APPS = [
     "rest_framework",
     "django_extensions",
     "djangoql",
-    "django_select2",
-    "tinymce",
-    "widget_tweaks",
     # my apps
     "sylvan_library.bitfield.apps.BitFieldAppConfig",
     "sylvan_library.cards.apps.CardsConfig",
@@ -57,7 +49,6 @@ INSTALLED_APPS = [
     "sylvan_library.data_export.apps.DataExportConfig",
     "sylvan_library.data_import.apps.DataImportConfig",
     "sylvan_library.reports.apps.ReportsConfig",
-    "sylvan_library.website.apps.WebsiteConfig",
     "sylvan_library.frontend.apps.FrontendConfig",
 ]
 
