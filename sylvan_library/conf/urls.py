@@ -35,6 +35,13 @@ if settings.DEBUG_TOOLBAR:
 
     urlpatterns.append(path("__debug__/", include(debug_toolbar.urls)))
 
-# A catch-all route to render the React application.
+# Every other path is a page in the React app, which does its own routing. Unknown
+# API, admin and static paths are left to 404 rather than get the app's HTML.
 # This should be the last pattern in the list.
-urlpatterns.append(re_path(r"^react/.*$", frontend_views.index, name="react-app"))
+urlpatterns.append(
+    re_path(
+        r"^(?!api/|api-auth/|admin/|static/|tinymce/|__debug__/).*$",
+        frontend_views.index,
+        name="react-app",
+    )
+)

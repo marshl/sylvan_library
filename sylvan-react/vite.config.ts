@@ -7,15 +7,15 @@ import path from 'path';
 const DJANGO_BACKEND = process.env.DJANGO_BACKEND || 'http://localhost:8000';
 
 // React Router requires Vite's `base` to be a prefix of `basename`.
-// - In dev, the app is served at http://localhost:5173/react/, so base == basename.
-// - In prod, Django's built HTML lives under /static/react/, but the app URL is /react/;
+// - In dev, the app is served at http://localhost:5173/, so base == basename.
+// - In prod, Django's built HTML lives under /static/react/, but the app is served at /;
 //   at build time we set base to /static/react/ so hashed asset URLs resolve through
 //   Django's staticfiles handler.  The dev-only prefix check doesn't run at build time.
 //   `npm run build` copies build/client into the Django frontend app's static dir.
 export default defineConfig(({ command }) => ({
   plugins: [reactRouter(), tailwindcss(), tsconfigPaths()],
   root: path.resolve(__dirname),
-  base: command === 'serve' ? '/react/' : '/static/react/',
+  base: command === 'serve' ? '/' : '/static/react/',
   server: {
     port: 5173,
     strictPort: true,
