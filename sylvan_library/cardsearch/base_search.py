@@ -97,7 +97,6 @@ class BaseSearch:
         :return: The search queryset
         """
         query = self.root_parameter.query(query_context)
-        print(query)
         self.sort_params.append(
             CardNameSortParam(
                 param_args=ParameterArgs(keyword="sort", operator=":", value="name"),
@@ -116,10 +115,8 @@ class BaseSearch:
 
         if query_context.search_mode == CardSearchContext.CARD:
             queryset = Card.objects.filter(query)
-            print(str(queryset.query))
         else:
             queryset = CardPrinting.objects.filter(query)  # .distinct()
-            print(str(queryset.query))
             queryset = Card.objects.filter(printings__in=queryset)
 
         if "?" not in distinct_fields:
@@ -148,7 +145,6 @@ class BaseSearch:
         :param page_size: The number of items per page
         """
         queryset = self.get_queryset(query_context)
-        print(str(queryset.query))
         self.paginator = Paginator(queryset, page_size)
         try:
             self.page = self.paginator.page(page_number)
