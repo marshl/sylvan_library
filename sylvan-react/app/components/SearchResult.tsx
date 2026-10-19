@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { fetchJson } from '../api';
+import { isTypingTarget } from '../keyboard';
 import type { Card, CardFace, CardPrinting, SearchResult as Result } from '../types';
 import CardResultDetails from './CardResultDetails';
 import RulesText, { ManaSymbols } from './ManaText';
@@ -132,6 +133,21 @@ export default function SearchResult({
   const [ownershipVersion, setOwnershipVersion] = useState(0);
 
   const printing = card.printings.find((p) => p.id === printingId) ?? result.selected_printing;
+
+  // Ctrl+Left/Right steps through the printings of the expanded result
+  useEffect(() => {
+    if (!expanded) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (!e.ctrlKey || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
+      if (isTypingTarget(e.target)) return;
+      e.preventDefault();
+      const index = card.printings.findIndex((p) => p.id === printing.id);
+      const next = card.printings[index + (e.key === 'ArrowLeft' ? -1 : 1)];
+      if (next) setPrintingId(next.id);
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [expanded, card.printings, printing.id]);
   const layout = card.layout;
   const isDoubleFaced = DOUBLE_FACED_LAYOUTS.includes(layout);
   const showTransform = isDoubleFaced && !(layout === 'meld' && card.faces[0]?.side === 'c');
