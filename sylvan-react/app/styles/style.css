@@ -35,15 +35,6 @@ body {
 .main-layout {
   box-sizing: border-box;
   background: #f4f4f4;
-  font-family:
-    Roboto,
-    Oxygen,
-    Ubuntu,
-    Cantarell,
-    Fira Sans,
-    Droid Sans,
-    Helvetica Neue,
-    sans-serif;
 }
 
 .main-layout .body-content {
@@ -51,18 +42,17 @@ body {
 }
 
 html {
-  font-family:
-    BlinkMacSystemFont,
-    Segoe UI,
-    Roboto,
-    Oxygen,
-    Ubuntu,
-    Cantarell,
-    Fira Sans,
-    Droid Sans,
-    Helvetica Neue,
-    sans-serif;
+  /* Inter, set in app.css */
+  font-family: var(--font-sans);
   color: white;
+}
+
+/* Form controls use the browser's own font unless told otherwise */
+input,
+button,
+select,
+textarea {
+  font-family: inherit;
 }
 
 body {
