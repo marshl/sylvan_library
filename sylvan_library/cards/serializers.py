@@ -2,6 +2,8 @@
 Card serializers
 """
 
+from datetime import date
+
 from django.conf import settings
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
@@ -198,11 +200,20 @@ class CardPrintingDetailsSerializer(serializers.ModelSerializer):
     flavour_text = SerializerMethodField()
     artist = SerializerMethodField()
     set = SerializerMethodField()
+    release_date = SerializerMethodField()
     legalities = SerializerMethodField()
 
     class Meta:
         model = CardPrinting
-        fields = ("id", "number", "flavour_text", "artist", "set", "legalities")
+        fields = (
+            "id",
+            "number",
+            "flavour_text",
+            "artist",
+            "set",
+            "release_date",
+            "legalities",
+        )
 
     def _first_face(self, obj: CardPrinting) -> CardFacePrinting | None:
         return obj.face_printings.first()
@@ -222,6 +233,9 @@ class CardPrintingDetailsSerializer(serializers.ModelSerializer):
             "release_date": obj.set.release_date,
             "total_set_size": obj.set.total_set_size,
         }
+
+    def get_release_date(self, obj: CardPrinting) -> date | None:
+        return obj.original_release_date or obj.set.release_date
 
     def get_legalities(self, obj: CardPrinting) -> list:
         legalities = obj.card.legalities.select_related("format").order_by(

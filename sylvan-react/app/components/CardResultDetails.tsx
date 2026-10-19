@@ -21,6 +21,7 @@ interface DetailsPayload {
     release_date: string | null;
     total_set_size: number | null;
   };
+  release_date: string | null;
   legalities: Legality[];
 }
 
@@ -166,7 +167,7 @@ function DetailsTab({ printingId }: { printingId: number }) {
               {data.set.name}
             </Link>
           </Field>
-          {data.set.release_date && <Field label="Release date">{data.set.release_date}</Field>}
+          {data.release_date && <Field label="Release date">{data.release_date}</Field>}
           {data.number && (
             <Field label="Number">
               {data.number}
