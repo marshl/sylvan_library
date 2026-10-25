@@ -13,6 +13,7 @@ import { UserProvider } from './user';
 import 'keyrune/css/keyrune.min.css';
 import 'mana-font/css/mana.min.css';
 import 'font-awesome/css/font-awesome.min.css';
+import './styles/colours.css';
 import './styles/app.css';
 import './styles/style.css';
 import './styles/top-bar.css';

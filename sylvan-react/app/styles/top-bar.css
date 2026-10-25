@@ -1,5 +1,5 @@
 .top-bar {
-  background: #2a4466;
+  background: var(--colour-brand);
   height: 60px;
   position: fixed;
   top: 0;
@@ -21,7 +21,7 @@
 
 .profile-container {
   position: absolute;
-  background: #2a4466;
+  background: var(--colour-brand);
   border-radius: 0 0 5px 5px;
   width: 250px;
   top: 60px;
@@ -30,11 +30,11 @@
 }
 
 .profile-container p {
-  color: white;
+  color: var(--colour-text);
 }
 
 .profile-container a {
-  color: white;
+  color: var(--colour-text);
   text-decoration: none;
 }
 
@@ -45,7 +45,7 @@
 .profile-details {
   padding-bottom: 8px;
   margin-bottom: 4px;
-  border-bottom: 1px solid #34547f;
+  border-bottom: 1px solid var(--colour-brand-raised);
 }
 
 .profile-details p {
@@ -66,7 +66,7 @@
   border: none;
   border-radius: 3px;
   background: none;
-  color: white;
+  color: var(--colour-text);
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -74,7 +74,7 @@
 
 .profile-container .profile-menu-item:hover,
 .profile-container .profile-menu-item:focus-visible {
-  background-color: #34547f;
+  background-color: var(--colour-brand-raised);
   text-decoration: none;
   outline: none;
 }

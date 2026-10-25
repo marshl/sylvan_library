@@ -23,11 +23,11 @@
 
 .page-button {
   flex: 1;
-  background-color: #333;
-  border: 1px solid #444;
+  background-color: var(--colour-surface);
+  border: 1px solid var(--colour-border);
   font-weight: 500;
   font-size: 14px;
-  color: #ddd;
+  color: var(--colour-text-soft);
   padding: 5px 10px;
   border-right: none;
   text-decoration: none;
@@ -44,19 +44,19 @@
 
 .page-button:last-child {
   border-radius: 0 3px 3px 0;
-  border-right: 1px solid #444;
+  border-right: 1px solid var(--colour-border);
 }
 
 .page-button.is-active,
 .page-button:hover:not(.disabled) {
-  background-color: #08c;
-  color: #fff;
-  border-color: #08c;
+  background-color: var(--colour-accent);
+  color: var(--colour-text);
+  border-color: var(--colour-accent);
 }
 
 .page-button.is-disabled {
   cursor: auto;
-  color: #777;
+  color: var(--colour-text-disabled);
   pointer-events: none;
 }
 

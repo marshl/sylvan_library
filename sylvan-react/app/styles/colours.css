@@ -1,0 +1,44 @@
+/* The site's colours. Everything else refers to these rather than repeating them. */
+:root {
+  /* Backgrounds, from the page behind everything up to raised boxes */
+  --colour-page: #151515;
+  --colour-panel: #222;
+  --colour-surface: #333;
+  --colour-surface-hover: #444;
+  --colour-field: #2a2a2a;
+  --colour-field-hover: #3a3a3a;
+  --colour-row-hover: #ccc;
+
+  /* Text, from brightest to faintest */
+  --colour-text: #fff;
+  --colour-text-subtitle: #eee;
+  --colour-text-soft: #ddd;
+  --colour-text-link: #ccc;
+  --colour-text-notice: #bbb;
+  --colour-text-muted: #aaa;
+  --colour-text-faint: #999;
+  --colour-text-disabled: #777;
+
+  /* Lines */
+  --colour-border: #444;
+  --colour-tab-border: #aaa;
+  --colour-owned: #ccc;
+  --colour-control-arrow: #666;
+
+  /* The blue of the top bar and the main buttons */
+  --colour-brand: #2a4466;
+  --colour-brand-raised: #34547f;
+  --colour-brand-hover: #3d6496;
+
+  /* Brighter blues for links, selection and focus */
+  --colour-accent: #08c;
+  --colour-link: #4aa3df;
+  --colour-card-link-hover: #0092d6;
+  --colour-card-link-underline: rgb(4, 137, 199);
+  --colour-focus: hsl(208, 99%, 50%);
+
+  --colour-danger: #8b2b2b;
+  --colour-danger-hover: #a33434;
+  --colour-banned: red;
+  --colour-restricted: darkorange;
+}

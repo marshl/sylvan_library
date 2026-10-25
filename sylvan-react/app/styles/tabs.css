@@ -1,5 +1,5 @@
 .tab-list {
-  border-bottom: 1px solid #aaa;
+  border-bottom: 1px solid var(--colour-tab-border);
   margin: 0 0 10px;
   padding: 0;
 }
@@ -12,7 +12,7 @@
   position: relative;
   list-style: none;
   padding: 6px 12px;
-  color: #ddd;
+  color: var(--colour-text-soft);
   cursor: pointer;
 }
 
@@ -22,15 +22,15 @@
 }
 
 .tab-expander {
-  color: #ccc;
+  color: var(--colour-text-link);
   font-variant: small-caps;
   cursor: pointer;
 }
 
 .tab-container .tab.selected {
-  background-color: #333;
-  color: #ddd;
-  border-color: #aaa;
+  background-color: var(--colour-surface);
+  color: var(--colour-text-soft);
+  border-color: var(--colour-tab-border);
   border-radius: 5px 5px 0 0;
 }
 
@@ -40,8 +40,8 @@
 }
 
 .tab-container .tab:focus {
-  box-shadow: 0 0 5px hsl(208, 99%, 50%);
-  border-color: hsl(208, 99%, 50%);
+  box-shadow: 0 0 5px var(--colour-focus);
+  border-color: var(--colour-focus);
   outline: none;
 }
 

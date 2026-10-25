@@ -11,7 +11,7 @@
 }
 
 html {
-  background-color: #151515;
+  background-color: var(--colour-page);
   color-scheme: dark;
 }
 
@@ -21,14 +21,14 @@ html {
 }
 
 .set-table tr:nth-child(2n) {
-  background-color: #333;
+  background-color: var(--colour-surface);
 }
 .set-table tr a {
   display: block;
 }
 
 .set-table tr:hover {
-  background-color: #ccc;
+  background-color: var(--colour-row-hover);
 }
 
 .set-table thead tr:hover {

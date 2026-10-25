@@ -7,19 +7,19 @@
   display: inline;
   position: relative;
   padding: 4px 8px;
-  border: 1px solid #444;
+  border: 1px solid var(--colour-border);
   border-radius: 3px;
-  color: #ddd;
+  color: var(--colour-text-soft);
   font-weight: 500;
   font-size: 14px;
-  background-color: #222;
+  background-color: var(--colour-panel);
   cursor: pointer;
 }
 
 .image-actions button:hover {
-  background-color: #08c;
-  border-color: #08c;
-  color: #fff;
+  background-color: var(--colour-accent);
+  border-color: var(--colour-accent);
+  color: var(--colour-text);
 }
 
 .header-search-container {
@@ -40,7 +40,7 @@
 .header-search-container input.search-input {
   box-shadow: none;
   background: transparent;
-  color: #fff;
+  color: var(--colour-text);
   padding: 10px 20px;
   width: 100%;
   flex: 3;
@@ -52,7 +52,7 @@
 
 .search-result {
   display: flex;
-  background: #333;
+  background: var(--colour-surface);
   border-radius: 3px;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
   width: 100%;
@@ -62,17 +62,17 @@
 }
 
 .search-result:hover {
-  background-color: #444;
+  background-color: var(--colour-surface-hover);
 }
 
 .search-result.owned {
-  border: solid #cccccc 1px;
+  border: solid var(--colour-owned) 1px;
   border-radius: 8px;
 }
 
 .search-result-title {
   transition: 0.8s;
-  color: #ddd;
+  color: var(--colour-text-soft);
   font-size: 18px;
   line-height: 20px;
   margin: 0 0 5px;
@@ -87,7 +87,7 @@
 
 .search-result-list a {
   text-decoration: none;
-  color: #ccc;
+  color: var(--colour-text-link);
 }
 
 .search-result-set-list {
@@ -124,7 +124,7 @@
 }
 
 .results-page {
-  background-color: #222;
+  background-color: var(--colour-panel);
   padding-top: 15px;
   width: 100%;
 }
@@ -160,7 +160,7 @@
 
 .subtitle.banned {
   font-weight: 700;
-  color: red;
+  color: var(--colour-banned);
 }
 
 .subtitle.legal {
@@ -169,7 +169,7 @@
 
 .subtitle.restricted {
   font-weight: 700;
-  color: darkorange;
+  color: var(--colour-restricted);
 }
 
 .card-image {
@@ -252,7 +252,7 @@
 }
 
 .setIcon.owned {
-  border: solid #cccccc 1px;
+  border: solid var(--colour-owned) 1px;
 }
 
 .setIcon.clicked.R,
@@ -286,13 +286,13 @@
 
 .results-count {
   font-size: 14px;
-  color: #aaa;
+  color: var(--colour-text-muted);
 }
 
 .no-search-results {
   text-align: center;
   margin-top: 60px;
-  color: #bbb;
+  color: var(--colour-text-notice);
 }
 
 .no-search-results-content {
