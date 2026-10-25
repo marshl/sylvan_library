@@ -87,7 +87,7 @@
 
 .search-result-list a {
   text-decoration: none;
-  color: var(--colour-text-link);
+  color: var(--colour-text-soft);
 }
 
 .search-result-set-list {
@@ -293,7 +293,7 @@
 .no-search-results {
   text-align: center;
   margin-top: 60px;
-  color: var(--colour-text-notice);
+  color: var(--colour-text-muted);
 }
 
 .no-search-results-content {

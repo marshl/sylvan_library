@@ -22,7 +22,7 @@
 }
 
 .tab-expander {
-  color: var(--colour-text-link);
+  color: var(--colour-text-soft);
   font-variant: small-caps;
   cursor: pointer;
 }

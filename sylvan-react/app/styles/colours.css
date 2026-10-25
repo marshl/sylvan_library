@@ -12,12 +12,8 @@
 
   /* Text, from brightest to faintest */
   --colour-text: #fff;
-  --colour-text-subtitle: #eee;
   --colour-text-soft: #ddd;
-  --colour-text-link: #ccc;
-  --colour-text-notice: #bbb;
   --colour-text-muted: #aaa;
-  --colour-text-faint: #999;
   --colour-text-disabled: #777;
   --colour-text-on-light: #222;
 

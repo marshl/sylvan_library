@@ -215,7 +215,7 @@
 .deck-list-meta {
   margin: 0 0 5px;
   font-size: 13px;
-  color: var(--colour-text-faint);
+  color: var(--colour-text-muted);
 }
 
 .link-button {

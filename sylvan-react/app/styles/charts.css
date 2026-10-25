@@ -14,7 +14,7 @@
 }
 
 .chart-tooltip-date {
-  color: var(--colour-text-faint);
+  color: var(--colour-text-muted);
 }
 
 .chart-tooltip-row {
@@ -88,11 +88,11 @@
 }
 
 .price-chart-axis {
-  fill: var(--colour-text-faint);
+  fill: var(--colour-text-muted);
 }
 
 .price-chart-crosshair {
-  stroke: var(--colour-text-faint);
+  stroke: var(--colour-text-muted);
 }
 
 .price-chart-hover-point {
@@ -137,7 +137,7 @@
 .colour-bar .colour-bar-label {
   width: 44px;
   flex-shrink: 0;
-  color: var(--colour-text-faint);
+  color: var(--colour-text-muted);
 }
 
 .colour-bar-track {
@@ -194,5 +194,5 @@
 
 .colour-bars .colour-bars-caption {
   font-size: 12px;
-  color: var(--colour-text-faint);
+  color: var(--colour-text-muted);
 }
