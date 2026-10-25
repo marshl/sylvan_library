@@ -212,6 +212,14 @@ class SearchApiTestCase(TestCase):
     def test_name(self) -> None:
         self.assertEqual(self.result_names("bolt"), ["Lightning Bolt"])
 
+    def test_exact_name(self) -> None:
+        self.assertEqual(self.result_names('!"lightning bolt"'), ["Lightning Bolt"])
+        self.assertEqual(self.result_names('!"lightning"'), [])
+        self.assertEqual(self.result_names("!bolt"), [])
+        self.assertEqual(
+            self.result_names('-!"lightning bolt" t:instant'), ["Fire // Ice"]
+        )
+
     def test_results_are_sorted_by_name(self) -> None:
         self.assertEqual(
             self.result_names("t:creature or t:artifact"),

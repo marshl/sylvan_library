@@ -61,6 +61,8 @@ class CardNameParam(CardSearchParameter):
         (and all sub parameters for those with children)
         :return: The pretty version of this parameter
         """
-        if self.negated:
-            return f'the name does not contain "{self.value}"'
-        return f'the name contains "{self.value}"'
+        if self.match_exact:
+            verb = "isn't" if self.negated else "is"
+        else:
+            verb = "does not contain" if self.negated else "contains"
+        return f'the name {verb} "{self.value}"'

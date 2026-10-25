@@ -283,11 +283,13 @@ class CardQueryParser(Parser):
 
     def quoted_name_parameter(self) -> CardSearchTreeNode:
         """
-        Attempts to parse a parameter that is just a quoted string
+        Attempts to parse a parameter that is just a quoted string, or an exact name
+        when it starts with a "!" (e.g. !"Lightning Bolt")
         :return: The name parameter
         """
+        is_exact = self.maybe_char("!") is not None
         parameter_value = self.match("quoted_string")
-        return self.parse_param("name", ":", parameter_value)
+        return self.parse_param("name", "=" if is_exact else ":", parameter_value)
 
     def simple_word_group_parameter(self) -> CardSearchTreeNode:
         """
