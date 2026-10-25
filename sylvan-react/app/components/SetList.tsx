@@ -60,6 +60,7 @@ export default function SetList() {
 
   return (
     <div className="results-page">
+      <h1>All Sets</h1>
       <table className="set-table">
         <thead>
           <tr>

@@ -19,22 +19,3 @@ html {
 .main-layout {
   min-height: 100vh;
 }
-
-.set-table tr:nth-child(2n) {
-  background-color: var(--colour-surface);
-}
-.set-table tr a {
-  display: block;
-}
-
-.set-table tr:hover {
-  background-color: var(--colour-surface-hover);
-}
-
-.set-table thead tr:hover {
-  background-color: unset;
-}
-
-.set-table thead {
-  background: none;
-}
