@@ -44,6 +44,16 @@ export default function CardNameInput({
     };
   }, [query]);
 
+  // Chrome marks a picked suggestion as replacement text, and Firefox gives no input
+  // type for it
+  function isPick(e: React.SyntheticEvent, newValue: string): boolean {
+    const inputType = (e.nativeEvent as InputEvent).inputType;
+    return (
+      !newValue.startsWith('!') &&
+      (inputType === 'insertReplacementText' || (!inputType && names.includes(newValue)))
+    );
+  }
+
   return (
     <>
       <input
@@ -55,12 +65,14 @@ export default function CardNameInput({
         value={value}
         onChange={(e) => {
           const newValue = e.target.value;
-          // Chrome marks a picked suggestion as replacement text, and Firefox gives no
-          // input type for it
-          const inputType = (e.nativeEvent as InputEvent).inputType;
-          const picked =
-            inputType === 'insertReplacementText' || (!inputType && names.includes(newValue));
-          onChange(exactOnPick && picked && !newValue.startsWith('!') ? `!${newValue}` : newValue);
+          onChange(exactOnPick && isPick(e, newValue) ? `!${newValue}` : newValue);
+        }}
+        // Picking the name that's already typed doesn't change the text, so React gives no
+        // change event for it
+        onInput={(e) => {
+          if (exactOnPick && e.currentTarget.value === value && isPick(e, value)) {
+            onChange(`!${value}`);
+          }
         }}
       />
       <datalist id={`${id}-options`}>
