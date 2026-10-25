@@ -58,7 +58,10 @@ export interface SearchResult {
   selected_printing: CardPrinting;
 }
 
+export type SearchMode = 'cards' | 'printings';
+
 export interface SearchResponse {
+  mode: SearchMode;
   count: number;
   page: number;
   page_size: number;

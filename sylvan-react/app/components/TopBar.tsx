@@ -38,6 +38,10 @@ export default function TopBar() {
               defaultValue={searchParams.get('query') ?? ''}
               onFocus={(e) => e.currentTarget.select()}
             />
+            {/* New searches keep searching by printing until it's switched off */}
+            {searchParams.get('mode') === 'printings' && (
+              <input type="hidden" name="mode" value="printings" />
+            )}
           </Form>
         </div>
         <Link to="/sets" className="action-button">
