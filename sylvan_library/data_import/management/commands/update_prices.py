@@ -143,6 +143,12 @@ ON latest_price.id = card_printing.latest_price_id
             updated_printings.add(printing_id)
 
 
+# "cardsphere" has had greatly inflated paper prices compared to other stores (possibly
+# foil prices given as non-foil ones), so paper prices only come from these stores
+PAPER_STORES = ("cardkingdom", "cardmarket", "tcgplayer")
+# Cardhoarder is the only store with MTGO prices
+MTGO_STORES = ("cardhoarder",)
+
 PAPER_FOIL = (True, True)
 MTGO_FOIL = (True, False)
 PAPER = (False, True)
@@ -160,10 +166,7 @@ def apply_printing_prices(
         is_paper = stock_type == "paper"
         # We don't care about different stores, so just the data from every store and average it
         for store_name, store_data in stock_data.items():
-            # There have been problems with "cardsphere" having greatly inflated prices over that
-            # of the other retailers. Potentially they are using foil prices for non-foil data
-            # So we will ignore any data not from the Big 3
-            if store_name not in ("cardkingdom", "cardmarket", "tcgplayer"):
+            if store_name not in (PAPER_STORES if is_paper else MTGO_STORES):
                 continue
 
             if store_data.get("currency") != "USD":
