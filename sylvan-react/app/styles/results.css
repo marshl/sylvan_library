@@ -241,6 +241,7 @@
 }
 
 .subtitle.type-line {
+  display: inline-flex;
   font-weight: 700;
 }
 
@@ -309,4 +310,25 @@
 
 .copy-text-link {
   cursor: pointer;
+}
+
+.search-result-set-list p {
+  text-align: center;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.search-result-body {
+  width: 100%;
+}
+
+.search-result-faces {
+  display: flex;
+}
+
+.search-result-owned {
+  font-variant: small-caps;
+  float: right;
+  padding-right: 8px;
+  font-size: smaller;
 }

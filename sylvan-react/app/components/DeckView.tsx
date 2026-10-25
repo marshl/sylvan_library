@@ -34,7 +34,7 @@ export default function DeckView({ deckId }: { deckId: number }) {
   if (loading || !deck) return <div>Loading...</div>;
 
   return (
-    <div className="main-content" style={{ color: 'white' }}>
+    <div className="main-content">
       <title>{`${deck.name || 'View Deck'} — Sylvan Library`}</title>
       <div className="group-container">
         <div className="field-container">
@@ -54,13 +54,13 @@ export default function DeckView({ deckId }: { deckId: number }) {
         <div className="field-container">
           {deck.format_display} · {deck.date_created}
         </div>
-        <div style={{ maxWidth: 400 }}>
+        <div className="deck-colour-bars">
           <ColourBars deckId={deck.id} />
         </div>
       </div>
       <div className="group-container">
         <div className="deck-card-list">
-          <div style={{ fontWeight: 'bold' }}>Main {deck.mainboard_count}</div>
+          <div className="deck-board-title">Main {deck.mainboard_count}</div>
           {deck.card_groups.map((group) => (
             <div key={group.code} className="card-group">
               <div className="group-title">

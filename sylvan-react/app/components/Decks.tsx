@@ -300,12 +300,8 @@ function DeckList() {
           ) : (
             <div className="search-result-list">
               {data.results.map((deck) => (
-                <div
-                  key={deck.id}
-                  className="search-result"
-                  style={{ flexDirection: 'row', gap: 16 }}
-                >
-                  <div style={{ width: 260, flexShrink: 0, padding: 8 }}>
+                <div key={deck.id} className="search-result deck-list-item">
+                  <div className="deck-list-colours">
                     <ColourBars deckId={deck.id} />
                   </div>
                   <div>
@@ -346,7 +342,7 @@ export default function Decks() {
     <RequireLogin what="see your decks">
       <div className="main-content">
         <h1>Your Decks</h1>
-        <div style={{ margin: '15px 0' }}>
+        <div className="deck-list-actions">
           <Link to="/decks/create" className="action-button">
             Create New Deck
           </Link>{' '}

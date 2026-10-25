@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router';
 
-// Card images are shown 256px wide, and are 488x680 at full size
+// Card images are shown 256px wide, and are 488x680 at full size. The popup styles in
+// style.css use the same sizes.
 const IMAGE_WIDTH = 256;
 const IMAGE_HEIGHT = Math.round((IMAGE_WIDTH * 680) / 488);
 // The white border around each image
@@ -21,17 +22,8 @@ function PopupCard({ src, alt, sideways }: { src: string; alt: string; sideways:
   }
   return (
     <div className="popup-card">
-      <div style={{ position: 'relative', width: IMAGE_HEIGHT, height: IMAGE_WIDTH }}>
-        <img
-          src={src}
-          alt={alt}
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%) rotate(90deg)',
-          }}
-        />
+      <div className="popup-card-sideways">
+        <img src={src} alt={alt} />
       </div>
     </div>
   );
@@ -101,17 +93,7 @@ export default function CardLink({
         {name}
       </Link>
       {popup && (
-        <div
-          className="image-popup-container"
-          style={{
-            position: 'fixed',
-            top: popup.top,
-            left: popup.left,
-            display: 'flex',
-            alignItems: 'center',
-            gap: BACK_GAP,
-          }}
-        >
+        <div className="image-popup-container" style={{ top: popup.top, left: popup.left }}>
           <PopupCard
             src={imageUrl}
             alt={backImageUrl ? `${name} (front)` : name}

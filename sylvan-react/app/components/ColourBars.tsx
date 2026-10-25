@@ -11,42 +11,21 @@ function Bar({ label, counts, noun }: { label: string; counts: ColourCount[]; no
   const total = counts.reduce((sum, c) => sum + c.count, 0);
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '4px 0' }}>
-      <span className="subtitle" style={{ width: 44, flexShrink: 0, color: '#999' }}>
-        {label}
-      </span>
-      <div style={{ position: 'relative', flex: 1 }}>
-        <div style={{ display: 'flex', gap: 2, height: 20 }} onMouseLeave={() => setHovered(null)}>
+    <div className="colour-bar">
+      <span className="subtitle colour-bar-label">{label}</span>
+      <div className="colour-bar-track">
+        <div className="colour-bar-segments" onMouseLeave={() => setHovered(null)}>
           {total === 0 ? (
-            <div style={{ flex: 1, background: '#444', borderRadius: 4 }} />
+            <div className="colour-bar-empty" />
           ) : (
-            counts.map((c, i) => {
+            counts.map((c) => {
               const percent = (c.count / total) * 100;
               return (
                 <div
                   key={c.symbol}
                   onMouseEnter={() => setHovered(c)}
-                  style={{
-                    width: `${percent}%`,
-                    background: c.chart_colour,
-                    outline: hovered === c ? '1px solid #fff' : undefined,
-                    borderRadius:
-                      counts.length === 1
-                        ? 4
-                        : i === 0
-                          ? '4px 0 0 4px'
-                          : i === counts.length - 1
-                            ? '0 4px 4px 0'
-                            : 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 3,
-                    color: '#222',
-                    fontSize: 12,
-                    overflow: 'hidden',
-                    whiteSpace: 'nowrap',
-                  }}
+                  className={`colour-bar-segment ${hovered === c ? 'hovered' : ''}`}
+                  style={{ width: `${percent}%`, background: c.chart_colour }}
                 >
                   {percent >= MIN_LABEL_PERCENT && (
                     <>
@@ -60,23 +39,7 @@ function Bar({ label, counts, noun }: { label: string; counts: ColourCount[]; no
           )}
         </div>
         {hovered && (
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '100%',
-              left: 0,
-              marginBottom: 4,
-              background: '#222',
-              border: '1px solid #444',
-              borderRadius: 3,
-              padding: '2px 8px',
-              fontSize: 12,
-              color: '#ddd',
-              whiteSpace: 'nowrap',
-              pointerEvents: 'none',
-              zIndex: 10,
-            }}
-          >
+          <div className="chart-tooltip">
             {hovered.count} {hovered.name.toLowerCase()} {noun}
           </div>
         )}
@@ -101,13 +64,13 @@ function summary(counts: ColourCount[]): React.ReactNode {
 export default function ColourBars({ deckId }: { deckId: number }) {
   const { data, error } = useApi<ColourWeights>(`/api/cards/deck/${deckId}/colour-weights/`);
   if (error) return <div className="subtitle">Couldn't load colours</div>;
-  if (!data) return <div style={{ height: 52 }} />;
+  if (!data) return <div className="colour-bars-loading" />;
 
   return (
-    <figure style={{ margin: 0, minWidth: 220 }}>
+    <figure className="colour-bars">
       <Bar label="Costs" counts={data.mana_symbols} noun="mana symbols" />
       <Bar label="Lands" counts={data.land_symbols} noun="lands" />
-      <figcaption className="subtitle" style={{ fontSize: 12, color: '#999' }}>
+      <figcaption className="subtitle colour-bars-caption">
         Costs: {summary(data.mana_symbols)} — Lands: {summary(data.land_symbols)}
       </figcaption>
     </figure>

@@ -1,0 +1,198 @@
+/* Price charts and deck colour bars */
+
+/* The hover box on both kinds of chart */
+.chart-tooltip {
+  position: absolute;
+  background: var(--colour-panel);
+  border: 1px solid var(--colour-border);
+  border-radius: 3px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--colour-text-soft);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.chart-tooltip-date {
+  color: var(--colour-text-faint);
+}
+
+.chart-tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chart-tooltip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+}
+
+.price-chart {
+  margin: 10px 0 0;
+}
+
+.price-chart .price-chart-caption {
+  color: var(--colour-text-soft);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.price-chart-legend-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid var(--colour-border);
+  border-radius: 3px;
+  padding: 2px 8px;
+  color: var(--colour-text-soft);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.price-chart-legend-button:disabled {
+  cursor: default;
+}
+
+.price-chart-legend-button[aria-pressed='false'] {
+  color: var(--colour-text-disabled);
+}
+
+.price-chart-legend-button[aria-pressed='false'] .price-chart-legend-label {
+  text-decoration: line-through;
+}
+
+/* Hidden lines show a grey swatch; shown ones are coloured inline */
+.price-chart-swatch {
+  width: 12px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--colour-mark-hidden);
+}
+
+.price-chart-plot {
+  position: relative;
+}
+
+.price-chart-plot svg {
+  display: block;
+  touch-action: none;
+}
+
+.price-chart-grid {
+  stroke: var(--colour-chart-grid);
+}
+
+.price-chart-axis {
+  fill: var(--colour-text-faint);
+}
+
+.price-chart-crosshair {
+  stroke: var(--colour-text-faint);
+}
+
+.price-chart-hover-point {
+  stroke: var(--colour-surface);
+}
+
+.price-chart .chart-tooltip {
+  top: 0;
+}
+
+.price-chart summary {
+  cursor: pointer;
+}
+
+.price-chart-table th:first-child {
+  text-align: left;
+}
+
+.price-chart-table th + th,
+.price-chart-table td + td {
+  text-align: right;
+  padding-left: 16px;
+}
+
+.colour-bars {
+  margin: 0;
+  min-width: 220px;
+}
+
+/* Keeps the space the bars will take while they load */
+.colour-bars-loading {
+  height: 52px;
+}
+
+.colour-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.colour-bar .colour-bar-label {
+  width: 44px;
+  flex-shrink: 0;
+  color: var(--colour-text-faint);
+}
+
+.colour-bar-track {
+  position: relative;
+  flex: 1;
+}
+
+.colour-bar-segments {
+  display: flex;
+  gap: 2px;
+  height: 20px;
+}
+
+.colour-bar-empty {
+  flex: 1;
+  background: var(--colour-border);
+  border-radius: 4px;
+}
+
+.colour-bar-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: var(--colour-text-on-light);
+  font-size: 12px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.colour-bar-segment:first-child {
+  border-radius: 4px 0 0 4px;
+}
+
+.colour-bar-segment:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+.colour-bar-segment:only-child {
+  border-radius: 4px;
+}
+
+.colour-bar-segment.hovered {
+  outline: 1px solid var(--colour-text);
+}
+
+.colour-bar .chart-tooltip {
+  bottom: 100%;
+  left: 0;
+  margin-bottom: 4px;
+  padding: 2px 8px;
+  z-index: 10;
+}
+
+.colour-bars .colour-bars-caption {
+  font-size: 12px;
+  color: var(--colour-text-faint);
+}

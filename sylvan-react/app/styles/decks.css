@@ -231,6 +231,52 @@
   text-decoration: underline;
 }
 
+.deck-list-actions {
+  margin: 15px 0;
+}
+
+.deck-list-item {
+  gap: 16px;
+}
+
+.deck-list-colours {
+  width: 260px;
+  flex-shrink: 0;
+  padding: 8px;
+}
+
+.deck-colour-bars {
+  max-width: 400px;
+}
+
+.deck-board-title {
+  font-weight: bold;
+}
+
+.field-container.checkbox-field {
+  flex-direction: row;
+}
+
+.exclude-colour {
+  margin-right: 12px;
+  cursor: pointer;
+}
+
+.deck-save-row {
+  gap: 8px;
+  align-items: center;
+}
+
+.deck-save-row .deck-delete {
+  margin-left: auto;
+}
+
+.delete-confirm {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
 @media (max-width: 700px) {
   .deck-filters .row {
     flex-direction: column;

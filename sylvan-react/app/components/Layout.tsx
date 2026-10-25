@@ -12,7 +12,7 @@ export default function Layout({ children }: LayoutProps) {
       <div className="body-content">
         <div className="main-content">{children}</div>
       </div>
-      <p style={{ color: '#999', padding: '10px', textAlign: 'center' }}>
+      <p className="site-footer">
         Wizards of the Coast, Magic: The Gathering, and their logos are trademarks of Wizards of the
         Coast LLC. © 1995-{new Date().getFullYear()} Wizards. All rights reserved.
       </p>

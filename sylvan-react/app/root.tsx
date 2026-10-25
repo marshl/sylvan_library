@@ -22,6 +22,7 @@ import './styles/sets.css';
 import './styles/decks.css';
 import './styles/pager.css';
 import './styles/tabs.css';
+import './styles/charts.css';
 
 export const links: Route.LinksFunction = () => [
   { rel: 'icon', href: `${import.meta.env.BASE_URL}favicon.ico` },

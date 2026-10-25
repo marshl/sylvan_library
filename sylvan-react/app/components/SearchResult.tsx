@@ -33,7 +33,7 @@ function SetSymbols({
 }) {
   return (
     <div className="search-result-set-list">
-      <p style={{ textAlign: 'center', maxHeight: '200px', overflowY: 'auto' }}>
+      <p>
         {card.printings.map((printing) => (
           <i
             key={printing.id}
@@ -58,7 +58,7 @@ function SetSymbols({
 
 function Face({ face, ownedCount }: { face: CardFace; ownedCount: number | null }) {
   return (
-    <div className="search-result-base-details" style={{ display: 'inline-block' }}>
+    <div className="search-result-base-details">
       <h2 className="search-result-title">
         {face.name}{' '}
         <i
@@ -78,20 +78,9 @@ function Face({ face, ownedCount }: { face: CardFace; ownedCount: number | null 
             ({face.mana_value})
           </>
         )}
-        {!!ownedCount && (
-          <span
-            style={{
-              fontVariant: 'small-caps',
-              float: 'right',
-              paddingRight: '8px',
-              fontSize: 'smaller',
-            }}
-          >
-            You own: {ownedCount}
-          </span>
-        )}
+        {!!ownedCount && <span className="search-result-owned">You own: {ownedCount}</span>}
       </h2>
-      <div style={{ display: 'inline-flex' }} className="subtitle type-line">
+      <div className="subtitle type-line">
         <span>{face.type_line}</span>
       </div>
       <h3 className="subtitle">
@@ -206,8 +195,8 @@ export default function SearchResult({
         </span>
       </div>
 
-      <div style={{ width: '100%' }}>
-        <div style={{ display: 'flex' }}>
+      <div className="search-result-body">
+        <div className="search-result-faces">
           {card.faces.map((face) => (
             <Face key={face.id} face={face} ownedCount={card.owned_count} />
           ))}

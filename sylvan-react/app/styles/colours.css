@@ -8,6 +8,7 @@
   --colour-field: #2a2a2a;
   --colour-field-hover: #3a3a3a;
   --colour-row-hover: #ccc;
+  --colour-chart-grid: #3a3a3a;
 
   /* Text, from brightest to faintest */
   --colour-text: #fff;
@@ -18,12 +19,14 @@
   --colour-text-muted: #aaa;
   --colour-text-faint: #999;
   --colour-text-disabled: #777;
+  --colour-text-on-light: #222;
 
   /* Lines */
   --colour-border: #444;
   --colour-tab-border: #aaa;
   --colour-owned: #ccc;
   --colour-control-arrow: #666;
+  --colour-mark-hidden: #555;
 
   /* The blue of the top bar and the main buttons */
   --colour-brand: #2a4466;

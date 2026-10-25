@@ -16,8 +16,6 @@ const HEIGHT = 160;
 const MARGIN = { top: 12, right: 12, bottom: 22, left: 48 };
 // Each series keeps its colour by position, whether or not the others are shown
 const SERIES_COLOURS = ['#08c', '#d95926'];
-const GRID_COLOUR = '#3a3a3a';
-const TEXT_COLOUR = '#999';
 const HIDDEN_STORAGE_KEY = 'price-chart-hidden-series';
 
 /**
@@ -160,11 +158,8 @@ export default function PriceChart({ title, series }: { title: string; series: P
   );
 
   return (
-    <figure style={{ margin: '10px 0 0' }}>
-      <figcaption
-        className="subtitle"
-        style={{ color: '#ddd', display: 'flex', alignItems: 'center', gap: 12 }}
-      >
+    <figure className="price-chart">
+      <figcaption className="subtitle price-chart-caption">
         <b>{title}</b>
         {allLines.length > 1 &&
           allLines.map((line) => {
@@ -183,37 +178,19 @@ export default function PriceChart({ title, series }: { title: string; series: P
                     : `Show ${line.label.toLowerCase()} prices`
                 }
                 onClick={() => toggle(line.key)}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  background: 'none',
-                  border: '1px solid #444',
-                  borderRadius: 3,
-                  padding: '2px 8px',
-                  color: shown ? '#ddd' : '#777',
-                  font: 'inherit',
-                  fontSize: 12,
-                  cursor: onlyShown ? 'default' : 'pointer',
-                }}
+                className="price-chart-legend-button"
               >
                 <span
                   aria-hidden="true"
-                  style={{
-                    width: 12,
-                    height: 2,
-                    borderRadius: 1,
-                    background: shown ? line.colour : '#555',
-                  }}
+                  className="price-chart-swatch"
+                  style={shown ? { background: line.colour } : undefined}
                 />
-                <span style={{ textDecoration: shown ? 'none' : 'line-through' }}>
-                  {line.label}
-                </span>
+                <span className="price-chart-legend-label">{line.label}</span>
               </button>
             );
           })}
       </figcaption>
-      <div style={{ position: 'relative' }}>
+      <div className="price-chart-plot">
         <svg
           ref={svgRef}
           viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
@@ -226,7 +203,6 @@ export default function PriceChart({ title, series }: { title: string; series: P
             .join(', ')}`}
           onPointerMove={onPointerMove}
           onPointerLeave={() => setHoverTime(null)}
-          style={{ display: 'block', touchAction: 'none' }}
         >
           {chart.yTicks.map((tick) => (
             <g key={tick}>
@@ -235,13 +211,13 @@ export default function PriceChart({ title, series }: { title: string; series: P
                 x2={WIDTH - MARGIN.right}
                 y1={chart.y(tick)}
                 y2={chart.y(tick)}
-                stroke={GRID_COLOUR}
+                className="price-chart-grid"
                 strokeWidth={1}
               />
               <text
                 x={MARGIN.left - 6}
                 y={chart.y(tick)}
-                fill={TEXT_COLOUR}
+                className="price-chart-axis"
                 fontSize={11}
                 textAnchor="end"
                 dominantBaseline="middle"
@@ -255,7 +231,7 @@ export default function PriceChart({ title, series }: { title: string; series: P
               key={time}
               x={chart.x(time)}
               y={HEIGHT - 6}
-              fill={TEXT_COLOUR}
+              className="price-chart-axis"
               fontSize={11}
               textAnchor={
                 chart.times.length === 1
@@ -297,7 +273,7 @@ export default function PriceChart({ title, series }: { title: string; series: P
                 x2={chart.x(hoverTime)}
                 y1={MARGIN.top}
                 y2={HEIGHT - MARGIN.bottom}
-                stroke={TEXT_COLOUR}
+                className="price-chart-crosshair"
                 strokeWidth={1}
               />
               {hovered.map(({ line, point }) => (
@@ -307,7 +283,7 @@ export default function PriceChart({ title, series }: { title: string; series: P
                   cy={chart.y(point!.value)}
                   r={4}
                   fill={line.colour}
-                  stroke="#333"
+                  className="price-chart-hover-point"
                   strokeWidth={2}
                 />
               ))}
@@ -316,27 +292,19 @@ export default function PriceChart({ title, series }: { title: string; series: P
         </svg>
         {hoverTime !== null && hovered && (
           <div
+            className="chart-tooltip"
             style={{
-              position: 'absolute',
-              top: 0,
               left: `${(chart.x(hoverTime) / WIDTH) * 100}%`,
               transform: `translateX(${chart.x(hoverTime) > WIDTH / 2 ? 'calc(-100% - 8px)' : '8px'})`,
-              background: '#222',
-              border: '1px solid #444',
-              borderRadius: 3,
-              padding: '4px 8px',
-              fontSize: 12,
-              color: '#ddd',
-              whiteSpace: 'nowrap',
-              pointerEvents: 'none',
             }}
           >
-            <div style={{ color: TEXT_COLOUR }}>{formatDate(new Date(hoverTime))}</div>
+            <div className="chart-tooltip-date">{formatDate(new Date(hoverTime))}</div>
             {hovered.map(({ line, point }) => (
-              <div key={line.key} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div key={line.key} className="chart-tooltip-row">
                 <span
                   aria-hidden="true"
-                  style={{ width: 8, height: 8, borderRadius: 4, background: line.colour }}
+                  className="chart-tooltip-dot"
+                  style={{ background: line.colour }}
                 />
                 {chart.paths.length > 1 && `${line.label}: `}
                 {formatDollars(point!.value)}
@@ -346,17 +314,13 @@ export default function PriceChart({ title, series }: { title: string; series: P
         )}
       </div>
       <details>
-        <summary className="subtitle" style={{ cursor: 'pointer' }}>
-          Show price table
-        </summary>
-        <table className="subtitle">
+        <summary className="subtitle">Show price table</summary>
+        <table className="subtitle price-chart-table">
           <thead>
             <tr>
-              <th style={{ textAlign: 'left' }}>Date</th>
+              <th>Date</th>
               {allLines.map((line) => (
-                <th key={line.key} style={{ textAlign: 'right', paddingLeft: 16 }}>
-                  {allLines.length > 1 ? line.label : 'Price'}
-                </th>
+                <th key={line.key}>{allLines.length > 1 ? line.label : 'Price'}</th>
               ))}
             </tr>
           </thead>
@@ -366,11 +330,7 @@ export default function PriceChart({ title, series }: { title: string; series: P
                 <td>{formatDate(new Date(time))}</td>
                 {allLines.map((line) => {
                   const point = line.data.find((d) => d.time === time);
-                  return (
-                    <td key={line.key} style={{ textAlign: 'right', paddingLeft: 16 }}>
-                      {point ? `$${point.value.toFixed(2)}` : '–'}
-                    </td>
-                  );
+                  return <td key={line.key}>{point ? `$${point.value.toFixed(2)}` : '–'}</td>;
                 })}
               </tr>
             ))}

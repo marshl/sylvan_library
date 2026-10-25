@@ -122,7 +122,7 @@ function DeleteDeckButton({
     );
   }
   return (
-    <span className="subtitle" style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
+    <span className="subtitle delete-confirm">
       Delete this deck for good?
       <input
         type="button"
@@ -349,7 +349,7 @@ function DeckForm({ deckId, initial }: { deckId: number | null; initial: DeckFor
             <label>Exclude colours</label>
             <div>
               {options.data?.colours.map((colour) => (
-                <label key={colour.id} style={{ marginRight: 12, cursor: 'pointer' }}>
+                <label key={colour.id} className="exclude-colour">
                   <input
                     type="checkbox"
                     checked={form.exclude_colours.includes(colour.id)}
@@ -365,7 +365,7 @@ function DeckForm({ deckId, initial }: { deckId: number | null; initial: DeckFor
 
       <div className="group-container">
         <div className="row">
-          <div className="field-container" style={{ flexDirection: 'row' }}>
+          <div className="field-container checkbox-field">
             <label htmlFor="deck-prototype">Prototype</label>
             <input
               id="deck-prototype"
@@ -374,7 +374,7 @@ function DeckForm({ deckId, initial }: { deckId: number | null; initial: DeckFor
               onChange={(e) => update('is_prototype', e.target.checked)}
             />
           </div>
-          <div className="field-container" style={{ flexDirection: 'row' }}>
+          <div className="field-container checkbox-field">
             <label htmlFor="deck-private">Private</label>
             <input
               id="deck-private"
@@ -404,7 +404,7 @@ function DeckForm({ deckId, initial }: { deckId: number | null; initial: DeckFor
       )}
 
       <div className="group-container">
-        <div className="row" style={{ gap: 8, alignItems: 'center' }}>
+        <div className="row deck-save-row">
           <input type="submit" value="Save" disabled={saving} />
           <input
             type="button"
@@ -415,7 +415,7 @@ function DeckForm({ deckId, initial }: { deckId: number | null; initial: DeckFor
           <Link to={deckId === null ? '/decks' : `/decks/${deckId}`}>Cancel</Link>
           {savedMessage && <span className="subtitle">{savedMessage}</span>}
           {deckId !== null && (
-            <span style={{ marginLeft: 'auto' }}>
+            <span className="deck-delete">
               <DeleteDeckButton deckId={deckId} disabled={saving} onError={setErrors} />
             </span>
           )}

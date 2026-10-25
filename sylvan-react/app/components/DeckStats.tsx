@@ -83,7 +83,7 @@ function Stats() {
   if (!data) return <div>Loading...</div>;
 
   return (
-    <div className="main-content" style={{ color: 'white' }}>
+    <div className="main-content">
       <div className="group-container">
         <div className="field-container">
           <h2>Some unused cards</h2>
