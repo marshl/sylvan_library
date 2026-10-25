@@ -77,6 +77,44 @@ class CardSetParam(CardSearchParameter):
         )
 
 
+class CardInSetParam(CardSearchParameter):
+    """
+    The parameter for cards that have a printing in a set. Unlike set:, this matches
+    every printing of those cards, not just the ones in the set.
+    """
+
+    @classmethod
+    def get_parameter_name(cls) -> str:
+        return "in set"
+
+    @classmethod
+    def get_search_operators(cls) -> List[str]:
+        return [":", "="]
+
+    @classmethod
+    def get_search_keywords(cls) -> List[str]:
+        return ["in"]
+
+    def __init__(self, param_args: ParameterArgs, negated: bool = False):
+        super().__init__(param_args, negated)
+        self.set_obj = None
+
+    def validate(self, query_context: QueryContext) -> None:
+        super().validate(query_context)
+        self.set_obj = user_query_to_set(self.value)
+
+    def query(self, query_context: QueryContext) -> Q:
+        in_set = CardPrinting.objects.filter(set=self.set_obj)
+        return Q(card_id__in=in_set.values("card_id"), _negated=self.negated)
+
+    def get_pretty_str(self, query_context: QueryContext) -> str:
+        return (
+            "the card "
+            + ("wasn't" if self.negated else "was")
+            + f" printed in {self.set_obj.name}"
+        )
+
+
 class CardBlockParam(CardSearchParameter):
     """
     The parameter for searching by a card's block

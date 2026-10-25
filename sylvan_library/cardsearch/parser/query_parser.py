@@ -59,6 +59,7 @@ from sylvan_library.cardsearch.parameters.card_rules_text_parameter import (
 )
 from sylvan_library.cardsearch.parameters.card_set_parameters import (
     CardSetParam,
+    CardInSetParam,
     CardBlockParam,
     CardLegalityParam,
     CardDateParam,
@@ -100,6 +101,7 @@ SEARCH_PARAMETERS: List[Type[CardSearchParameter]] = [
     CardGenericTypeParam,
     CardHasColourIndicatorParam,
     CardHasWatermarkParam,
+    CardInSetParam,
     CardIsCommanderParam,
     CardIsHybridParam,
     CardIsPhyrexianParam,

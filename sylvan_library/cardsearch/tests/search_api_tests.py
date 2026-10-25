@@ -232,6 +232,28 @@ class SearchApiTestCase(TestCase):
     def test_set(self) -> None:
         self.assertEqual(self.result_names("s:mh2"), ["Fire // Ice", "Forest"])
 
+    def test_in_set(self) -> None:
+        self.assertEqual(self.result_names("in:mh2"), ["Fire // Ice", "Forest"])
+
+    def test_in_set_matches_every_printing(self) -> None:
+        """
+        in: finds cards printed in a set, but doesn't limit their printings to that set
+        """
+        result = self.search("bolt in:lea")["results"][0]
+        self.assertEqual(result["selected_printing"]["set"]["code"], "M10")
+        self.assertEqual(
+            self.result_printings("bolt in:lea"), self.result_printings("bolt")
+        )
+        # Goblin King is rare in LEA but uncommon in M10
+        self.assertEqual(self.result_names("s:lea r:uncommon"), [])
+        self.assertEqual(self.result_names("in:lea r:uncommon"), ["Goblin King"])
+
+    def test_negated_in_set(self) -> None:
+        """
+        Unlike -s:lea, -in:lea leaves out cards with any printing in LEA
+        """
+        self.assertEqual(self.result_names("-in:lea"), ["Fire // Ice"])
+
     def test_rarity(self) -> None:
         self.assertEqual(self.result_names("r:rare"), ["Black Lotus", "Goblin King"])
 
