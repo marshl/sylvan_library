@@ -1,30 +1,195 @@
-.set-table tr:nth-child(2n) {
+.set-list-page {
+  max-width: 1000px;
+}
+
+.set-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75em;
+  margin-bottom: 1.5em;
+}
+
+.set-filters input,
+.set-filters select {
+  padding: 6px 10px;
+  font: inherit;
+  color: var(--colour-text);
+  background-color: var(--colour-surface);
+  border: 1px solid var(--colour-border);
+  border-radius: 3px;
+}
+
+.set-filters input {
+  flex: 1 1 240px;
+}
+
+.set-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.set-table th,
+.set-table td {
+  padding: 6px 8px;
+  text-align: left;
+}
+
+.set-table thead th {
+  color: var(--colour-text-muted);
+  font-family: inherit;
+  font-size: 0.85em;
+  font-weight: 600;
+  border-bottom: 1px solid var(--colour-border);
+  white-space: nowrap;
+}
+
+.set-year th {
+  padding-top: 1.5em;
+  font-size: 1.25em;
+  font-weight: 700;
+  border-bottom: 1px solid var(--colour-border);
+}
+
+.set-row {
+  border-bottom: 1px solid var(--colour-panel);
+}
+
+.set-row:hover {
   background-color: var(--colour-surface);
 }
-.set-table tr a {
-  display: block;
+
+.set-row-child {
+  font-size: 0.92em;
 }
 
-.set-table tr:hover {
-  background-color: var(--colour-surface-hover);
+.set-row-child .set-name {
+  color: var(--colour-text-soft);
 }
 
-.set-table thead tr:hover {
-  background-color: unset;
+/* A parent shown only because one of its sets matches the filters */
+.set-row-context {
+  opacity: 0.55;
 }
 
-.set-table thead {
+.set-name-cell {
+  width: 100%;
+}
+
+.set-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  color: var(--colour-text);
+  text-decoration: none;
+}
+
+.set-name:hover span {
+  text-decoration: underline;
+}
+
+.set-symbol {
+  font-size: 1.4em;
+  color: var(--colour-text-soft);
+}
+
+.set-row-child .set-symbol {
+  font-size: 1.15em;
+}
+
+.set-tag {
+  margin-left: 0.6em;
+  padding: 1px 6px;
+  border: 1px solid var(--colour-border);
+  border-radius: 3px;
+  font-size: 0.75em;
+  color: var(--colour-text-muted);
+  vertical-align: middle;
+}
+
+.set-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85em;
+  color: var(--colour-text-muted);
+}
+
+.set-type {
+  color: var(--colour-text-muted);
+  white-space: nowrap;
+}
+
+.set-size,
+.set-date {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.set-table .set-size,
+.set-table .set-date {
+  text-align: right;
+}
+
+.set-toggle-cell {
+  width: 3em;
+  min-width: 3em;
+  padding-right: 0;
+}
+
+.set-table td.set-toggle-cell {
+  padding: 2px 0;
+}
+
+.set-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
   background: none;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  color: var(--colour-text-muted);
+  font: inherit;
+  font-size: 0.8em;
+  cursor: pointer;
 }
 
-/* Dates and headings stay on one line so the dates line up */
-.set-table th,
-.set-table td:last-child {
+.set-toggle:hover {
+  border-color: var(--colour-border);
+  color: var(--colour-text);
+}
+
+.set-toggle-arrow {
+  display: inline-block;
+  transition: transform 0.15s;
+}
+
+.set-toggle[aria-expanded='true'] .set-toggle-arrow {
+  transform: rotate(90deg);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
   white-space: nowrap;
 }
 
 @media (max-width: 700px) {
-  .set-table {
-    width: 100%;
+  .set-table th,
+  .set-table td {
+    padding: 6px 4px;
+  }
+
+  .set-table .set-type,
+  .set-table .set-code {
+    display: none;
+  }
+
+  .set-toggle-cell {
+    width: 2.5em;
+    min-width: 2.5em;
   }
 }
