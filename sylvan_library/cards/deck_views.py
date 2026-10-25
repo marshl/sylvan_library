@@ -4,6 +4,8 @@ API views for decks
 
 import random
 
+from django.db.models import Count, Q, QuerySet
+from django.http import QueryDict
 from rest_framework import status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -23,26 +25,69 @@ from sylvan_library.cards.deck_stats import (
 )
 from sylvan_library.cards.models.card import Card
 from sylvan_library.cards.models.colour import Colour
-from sylvan_library.cards.models.decks import Deck
+from sylvan_library.cards.models.decks import Deck, DeckCard
 from sylvan_library.cards.models.user import UserProps
 from sylvan_library.cards.serializers import printing_image_url
 
 
+DECK_SORTS = {
+    "newest": ("-date_created", "-last_modified", "-id"),
+    "oldest": ("date_created", "last_modified", "id"),
+    "name": ("name", "-date_created", "-id"),
+}
+
+
 class DeckViewSet(viewsets.ModelViewSet):
     """
-    API endpoint for the current user's decks. The list can be filtered with
-    ?is_prototype=true or false.
+    API endpoint for the current user's decks. The list can be filtered with:
+    - q: text in the deck's name, subtitle or description
+    - card: part of the name of a card in the deck
+    - deck_format: the deck's format
+    - year_from and year_to: the years the deck was created between
+    - prototypes: "exclude" (the default), "include" or "only"
+    - sort: "newest" (the default), "oldest" or "name"
     """
 
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = Deck.objects.filter(owner=self.request.user).order_by(
-            "-date_created", "-last_modified", "-id"
-        )
-        is_prototype = self.request.query_params.get("is_prototype")
-        if self.action == "list" and is_prototype in ("true", "false"):
-            queryset = queryset.filter(is_prototype=is_prototype == "true")
+        queryset = Deck.objects.filter(owner=self.request.user)
+        if self.action == "list":
+            queryset = self.filter_list(queryset, self.request.query_params)
+        sort = self.request.query_params.get("sort")
+        return queryset.order_by(*DECK_SORTS.get(sort, DECK_SORTS["newest"]))
+
+    @staticmethod
+    def filter_list(queryset: QuerySet, params: QueryDict) -> QuerySet:
+        """
+        Filters the deck list by the query params
+        """
+        if text := params.get("q", "").strip():
+            queryset = queryset.filter(
+                Q(name__icontains=text)
+                | Q(subtitle__icontains=text)
+                | Q(description__icontains=text)
+            )
+        if card := params.get("card", "").strip():
+            queryset = queryset.filter(
+                id__in=DeckCard.objects.filter(card__name__icontains=card).values(
+                    "deck_id"
+                )
+            )
+        if deck_format := params.get("deck_format"):
+            queryset = queryset.filter(format=deck_format)
+        for param, lookup in (("year_from", "gte"), ("year_to", "lte")):
+            try:
+                year = int(params.get(param, ""))
+            except ValueError:
+                continue
+            queryset = queryset.filter(**{f"date_created__year__{lookup}": year})
+
+        prototypes = params.get("prototypes", "exclude")
+        if prototypes == "only":
+            queryset = queryset.filter(is_prototype=True)
+        elif prototypes != "include":
+            queryset = queryset.filter(is_prototype=False)
         return queryset
 
     def get_serializer_class(self):
@@ -68,6 +113,29 @@ class DeckViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"id": serializer.instance.id})
+
+    @action(detail=False)
+    def formats(self, request: Request) -> Response:
+        """
+        The formats the user has decks in, most used first, for filtering the deck list
+        """
+        labels = dict(Deck.FORMAT_CHOICES)
+        counts = (
+            Deck.objects.filter(owner=request.user)
+            .values("format")
+            .annotate(count=Count("id"))
+            .order_by("-count", "format")
+        )
+        return Response(
+            [
+                {
+                    "value": row["format"],
+                    "label": labels.get(row["format"], row["format"]),
+                    "count": row["count"],
+                }
+                for row in counts
+            ]
+        )
 
     @action(detail=True, url_path="colour-weights")
     def colour_weights(self, request: Request, pk=None) -> Response:
