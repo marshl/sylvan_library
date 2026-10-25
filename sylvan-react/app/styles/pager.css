@@ -1,6 +1,7 @@
 .pagination-container {
   margin: 10px auto;
   width: 600px;
+  max-width: 100%;
 }
 
 .pagination-container .page-button:first-child,

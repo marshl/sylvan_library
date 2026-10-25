@@ -121,7 +121,6 @@ body {
   max-width: none;
   display: flex;
   margin: 60px auto 0;
-  min-width: 600px;
 }
 
 .main-content {
@@ -201,4 +200,10 @@ body {
   color: var(--colour-text-muted);
   padding: 10px;
   text-align: center;
+}
+
+@media (max-width: 700px) {
+  .main-content {
+    padding: 16px;
+  }
 }

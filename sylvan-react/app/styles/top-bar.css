@@ -85,3 +85,46 @@
   padding: 0 15px;
   width: 100%;
 }
+
+/* On phones the buttons share the first row, with the profile menu on the right, and
+   the search box gets a row of its own. The bar sticks to the top rather than being
+   fixed there, so the page starts below it whatever its height. */
+@media (max-width: 700px) {
+  .top-bar {
+    position: sticky;
+    height: auto;
+    padding: 8px 0;
+  }
+
+  .main-layout .body-content {
+    margin-top: 0;
+  }
+
+  .top-bar-content {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 0 8px;
+  }
+
+  .top-bar .action-button {
+    margin: 0;
+    padding: 10px;
+  }
+
+  .top-bar .header-search-container {
+    order: 1;
+    flex-basis: 100%;
+  }
+
+  .profile-menu {
+    margin-left: auto;
+  }
+
+  .profile-button {
+    min-width: 0;
+  }
+
+  .profile-container {
+    top: 100%;
+  }
+}

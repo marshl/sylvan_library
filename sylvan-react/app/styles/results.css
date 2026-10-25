@@ -332,3 +332,52 @@
   padding-right: 8px;
   font-size: smaller;
 }
+
+/* On phones the card image sits beside the card text while it's small, and on its own row
+   above it when the result is expanded. The faces stack, with the set symbols under them. */
+@media (max-width: 700px) {
+  .search-result-list {
+    margin: 0 0 20px;
+  }
+
+  .action-bar {
+    margin: 0 0 15px;
+  }
+
+  .search-result {
+    flex-wrap: wrap;
+  }
+
+  .search-result-body {
+    width: auto;
+    flex: 1 1 200px;
+    min-width: 0;
+  }
+
+  .search-result-faces {
+    flex-direction: column;
+  }
+
+  .search-result-base-details {
+    flex: none;
+    min-width: 0;
+  }
+
+  .search-result-set-list {
+    width: auto;
+    right: 0;
+    padding: 0 10px;
+  }
+
+  .search-result-set-list p {
+    text-align: left;
+  }
+
+  .search-result.expanded .card-image-container {
+    flex-basis: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 10px;
+  }
+}

@@ -54,3 +54,21 @@
   bottom: -5px;
   background: #fff;
 }
+
+/* On phones the tabs stay on one row that scrolls sideways. The line under them is a
+   shadow inside the padding, as a border would be cut off by the scrolling, and the
+   selected tab covers it. */
+@media (max-width: 700px) {
+  .tab-list {
+    white-space: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    border-bottom: none;
+    padding-bottom: 1px;
+    box-shadow: inset 0 -1px 0 var(--colour-border-strong);
+  }
+
+  .tab-container .tab {
+    padding: 6px 10px;
+  }
+}

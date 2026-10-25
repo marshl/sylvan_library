@@ -304,7 +304,7 @@ function DeckList() {
                   <div className="deck-list-colours">
                     <ColourBars deckId={deck.id} />
                   </div>
-                  <div>
+                  <div className="deck-list-text">
                     <h2 className="search-result-title">
                       <Link to={`/decks/${deck.id}`}>
                         {deck.is_prototype ? <em>{deck.name} [prototype]</em> : deck.name}

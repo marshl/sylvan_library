@@ -278,6 +278,19 @@
 }
 
 @media (max-width: 700px) {
+  /* The colour bars sit above the deck's name rather than beside it */
+  .deck-list-item {
+    gap: 0;
+  }
+
+  .deck-list-colours {
+    width: 100%;
+  }
+
+  .deck-list-text {
+    padding: 0 8px 8px;
+  }
+
   .deck-filters .row {
     flex-direction: column;
     gap: 1em;

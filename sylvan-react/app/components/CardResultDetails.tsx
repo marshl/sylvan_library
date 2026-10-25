@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { ApiError, fetchJson } from '../api';
 import { useApi } from '../useApi';
@@ -517,6 +517,19 @@ export default function CardResultDetails({
   }
   const tabs = TABS.filter((t) => !t.loginRequired || user?.is_authenticated);
   const activeTab = tabs.some((t) => t.key === tab) ? tab : 'details';
+  const tabListRef = useRef<HTMLUListElement>(null);
+
+  // On phones the tabs scroll sideways, so this keeps the selected one in view. It only
+  // scrolls the tab row, so the page doesn't jump.
+  useLayoutEffect(() => {
+    const list = tabListRef.current;
+    const selected = list?.querySelector('.tab.selected');
+    if (!list || !selected) return;
+    const listRect = list.getBoundingClientRect();
+    const tabRect = selected.getBoundingClientRect();
+    if (tabRect.left < listRect.left) list.scrollLeft -= listRect.left - tabRect.left;
+    else if (tabRect.right > listRect.right) list.scrollLeft += tabRect.right - listRect.right;
+  }, [expanded, activeTab]);
 
   function selectTab(key: TabKey) {
     setTab(key);
@@ -544,7 +557,7 @@ export default function CardResultDetails({
   return (
     <div className="search-result-tab-container">
       <div className="tab-container">
-        <ul className="tab-list" role="tablist">
+        <ul className="tab-list" role="tablist" ref={tabListRef}>
           {tabs.map((t) => (
             <li
               key={t.key}

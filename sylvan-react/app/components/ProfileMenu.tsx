@@ -92,7 +92,7 @@ export default function ProfileMenu({ user }: { user: CurrentUser }) {
   }
 
   return (
-    <div ref={containerRef} onKeyDown={onKeyDown}>
+    <div ref={containerRef} className="profile-menu" onKeyDown={onKeyDown}>
       <button
         ref={buttonRef}
         type="button"
