@@ -6,7 +6,7 @@ from typing import List
 
 from django.db.models.query import Q
 
-from sylvan_library.cards.models.decks import Deck
+from sylvan_library.cards.models.decks import DeckCard
 from sylvan_library.cardsearch.parameters.base_parameters import (
     QueryContext,
     CardSearchParameter,
@@ -31,10 +31,8 @@ class CardDeckParam(CardSearchParameter):
         return ["deck", "d"]
 
     def query(self, query_context: QueryContext) -> Q:
-        return Q(
-            card__deck_cards__deck_id=self.value,
-            _negated=self.negated,
-        )
+        deck_cards = DeckCard.objects.filter(deck_id=self.value)
+        return Q(card_id__in=deck_cards.values("card_id"), _negated=self.negated)
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         return (

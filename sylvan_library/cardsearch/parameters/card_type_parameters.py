@@ -17,7 +17,6 @@ from sylvan_library.cardsearch.parameters.base_parameters import (
     QueryContext,
     CardSearchParameter,
     ParameterArgs,
-    or_group_queries,
 )
 
 
@@ -59,16 +58,18 @@ class CardGenericTypeParam(CardSearchParameter):
             subtypes = CardSubtype.objects.filter(name__icontains=self.value)
             supertypes = CardSupertype.objects.filter(name__icontains=self.value)
 
-        # A separate subquery for each kind of type is much faster than one subquery
-        # that joins all three
-        matching_faces = [
-            CardFace.objects.filter(types__in=types),
-            CardFace.objects.filter(subtypes__in=subtypes),
-            CardFace.objects.filter(supertypes__in=supertypes),
-        ]
-        result = or_group_queries(
-            [Q(card_id__in=faces.values("card_id")) for faces in matching_faces]
+        # Joining the types, subtypes and supertypes in one subquery is slow, and so
+        # is an "or" of a subquery for each, as the database can't tell how many cards
+        # that will match
+        matching_faces = (
+            CardFace.objects.filter(types__in=types)
+            .values("card_id")
+            .union(
+                CardFace.objects.filter(subtypes__in=subtypes).values("card_id"),
+                CardFace.objects.filter(supertypes__in=supertypes).values("card_id"),
+            )
         )
+        result = Q(card_id__in=matching_faces)
         result.negated = self.negated
         return result
 
