@@ -9,12 +9,14 @@ from django.db.models.query import Q
 from sylvan_library.cardsearch.parameters.base_parameters import (
     CardSearchNumericalParameter,
     QueryContext,
+    CardSearchContext,
 )
 
 
 class CardPriceParam(CardSearchNumericalParameter):
     """
-    The parameter for searching by how many a user owns of it
+    The parameter for searching by price: the card's cheapest printing in a card search,
+    or each printing's latest price in a printing search
     """
 
     @classmethod
@@ -30,10 +32,12 @@ class CardPriceParam(CardSearchNumericalParameter):
         return ["<", "<=", ">=", ">"]
 
     def query(self, query_context: QueryContext) -> Q:
-        args = self.get_args(
-            "card__cheapest_price__paper_value", query_context=query_context
+        field = (
+            "latest_price__paper_value"
+            if query_context.search_mode == CardSearchContext.PRINTING
+            else "card__cheapest_price__paper_value"
         )
-        return Q(**args)
+        return Q(**self.get_args(field, query_context=query_context))
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         return f"is worth {self.operator} ${self.value}"

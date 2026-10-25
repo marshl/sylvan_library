@@ -5,6 +5,7 @@ back rather than how the search is put together
 
 import datetime
 import uuid
+from decimal import Decimal
 from typing import List, Optional
 
 from django.contrib.auth import get_user_model
@@ -23,6 +24,7 @@ from sylvan_library.cards.models.card import (
     UserOwnedCard,
 )
 from sylvan_library.cards.models.decks import Deck, DeckCard
+from sylvan_library.cards.models.card_price import CardPrice
 from sylvan_library.cards.models.colour import Colour
 from sylvan_library.cards.models.language import Language
 from sylvan_library.cards.models.rarity import Rarity
@@ -185,16 +187,27 @@ class SearchApiTestCase(TestCase):
         )
         return printing
 
-    def search(self, query: str, logged_in: bool = False) -> dict:
+    def search(self, query: str, logged_in: bool = False, mode: str = "cards") -> dict:
         client = APIClient()
         if logged_in:
             client.force_authenticate(self.user)
-        response = client.get("/api/search/search/", {"q": query})
+        response = client.get("/api/search/search/", {"q": query, "mode": mode})
         self.assertEqual(response.status_code, 200)
         return response.json()
 
     def result_names(self, query: str, logged_in: bool = False) -> List[str]:
         return [r["card"]["name"] for r in self.search(query, logged_in)["results"]]
+
+    def result_printings(self, query: str, logged_in: bool = False) -> List[str]:
+        """
+        The name and set code of each result when searching by printing
+        """
+        response = self.search(query, logged_in, mode="printings")
+        self.assertEqual(response["mode"], "printings")
+        return [
+            f'{r["card"]["name"]} {r["selected_printing"]["set"]["code"]}'
+            for r in response["results"]
+        ]
 
     def test_name(self) -> None:
         self.assertEqual(self.result_names("bolt"), ["Lightning Bolt"])
@@ -280,6 +293,84 @@ class SearchApiTestCase(TestCase):
     def test_selected_printing_matches_set_search(self) -> None:
         result = self.search("bolt s:lea")["results"][0]
         self.assertEqual(result["selected_printing"]["set"]["code"], "LEA")
+
+    def test_selected_printing_is_newest_matching_printing(self) -> None:
+        result = self.search("bolt -s:m10")["results"][0]
+        self.assertEqual(result["selected_printing"]["set"]["code"], "LEA")
+        result = self.search("goblin r:uncommon")["results"][0]
+        self.assertEqual(result["selected_printing"]["set"]["code"], "M10")
+
+    def test_selected_printing_can_be_a_promo_if_nothing_else_matches(self) -> None:
+        result = self.search("bolt s:prm")["results"][0]
+        self.assertEqual(result["selected_printing"]["set"]["code"], "PRM")
+
+    def test_searching_by_card_is_the_default(self) -> None:
+        client = APIClient()
+        response = client.get("/api/search/search/", {"q": "bolt"}).json()
+        self.assertEqual(response["mode"], "cards")
+        self.assertEqual(response["count"], 1)
+
+    def test_printings(self) -> None:
+        """
+        Printings of the same card go from newest to oldest
+        """
+        self.assertEqual(
+            self.result_printings("bolt"),
+            ["Lightning Bolt PRM", "Lightning Bolt M10", "Lightning Bolt LEA"],
+        )
+
+    def test_printings_must_match_the_whole_query(self) -> None:
+        self.assertEqual(
+            self.result_printings("r:rare"), ["Black Lotus LEA", "Goblin King LEA"]
+        )
+
+    def test_sorting_printings(self) -> None:
+        self.assertEqual(
+            self.result_printings("t:creature sort:date"),
+            [
+                "Goblin King LEA",
+                "Llanowar Elves LEA",
+                "Goblin King M10",
+                "Llanowar Elves M10",
+            ],
+        )
+
+    def test_printing_ownership(self) -> None:
+        self.assertEqual(
+            self.result_printings("own>=1", logged_in=True), ["Lightning Bolt LEA"]
+        )
+        self.assertEqual(
+            self.result_printings("bolt own=0", logged_in=True),
+            ["Lightning Bolt PRM", "Lightning Bolt M10"],
+        )
+
+    def test_printing_owned_count(self) -> None:
+        response = self.search("bolt", logged_in=True, mode="printings")
+        self.assertEqual(
+            [r["selected_printing"]["owned_count"] for r in response["results"]],
+            [0, 0, 2],
+        )
+
+    def test_price(self) -> None:
+        """
+        In a card search, a card's price is its cheapest printing
+        """
+        for printing, value in zip(
+            self.bolt.printings.order_by("set__release_date"), ("150", "0.50", "2")
+        ):
+            printing.latest_price = CardPrice.objects.create(
+                card_printing=printing,
+                date=datetime.date.today(),
+                paper_value=Decimal(value),
+                cheapest_card=self.bolt if value == "0.50" else None,
+            )
+            printing.save()
+        self.assertEqual(self.result_names("price<1"), ["Lightning Bolt"])
+        self.assertEqual(self.result_printings("price<1"), ["Lightning Bolt M10"])
+        self.assertEqual(
+            self.result_printings("bolt sort:price"),
+            ["Lightning Bolt M10", "Lightning Bolt PRM", "Lightning Bolt LEA"],
+        )
 
     def test_unknown_set_is_an_error(self) -> None:
         response = self.search("s:nonsense")

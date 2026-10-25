@@ -8,9 +8,10 @@ from django.db import connection
 from django.db.models import Q, Sum, Subquery, OuterRef
 from django.db.models.functions import Coalesce
 
-from sylvan_library.cards.models.card import Card
+from sylvan_library.cards.models.card import Card, CardPrinting
 from sylvan_library.cardsearch.parameters.base_parameters import (
     CardSearchNumericalParameter,
+    CardSearchContext,
     QueryContext,
     QueryValidationError,
     CardSearchBinaryParameter,
@@ -20,7 +21,8 @@ from sylvan_library.cardsearch.parameters.base_parameters import (
 
 class CardOwnershipCountParam(CardSearchNumericalParameter):
     """
-    The parameter for searching by how many a user owns of it
+    The parameter for searching by how many a user owns of it: of the card in a card
+    search, or of each printing in a printing search
     """
 
     @classmethod
@@ -50,6 +52,22 @@ class CardOwnershipCountParam(CardSearchNumericalParameter):
     def query(self, query_context: QueryContext) -> Q:
 
         assert self.operator in ("<", "<=", "=", ">=", ">")
+        filter_condition = {f"ownership_count{self.get_filter_operator()}": self.number}
+
+        if query_context.search_mode == CardSearchContext.PRINTING:
+            printings = CardPrinting.objects.annotate(
+                ownership_count=Coalesce(
+                    Sum(
+                        "localisations__ownerships__count",
+                        filter=Q(localisations__ownerships__owner=query_context.user),
+                    ),
+                    0,
+                )
+            )
+            return Q(
+                id__in=printings.filter(**filter_condition).values("id"),
+                _negated=self.negated,
+            )
 
         # Create a subquery to calculate the total ownership count for each card
         # for the given user.
@@ -70,9 +88,6 @@ class CardOwnershipCountParam(CardSearchNumericalParameter):
         annotated_cards = Card.objects.annotate(
             ownership_count=Coalesce(Subquery(ownership_subquery), 0)
         )
-
-        # Build the filter condition based on the user's operator and number
-        filter_condition = {f"ownership_count{self.get_filter_operator()}": self.number}
 
         # Get the IDs of the cards that match the condition
         card_ids = annotated_cards.filter(**filter_condition).values_list(

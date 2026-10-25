@@ -4,7 +4,8 @@ Running a card search from a query string
 
 import copy
 import dataclasses
-from typing import List, Optional, Union
+from collections import defaultdict
+from typing import Callable, Collection, Dict, List, Optional, Set, Union
 
 from django.contrib.auth.models import AbstractBaseUser
 from django.core.paginator import EmptyPage, Paginator
@@ -20,11 +21,9 @@ from django.db.models import (
 )
 
 from sylvan_library.cards.models.card import Card, CardPrinting
-from sylvan_library.cards.models.sets import Set
 from sylvan_library.cards.serializers import card_prefetches
 from sylvan_library.cardsearch.parameters.base_parameters import (
     CardSearchAnd,
-    CardSearchBranchNode,
     CardSearchContext,
     CardSearchTreeNode,
     ParameterArgs,
@@ -32,7 +31,6 @@ from sylvan_library.cardsearch.parameters.base_parameters import (
     QueryValidationError,
     SortKey,
 )
-from sylvan_library.cardsearch.parameters.card_set_parameters import CardSetParam
 from sylvan_library.cardsearch.parameters.sort_parameters import (
     CardNameSortParam,
     CardSortParam,
@@ -46,20 +44,21 @@ class SearchResult:
     A single search result: the card and which of its printings to show
     """
 
-    def __init__(self, card: Card, selected_set: Optional[Set] = None):
+    def __init__(self, card: Card, printing_ids: Collection[int]):
+        """
+        :param card: The card, with its printings prefetched
+        :param printing_ids: The printings that can be shown, from which the newest
+        non-promotional printing is picked
+        """
         self.card = card
-        printings = list(card.printings.all())
-        self.selected_printing: Optional[CardPrinting] = next(
-            (p for p in printings if selected_set and p.set == selected_set), None
+        printings = sorted(
+            (p for p in card.printings.all() if p.id in printing_ids),
+            key=lambda p: (p.set.release_date, -(p.numerical_number or 0)),
         )
-        if not self.selected_printing and printings:
-            sorted_printings = sorted(
-                printings,
-                key=lambda p: (p.set.release_date, -(p.numerical_number or 0)),
-            )
-            # Prefer non-promotional printings if there are any
-            non_promo = [p for p in sorted_printings if p.set.type != "promo"]
-            self.selected_printing = (non_promo or sorted_printings)[-1]
+        non_promo = [p for p in printings if p.set.type != "promo"]
+        self.selected_printing: Optional[CardPrinting] = (
+            (non_promo or printings)[-1] if printings else None
+        )
 
 
 @dataclasses.dataclass
@@ -86,20 +85,6 @@ def parse_query(query_string: str) -> CardSearchTreeNode:
     return CardQueryParser().parse(query_string)
 
 
-def get_preferred_set(root: CardSearchTreeNode) -> Optional[Set]:
-    """
-    The set searched for at the top level of the query, if there is one, so results
-    can show their printing from that set
-    """
-    if isinstance(root, CardSetParam):
-        return root.set_obj
-    if isinstance(root, CardSearchBranchNode):
-        for child in root.child_parameters:
-            if isinstance(child, CardSetParam):
-                return child.set_obj
-    return None
-
-
 def is_single_valued(path: str) -> bool:
     """
     Whether a field path from CardPrinting leads to only one value for each printing
@@ -115,63 +100,93 @@ def is_single_valued(path: str) -> bool:
     return True
 
 
-def with_prefix(expression: Union[str, Expression, Q], prefix: str):
+def field_paths(expression: Expression) -> List[str]:
     """
-    A copy of a field path, expression or Q object, with every field path in it prefixed
+    The field paths used by an expression
     """
-    if isinstance(expression, str):
-        return prefix + expression
     if isinstance(expression, F):
-        return F(prefix + expression.name)
+        return [expression.name]
+    return [part.name for part in expression.flatten() if isinstance(part, F)]
+
+
+def rename_fields(
+    expression: Union[Expression, Q], rename: Callable[[str], str]
+) -> Union[Expression, Q]:
+    """
+    A copy of an expression or Q object, with every field path in it renamed
+    """
+    if isinstance(expression, F):
+        return F(rename(expression.name))
     if isinstance(expression, Q):
         clone = copy.copy(expression)
         clone.children = [
             (
-                with_prefix(child, prefix)
+                rename_fields(child, rename)
                 if isinstance(child, Q)
-                else (prefix + child[0], child[1])
+                else (rename(child[0]), child[1])
             )
             for child in expression.children
         ]
         return clone
     clone = expression.copy()
     clone.set_source_expressions(
-        [with_prefix(e, prefix) for e in expression.get_source_expressions()]
+        [rename_fields(e, rename) for e in expression.get_source_expressions()]
     )
     return clone
 
 
-def card_sort_value(key: SortKey, descending: bool, matching_printings: QuerySet):
+def sort_value(
+    key: SortKey,
+    descending: bool,
+    search_mode: CardSearchContext,
+    matching_printings: QuerySet,
+):
     """
-    The value to sort each card by for a sort key. Card fields are used as they are, and
-    anything else is summarised over the card's matching printings.
+    The value to sort each result by for a sort key. When a result has more than one
+    value for the key, the lowest is used (or the highest in descending order). For cards,
+    that's over their matching printings.
     """
     expression = key.expression
     if isinstance(expression, str):
-        if (
-            expression.startswith("card__")
-            and key.filter is None
-            and is_single_valued(expression)
-        ):
-            return F(expression.removeprefix("card__"))
-    elif not any(isinstance(part, F) for part in expression.flatten()):
-        # Doesn't depend on any field, like a random sort
-        return expression
+        expression = F(expression)
+
+    paths = field_paths(expression)
+    if key.filter is None and all(is_single_valued(path) for path in paths):
+        if search_mode == CardSearchContext.PRINTING:
+            return expression
+        if all(path.startswith("card__") for path in paths):
+            return rename_fields(expression, lambda path: path.removeprefix("card__"))
+
+    aggregate = Max if descending else Min
+    if search_mode == CardSearchContext.PRINTING:
+        return aggregate(expression, filter=key.filter)
+
+    def on_printings(path: str) -> str:
+        return "printings__" + path
 
     printing_filter = Q(printings__in=matching_printings)
     if key.filter is not None:
-        printing_filter &= with_prefix(key.filter, "printings__")
-    aggregate = Max if descending else Min
-    return aggregate(with_prefix(expression, "printings__"), filter=printing_filter)
+        printing_filter &= rename_fields(key.filter, on_printings)
+    return aggregate(rename_fields(expression, on_printings), filter=printing_filter)
 
 
-def build_queryset(root: CardSearchTreeNode, query_context: QueryContext) -> QuerySet:
+def build_queryset(
+    root: CardSearchTreeNode,
+    query_context: QueryContext,
+    matching_printings: QuerySet,
+) -> QuerySet:
     """
-    The sorted queryset of cards with at least one printing that matches the parameter
-    tree
+    The sorted queryset of results: either the matching printings, or the cards with at
+    least one matching printing
     """
-    printings = CardPrinting.objects.filter(root.query(query_context))
-    queryset = Card.objects.filter(id__in=printings.values("card_id"))
+    if query_context.search_mode == CardSearchContext.PRINTING:
+        # Filtering by id stops printings appearing once for each card face (or other
+        # related row) that the query matched
+        queryset = CardPrinting.objects.filter(
+            id__in=matching_printings.values("id")
+        ).select_related("card")
+    else:
+        queryset = Card.objects.filter(id__in=matching_printings.values("card_id"))
 
     sort_params: List[CardSortParam] = root.get_sort_parameters() + [
         CardNameSortParam(ParameterArgs(keyword="sort", operator=":", value="name"))
@@ -181,13 +196,51 @@ def build_queryset(root: CardSearchTreeNode, query_context: QueryContext) -> Que
         for key in sort_param.get_sort_keys(query_context):
             descending = key.descending != sort_param.negated
             alias = f"sort_value_{len(ordering)}"
-            queryset = queryset.alias(
-                **{alias: card_sort_value(key, descending, printings)}
+            value = sort_value(
+                key, descending, query_context.search_mode, matching_printings
             )
+            queryset = queryset.alias(**{alias: value})
             ordering.append(OrderBy(F(alias), descending=descending, nulls_last=True))
-    # Cards can share a name, so this keeps the order the same from one page to the next
-    ordering.append(F("scryfall_oracle_id").asc())
+
+    # Cards can share a name, so these keep the order the same from one page to the next
+    if query_context.search_mode == CardSearchContext.PRINTING:
+        ordering += [
+            F("card__scryfall_oracle_id").asc(),
+            F("set__release_date").desc(),
+            F("numerical_number").asc(nulls_last=True),
+            F("id").asc(),
+        ]
+    else:
+        ordering.append(F("scryfall_oracle_id").asc())
     return queryset.order_by(*ordering)
+
+
+def get_results(
+    page_items: List[Union[Card, CardPrinting]],
+    query_context: QueryContext,
+    matching_printings: QuerySet,
+) -> List[SearchResult]:
+    """
+    The search results for one page of cards or printings
+    """
+    if query_context.search_mode == CardSearchContext.PRINTING:
+        # Each printing has its own copy of its card, so this prefetches each card once
+        cards = {printing.card_id: printing.card for printing in page_items}
+        prefetch_related_objects(
+            list(cards.values()), *card_prefetches(query_context.user)
+        )
+        return [
+            SearchResult(cards[printing.card_id], [printing.id])
+            for printing in page_items
+        ]
+
+    prefetch_related_objects(page_items, *card_prefetches(query_context.user))
+    printing_ids: Dict[int, Set[int]] = defaultdict(set)
+    for card_id, printing_id in matching_printings.filter(
+        card_id__in=[card.id for card in page_items]
+    ).values_list("card_id", "id"):
+        printing_ids[card_id].add(printing_id)
+    return [SearchResult(card, printing_ids[card.id]) for card in page_items]
 
 
 def run_search(
@@ -195,6 +248,7 @@ def run_search(
     user: Optional[AbstractBaseUser] = None,
     page: int = 1,
     page_size: int = 25,
+    search_mode: CardSearchContext = CardSearchContext.CARD,
 ) -> SearchOutcome:
     """
     Parses, validates and runs a search, returning one page of results
@@ -204,22 +258,23 @@ def run_search(
     except (ParseError, ValueError) as error:
         return SearchOutcome(results=[], count=0, page=1, num_pages=1, error=str(error))
 
-    query_context = QueryContext(user=user, search_mode=CardSearchContext.CARD)
+    query_context = QueryContext(user=user, search_mode=search_mode)
     try:
         root.validate(query_context)
     except QueryValidationError as error:
         return SearchOutcome(results=[], count=0, page=1, num_pages=1, error=str(error))
 
-    paginator = Paginator(build_queryset(root, query_context), page_size)
+    matching_printings = CardPrinting.objects.filter(root.query(query_context))
+    paginator = Paginator(
+        build_queryset(root, query_context, matching_printings), page_size
+    )
     try:
-        cards = list(paginator.page(page))
+        page_items = list(paginator.page(page))
     except EmptyPage:
-        cards = []
-    prefetch_related_objects(cards, *card_prefetches(user))
+        page_items = []
 
-    preferred_set = get_preferred_set(root)
     return SearchOutcome(
-        results=[SearchResult(card, selected_set=preferred_set) for card in cards],
+        results=get_results(page_items, query_context, matching_printings),
         count=paginator.count,
         page=page,
         num_pages=paginator.num_pages,
