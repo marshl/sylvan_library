@@ -29,8 +29,8 @@ from sylvan_library.cardsearch.parameters.card_rules_text_parameter import (
 from sylvan_library.cardsearch.parameters.card_type_parameters import (
     CardGenericTypeParam,
 )
-from sylvan_library.cardsearch.parse_search import ParseSearch
 from sylvan_library.cardsearch.parser.query_parser import CardQueryParser
+from sylvan_library.cardsearch.search import run_search
 
 
 class ParserTests(TestCase):
@@ -359,10 +359,7 @@ class ColourContainsTestCase(TestCase):
         """
         Test colour match
         """
-        parse_search = ParseSearch("color=rg")
-        parse_search.build_parameters()
-        query_context = QueryContext()
-        results = parse_search.get_queryset(query_context).all()
+        results = [r.card for r in run_search("color=rg").results]
         self.assertNotIn(self.red_card, results)
         self.assertNotIn(self.green_card, results)
         self.assertIn(self.red_green_card, results)
@@ -373,9 +370,7 @@ class ColourContainsTestCase(TestCase):
         """
         Test colour match
         """
-        parse_search = ParseSearch("color:rg")
-        parse_search.build_parameters()
-        results = parse_search.get_queryset(QueryContext()).all()
+        results = [r.card for r in run_search("color:rg").results]
         self.assertNotIn(self.red_card, results)
         self.assertNotIn(self.green_card, results)
         self.assertIn(self.red_green_card, results)
@@ -386,9 +381,7 @@ class ColourContainsTestCase(TestCase):
         """
         Test colour match
         """
-        parse_search = ParseSearch("color>rg")
-        parse_search.build_parameters()
-        results = parse_search.get_queryset(QueryContext()).all()
+        results = [r.card for r in run_search("color>rg").results]
         self.assertNotIn(self.red_card, results)
         self.assertNotIn(self.green_card, results)
         self.assertNotIn(self.red_green_card, results)
@@ -400,9 +393,7 @@ class ColourContainsTestCase(TestCase):
         """
         Test colour match
         """
-        parse_search = ParseSearch("color<=rg")
-        parse_search.build_parameters()
-        results = parse_search.get_queryset(QueryContext()).all()
+        results = [r.card for r in run_search("color<=rg").results]
         self.assertIn(self.red_card, results)
         self.assertIn(self.green_card, results)
         self.assertIn(self.red_green_card, results)
@@ -414,9 +405,7 @@ class ColourContainsTestCase(TestCase):
         """
         Test colour match
         """
-        parse_search = ParseSearch("color<rg")
-        parse_search.build_parameters()
-        results = parse_search.get_queryset(QueryContext()).all()
+        results = [r.card for r in run_search("color<rg").results]
         self.assertIn(self.red_card, results)
         self.assertIn(self.green_card, results)
         self.assertNotIn(self.red_green_card, results)
