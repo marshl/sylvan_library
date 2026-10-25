@@ -79,7 +79,17 @@ interface PricesPayload {
     mtgo: number | null;
     mtgo_foil: number | null;
   } | null;
-  paper_history: PricePoint[];
+  paper_history: { date: string; paper: number | null; paper_foil: number | null }[];
+}
+
+function pricePoints(
+  history: PricesPayload['paper_history'],
+  field: 'paper' | 'paper_foil',
+): PricePoint[] {
+  return history.flatMap((price) => {
+    const value = price[field];
+    return value === null ? [] : [{ date: price.date, value }];
+  });
 }
 
 type TabKey =
@@ -455,7 +465,21 @@ function PricesTab({ printingId }: { printingId: number }) {
               <b>MTGO Foil: </b> {formatPrice(data.latest.mtgo_foil)}
             </span>
             {data.paper_history.length > 0 && (
-              <PriceChart title="Paper price" points={data.paper_history} />
+              <PriceChart
+                title="Paper price"
+                series={[
+                  {
+                    key: 'paper',
+                    label: 'Non-foil',
+                    points: pricePoints(data.paper_history, 'paper'),
+                  },
+                  {
+                    key: 'paper_foil',
+                    label: 'Foil',
+                    points: pricePoints(data.paper_history, 'paper_foil'),
+                  },
+                ]}
+              />
             )}
           </>
         )

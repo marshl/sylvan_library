@@ -3,7 +3,7 @@ API views for the tabs on a card search result
 """
 
 from django.db import transaction
-from django.db.models import Sum, Count
+from django.db.models import Count, Q, Sum
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -199,7 +199,7 @@ def card_links(request: Request, card_id: int) -> Response:
 @permission_classes([AllowAny])
 def printing_prices(request: Request, printing_id: int) -> Response:
     """
-    Gets the latest prices of a printing and its paper price history
+    Gets the latest prices of a printing and its paper price history, foil and non-foil
     """
     printing = get_object_or_404(
         CardPrinting.objects.select_related("latest_price"), pk=printing_id
@@ -219,10 +219,14 @@ def printing_prices(request: Request, printing_id: int) -> Response:
                 else None
             ),
             "paper_history": [
-                {"date": price.date, "value": price.paper_value}
-                for price in printing.prices.filter(paper_value__isnull=False).order_by(
-                    "date"
-                )
+                {
+                    "date": price.date,
+                    "paper": price.paper_value,
+                    "paper_foil": price.paper_foil_value,
+                }
+                for price in printing.prices.filter(
+                    Q(paper_value__isnull=False) | Q(paper_foil_value__isnull=False)
+                ).order_by("date")
             ],
         }
     )

@@ -5,12 +5,20 @@ export interface PricePoint {
   value: number;
 }
 
+export interface PriceSeries {
+  key: string;
+  label: string;
+  points: PricePoint[];
+}
+
 const WIDTH = 600;
 const HEIGHT = 160;
 const MARGIN = { top: 12, right: 12, bottom: 22, left: 48 };
-const LINE_COLOUR = '#08c';
+// Each series keeps its colour by position, whether or not the others are shown
+const SERIES_COLOURS = ['#08c', '#d95926'];
 const GRID_COLOUR = '#3a3a3a';
 const TEXT_COLOUR = '#999';
+const HIDDEN_STORAGE_KEY = 'price-chart-hidden-series';
 
 /**
  * A round step for y-axis ticks that gives about four ticks up to max
@@ -32,66 +40,178 @@ function formatDate(date: Date): string {
   return date.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+// Which series are hidden is remembered between charts, so hiding foil prices once
+// hides them on every card
+function loadHidden(): Set<string> {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(HIDDEN_STORAGE_KEY) ?? '[]'));
+  } catch {
+    return new Set();
+  }
+}
+
+function saveHidden(hidden: Set<string>) {
+  try {
+    localStorage.setItem(HIDDEN_STORAGE_KEY, JSON.stringify([...hidden]));
+  } catch {
+    // Not being able to remember the choice doesn't matter
+  }
+}
+
 /**
- * Line chart of a printing's price over time, with a hover crosshair and a table view
+ * Line chart of a printing's prices over time, with a legend that can hide each line, a
+ * hover crosshair and a table view
  */
-export default function PriceChart({ title, points }: { title: string; points: PricePoint[] }) {
+export default function PriceChart({ title, series }: { title: string; series: PriceSeries[] }) {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [hoverTime, setHoverTime] = useState<number | null>(null);
+  const [hidden, setHidden] = useState<Set<string>>(loadHidden);
+
+  const allLines = useMemo(
+    () =>
+      series
+        .map((s, i) => ({
+          ...s,
+          colour: SERIES_COLOURS[i % SERIES_COLOURS.length],
+          data: s.points.map((p) => ({ time: new Date(p.date).getTime(), value: p.value })),
+        }))
+        .filter((line) => line.data.length > 0),
+    [series],
+  );
+  // A remembered choice can hide the only line a printing has prices for, in which case
+  // everything is shown rather than an empty chart
+  const shownLines = useMemo(
+    () =>
+      allLines.some((line) => !hidden.has(line.key))
+        ? allLines.filter((line) => !hidden.has(line.key))
+        : allLines,
+    [allLines, hidden],
+  );
 
   const chart = useMemo(() => {
-    const data = points.map((p) => ({ date: new Date(p.date), value: p.value }));
-    const minTime = data[0].date.getTime();
-    const maxTime = data[data.length - 1].date.getTime();
-    const step = niceStep(Math.max(...data.map((d) => d.value)) || 1);
-    const yMax = Math.ceil(Math.max(...data.map((d) => d.value)) / step) * step || step;
+    const times = [...new Set(shownLines.flatMap((line) => line.data.map((d) => d.time)))].sort(
+      (a, b) => a - b,
+    );
+    const minTime = times[0];
+    const maxTime = times[times.length - 1];
+    const maxValue = Math.max(...shownLines.flatMap((line) => line.data.map((d) => d.value)));
+    const step = niceStep(maxValue || 1);
+    const yMax = Math.ceil(maxValue / step) * step || step;
     const plotWidth = WIDTH - MARGIN.left - MARGIN.right;
     const plotHeight = HEIGHT - MARGIN.top - MARGIN.bottom;
 
-    // A single price sits in the middle rather than on the left edge
-    const x = (date: Date) =>
+    // A single date sits in the middle rather than on the left edge
+    const x = (time: number) =>
       maxTime === minTime
         ? MARGIN.left + plotWidth / 2
-        : MARGIN.left + ((date.getTime() - minTime) / (maxTime - minTime)) * plotWidth;
+        : MARGIN.left + ((time - minTime) / (maxTime - minTime)) * plotWidth;
     const y = (value: number) => MARGIN.top + plotHeight - (value / yMax) * plotHeight;
 
     const yTicks: number[] = [];
     for (let v = 0; v <= yMax + step / 2; v += step) yTicks.push(v);
 
-    // First, middle and last dates are enough to place the line in time
-    const xTicks = [...new Set([0, Math.floor((data.length - 1) / 2), data.length - 1])];
+    // First, middle and last dates are enough to place the lines in time
+    const xTicks = [
+      ...new Set([times[0], times[Math.floor((times.length - 1) / 2)], times[times.length - 1]]),
+    ];
 
-    const path = data
-      .map((d, i) => `${i === 0 ? 'M' : 'L'}${x(d.date).toFixed(1)},${y(d.value).toFixed(1)}`)
-      .join(' ');
+    const paths = shownLines.map((line) => ({
+      ...line,
+      path: line.data
+        .map((d, i) => `${i === 0 ? 'M' : 'L'}${x(d.time).toFixed(1)},${y(d.value).toFixed(1)}`)
+        .join(' '),
+    }));
 
-    return { data, x, y, yTicks, xTicks, path };
-  }, [points]);
+    return { times, x, y, yTicks, xTicks, paths };
+  }, [shownLines]);
+
+  function toggle(key: string) {
+    const next = new Set(hidden);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    setHidden(next);
+    saveHidden(next);
+  }
 
   function onPointerMove(e: React.PointerEvent<SVGSVGElement>) {
     const svg = svgRef.current;
     if (!svg) return;
     const rect = svg.getBoundingClientRect();
     const pointerX = ((e.clientX - rect.left) / rect.width) * WIDTH;
-    let nearest = 0;
-    chart.data.forEach((d, i) => {
-      if (
-        Math.abs(chart.x(d.date) - pointerX) <
-        Math.abs(chart.x(chart.data[nearest].date) - pointerX)
-      ) {
-        nearest = i;
+    let nearest = chart.times[0];
+    for (const time of chart.times) {
+      if (Math.abs(chart.x(time) - pointerX) < Math.abs(chart.x(nearest) - pointerX)) {
+        nearest = time;
       }
-    });
-    setHoverIndex(nearest);
+    }
+    setHoverTime(nearest);
   }
 
-  const hovered = hoverIndex !== null ? chart.data[hoverIndex] : null;
-  const latest = chart.data[chart.data.length - 1];
+  const hovered =
+    hoverTime === null
+      ? null
+      : chart.paths
+          .map((line) => ({ line, point: line.data.find((d) => d.time === hoverTime) }))
+          .filter((h) => h.point !== undefined);
+  const firstTime = chart.times[0];
+  const lastTime = chart.times[chart.times.length - 1];
+  const tableTimes = [...new Set(allLines.flatMap((line) => line.data.map((d) => d.time)))].sort(
+    (a, b) => a - b,
+  );
 
   return (
     <figure style={{ margin: '10px 0 0' }}>
-      <figcaption className="subtitle" style={{ color: '#ddd' }}>
+      <figcaption
+        className="subtitle"
+        style={{ color: '#ddd', display: 'flex', alignItems: 'center', gap: 12 }}
+      >
         <b>{title}</b>
+        {allLines.length > 1 &&
+          allLines.map((line) => {
+            const shown = shownLines.includes(line);
+            // At least one line stays shown
+            const onlyShown = shown && shownLines.length === 1;
+            return (
+              <button
+                key={line.key}
+                type="button"
+                aria-pressed={shown}
+                disabled={onlyShown}
+                title={
+                  shown
+                    ? `Hide ${line.label.toLowerCase()} prices`
+                    : `Show ${line.label.toLowerCase()} prices`
+                }
+                onClick={() => toggle(line.key)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  background: 'none',
+                  border: '1px solid #444',
+                  borderRadius: 3,
+                  padding: '2px 8px',
+                  color: shown ? '#ddd' : '#777',
+                  font: 'inherit',
+                  fontSize: 12,
+                  cursor: onlyShown ? 'default' : 'pointer',
+                }}
+              >
+                <span
+                  aria-hidden="true"
+                  style={{
+                    width: 12,
+                    height: 2,
+                    borderRadius: 1,
+                    background: shown ? line.colour : '#555',
+                  }}
+                />
+                <span style={{ textDecoration: shown ? 'none' : 'line-through' }}>
+                  {line.label}
+                </span>
+              </button>
+            );
+          })}
       </figcaption>
       <div style={{ position: 'relative' }}>
         <svg
@@ -99,11 +219,13 @@ export default function PriceChart({ title, points }: { title: string; points: P
           viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
           width="100%"
           role="img"
-          aria-label={`${title} from ${formatDate(chart.data[0].date)} to ${formatDate(
-            latest.date,
-          )}, latest ${formatDollars(latest.value)}`}
+          aria-label={`${title} from ${formatDate(new Date(firstTime))} to ${formatDate(
+            new Date(lastTime),
+          )}, latest ${chart.paths
+            .map((line) => `${line.label} ${formatDollars(line.data[line.data.length - 1].value)}`)
+            .join(', ')}`}
           onPointerMove={onPointerMove}
-          onPointerLeave={() => setHoverIndex(null)}
+          onPointerLeave={() => setHoverTime(null)}
           style={{ display: 'block', touchAction: 'none' }}
         >
           {chart.yTicks.map((tick) => (
@@ -128,65 +250,77 @@ export default function PriceChart({ title, points }: { title: string; points: P
               </text>
             </g>
           ))}
-          {chart.xTicks.map((i) => (
+          {chart.xTicks.map((time) => (
             <text
-              key={i}
-              x={chart.x(chart.data[i].date)}
+              key={time}
+              x={chart.x(time)}
               y={HEIGHT - 6}
               fill={TEXT_COLOUR}
               fontSize={11}
               textAnchor={
-                chart.data.length === 1
+                chart.times.length === 1
                   ? 'middle'
-                  : i === 0
+                  : time === firstTime
                     ? 'start'
-                    : i === chart.data.length - 1
+                    : time === lastTime
                       ? 'end'
                       : 'middle'
               }
             >
-              {formatDate(chart.data[i].date)}
+              {formatDate(new Date(time))}
             </text>
           ))}
-          <path
-            d={chart.path}
-            fill="none"
-            stroke={LINE_COLOUR}
-            strokeWidth={2}
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-          {chart.data.length === 1 && (
-            <circle cx={chart.x(latest.date)} cy={chart.y(latest.value)} r={4} fill={LINE_COLOUR} />
-          )}
-          {hovered && (
+          {chart.paths.map((line) => (
+            <g key={line.key}>
+              <path
+                d={line.path}
+                fill="none"
+                stroke={line.colour}
+                strokeWidth={2}
+                strokeLinejoin="round"
+                strokeLinecap="round"
+              />
+              {line.data.length === 1 && (
+                <circle
+                  cx={chart.x(line.data[0].time)}
+                  cy={chart.y(line.data[0].value)}
+                  r={4}
+                  fill={line.colour}
+                />
+              )}
+            </g>
+          ))}
+          {hoverTime !== null && hovered && (
             <>
               <line
-                x1={chart.x(hovered.date)}
-                x2={chart.x(hovered.date)}
+                x1={chart.x(hoverTime)}
+                x2={chart.x(hoverTime)}
                 y1={MARGIN.top}
                 y2={HEIGHT - MARGIN.bottom}
                 stroke={TEXT_COLOUR}
                 strokeWidth={1}
               />
-              <circle
-                cx={chart.x(hovered.date)}
-                cy={chart.y(hovered.value)}
-                r={4}
-                fill={LINE_COLOUR}
-                stroke="#333"
-                strokeWidth={2}
-              />
+              {hovered.map(({ line, point }) => (
+                <circle
+                  key={line.key}
+                  cx={chart.x(hoverTime)}
+                  cy={chart.y(point!.value)}
+                  r={4}
+                  fill={line.colour}
+                  stroke="#333"
+                  strokeWidth={2}
+                />
+              ))}
             </>
           )}
         </svg>
-        {hovered && (
+        {hoverTime !== null && hovered && (
           <div
             style={{
               position: 'absolute',
               top: 0,
-              left: `${(chart.x(hovered.date) / WIDTH) * 100}%`,
-              transform: `translateX(${chart.x(hovered.date) > WIDTH / 2 ? 'calc(-100% - 8px)' : '8px'})`,
+              left: `${(chart.x(hoverTime) / WIDTH) * 100}%`,
+              transform: `translateX(${chart.x(hoverTime) > WIDTH / 2 ? 'calc(-100% - 8px)' : '8px'})`,
               background: '#222',
               border: '1px solid #444',
               borderRadius: 3,
@@ -197,8 +331,17 @@ export default function PriceChart({ title, points }: { title: string; points: P
               pointerEvents: 'none',
             }}
           >
-            <div style={{ color: TEXT_COLOUR }}>{formatDate(hovered.date)}</div>
-            <div>{formatDollars(hovered.value)}</div>
+            <div style={{ color: TEXT_COLOUR }}>{formatDate(new Date(hoverTime))}</div>
+            {hovered.map(({ line, point }) => (
+              <div key={line.key} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span
+                  aria-hidden="true"
+                  style={{ width: 8, height: 8, borderRadius: 4, background: line.colour }}
+                />
+                {chart.paths.length > 1 && `${line.label}: `}
+                {formatDollars(point!.value)}
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -210,14 +353,25 @@ export default function PriceChart({ title, points }: { title: string; points: P
           <thead>
             <tr>
               <th style={{ textAlign: 'left' }}>Date</th>
-              <th style={{ textAlign: 'right' }}>Price</th>
+              {allLines.map((line) => (
+                <th key={line.key} style={{ textAlign: 'right', paddingLeft: 16 }}>
+                  {allLines.length > 1 ? line.label : 'Price'}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {chart.data.map((d) => (
-              <tr key={d.date.toISOString()}>
-                <td>{formatDate(d.date)}</td>
-                <td style={{ textAlign: 'right' }}>${d.value.toFixed(2)}</td>
+            {tableTimes.map((time) => (
+              <tr key={time}>
+                <td>{formatDate(new Date(time))}</td>
+                {allLines.map((line) => {
+                  const point = line.data.find((d) => d.time === time);
+                  return (
+                    <td key={line.key} style={{ textAlign: 'right', paddingLeft: 16 }}>
+                      {point ? `$${point.value.toFixed(2)}` : '–'}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>
