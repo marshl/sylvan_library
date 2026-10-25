@@ -7,12 +7,19 @@
   background-color: #151515;
 }
 
-.ms-saga-1:after,
-.ms-saga-2:after,
-.ms-saga-3:after,
-.ms-saga-4:after,
-.ms-saga-5:after {
-  color: #000;
+/* Saga chapter icons: a light hexagon with a dark numeral, like on the card. mana-font
+   makes the hexagon near-black, which disappears on the dark background, and quotes its
+   whole numeral font list as one name, so the serif font never applies. */
+.ms-saga {
+  color: #ddd;
+  vertical-align: middle;
+  margin-right: 2px;
+}
+
+.ms-saga::after {
+  color: #111;
+  font-family: MPlantin, Garamond, Palatino, 'Times New Roman', Times, serif;
+  font-weight: bold;
 }
 
 .unselectable {
