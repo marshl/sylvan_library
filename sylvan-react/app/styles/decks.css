@@ -260,6 +260,7 @@
 .exclude-colour {
   margin-right: 12px;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .deck-save-row {
@@ -278,6 +279,33 @@
 }
 
 @media (max-width: 700px) {
+  /* Form rows stack, with their fields full width. The save buttons stay in a row. */
+  .group-container .row {
+    flex-direction: column;
+    gap: 1em;
+  }
+
+  .group-container .row.deck-save-row {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .group-container .field-container {
+    margin-right: 0;
+  }
+
+  .field-container > input:not([type='checkbox']),
+  .field-container > select,
+  .field-container textarea {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .deck-card-list {
+    column-count: 2;
+  }
+
   /* The colour bars sit above the deck's name rather than beside it */
   .deck-list-item {
     gap: 0;
@@ -290,9 +318,10 @@
   .deck-list-text {
     padding: 0 8px 8px;
   }
+}
 
-  .deck-filters .row {
-    flex-direction: column;
-    gap: 1em;
+@media (max-width: 480px) {
+  .deck-card-list {
+    column-count: 1;
   }
 }
