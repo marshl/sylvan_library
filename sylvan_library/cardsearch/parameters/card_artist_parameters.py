@@ -8,7 +8,6 @@ from django.db.models.query import Q
 
 from sylvan_library.cardsearch.parameters.base_parameters import (
     CardSearchParameter,
-    CardSearchContext,
     QueryContext,
 )
 
@@ -29,9 +28,6 @@ class CardArtistParam(CardSearchParameter):
     @classmethod
     def get_search_keywords(cls) -> List[str]:
         return ["artist", "art"]
-
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.PRINTING
 
     def query(self, query_context: QueryContext) -> Q:
         return Q(face_printings__artist__icontains=self.value)

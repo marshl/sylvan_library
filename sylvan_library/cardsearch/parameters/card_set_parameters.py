@@ -12,7 +12,6 @@ from sylvan_library.cards.models.card import CardPrinting
 from sylvan_library.cards.models.legality import CardLegality
 from sylvan_library.cards.models.sets import Set, Block, Format
 from sylvan_library.cardsearch.parameters.base_parameters import (
-    CardSearchContext,
     ParameterArgs,
     QueryContext,
     QueryValidationError,
@@ -47,9 +46,6 @@ class CardSetParam(CardSearchParameter):
     The parameter for searching by a card's set
     """
 
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.PRINTING
-
     @classmethod
     def get_parameter_name(cls) -> str:
         return "set"
@@ -71,16 +67,7 @@ class CardSetParam(CardSearchParameter):
         self.set_obj = user_query_to_set(self.value)
 
     def query(self, query_context: QueryContext) -> Q:
-        return Q(
-            **{
-                (
-                    "set"
-                    if query_context.search_mode == CardSearchContext.PRINTING
-                    else "printings__set"
-                ): self.set_obj,
-                "_negated": self.negated,
-            }
-        )
+        return Q(set=self.set_obj, _negated=self.negated)
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         return (
@@ -94,9 +81,6 @@ class CardBlockParam(CardSearchParameter):
     """
     The parameter for searching by a card's block
     """
-
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.PRINTING
 
     @classmethod
     def get_parameter_name(cls) -> str:
@@ -159,9 +143,6 @@ class CardLegalityParam(CardSearchParameter):
     The parameter for searching by a card's "legality" (banned in a format, legal in a format etc.)
     """
 
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.CARD
-
     @classmethod
     def get_parameter_name(cls) -> str:
         return "format"
@@ -198,15 +179,7 @@ class CardLegalityParam(CardSearchParameter):
             format=self.card_format,
             restriction__iexact=self.restriction,
         )
-        query = Q(
-            **{
-                (
-                    "card__legalities__in"
-                    if query_context.search_mode == CardSearchContext.PRINTING
-                    else "legalities__in"
-                ): legality_query
-            }
-        )
+        query = Q(card__legalities__in=legality_query)
         return ~query if self.negated else query
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
@@ -218,9 +191,6 @@ class CardLegalityParam(CardSearchParameter):
 
 
 class CardDateParam(CardSearchParameter):
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.PRINTING
-
     @classmethod
     def get_parameter_name(cls) -> str:
         return "date"
@@ -292,11 +262,8 @@ class CardIsUniversesBeyondParam(CardSearchBinaryParameter):
     def get_parameter_name(cls) -> str:
         return "is universes beyond"
 
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.CARD
-
     def query(self, query_context: QueryContext) -> Q:
-        return Q(search_metadata__is_universes_beyond=True, _negated=self.negated)
+        return Q(card__search_metadata__is_universes_beyond=True, _negated=self.negated)
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         return (

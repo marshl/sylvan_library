@@ -8,7 +8,6 @@ from django.db.models.query import Q
 
 from sylvan_library.cards.models.decks import Deck
 from sylvan_library.cardsearch.parameters.base_parameters import (
-    CardSearchContext,
     QueryContext,
     CardSearchParameter,
 )
@@ -18,9 +17,6 @@ class CardDeckParam(CardSearchParameter):
     """
     The parameter for searching for cards within a specific deck
     """
-
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.CARD
 
     @classmethod
     def get_parameter_name(cls) -> str:
@@ -36,7 +32,7 @@ class CardDeckParam(CardSearchParameter):
 
     def query(self, query_context: QueryContext) -> Q:
         return Q(
-            deck_cards__deck_id=self.value,
+            card__deck_cards__deck_id=self.value,
             _negated=self.negated,
         )
 

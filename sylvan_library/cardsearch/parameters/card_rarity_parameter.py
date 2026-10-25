@@ -11,7 +11,6 @@ from sylvan_library.cardsearch.parameters.base_parameters import (
     OPERATOR_MAPPING,
     OPERATOR_TO_WORDY_MAPPING,
     CardSearchParameter,
-    CardSearchContext,
     ParameterArgs,
     QueryContext,
     QueryValidationError,
@@ -34,9 +33,6 @@ class CardRarityParam(CardSearchParameter):
     @classmethod
     def get_search_keywords(cls) -> List[str]:
         return ["rarity", "r"]
-
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.PRINTING
 
     def __init__(self, param_args: ParameterArgs, negated: bool = False):
         super().__init__(param_args, negated)

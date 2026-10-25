@@ -7,7 +7,6 @@ from typing import List
 from django.db.models.query import Q
 
 from sylvan_library.cardsearch.parameters.base_parameters import (
-    CardSearchContext,
     QueryContext,
     QueryValidationError,
     CardSearchParameter,
@@ -18,9 +17,6 @@ class CardGameParam(CardSearchParameter):
     """
     The parameter for searching by a card's set
     """
-
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.PRINTING
 
     @classmethod
     def get_parameter_name(cls) -> str:
@@ -42,7 +38,7 @@ class CardGameParam(CardSearchParameter):
         if self.value == "paper":
             q = Q(is_online_only=False, set__is_online_only=False)
         else:
-            q = Q(is_online_online=True, set__is_online_only=True)
+            q = Q(is_online_only=True, set__is_online_only=True)
         return ~q if self.negated else q
 
     def get_pretty_str(self, query_context: QueryContext) -> str:

@@ -23,6 +23,7 @@ from sylvan_library.cards.models.card import (
     CardType,
     UserOwnedCard,
 )
+from sylvan_library.cards.models.decks import Deck, DeckCard
 from sylvan_library.cards.models.colour import Colour
 from sylvan_library.cards.models.language import Language
 from sylvan_library.cards.models.rarity import Rarity
@@ -274,12 +275,31 @@ class SearchApiTestCase(TestCase):
     def test_layout_with_a_printing_parameter(self) -> None:
         self.assertEqual(self.result_names("layout:split s:mh2"), ["Fire // Ice"])
 
-    @unittest.expectedFailure
     def test_layout(self) -> None:
-        """
-        Layout only builds its query for printing searches, so on its own it crashes
-        """
         self.assertEqual(self.result_names("layout:split"), ["Fire // Ice"])
+
+    def test_deck_with_a_printing_parameter(self) -> None:
+        deck = Deck.objects.create(
+            name="Burn",
+            owner=self.user,
+            format="modern",
+            date_created=datetime.date.today(),
+        )
+        DeckCard.objects.create(deck=deck, card=self.bolt, count=4)
+        DeckCard.objects.create(deck=deck, card=self.goblin_king, count=2)
+        self.assertEqual(
+            self.result_names(f"deck:{deck.id}"), ["Goblin King", "Lightning Bolt"]
+        )
+        self.assertEqual(self.result_names(f"deck:{deck.id} s:prm"), ["Lightning Bolt"])
+
+    def test_universes_beyond_with_a_printing_parameter(self) -> None:
+        self.assertEqual(
+            self.result_names("-is:ub r:rare"), ["Black Lotus", "Goblin King"]
+        )
+
+    def test_game(self) -> None:
+        self.assertEqual(len(self.result_names("game:paper")), 6)
+        self.assertEqual(self.result_names("game:online"), [])
 
     @unittest.expectedFailure
     def test_sorting_by_a_printing_field_does_not_repeat_cards(self) -> None:

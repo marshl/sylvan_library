@@ -12,7 +12,6 @@ from django.db.models.query import Q
 from sylvan_library.cardsearch.parameters.base_parameters import (
     OPERATOR_MAPPING,
     CardSearchNumericalParameter,
-    CardSearchContext,
     ParameterArgs,
     QueryContext,
     QueryValidationError,
@@ -34,9 +33,6 @@ class CardManaCostComplexParam(CardSearchParameter):
     """
     Parameter for complex mana cost checking
     """
-
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.CARD
 
     @classmethod
     def get_parameter_name(cls) -> str:
@@ -151,17 +147,13 @@ class CardManaCostComplexParam(CardSearchParameter):
     def query(self, query_context: QueryContext) -> Q:
         query = Q()
 
-        prefix = (
-            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
-        )
         for symbol, count in dict(self.symbol_counts).items():
             if symbol.upper() not in self.symbols:
                 raise ValueError(f'Unknown symbol "{symbol}"')
 
             query &= Q(
                 **{
-                    prefix
-                    + "faces__search_metadata__symbol_count_"
+                    "card__faces__search_metadata__symbol_count_"
                     + symbol.lower().replace("/", "_")
                     + OPERATOR_MAPPING[self.operator]: count
                 }
@@ -170,8 +162,7 @@ class CardManaCostComplexParam(CardSearchParameter):
         if self.generic_mana:
             query &= Q(
                 **{
-                    prefix
-                    + "faces__search_metadata__symbol_count_generic"
+                    "card__faces__search_metadata__symbol_count_generic"
                     + OPERATOR_MAPPING[self.operator]: self.generic_mana
                 }
             )
@@ -184,8 +175,7 @@ class CardManaCostComplexParam(CardSearchParameter):
                     continue
                 query &= Q(
                     **{
-                        prefix
-                        + "faces__search_metadata__symbol_count_"
+                        "card__faces__search_metadata__symbol_count_"
                         + symbol.lower().replace("/", "_"): 0
                     }
                 )
@@ -194,8 +184,7 @@ class CardManaCostComplexParam(CardSearchParameter):
             if not self.generic_mana:
                 query &= Q(
                     **{
-                        prefix
-                        + "faces__search_metadata__symbol_count_generic"
+                        "card__faces__search_metadata__symbol_count_generic"
                         + OPERATOR_MAPPING[self.operator]: 0
                     }
                 )
@@ -216,9 +205,6 @@ class CardColourCountParam(CardSearchNumericalParameter):
     Parameter for the number of colours a card has
     """
 
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.CARD
-
     @classmethod
     def get_parameter_name(cls) -> str:
         return "colour"
@@ -236,7 +222,7 @@ class CardColourCountParam(CardSearchNumericalParameter):
         if not super().matches_param_args(param_args):
             return False
 
-        if get_value_f_equivalent(param_args.value, CardSearchContext.CARD) is not None:
+        if get_value_f_equivalent(param_args.value) is not None:
             return True
 
         try:
@@ -256,13 +242,10 @@ class CardColourCountParam(CardSearchNumericalParameter):
         Gets the Q query object
         :return: The Q query object
         """
-        prefix = (
-            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
-        )
         args = (
-            self.get_args(f"{prefix}colour_identity_count", query_context)
+            self.get_args("card__colour_identity_count", query_context)
             if self.in_identity_mode
-            else self.get_args(f"{prefix}faces__colour_count", query_context)
+            else self.get_args("card__faces__colour_count", query_context)
         )
         args["_negated"] = self.negated
         return Q(**args)
@@ -294,14 +277,8 @@ class CardManaValueParam(CardSearchNumericalParameter):
     def get_search_keywords(cls) -> List[str]:
         return ["cmc", "manavalue", "mv"]
 
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.CARD
-
     def query(self, query_context: QueryContext) -> Q:
-        prefix = (
-            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
-        )
-        args = self.get_args(f"{prefix}mana_value", query_context)
+        args = self.get_args("card__mana_value", query_context)
         query = Q(**args)
         return query
 

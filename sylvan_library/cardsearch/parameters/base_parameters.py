@@ -70,7 +70,8 @@ def and_group_queries(q_objects: List[Q]) -> Q:
 
 class CardSearchContext(enum.StrEnum):
     """
-    Different search modes (the model "origin" of the search, for example card, card printing)
+    Whether a search gives one result per card, or one per printing. Parameter queries are
+    always made against printings either way.
     """
 
     CARD = "CARD"
@@ -120,10 +121,6 @@ class CardSearchTreeNode(ABC):
 
     def validate(self, query_context: QueryContext) -> None:
         pass
-
-    @abstractmethod
-    def get_default_search_context(self) -> CardSearchContext:
-        raise NotImplementedError
 
     @abstractmethod
     def get_pretty_str(self, query_context: QueryContext) -> Optional[str]:
@@ -206,9 +203,6 @@ class CardSortParam(CardSearchParameter, metaclass=ABCMeta):
         if param_args.operator == "<":
             self.negated = True
 
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.CARD
-
     def get_pretty_str(self, query_context: QueryContext) -> Optional[str]:
         return None
 
@@ -262,13 +256,6 @@ class CardSearchBranchNode(CardSearchTreeNode, ABC):
         """
         self.child_parameters.append(param)
         return param
-
-    def get_default_search_context(self) -> CardSearchContext:
-        for child in self.child_parameters:
-            if child.get_default_search_context() == CardSearchContext.PRINTING:
-                return CardSearchContext.PRINTING
-
-        return CardSearchContext.CARD
 
     def validate(self, query_context: QueryContext) -> None:
         for child in self.child_parameters:
@@ -397,7 +384,7 @@ class CardSearchNumericalParameter(CardSearchParameter, ABC):
             self.number = self.get_search_value(query_context)
 
     def get_search_value(self, query_context: QueryContext) -> Union[float, F]:
-        f_value = get_value_f_equivalent(self.value, query_context.search_mode)
+        f_value = get_value_f_equivalent(self.value)
         if f_value:
             return f_value
 
@@ -436,37 +423,33 @@ class CardSearchBinaryParameter(CardSearchParameter, ABC):
             self.negated = not self.negated
 
 
-def get_value_f_equivalent(
-    value: str, card_search_context: CardSearchContext
-) -> F | float | None:
+def get_value_f_equivalent(value: str) -> F | float | None:
     """
     Try to convert the given string value into a Django F object if any apply.
     For example, "power>toughness" can be converted to "cards where its numerical power is greater than its numerical toughness"
     If there is no F equivalent, then None is returned
     :param value: The value to  convert
-    :param card_search_context:
     :return: An F object for the matching column, otherwise None
     """
-    prefix = "card__" if card_search_context == CardSearchContext.PRINTING else ""
     if value in ("toughness", "tough", "tou"):
-        return F(f"{prefix}faces__num_toughness")
+        return F("card__faces__num_toughness")
 
     if value in ("power", "pow"):
-        return F(f"{prefix}faces__num_power")
+        return F("card__faces__num_power")
 
     if value in ("loyalty", "loy"):
-        return F(f"{prefix}faces__num_loyalty")
+        return F("card__faces__num_loyalty")
 
     if value in ("cmc", "cost", "mv", "manavalue"):
-        return F(f"{prefix}mana_value")
+        return F("card__mana_value")
 
     if value in ("inf", "infinity", "∞"):
         return math.inf
 
     if value in ("id", "cid"):
-        return F(f"{prefix}colour_identity_count")
+        return F("card__colour_identity_count")
 
     if value in ("colour", "color"):
-        return F(f"{prefix}faces__colour_count")
+        return F("card__faces__colour_count")
 
     return None

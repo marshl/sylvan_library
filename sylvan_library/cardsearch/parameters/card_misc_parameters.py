@@ -8,7 +8,6 @@ from django.db.models import Q
 
 from sylvan_library.cardsearch.parameters.base_parameters import (
     CardSearchNumericalParameter,
-    CardSearchContext,
     QueryContext,
     CardSearchParameter,
     CardSearchBinaryParameter,
@@ -19,9 +18,6 @@ class CardLayoutParameter(CardSearchParameter):
     """
     Parameter for whether a card has any phyrexian mana symbols or not
     """
-
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.CARD
 
     @classmethod
     def get_parameter_name(cls) -> str:
@@ -55,15 +51,9 @@ class CardIsPhyrexianParam(CardSearchBinaryParameter):
     def get_parameter_name(cls) -> str:
         return "is phyrexian"
 
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.CARD
-
     def query(self, query_context: QueryContext) -> Q:
-        prefix = (
-            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
-        )
-        query = Q(**{f"{prefix}faces__mana_cost__icontains": "/p"}) | Q(
-            **{f"{prefix}faces__rules_text__icontains": "/p"}
+        query = Q(card__faces__mana_cost__icontains="/p") | Q(
+            card__faces__rules_text__icontains="/p"
         )
         return ~query if self.negated else query
 
@@ -83,9 +73,6 @@ class CardHasWatermarkParam(CardSearchBinaryParameter):
     @classmethod
     def get_parameter_name(cls) -> str:
         return "has watermark"
-
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.PRINTING
 
     @classmethod
     def get_is_keywords(cls) -> str:
@@ -113,9 +100,6 @@ class CardIsReprintParam(CardSearchBinaryParameter):
     def get_parameter_name(cls) -> str:
         return "reprint"
 
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.PRINTING
-
     def query(self, query_context: QueryContext) -> Q:
         return Q(is_reprint=self.negated, _negated=self.negated)
 
@@ -136,15 +120,9 @@ class CardHasColourIndicatorParam(CardSearchBinaryParameter):
     def get_parameter_name(cls) -> str:
         return "colour indicator"
 
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.CARD
-
     def query(self, query_context: QueryContext) -> Q:
 
-        prefix = (
-            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
-        )
-        query = Q(**{f"{prefix}faces__colour_indicator": 0})
+        query = Q(card__faces__colour_indicator=0)
         return query if self.negated else ~query
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
@@ -168,14 +146,8 @@ class CardIsHybridParam(CardSearchBinaryParameter):
     def get_parameter_name(cls) -> str:
         return "is hybrid"
 
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.CARD
-
     def query(self, query_context: QueryContext) -> Q:
-        prefix = (
-            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
-        )
-        query = Q(**{f"{prefix}faces__mana_cost__iregex": r"\/[wubrg]"})
+        query = Q(card__faces__mana_cost__iregex=r"\/[wubrg]")
         return ~query if self.negated else query
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
@@ -197,19 +169,8 @@ class CardIsCommanderParam(CardSearchBinaryParameter):
     def get_parameter_name(cls) -> str:
         return "is commander"
 
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.CARD
-
     def query(self, query_context: QueryContext) -> Q:
-        query = Q(
-            **{
-                (
-                    "search_metadata__is_commander"
-                    if query_context.search_mode == CardSearchContext.CARD
-                    else "card__search_metadata__is_commander"
-                ): True
-            }
-        )
+        query = Q(card__search_metadata__is_commander=True)
 
         return ~query if self.negated else query
 
@@ -228,15 +189,9 @@ class CardIsVanillaParam(CardSearchBinaryParameter):
     def get_parameter_name(cls) -> str:
         return "vanilla"
 
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.CARD
-
     def query(self, query_context: QueryContext) -> Q:
-        prefix = (
-            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
-        )
-        query = Q(**{f"{prefix}faces__rules_text__isnull": True}) & Q(
-            **{f"{prefix}faces__types__name": "Creature"}
+        query = Q(card__faces__rules_text__isnull=True) & Q(
+            card__faces__types__name="Creature"
         )
         return ~query if self.negated else query
 
@@ -257,15 +212,9 @@ class CardCollectorNumberParam(CardSearchNumericalParameter):
     def get_search_keywords(cls) -> List[str]:
         return ["number", "cnum", "num"]
 
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.PRINTING
-
     def query(self, query_context: QueryContext) -> Q:
 
-        prefix = (
-            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
-        )
-        args = self.get_args(f"{prefix}printings__numerical_number", query_context)
+        args = self.get_args("numerical_number", query_context)
         query = Q(**args)
         return ~query if self.negated else query
 

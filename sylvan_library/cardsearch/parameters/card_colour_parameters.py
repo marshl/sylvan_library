@@ -15,7 +15,6 @@ from sylvan_library.cards.models.colour import (
 )
 from sylvan_library.cardsearch.parameters.base_parameters import (
     CardSearchBinaryParameter,
-    CardSearchContext,
     QueryContext,
     CardSearchParameter,
     ParameterArgs,
@@ -45,7 +44,7 @@ class CardComplexColourParam(CardSearchParameter):
         if not super().matches_param_args(param_args):
             return False
 
-        if get_value_f_equivalent(param_args.value, CardSearchContext.CARD) is not None:
+        if get_value_f_equivalent(param_args.value) is not None:
             return False
 
         try:
@@ -53,9 +52,6 @@ class CardComplexColourParam(CardSearchParameter):
             return False
         except (TypeError, ValueError):
             return True
-
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.CARD
 
     def __init__(self, param_args: ParameterArgs, negated: bool = False):
         super().__init__(param_args, negated)
@@ -78,12 +74,8 @@ class CardComplexColourParam(CardSearchParameter):
         """
         colour_flags = colours_to_int_flags(self.colours)
 
-        prefix = (
-            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
-        )
-
         if self.operator == "=":
-            result = Q(**{f"{prefix}{self.field_name}": colour_flags})
+            result = Q(**{f"card__{self.field_name}": colour_flags})
         else:
             if self.operator in (">=", ">"):
                 annotated_result = Card.objects.annotate(
@@ -104,10 +96,7 @@ class CardComplexColourParam(CardSearchParameter):
                     )
             else:
                 raise ValueError(f'Unsupported operator "{self.operator}"')
-            if query_context.search_mode == CardSearchContext.CARD:
-                result = Q(id__in=annotated_result.values_list("id"))
-            else:
-                result = Q(card__in=annotated_result)
+            result = Q(card__in=annotated_result)
 
         return ~result if self.negated else result
 
@@ -148,12 +137,7 @@ class CardMulticolouredOnlyParam(CardSearchBinaryParameter):
     def get_parameter_name(cls) -> str:
         return "is multicoloured"
 
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.CARD
-
     def query(self, query_context: QueryContext) -> Q:
-        if query_context.search_mode == CardSearchContext.CARD:
-            return Q(faces__colour_count__gte=2, _negated=self.negated)
         return Q(card__faces__colour_count__gte=2, _negated=self.negated)
 
     def get_pretty_str(self, query_context: QueryContext) -> str:

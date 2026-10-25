@@ -9,7 +9,6 @@ from django.db.models import Q
 from sylvan_library.cardsearch.parameters.base_parameters import (
     CardSearchParameter,
     QueryContext,
-    CardSearchContext,
 )
 
 
@@ -29,9 +28,6 @@ class CardFlavourTextParam(CardSearchParameter):
     @classmethod
     def get_search_keywords(cls) -> List[str]:
         return ["flavour", "flavor", "ft"]
-
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.PRINTING
 
     def query(self, query_context: QueryContext) -> Q:
         return Q(

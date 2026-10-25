@@ -9,7 +9,6 @@ from django.db.models.query import Q
 from sylvan_library.cardsearch.parameters.base_parameters import (
     CardSearchNumericalParameter,
     QueryContext,
-    CardSearchContext,
 )
 
 
@@ -30,17 +29,9 @@ class CardPriceParam(CardSearchNumericalParameter):
     def get_search_operators(cls) -> List[str]:
         return ["<", "<=", ">=", ">"]
 
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.CARD
-
     def query(self, query_context: QueryContext) -> Q:
         args = self.get_args(
-            (
-                "card__cheapest_price__paper_value"
-                if query_context.search_mode == CardSearchContext.PRINTING
-                else "cheapest_price__paper_value"
-            ),
-            query_context=query_context,
+            "card__cheapest_price__paper_value", query_context=query_context
         )
         return Q(**args)
 

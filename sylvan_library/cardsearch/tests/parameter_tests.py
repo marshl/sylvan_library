@@ -2,6 +2,7 @@
 The module for searching tests
 """
 
+from django.db.models import QuerySet
 from django.test import TestCase
 
 from sylvan_library.cards.models.card import CardPrinting, Card
@@ -13,15 +14,23 @@ from sylvan_library.cards.tests import (
 )
 from sylvan_library.cardsearch.parameters.base_parameters import (
     CardSearchAnd,
+    CardSearchTreeNode,
     ParameterArgs,
     QueryContext,
-    CardSearchContext,
 )
 from sylvan_library.cardsearch.parameters.card_name_parameters import CardNameParam
 from sylvan_library.cardsearch.parameters.card_rules_text_parameter import (
     CardRulesTextParam,
 )
 from sylvan_library.cardsearch.parameters.card_set_parameters import CardSetParam
+
+
+def matching_cards(node: CardSearchTreeNode) -> QuerySet:
+    """
+    The cards with a printing that matches the given parameter
+    """
+    printings = CardPrinting.objects.filter(node.query(QueryContext()))
+    return Card.objects.filter(printings__in=printings)
 
 
 class CardNameParamTestCase(TestCase):
@@ -39,9 +48,7 @@ class CardNameParamTestCase(TestCase):
         param = CardNameParam(ParameterArgs(value="foo", operator="=", keyword="name"))
         self.assertIn(
             printing,
-            CardPrinting.objects.filter(
-                param.query(QueryContext(search_mode=CardSearchContext.PRINTING))
-            ),
+            CardPrinting.objects.filter(param.query(QueryContext())),
         )
 
     def test_name_contains_no_match(self) -> None:
@@ -54,9 +61,7 @@ class CardNameParamTestCase(TestCase):
         param = CardNameParam(ParameterArgs(value="foo", operator="=", keyword="name"))
         self.assertNotIn(
             printing,
-            CardPrinting.objects.filter(
-                param.query(QueryContext(search_mode=CardSearchContext.PRINTING))
-            ),
+            CardPrinting.objects.filter(param.query(QueryContext())),
         )
 
     def test_name_match_inverse(self) -> None:
@@ -70,11 +75,7 @@ class CardNameParamTestCase(TestCase):
         param.negated = True
         self.assertNotIn(
             printing,
-            CardPrinting.objects.filter(
-                param.query(
-                    query_context=QueryContext(search_mode=CardSearchContext.PRINTING)
-                )
-            ),
+            CardPrinting.objects.filter(param.query(query_context=QueryContext())),
         )
 
     def test_name_contains(self) -> None:
@@ -82,10 +83,11 @@ class CardNameParamTestCase(TestCase):
         Tests that a card name containing is found
         """
         card = create_test_card({"name": "foobar"})
+        create_test_card_printing(card, create_test_set("Setty", "SET", {}), {})
         param = CardNameParam(ParameterArgs(value="foo", operator=":", keyword="name"))
         self.assertIn(
             card,
-            Card.objects.filter(param.query(QueryContext())),
+            matching_cards(param),
         )
 
     def test_name_contains_case_insensitive(self) -> None:
@@ -93,10 +95,11 @@ class CardNameParamTestCase(TestCase):
         Tests that a card name containing is found
         """
         card = create_test_card({"name": "Foobar"})
+        create_test_card_printing(card, create_test_set("Setty", "SET", {}), {})
         param = CardNameParam(ParameterArgs(value="foo", operator=":", keyword="name"))
         self.assertIn(
             card,
-            Card.objects.filter(param.query(QueryContext())),
+            matching_cards(param),
         )
 
     def test_name_not_contains(self) -> None:
@@ -104,8 +107,9 @@ class CardNameParamTestCase(TestCase):
         Test that a card name that doesn't match isn't found
         """
         card = create_test_card({"name": "foo"})
+        create_test_card_printing(card, create_test_set("Setty", "SET", {}), {})
         param = CardNameParam(ParameterArgs("name", "=", "bar"))
-        self.assertNotIn(card, Card.objects.filter(param.query(QueryContext())))
+        self.assertNotIn(card, matching_cards(param))
 
     def test_name_match_invert(self) -> None:
         """
@@ -114,9 +118,10 @@ class CardNameParamTestCase(TestCase):
         root_param = CardSearchAnd()
         root_param.negated = True
         card = create_test_card({"name": "foo"})
+        create_test_card_printing(card, create_test_set("Setty", "SET", {}), {})
         param = CardNameParam(ParameterArgs(value="bar", operator=":", keyword="name"))
         root_param.add_parameter(param)
-        self.assertIn(card, Card.objects.filter(root_param.query(QueryContext())))
+        self.assertIn(card, matching_cards(root_param))
 
 
 class CardRulesParamTestCase(TestCase):
@@ -130,26 +135,29 @@ class CardRulesParamTestCase(TestCase):
         :return:
         """
         card = create_test_card()
+        create_test_card_printing(card, create_test_set("Setty", "SET", {}), {})
         create_test_card_face(card, {"rules_text": "Flying"})
         param = CardRulesTextParam(ParameterArgs("rules", ":", "Flying"))
-        self.assertIn(card, Card.objects.filter(param.query(QueryContext())))
+        self.assertIn(card, matching_cards(param))
 
     def test_rules_contains(self) -> None:
         """
         Tests that the rules param will match cards that contain the text
         """
         card = create_test_card()
+        create_test_card_printing(card, create_test_set("Setty", "SET", {}), {})
         create_test_card_face(card, {"rules_text": "Double strike"})
         param = CardRulesTextParam(ParameterArgs("rules", ":", "strike"))
-        self.assertIn(card, Card.objects.filter(param.query(QueryContext())))
+        self.assertIn(card, matching_cards(param))
 
     def test_rules_blank(self) -> None:
         """
         Tests that a card without text won't be found by a param with content
         """
         card = create_test_card({})
+        create_test_card_printing(card, create_test_set("Setty", "SET", {}), {})
         param = CardRulesTextParam(ParameterArgs("rules", ":", "Vigilance"))
-        self.assertNotIn(card, Card.objects.filter(param.query(QueryContext())))
+        self.assertNotIn(card, matching_cards(param))
 
 
 class CardSetParamTestCase(TestCase):
@@ -166,10 +174,8 @@ class CardSetParamTestCase(TestCase):
         printing = create_test_card_printing(card, set_obj, {})
         param = CardSetParam(ParameterArgs("set", ":", "FOO"))
         param.validate(QueryContext())
-        self.assertIn(card, Card.objects.filter(param.query(QueryContext())))
+        self.assertIn(card, matching_cards(param))
         self.assertIn(
             printing,
-            CardPrinting.objects.filter(
-                param.query(QueryContext(search_mode=CardSearchContext.PRINTING))
-            ),
+            CardPrinting.objects.filter(param.query(QueryContext())),
         )

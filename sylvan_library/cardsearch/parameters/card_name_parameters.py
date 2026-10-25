@@ -8,7 +8,6 @@ from django.db.models.query import Q
 
 from sylvan_library.cardsearch.parameters.base_parameters import (
     OPERATOR_MAPPING,
-    CardSearchContext,
     ParameterArgs,
     QueryContext,
     CardSearchParameter,
@@ -19,9 +18,6 @@ class CardNameParam(CardSearchParameter):
     """
     The parameter for searching by a card's name
     """
-
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.CARD
 
     @classmethod
     def get_parameter_name(cls) -> str:
@@ -46,13 +42,7 @@ class CardNameParam(CardSearchParameter):
         self.regex_match: bool = param_args.is_regex
 
     def query(self, query_context: QueryContext) -> Q:
-
-        name_column = (
-            "name"
-            if query_context.search_mode == CardSearchContext.CARD
-            else "card__name"
-        )
-
+        name_column = "card__name"
         if self.regex_match:
             query = Q(**{f"{name_column}__iregex": self.value})
         elif self.match_exact:

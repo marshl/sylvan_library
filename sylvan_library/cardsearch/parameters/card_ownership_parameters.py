@@ -11,7 +11,6 @@ from django.db.models.functions import Coalesce
 from sylvan_library.cards.models.card import Card
 from sylvan_library.cardsearch.parameters.base_parameters import (
     CardSearchNumericalParameter,
-    CardSearchContext,
     QueryContext,
     QueryValidationError,
     CardSearchBinaryParameter,
@@ -31,9 +30,6 @@ class CardOwnershipCountParam(CardSearchNumericalParameter):
     @classmethod
     def get_search_keywords(cls) -> List[str]:
         return ["have", "own"]
-
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.CARD
 
     def validate(self, query_context: QueryContext) -> None:
         if not query_context.user or query_context.user.is_anonymous:
@@ -83,8 +79,6 @@ class CardOwnershipCountParam(CardSearchNumericalParameter):
             "id", flat=True
         )
 
-        if query_context.search_mode == CardSearchContext.CARD:
-            return Q(id__in=card_ids, _negated=self.negated)
         return Q(card_id__in=card_ids, _negated=self.negated)
 
     def get_filter_operator(self) -> str:
@@ -133,9 +127,6 @@ class CardUsageCountParam(CardSearchNumericalParameter):
     def get_search_keywords(cls) -> List[str]:
         return ["used"]
 
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.CARD
-
     def validate(self, query_context: QueryContext) -> None:
         if not query_context.user or query_context.user.is_anonymous:
             raise QueryValidationError("Can't search by deck usage if not logged in")
@@ -181,8 +172,6 @@ HAVING COUNT(cards_deck.id) {self.operator} %(number)s
             )
             ids = cursor.fetchall()
             ids = list(sum(ids, ()))
-        if query_context.search_mode == CardSearchContext.CARD:
-            return Q(id__in=ids, _negated=self.negated)
         return Q(card_id__in=ids, _negated=self.negated)
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
@@ -216,9 +205,6 @@ class CardMissingPauperParam(CardSearchBinaryParameter):
     @classmethod
     def get_parameter_name(cls) -> str:
         return "missing pauper"
-
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.CARD
 
     def validate(self, query_context: QueryContext) -> None:
         if not query_context.user or query_context.user.is_anonymous:
@@ -304,12 +290,7 @@ AND cards_rarity.symbol = ANY(%(include_rarities)s)
             )
             rows = cursor.fetchall()
             ids = list(sum(rows, ()))
-        q = (
-            Q(id__in=ids)
-            if query_context.search_mode == CardSearchContext.CARD
-            else Q(card_id__in=ids)
-        )
-        return ~q if self.negated else q
+        return Q(card_id__in=ids, _negated=self.negated)
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         """

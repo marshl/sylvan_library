@@ -91,7 +91,8 @@ def get_preferred_set(root: CardSearchTreeNode) -> Optional[Set]:
 
 def build_queryset(root: CardSearchTreeNode, query_context: QueryContext) -> QuerySet:
     """
-    The sorted queryset of cards that match the parameter tree
+    The sorted queryset of cards with at least one printing that matches the parameter
+    tree
     """
     query = root.query(query_context)
     sort_params: List[CardSortParam] = root.get_sort_parameters() + [
@@ -106,10 +107,8 @@ def build_queryset(root: CardSearchTreeNode, query_context: QueryContext) -> Que
     if "name" in distinct_fields:
         distinct_fields.append("scryfall_oracle_id")
 
-    if query_context.search_mode == CardSearchContext.CARD:
-        queryset = Card.objects.filter(query)
-    else:
-        queryset = Card.objects.filter(printings__in=CardPrinting.objects.filter(query))
+    printings = CardPrinting.objects.filter(query)
+    queryset = Card.objects.filter(id__in=printings.values("card_id"))
 
     if "?" not in distinct_fields:
         queryset = queryset.distinct(*distinct_fields)
@@ -142,9 +141,7 @@ def run_search(
     except (ParseError, ValueError) as error:
         return SearchOutcome(results=[], count=0, page=1, num_pages=1, error=str(error))
 
-    query_context = QueryContext(
-        user=user, search_mode=root.get_default_search_context()
-    )
+    query_context = QueryContext(user=user, search_mode=CardSearchContext.CARD)
     try:
         root.validate(query_context)
     except QueryValidationError as error:

@@ -13,7 +13,6 @@ from sylvan_library.cards.models.colour import Colour, colours_to_symbols
 from sylvan_library.cardsearch.parameters.base_parameters import (
     and_group_queries,
     or_group_queries,
-    CardSearchContext,
     QueryContext,
     CardSearchParameter,
     ParameterArgs,
@@ -37,17 +36,12 @@ class CardRulesTextParam(CardSearchParameter):
     def get_search_keywords(cls) -> List[str]:
         return ["oracle", "rules", "text", "o"]
 
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.CARD
-
     def __init__(self, param_args: ParameterArgs, negated: bool = False):
         super().__init__(param_args, negated)
         self.exact_match = self.operator == "="
         self.regex_match = param_args.is_regex
 
     def query(self, query_context: QueryContext) -> Q:
-        if query_context.search_mode == CardSearchContext.CARD:
-            return self.get_query("faces__rules_text", query_context)
         return self.get_query("card__faces__rules_text", query_context)
 
     def get_query(self, column_name: str, query_context: QueryContext):
@@ -60,13 +54,8 @@ class CardRulesTextParam(CardSearchParameter):
                 query = Q(**{f"{column_name}__icontains": self.value})
             return ~query if self.negated else query
 
-        name_column = (
-            "card__name"
-            if query_context.search_mode == CardSearchContext.PRINTING
-            else "name"
-        )
         chunks = [Value(c) for c in self.value.split("~")]
-        params = [F(name_column)] * (len(chunks) * 2 - 1)
+        params = [F("card__name")] * (len(chunks) * 2 - 1)
         params[0::2] = chunks
         if self.regex_match:
             query = Q(**{f"{column_name}__iregex": Concat(*params)})
@@ -113,18 +102,8 @@ class CardOriginalRulesTextParam(CardRulesTextParam):
     def get_search_keywords(cls) -> List[str]:
         return ["otext", "orules"]
 
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.PRINTING
-
     def query(self, query_context: QueryContext) -> Q:
-        return self.get_query(
-            (
-                "card__faces__face_printings__original_text"
-                if query_context.search_mode == CardSearchContext.PRINTING
-                else "faces__face_printings__original_text"
-            ),
-            query_context,
-        )
+        return self.get_query("face_printings__original_text", query_context)
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         if self.negated:
@@ -151,9 +130,6 @@ class CardProducesManaParam(CardSearchParameter):
     def get_search_keywords(cls) -> List[str]:
         return ["p", "produce", "produces"]
 
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.CARD
-
     def __init__(self, param_args: ParameterArgs, negated: bool = False):
         super().__init__(param_args, negated)
         self.any_colour = self.value == "any"
@@ -165,11 +141,8 @@ class CardProducesManaParam(CardSearchParameter):
 
     def query(self, query_context: QueryContext) -> Q:
 
-        prefix = (
-            "card__" if query_context.search_mode == CardSearchContext.PRINTING else ""
-        )
         if self.any_colour:
-            query = Q(**{f"{prefix}faces__rules_text__iregex": r"adds?\W"})
+            query = Q(card__faces__rules_text__iregex=r"adds?\W")
             return ~query if self.negated else query
 
         included_colours: List[Q] = []
@@ -177,10 +150,7 @@ class CardProducesManaParam(CardSearchParameter):
 
         for c in Colour.objects.all():
             query_part = Q(
-                **{
-                    f"{prefix}faces__search_metadata__produces_"
-                    + c.symbol.lower(): True
-                }
+                **{"card__faces__search_metadata__produces_" + c.symbol.lower(): True}
             )
             included = c in self.colours
 
@@ -220,9 +190,6 @@ class CardWatermarkParam(CardSearchParameter):
     """
     Parameter for whether a printing has a watermark or not
     """
-
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.PRINTING
 
     @classmethod
     def get_parameter_name(cls) -> str:

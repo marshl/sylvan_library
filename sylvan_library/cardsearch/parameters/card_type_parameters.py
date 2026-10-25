@@ -10,14 +10,14 @@ from sylvan_library.cards.models.card import (
     CardSubtype,
     CardSupertype,
     CardType,
+    CardFace,
     CardFacePrinting,
-    Card,
 )
 from sylvan_library.cardsearch.parameters.base_parameters import (
-    CardSearchContext,
     QueryContext,
     CardSearchParameter,
     ParameterArgs,
+    or_group_queries,
 )
 
 
@@ -25,9 +25,6 @@ class CardGenericTypeParam(CardSearchParameter):
     """
     Parameter for searching both types and subtypes
     """
-
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.CARD
 
     @classmethod
     def get_parameter_name(cls) -> str:
@@ -62,18 +59,16 @@ class CardGenericTypeParam(CardSearchParameter):
             subtypes = CardSubtype.objects.filter(name__icontains=self.value)
             supertypes = CardSupertype.objects.filter(name__icontains=self.value)
 
-        face_filter = (
-            Q(faces__types__in=types)
-            | Q(faces__subtypes__in=subtypes)
-            | Q(faces__supertypes__in=supertypes)
+        # A separate subquery for each kind of type is much faster than one subquery
+        # that joins all three
+        matching_faces = [
+            CardFace.objects.filter(types__in=types),
+            CardFace.objects.filter(subtypes__in=subtypes),
+            CardFace.objects.filter(supertypes__in=supertypes),
+        ]
+        result = or_group_queries(
+            [Q(card_id__in=faces.values("card_id")) for faces in matching_faces]
         )
-        if query_context.search_mode == CardSearchContext.CARD:
-            result = Q(
-                id__in=Card.objects.filter(face_filter).values_list("id", flat=True)
-            )
-        else:
-            result = Q(card__in=Card.objects.filter(face_filter))
-
         result.negated = self.negated
         return result
 
@@ -100,9 +95,6 @@ class CardOriginalTypeParam(CardSearchParameter):
     """
     A parameter for querying the original type line of a card
     """
-
-    def get_default_search_context(self) -> CardSearchContext:
-        return CardSearchContext.PRINTING
 
     @classmethod
     def get_parameter_name(cls) -> str:
