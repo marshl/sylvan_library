@@ -102,7 +102,7 @@ body {
   right: 10px;
   width: 0;
   height: 0;
-  border-top: 6px solid var(--colour-control-arrow);
+  border-top: 6px solid var(--colour-text-disabled);
   border-right: 6px solid transparent;
   border-left: 6px solid transparent;
   pointer-events: none;

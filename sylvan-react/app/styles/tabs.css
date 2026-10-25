@@ -1,5 +1,5 @@
 .tab-list {
-  border-bottom: 1px solid var(--colour-tab-border);
+  border-bottom: 1px solid var(--colour-border-strong);
   margin: 0 0 10px;
   padding: 0;
 }
@@ -30,7 +30,7 @@
 .tab-container .tab.selected {
   background-color: var(--colour-surface);
   color: var(--colour-text-soft);
-  border-color: var(--colour-tab-border);
+  border-color: var(--colour-border-strong);
   border-radius: 5px 5px 0 0;
 }
 

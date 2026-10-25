@@ -66,7 +66,7 @@
 }
 
 .search-result.owned {
-  border: solid var(--colour-owned) 1px;
+  border: solid var(--colour-border-strong) 1px;
   border-radius: 8px;
 }
 
@@ -253,7 +253,7 @@
 }
 
 .setIcon.owned {
-  border: solid var(--colour-owned) 1px;
+  border: solid var(--colour-border-strong) 1px;
 }
 
 .setIcon.clicked.R,

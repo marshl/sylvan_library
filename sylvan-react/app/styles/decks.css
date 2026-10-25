@@ -93,7 +93,7 @@
 .rich-text-editor {
   border: 1px solid var(--colour-border);
   border-radius: 3px;
-  background: var(--colour-field);
+  background: var(--colour-panel);
 }
 
 .rich-text-editor:focus-within {
@@ -124,7 +124,7 @@
 }
 
 .rich-text-button:hover:not(:disabled) {
-  background: var(--colour-field-hover);
+  background: var(--colour-surface-hover);
 }
 
 .rich-text-button.is-active {
