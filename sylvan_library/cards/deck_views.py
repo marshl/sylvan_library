@@ -41,7 +41,8 @@ class DeckViewSet(viewsets.ModelViewSet):
     """
     API endpoint for the current user's decks. The list can be filtered with:
     - q: text in the deck's name, subtitle or description
-    - card: part of the name of a card in the deck
+    - card: part of the name of a card in the deck, or its exact name if it starts
+      with "!", like the card search
     - deck_format: the deck's format
     - year_from and year_to: the years the deck was created between
     - prototypes: "exclude" (the default), "include" or "only"
@@ -69,11 +70,13 @@ class DeckViewSet(viewsets.ModelViewSet):
                 | Q(description__icontains=text)
             )
         if card := params.get("card", "").strip():
-            queryset = queryset.filter(
-                id__in=DeckCard.objects.filter(card__name__icontains=card).values(
-                    "deck_id"
+            if card.startswith("!"):
+                deck_cards = DeckCard.objects.filter(
+                    card__name__iexact=card[1:].strip()
                 )
-            )
+            else:
+                deck_cards = DeckCard.objects.filter(card__name__icontains=card)
+            queryset = queryset.filter(id__in=deck_cards.values("deck_id"))
         if deck_format := params.get("deck_format"):
             queryset = queryset.filter(format=deck_format)
         for param, lookup in (("year_from", "gte"), ("year_to", "lte")):

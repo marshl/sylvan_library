@@ -124,7 +124,13 @@ function DeckFilters({
         </div>
         <div className="field-container">
           <label htmlFor="deck-card">Contains card</label>
-          <CardNameInput id="deck-card" placeholder="Card name" value={card} onChange={setCard} />
+          <CardNameInput
+            id="deck-card"
+            placeholder="Card name, or !name for an exact match"
+            exactOnPick
+            value={card}
+            onChange={setCard}
+          />
         </div>
         <div className="field-container">
           <label htmlFor="deck-format">Format</label>

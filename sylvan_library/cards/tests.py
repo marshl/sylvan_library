@@ -291,6 +291,10 @@ class DeckListTestCase(TestCase):
     def test_card(self) -> None:
         self.assertEqual(self.deck_names(card="bolt"), ["Burn"])
 
+    def test_exact_card_name(self) -> None:
+        self.assertEqual(self.deck_names(card="!bolt"), [])
+        self.assertEqual(self.deck_names(card="!lightning bolt"), ["Burn"])
+
     def test_format(self) -> None:
         self.assertEqual(self.deck_names(deck_format="standard"), ["Elves"])
 
