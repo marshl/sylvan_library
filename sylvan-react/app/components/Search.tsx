@@ -9,17 +9,12 @@ export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
   const urlQuery = searchParams.get('query') ?? '';
   const urlPage = Number(searchParams.get('page') ?? '1') || 1;
-  const [query, setQuery] = useState(urlQuery);
   const submittedQuery = urlQuery;
   const page = urlPage;
   const [response, setResponse] = useState<SearchResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedCardId, setExpandedCardId] = useState<number | null>(null);
-
-  useEffect(() => {
-    setQuery(urlQuery);
-  }, [urlQuery]);
 
   useEffect(() => {
     if (!submittedQuery) {
@@ -52,16 +47,6 @@ export default function Search() {
     return () => controller.abort();
   }, [submittedQuery, page]);
 
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const trimmed = query.trim();
-    if (!trimmed) {
-      setSearchParams({});
-    } else {
-      setSearchParams({ query: trimmed });
-    }
-  }
-
   function setPage(nextPage: number) {
     const params: Record<string, string> = {};
     if (submittedQuery) params.query = submittedQuery;
@@ -76,17 +61,13 @@ export default function Search() {
 
   return (
     <div className="results-page">
-      <form className="search-form" onSubmit={onSubmit}>
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={(e) => e.currentTarget.select()}
-          placeholder="Search cards (e.g. lightning bolt)"
-          aria-label="Card search"
-        />
-        <button type="submit">Search</button>
-      </form>
+      {!submittedQuery && (
+        <div className="no-search-results">
+          <div className="no-search-results-content">
+            Search for a card using the search bar above
+          </div>
+        </div>
+      )}
 
       {error && <div className="error">Error: {error}</div>}
 
