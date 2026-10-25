@@ -172,6 +172,7 @@ class SearchApiTestCase(TestCase):
             numerical_number=int(number),
             is_starter=False,
             is_timeshifted=False,
+            is_reprint=card.printings.exists(),
         )
         for face in card.faces.all():
             CardFacePrinting.objects.create(
@@ -224,6 +225,20 @@ class SearchApiTestCase(TestCase):
 
     def test_artist(self) -> None:
         self.assertEqual(self.result_names("artist:rush"), ["Lightning Bolt"])
+
+    def test_negated_artist(self) -> None:
+        self.assertEqual(self.result_names("-artist:rush s:lea t:instant"), [])
+        self.assertEqual(
+            self.result_names("-artist:rush s:m10 t:instant"), ["Lightning Bolt"]
+        )
+
+    def test_reprint(self) -> None:
+        self.assertEqual(self.result_names("is:reprint s:lea"), [])
+        self.assertEqual(
+            self.result_names("is:reprint s:m10"),
+            ["Forest", "Goblin King", "Lightning Bolt", "Llanowar Elves"],
+        )
+        self.assertEqual(self.result_names("not:reprint s:mh2"), ["Fire // Ice"])
 
     def test_set_and_rarity_must_match_the_same_printing(self) -> None:
         """

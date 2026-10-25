@@ -101,7 +101,7 @@ class CardIsReprintParam(CardSearchBinaryParameter):
         return "reprint"
 
     def query(self, query_context: QueryContext) -> Q:
-        return Q(is_reprint=self.negated, _negated=self.negated)
+        return Q(is_reprint=True, _negated=self.negated)
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         return "the cards " + ("aren't" if self.negated else "are") + " a reprint"

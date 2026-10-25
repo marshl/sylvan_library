@@ -30,7 +30,7 @@ class CardArtistParam(CardSearchParameter):
         return ["artist", "art"]
 
     def query(self, query_context: QueryContext) -> Q:
-        return Q(face_printings__artist__icontains=self.value)
+        return Q(face_printings__artist__icontains=self.value, _negated=self.negated)
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         return "the artist name {0} {1}".format(
