@@ -29,11 +29,10 @@
   --colour-brand-raised: #34547f;
   --colour-brand-hover: #3d6496;
 
-  /* Brighter blues for links, selection and focus */
+  /* Brighter blues: accent for selected and highlighted things, link for link text, and
+     focus for keyboard focus */
   --colour-accent: #08c;
   --colour-link: #4aa3df;
-  --colour-card-link-hover: #0092d6;
-  --colour-card-link-underline: rgb(4, 137, 199);
   --colour-focus: hsl(208, 99%, 50%);
 
   --colour-danger: #8b2b2b;

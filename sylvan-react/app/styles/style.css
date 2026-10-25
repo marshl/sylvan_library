@@ -155,11 +155,11 @@ body {
   color: var(--colour-text-soft);
   transition: 0.3s;
   cursor: hand;
-  border-bottom: 1px solid var(--colour-card-link-underline);
+  border-bottom: 1px solid var(--colour-accent);
 }
 
 .card-link:hover {
-  background-color: var(--colour-card-link-hover);
+  background-color: var(--colour-accent);
   border-radius: 2px;
 }
 

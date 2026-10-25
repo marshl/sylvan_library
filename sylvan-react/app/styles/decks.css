@@ -223,7 +223,7 @@
   border: none;
   padding: 0;
   font: inherit;
-  color: var(--colour-accent);
+  color: var(--colour-link);
   cursor: pointer;
 }
 
