@@ -34,7 +34,7 @@ class CardNameSortParam(CardSortParam):
 
 class CardPowerSortParam(CardSortParam):
     """
-    THe sort parameter for a card's numerical power
+    THe sort parameter for a card's numerical power. Cards without a power go last.
     """
 
     @classmethod
@@ -46,7 +46,11 @@ class CardPowerSortParam(CardSortParam):
         return "sort by power"
 
     def get_sort_keys(self, query_context: QueryContext) -> List[SortKey]:
-        return [SortKey("card__faces__num_power")]
+        return [
+            SortKey(
+                "card__faces__num_power", filter=Q(card__faces__power__isnull=False)
+            )
+        ]
 
 
 class CardPriceSortParam(CardSortParam):

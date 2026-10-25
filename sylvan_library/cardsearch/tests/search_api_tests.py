@@ -414,6 +414,27 @@ class SearchApiTestCase(TestCase):
             ["Goblin King", "Llanowar Elves"],
         )
 
+    def test_sort_by_power(self) -> None:
+        self.elves.faces.update(power="1", num_power=1)
+        self.goblin_king.faces.update(power="2", num_power=2)
+        self.assertEqual(
+            self.result_names("order:power"),
+            [
+                "Llanowar Elves",
+                "Goblin King",
+                "Black Lotus",
+                "Fire // Ice",
+                "Forest",
+                "Lightning Bolt",
+            ],
+        )
+        self.assertEqual(
+            self.result_names("order<power")[:2], ["Goblin King", "Llanowar Elves"]
+        )
+
+    def test_sort_by_colour_weight(self) -> None:
+        self.assertEqual(len(self.result_names("sort:cw")), 6)
+
     def test_sort_by_rarity(self) -> None:
         self.assertEqual(
             self.result_names("sort:rarity -s:lea"),

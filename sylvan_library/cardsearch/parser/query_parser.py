@@ -70,6 +70,7 @@ from sylvan_library.cardsearch.parameters.card_type_parameters import (
 )
 from sylvan_library.cardsearch.parameters.sort_parameters import (
     CardColourSortParam,
+    CardColourWeightSortParam,
     CardCollectorNumSortParam,
     CardManaValueSortParam,
     CardNameSortParam,
@@ -90,6 +91,7 @@ SEARCH_PARAMETERS: List[Type[CardSearchParameter]] = [
     CardCollectorNumberParam,
     CardColourCountParam,
     CardColourSortParam,
+    CardColourWeightSortParam,
     CardComplexColourParam,
     CardDateParam,
     CardDeckParam,
