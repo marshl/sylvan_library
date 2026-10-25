@@ -12,7 +12,7 @@ from functools import reduce
 from typing import List, Union, Dict, Optional
 
 from django.contrib.auth import get_user_model
-from django.db.models import F, OrderBy, QuerySet
+from django.db.models import Expression, F
 from django.db.models.query import Q
 
 logger = logging.getLogger("django")
@@ -101,6 +101,20 @@ class QueryValidationError(Exception):
 class QueryContext:
     user: Optional[get_user_model()] = None
     search_mode: Optional[CardSearchContext] = CardSearchContext.CARD
+
+
+@dataclasses.dataclass
+class SortKey:
+    """
+    Something to sort search results by, relative to CardPrinting. When a result has more
+    than one value for it (such as a card with several printings, or several faces), the
+    lowest is used, or the highest when sorting in descending order.
+    """
+
+    expression: Union[str, Expression]
+    descending: bool = False
+    # Only rows matching this filter count towards the value
+    filter: Optional[Q] = None
 
 
 class CardSearchTreeNode(ABC):
@@ -209,34 +223,12 @@ class CardSortParam(CardSearchParameter, metaclass=ABCMeta):
     def query(self, query_context: QueryContext) -> Q:
         return Q()
 
-    def get_sort_list(self, search_context: CardSearchContext) -> List[OrderBy]:
-        """
-        Gets the sort list taking order into account
-        :return:
-        """
-        sort_keys = self.get_sort_keys(search_context)
-
-        return [
-            OrderBy(
-                F(key.strip("-")),
-                descending=bool(self.negated) != bool(key.startswith("-")),
-                nulls_last=True,
-            )
-            for key in sort_keys
-        ]
-
     @abstractmethod
-    def get_sort_keys(self, search_context: CardSearchContext) -> List[str]:
+    def get_sort_keys(self, query_context: QueryContext) -> List["SortKey"]:
         """
-        Gets the list of attributes to be sorted by
-        :return:
+        What to sort by, in order
         """
         raise NotImplementedError()
-
-    def annotate_queryset(
-        self, queryset: QuerySet, search_context: CardSearchContext
-    ) -> QuerySet:
-        return queryset
 
 
 class CardSearchBranchNode(CardSearchTreeNode, ABC):

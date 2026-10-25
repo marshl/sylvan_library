@@ -179,7 +179,7 @@ class CardLegalityParam(CardSearchParameter):
             format=self.card_format,
             restriction__iexact=self.restriction,
         )
-        query = Q(card__legalities__in=legality_query)
+        query = Q(card_id__in=legality_query.values("card_id"))
         return ~query if self.negated else query
 
     def get_pretty_str(self, query_context: QueryContext) -> str:

@@ -4,13 +4,14 @@ The module for all search parameters
 
 from typing import List
 
-from django.db.models import F, QuerySet
-from django.db.models.functions import Coalesce
+from django.db.models import F, Q
+from django.db.models.functions import Coalesce, Random
 
 from sylvan_library.cardsearch.parameters.base_parameters import (
-    CardSortParam,
     CardSearchContext,
-    # SearchMode,
+    CardSortParam,
+    QueryContext,
+    SortKey,
 )
 
 
@@ -27,14 +28,8 @@ class CardNameSortParam(CardSortParam):
     def get_parameter_name(cls) -> str:
         return "sort by name"
 
-    def get_sort_keys(self, search_context: CardSearchContext) -> list:
-        """
-        Gets the list of attributes to be sorted by
-        """
-        if search_context == CardSearchContext.CARD:
-            return ["name"]
-
-        return ["card__name"]
+    def get_sort_keys(self, query_context: QueryContext) -> List[SortKey]:
+        return [SortKey("card__name")]
 
 
 class CardPowerSortParam(CardSortParam):
@@ -50,18 +45,14 @@ class CardPowerSortParam(CardSortParam):
     def get_parameter_name(cls) -> str:
         return "sort by power"
 
-    def get_sort_keys(self, search_context: CardSearchContext) -> list:
-        """
-        Gets the list of attributes to be sorted by
-        """
-        if search_context == CardSearchContext.CARD:
-            return ["faces__num_power"]
-        return ["card__faces__num_power"]
+    def get_sort_keys(self, query_context: QueryContext) -> List[SortKey]:
+        return [SortKey("card__faces__num_power")]
 
 
 class CardPriceSortParam(CardSortParam):
     """
-    THe sort parameter for a card's latest price
+    The sort parameter for price: the cheapest printing of each card, or each printing's
+    latest price
     """
 
     @classmethod
@@ -72,13 +63,10 @@ class CardPriceSortParam(CardSortParam):
     def get_parameter_name(cls) -> str:
         return "sort by price"
 
-    def get_sort_keys(self, search_context: CardSearchContext) -> list:
-        """
-        Gets the list of attributes to be sorted by
-        """
-        if search_context == CardSearchContext.CARD:
-            return ["cheapest_price__paper_value"]
-        return ["latest_price__paper_value"]
+    def get_sort_keys(self, query_context: QueryContext) -> List[SortKey]:
+        if query_context.search_mode == CardSearchContext.CARD:
+            return [SortKey("card__cheapest_price__paper_value")]
+        return [SortKey("latest_price__paper_value")]
 
 
 class CardManaValueSortParam(CardSortParam):
@@ -94,13 +82,8 @@ class CardManaValueSortParam(CardSortParam):
     def get_parameter_name(cls) -> str:
         return "sort by mana value"
 
-    def get_sort_keys(self, search_context: CardSearchContext) -> list:
-        """
-        Gets the list of attributes to be sorted by
-        """
-        if search_context == CardSearchContext.CARD:
-            return ["mana_value"]
-        return ["card__mana_value"]
+    def get_sort_keys(self, query_context: QueryContext) -> List[SortKey]:
+        return [SortKey("card__mana_value")]
 
 
 class CardCollectorNumSortParam(CardSortParam):
@@ -116,10 +99,8 @@ class CardCollectorNumSortParam(CardSortParam):
     def get_parameter_name(cls) -> str:
         return "sort by number"
 
-    def get_sort_keys(self, search_context: CardSearchContext) -> list:
-        if search_context == CardSearchContext.CARD:
-            return ["printings__numerical_number", "printings__number"]
-        return ["numerical_number", "number"]
+    def get_sort_keys(self, query_context: QueryContext) -> List[SortKey]:
+        return [SortKey("numerical_number"), SortKey("number")]
 
 
 class CardColourSortParam(CardSortParam):
@@ -135,10 +116,8 @@ class CardColourSortParam(CardSortParam):
     def get_parameter_name(cls) -> str:
         return "sort by colour"
 
-    def get_sort_keys(self, search_context: CardSearchContext) -> List[str]:
-        if search_context == CardSearchContext.CARD:
-            return ["faces__colour_sort_key"]
-        return ["card__faces__colour_sort_key"]
+    def get_sort_keys(self, query_context: QueryContext) -> List[SortKey]:
+        return [SortKey("card__faces__colour_sort_key")]
 
 
 class CardRaritySortParam(CardSortParam):
@@ -154,16 +133,13 @@ class CardRaritySortParam(CardSortParam):
     def get_parameter_name(cls) -> str:
         return "sort by rarity"
 
-    def get_sort_keys(self, search_context: CardSearchContext) -> List[str]:
-        if search_context == CardSearchContext.CARD:
-            return ["-printings__rarity__display_order"]
-        return ["-rarity__display_order"]
+    def get_sort_keys(self, query_context: QueryContext) -> List[SortKey]:
+        return [SortKey("rarity__display_order", descending=True)]
 
 
 class CardRandomSortParam(CardSortParam):
     """
     A "sort" parameter to order the results randomly
-    This overrides get_sort_list() instead of get_sort_keys() as the "?" sort is not a column
     """
 
     @classmethod
@@ -174,11 +150,8 @@ class CardRandomSortParam(CardSortParam):
     def get_parameter_name(cls) -> str:
         return "sort randomly"
 
-    def get_sort_list(self, search_context: CardSearchContext) -> List[str]:
-        return ["?"]
-
-    def get_sort_keys(self, search_context: CardSearchContext) -> List[str]:
-        return ["?"]
+    def get_sort_keys(self, query_context: QueryContext) -> List[SortKey]:
+        return [SortKey(Random())]
 
 
 class CardColourWeightSortParam(CardSortParam):
@@ -194,17 +167,11 @@ class CardColourWeightSortParam(CardSortParam):
     def get_parameter_name(cls) -> str:
         return "sort by colour weight"
 
-    def get_sort_keys(self, search_context: CardSearchContext) -> list:
-        if search_context == CardSearchContext.CARD:
-            return [
-                "mana_value",
-                "faces__colour_sort_key",
-                "faces__colour_weight",
-            ]
+    def get_sort_keys(self, query_context: QueryContext) -> List[SortKey]:
         return [
-            "card__mana_value",
-            "card__faces__colour_sort_key",
-            "card__faces__colour_weight",
+            SortKey("card__mana_value"),
+            SortKey("card__faces__colour_sort_key"),
+            SortKey("card__faces__colour_weight"),
         ]
 
 
@@ -217,22 +184,8 @@ class CardReleaseDateSortParam(CardSortParam):
     def get_parameter_name(cls) -> str:
         return "sort by release date"
 
-    def annotate_queryset(
-        self, queryset: QuerySet, search_context: CardSearchContext
-    ) -> QuerySet:
-        if search_context == CardSearchContext.CARD:
-            return queryset.annotate(
-                effective_date=Coalesce(
-                    F("printings__original_release_date"),
-                    F("printings__set__release_date"),
-                )
-            )
-        return queryset.annotate(
-            effective_date=Coalesce(F("original_release_date"), F("set__release_date"))
-        )
-
-    def get_sort_keys(self, search_context: CardSearchContext) -> List[str]:
-        return ["effective_date"]
+    def get_sort_keys(self, query_context: QueryContext) -> List[SortKey]:
+        return [SortKey(Coalesce(F("original_release_date"), F("set__release_date")))]
 
 
 class CardSuperKeySortParam(CardSortParam):
@@ -244,10 +197,8 @@ class CardSuperKeySortParam(CardSortParam):
     def get_parameter_name(cls) -> str:
         return "sort by super key"
 
-    def get_sort_keys(self, search_context: CardSearchContext) -> List[str]:
-        if search_context == CardSearchContext.CARD:
-            return ["search_metadata__super_sort_key"]
-        return ["card__search_metadata__super_sort_key"]
+    def get_sort_keys(self, query_context: QueryContext) -> List[SortKey]:
+        return [SortKey("card__search_metadata__super_sort_key")]
 
 
 class CardOwnershipSortParam(CardSortParam):
@@ -259,7 +210,10 @@ class CardOwnershipSortParam(CardSortParam):
     def get_parameter_name(cls) -> str:
         return "sort by date first owned"
 
-    def get_sort_keys(self, search_context: CardSearchContext) -> List[str]:
-        if search_context == CardSearchContext.CARD:
-            return ["printings__localisations__user_changes__date"]
-        return ["card__printings__localisations__user_changes__date"]
+    def get_sort_keys(self, query_context: QueryContext) -> List[SortKey]:
+        return [
+            SortKey(
+                "localisations__user_changes__date",
+                filter=Q(localisations__user_changes__owner=query_context.user),
+            )
+        ]

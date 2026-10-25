@@ -4,7 +4,6 @@ back rather than how the search is put together
 """
 
 import datetime
-import unittest
 import uuid
 from typing import List, Optional
 
@@ -316,15 +315,37 @@ class SearchApiTestCase(TestCase):
         self.assertEqual(len(self.result_names("game:paper")), 6)
         self.assertEqual(self.result_names("game:online"), [])
 
-    @unittest.expectedFailure
     def test_sorting_by_a_printing_field_does_not_repeat_cards(self) -> None:
-        """
-        Sorting cards by a printing field gives one row per distinct value, so cards
-        with printings from several dates appear more than once
-        """
         response = self.search("t:creature sort:date")
         self.assertEqual(response["count"], 2)
         self.assertEqual(
-            sorted(r["card"]["name"] for r in response["results"]),
+            [r["card"]["name"] for r in response["results"]],
             ["Goblin King", "Llanowar Elves"],
+        )
+
+    def test_sort_by_rarity(self) -> None:
+        self.assertEqual(
+            self.result_names("sort:rarity -s:lea"),
+            [
+                "Fire // Ice",
+                "Goblin King",
+                "Forest",
+                "Lightning Bolt",
+                "Llanowar Elves",
+            ],
+        )
+
+    def test_sort_by_a_printing_field_only_uses_matching_printings(self) -> None:
+        """
+        Lightning Bolt's newest printing is the promo, which doesn't match
+        """
+        self.assertEqual(
+            self.result_names("(s:m10 or s:mh2) sort<date"),
+            [
+                "Fire // Ice",
+                "Forest",
+                "Goblin King",
+                "Lightning Bolt",
+                "Llanowar Elves",
+            ],
         )

@@ -2,12 +2,22 @@
 Running a card search from a query string
 """
 
+import copy
 import dataclasses
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from django.contrib.auth.models import AbstractBaseUser
 from django.core.paginator import EmptyPage, Paginator
-from django.db.models import QuerySet, prefetch_related_objects
+from django.db.models import (
+    Expression,
+    F,
+    Max,
+    Min,
+    OrderBy,
+    Q,
+    QuerySet,
+    prefetch_related_objects,
+)
 
 from sylvan_library.cards.models.card import Card, CardPrinting
 from sylvan_library.cards.models.sets import Set
@@ -20,6 +30,7 @@ from sylvan_library.cardsearch.parameters.base_parameters import (
     ParameterArgs,
     QueryContext,
     QueryValidationError,
+    SortKey,
 )
 from sylvan_library.cardsearch.parameters.card_set_parameters import CardSetParam
 from sylvan_library.cardsearch.parameters.sort_parameters import (
@@ -89,42 +100,94 @@ def get_preferred_set(root: CardSearchTreeNode) -> Optional[Set]:
     return None
 
 
+def is_single_valued(path: str) -> bool:
+    """
+    Whether a field path from CardPrinting leads to only one value for each printing
+    """
+    model = CardPrinting
+    for name in path.split("__"):
+        field = model._meta.get_field(name)
+        if field.one_to_many or field.many_to_many:
+            return False
+        if not field.is_relation:
+            break
+        model = field.related_model
+    return True
+
+
+def with_prefix(expression: Union[str, Expression, Q], prefix: str):
+    """
+    A copy of a field path, expression or Q object, with every field path in it prefixed
+    """
+    if isinstance(expression, str):
+        return prefix + expression
+    if isinstance(expression, F):
+        return F(prefix + expression.name)
+    if isinstance(expression, Q):
+        clone = copy.copy(expression)
+        clone.children = [
+            (
+                with_prefix(child, prefix)
+                if isinstance(child, Q)
+                else (prefix + child[0], child[1])
+            )
+            for child in expression.children
+        ]
+        return clone
+    clone = expression.copy()
+    clone.set_source_expressions(
+        [with_prefix(e, prefix) for e in expression.get_source_expressions()]
+    )
+    return clone
+
+
+def card_sort_value(key: SortKey, descending: bool, matching_printings: QuerySet):
+    """
+    The value to sort each card by for a sort key. Card fields are used as they are, and
+    anything else is summarised over the card's matching printings.
+    """
+    expression = key.expression
+    if isinstance(expression, str):
+        if (
+            expression.startswith("card__")
+            and key.filter is None
+            and is_single_valued(expression)
+        ):
+            return F(expression.removeprefix("card__"))
+    elif not any(isinstance(part, F) for part in expression.flatten()):
+        # Doesn't depend on any field, like a random sort
+        return expression
+
+    printing_filter = Q(printings__in=matching_printings)
+    if key.filter is not None:
+        printing_filter &= with_prefix(key.filter, "printings__")
+    aggregate = Max if descending else Min
+    return aggregate(with_prefix(expression, "printings__"), filter=printing_filter)
+
+
 def build_queryset(root: CardSearchTreeNode, query_context: QueryContext) -> QuerySet:
     """
     The sorted queryset of cards with at least one printing that matches the parameter
     tree
     """
-    query = root.query(query_context)
+    printings = CardPrinting.objects.filter(root.query(query_context))
+    queryset = Card.objects.filter(id__in=printings.values("card_id"))
+
     sort_params: List[CardSortParam] = root.get_sort_parameters() + [
         CardNameSortParam(ParameterArgs(keyword="sort", operator=":", value="name"))
     ]
-
-    distinct_fields = [
-        key.strip("-")
-        for sort_param in sort_params
-        for key in sort_param.get_sort_keys(CardSearchContext.CARD)
-    ]
-    if "name" in distinct_fields:
-        distinct_fields.append("scryfall_oracle_id")
-
-    printings = CardPrinting.objects.filter(query)
-    queryset = Card.objects.filter(id__in=printings.values("card_id"))
-
-    if "?" not in distinct_fields:
-        queryset = queryset.distinct(*distinct_fields)
-
+    ordering = []
     for sort_param in sort_params:
-        queryset = sort_param.annotate_queryset(
-            queryset, search_context=CardSearchContext.CARD
-        )
-
-    return queryset.order_by(
-        *[
-            order
-            for sort_param in sort_params
-            for order in sort_param.get_sort_list(CardSearchContext.CARD)
-        ]
-    )
+        for key in sort_param.get_sort_keys(query_context):
+            descending = key.descending != sort_param.negated
+            alias = f"sort_value_{len(ordering)}"
+            queryset = queryset.alias(
+                **{alias: card_sort_value(key, descending, printings)}
+            )
+            ordering.append(OrderBy(F(alias), descending=descending, nulls_last=True))
+    # Cards can share a name, so this keeps the order the same from one page to the next
+    ordering.append(F("scryfall_oracle_id").asc())
+    return queryset.order_by(*ordering)
 
 
 def run_search(
