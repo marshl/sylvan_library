@@ -369,6 +369,14 @@ class SearchApiTestCase(TestCase):
         self.assertEqual(self.result_printings("price<1"), ["Lightning Bolt M10"])
         self.assertEqual(
             self.result_printings("bolt sort:price"),
+            ["Lightning Bolt LEA", "Lightning Bolt PRM", "Lightning Bolt M10"],
+        )
+        self.assertEqual(
+            self.result_printings("bolt -sort:price"),
+            ["Lightning Bolt M10", "Lightning Bolt PRM", "Lightning Bolt LEA"],
+        )
+        self.assertEqual(
+            self.result_printings("bolt sort<price"),
             ["Lightning Bolt M10", "Lightning Bolt PRM", "Lightning Bolt LEA"],
         )
 

@@ -56,7 +56,7 @@ class CardPowerSortParam(CardSortParam):
 class CardPriceSortParam(CardSortParam):
     """
     The sort parameter for price: the cheapest printing of each card, or each printing's
-    latest price
+    latest price. Most expensive first, unless it's reversed.
     """
 
     @classmethod
@@ -69,8 +69,8 @@ class CardPriceSortParam(CardSortParam):
 
     def get_sort_keys(self, query_context: QueryContext) -> List[SortKey]:
         if query_context.search_mode == CardSearchContext.CARD:
-            return [SortKey("card__cheapest_price__paper_value")]
-        return [SortKey("latest_price__paper_value")]
+            return [SortKey("card__cheapest_price__paper_value", descending=True)]
+        return [SortKey("latest_price__paper_value", descending=True)]
 
 
 class CardManaValueSortParam(CardSortParam):
