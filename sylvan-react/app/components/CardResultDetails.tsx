@@ -508,6 +508,13 @@ export default function CardResultDetails({
 }) {
   const { user } = useCurrentUser();
   const [tab, setTab] = useState<TabKey>(loadSelectedTab);
+  // Every result is on the page from the start, so expanding one picks up the tab
+  // last chosen on any of the others
+  const [wasExpanded, setWasExpanded] = useState(expanded);
+  if (expanded !== wasExpanded) {
+    setWasExpanded(expanded);
+    if (expanded) setTab(loadSelectedTab());
+  }
   const tabs = TABS.filter((t) => !t.loginRequired || user?.is_authenticated);
   const activeTab = tabs.some((t) => t.key === tab) ? tab : 'details';
 
