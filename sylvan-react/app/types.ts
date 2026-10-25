@@ -103,6 +103,8 @@ export interface DeckCard {
   image_url: string;
   // Only for cards with an image for each side, like transforming cards
   back_image_url: string | null;
+  // Whether the front is printed sideways, like split cards and battles
+  sideways: boolean;
 }
 
 export type BoardKey = 'main' | 'side' | 'maybe' | 'acquire';

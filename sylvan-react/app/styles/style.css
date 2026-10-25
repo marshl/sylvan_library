@@ -194,9 +194,6 @@ body {
 }
 
 .image-popup-container {
-  padding: 2px;
-  background: white;
-  border-radius: 3px;
   position: absolute;
   display: block;
   pointer-events: none;
@@ -204,6 +201,12 @@ body {
   z-index: 1000;
 }
 
-.image-popup-container img {
+.popup-card {
+  padding: 2px;
+  background: white;
+  border-radius: 3px;
+}
+
+.popup-card img {
   width: 256px;
 }

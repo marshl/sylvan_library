@@ -12,7 +12,7 @@ from rest_framework.fields import SerializerMethodField
 from rest_framework.settings import api_settings
 
 from sylvan_library.cards.deck_text import BOARDS, get_board_text, get_deck_cards
-from sylvan_library.cards.models.card import CardPrinting
+from sylvan_library.cards.models.card import Card, CardPrinting
 from sylvan_library.cards.models.colour import Colour
 from sylvan_library.cards.models.decks import Deck, DeckCard
 from sylvan_library.cards.serializers import (
@@ -35,6 +35,18 @@ def owner_preferred_printing(deck_card: DeckCard) -> Optional[CardPrinting]:
         .last()
     )
     return owned or deck_card.card.printings.order_by("set__release_date").last()
+
+
+def card_is_sideways(card: Card) -> bool:
+    """
+    Whether the front of a card is printed sideways: split cards (including rooms),
+    planes, phenomena and battles. Aftermath and flip cards are only partly turned, so
+    they count as upright.
+    """
+    if card.layout in ("split", "planar"):
+        return True
+    front = card.faces.order_by("side").first()
+    return front is not None and front.types.filter(name="Battle").exists()
 
 
 def deck_card_icon(deck_card: DeckCard) -> Optional[str]:
@@ -65,6 +77,7 @@ class DeckCardSerializer(serializers.ModelSerializer):
     icon = SerializerMethodField()
     image_url = SerializerMethodField()
     back_image_url = SerializerMethodField()
+    sideways = SerializerMethodField()
 
     class Meta:
         model = DeckCard
@@ -80,6 +93,7 @@ class DeckCardSerializer(serializers.ModelSerializer):
             "icon",
             "image_url",
             "back_image_url",
+            "sideways",
         )
 
     def get_side(self, obj: DeckCard) -> Optional[str]:
@@ -103,6 +117,9 @@ class DeckCardSerializer(serializers.ModelSerializer):
 
     def get_back_image_url(self, obj: DeckCard) -> Optional[str]:
         return printing_back_image_url(self.preferred_printing(obj))
+
+    def get_sideways(self, obj: DeckCard) -> bool:
+        return card_is_sideways(obj.card)
 
 
 class DeckListSerializer(serializers.ModelSerializer):

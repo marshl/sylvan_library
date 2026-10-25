@@ -10,11 +10,13 @@ from django.test import TestCase
 
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
+from sylvan_library.cards.deck_serializers import card_is_sideways
 from sylvan_library.cards.models.card import (
     Card,
     CardFace,
     CardPrinting,
     CardLocalisation,
+    CardType,
 )
 from sylvan_library.cards.models.decks import Deck, DeckCard
 from sylvan_library.cards.models.language import Language
@@ -322,3 +324,34 @@ class DeckListTestCase(TestCase):
                 {"value": "modern", "label": "Modern", "count": 1},
             ],
         )
+
+
+class CardIsSidewaysTestCase(TestCase):
+    """
+    Tests for which cards are printed sideways
+    """
+
+    def test_layouts(self) -> None:
+        for layout, sideways in (
+            ("normal", False),
+            ("split", True),
+            ("planar", True),
+            ("aftermath", False),
+            ("flip", False),
+        ):
+            card = create_test_card({"layout": layout})
+            create_test_card_face(card, {"side": "a"})
+            self.assertEqual(card_is_sideways(card), sideways, layout)
+
+    def test_battle_front(self) -> None:
+        battle = CardType.objects.create(name="Battle")
+        creature = CardType.objects.create(name="Creature")
+        card = create_test_card({"layout": "transform"})
+        create_test_card_face(card, {"side": "a"}).types.add(battle)
+        create_test_card_face(card, {"side": "b"}).types.add(creature)
+        self.assertTrue(card_is_sideways(card))
+
+        werewolf = create_test_card({"layout": "transform"})
+        create_test_card_face(werewolf, {"side": "a"}).types.add(creature)
+        create_test_card_face(werewolf, {"side": "b"}).types.add(creature)
+        self.assertFalse(card_is_sideways(werewolf))

@@ -13,6 +13,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from sylvan_library.cards.deck_serializers import (
+    card_is_sideways,
     DeckDetailSerializer,
     DeckListSerializer,
     DeckWriteSerializer,
@@ -211,6 +212,7 @@ def _stats_card(entry: dict) -> dict:
         "name": entry["card"].name,
         "image_url": printing_image_url(entry["preferred_printing"]),
         "back_image_url": printing_back_image_url(entry["preferred_printing"]),
+        "sideways": card_is_sideways(entry["card"]),
     }
 
 

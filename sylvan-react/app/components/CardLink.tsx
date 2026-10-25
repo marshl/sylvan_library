@@ -1,34 +1,58 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router';
 
-// One card image and its border
-const POPUP_WIDTH = 260;
-const POPUP_HEIGHT = 362;
+// Card images are shown 256px wide, and are 488x680 at full size
+const IMAGE_WIDTH = 256;
+const IMAGE_HEIGHT = Math.round((IMAGE_WIDTH * 680) / 488);
+// The white border around each image
+const FRAME = 2;
 const BACK_GAP = 4;
 
-function rotation(layout?: string, side?: string | null): number {
-  if (layout === 'aftermath' && side === 'b') return -90;
-  if (layout === 'flip' && side === 'b') return 180;
-  return 0;
+/**
+ * One card image in its white border. Sideways cards are turned to read across.
+ */
+function PopupCard({ src, alt, sideways }: { src: string; alt: string; sideways: boolean }) {
+  if (!sideways) {
+    return (
+      <div className="popup-card">
+        <img src={src} alt={alt} />
+      </div>
+    );
+  }
+  return (
+    <div className="popup-card">
+      <div style={{ position: 'relative', width: IMAGE_HEIGHT, height: IMAGE_WIDTH }}>
+        <img
+          src={src}
+          alt={alt}
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%) rotate(90deg)',
+          }}
+        />
+      </div>
+    </div>
+  );
 }
 
 /**
  * A card name that links to a search for the card and shows its image on hover. Two
- * faced cards show the front and back side by side.
+ * faced cards show the front and back side by side, and sideways cards (split cards,
+ * battles etc.) are turned to read across. Only the front of a card can be sideways.
  */
 export default function CardLink({
   name,
   imageUrl,
   backImageUrl,
-  layout,
-  side,
+  sideways = false,
   newTab = false,
 }: {
   name: string;
   imageUrl: string;
   backImageUrl?: string | null;
-  layout?: string;
-  side?: string | null;
+  sideways?: boolean;
   newTab?: boolean;
 }) {
   const [popup, setPopup] = useState<{ top: number; left: number } | null>(null);
@@ -37,7 +61,10 @@ export default function CardLink({
     const rect = e.currentTarget.getBoundingClientRect();
     const offset = 20;
     const margin = 8;
-    const width = backImageUrl ? POPUP_WIDTH * 2 + BACK_GAP : POPUP_WIDTH;
+    const upright = { width: IMAGE_WIDTH + FRAME * 2, height: IMAGE_HEIGHT + FRAME * 2 };
+    const front = sideways ? { width: upright.height, height: upright.width } : upright;
+    const width = backImageUrl ? front.width + BACK_GAP + upright.width : front.width;
+    const height = backImageUrl ? upright.height : front.height;
     const fitsRight = rect.right + offset + width <= window.innerWidth - margin;
     const fitsLeft = rect.left - offset - width >= margin;
     if (fitsRight || fitsLeft) {
@@ -46,10 +73,7 @@ export default function CardLink({
         left: fitsRight ? rect.right + offset : rect.left - offset - width,
         top: Math.max(
           margin,
-          Math.min(
-            rect.top + rect.height / 2 - POPUP_HEIGHT / 2,
-            window.innerHeight - POPUP_HEIGHT - margin,
-          ),
+          Math.min(rect.top + rect.height / 2 - height / 2, window.innerHeight - height - margin),
         ),
       });
       return;
@@ -60,8 +84,8 @@ export default function CardLink({
     setPopup({
       left: Math.max(margin, Math.min(rect.left, window.innerWidth - width - margin)),
       top: below
-        ? Math.min(rect.bottom + margin, window.innerHeight - POPUP_HEIGHT - margin)
-        : Math.max(rect.top - margin - POPUP_HEIGHT, margin),
+        ? Math.min(rect.bottom + margin, window.innerHeight - height - margin)
+        : Math.max(rect.top - margin - height, margin),
     });
   }
 
@@ -84,12 +108,16 @@ export default function CardLink({
             top: popup.top,
             left: popup.left,
             display: 'flex',
+            alignItems: 'center',
             gap: BACK_GAP,
-            transform: `rotate(${rotation(layout, side)}deg)`,
           }}
         >
-          <img src={imageUrl} alt={backImageUrl ? `${name} (front)` : name} />
-          {backImageUrl && <img src={backImageUrl} alt={`${name} (back)`} />}
+          <PopupCard
+            src={imageUrl}
+            alt={backImageUrl ? `${name} (front)` : name}
+            sideways={sideways}
+          />
+          {backImageUrl && <PopupCard src={backImageUrl} alt={`${name} (back)`} sideways={false} />}
         </div>
       )}
     </span>

@@ -14,8 +14,7 @@ function DeckCardRow({ deckCard }: { deckCard: DeckCard }) {
         name={deckCard.card_name}
         imageUrl={deckCard.image_url}
         backImageUrl={deckCard.back_image_url}
-        layout={deckCard.layout}
-        side={deckCard.side}
+        sideways={deckCard.sideways}
         newTab
       />
       {deckCard.icon && (
