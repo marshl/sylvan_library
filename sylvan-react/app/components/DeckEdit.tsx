@@ -4,6 +4,7 @@ import { ApiError, fetchJson } from '../api';
 import { descriptionHtml } from '../html';
 import type { BoardKey, DeckDetail } from '../types';
 import { useApi } from '../useApi';
+import CardNameInput from './CardNameInput';
 import RichTextEditor from './RichTextEditor';
 
 interface DeckOptions {
@@ -79,55 +80,6 @@ function errorMessages(err: unknown): string[] {
         : `${label.charAt(0).toUpperCase()}${label.slice(1)}: `;
     return list.map((m) => `${prefix}${typeof m === 'string' ? m : JSON.stringify(m)}`);
   });
-}
-
-function CardNameInput({
-  value,
-  onChange,
-  inputRef,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  inputRef: React.RefObject<HTMLInputElement | null>;
-}) {
-  const [names, setNames] = useState<string[]>([]);
-
-  useEffect(() => {
-    if (value.trim().length < 2) {
-      setNames([]);
-      return;
-    }
-    const controller = new AbortController();
-    const timer = setTimeout(() => {
-      fetchJson<string[]>(`/api/cards/card-names/?${new URLSearchParams({ q: value })}`, {
-        signal: controller.signal,
-      })
-        .then(setNames)
-        .catch(() => {});
-    }, 150);
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [value]);
-
-  return (
-    <>
-      <input
-        id="card-input"
-        ref={inputRef}
-        list="card-name-options"
-        autoComplete="off"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      />
-      <datalist id="card-name-options">
-        {names.map((name) => (
-          <option key={name} value={name} />
-        ))}
-      </datalist>
-    </>
-  );
 }
 
 /**
@@ -330,7 +282,12 @@ function DeckForm({ deckId, initial }: { deckId: number | null; initial: DeckFor
             <div className="row">
               <div className="field-container">
                 <label htmlFor="card-input">Card</label>
-                <CardNameInput value={cardName} onChange={setCardName} inputRef={cardInput} />
+                <CardNameInput
+                  id="card-input"
+                  value={cardName}
+                  onChange={setCardName}
+                  inputRef={cardInput}
+                />
               </div>
             </div>
             <div className="row">
