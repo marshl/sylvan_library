@@ -8,6 +8,7 @@ interface StatsCard {
   card_id: number;
   name: string;
   image_url: string;
+  back_image_url: string | null;
 }
 
 interface DeckStatsPayload {
@@ -24,7 +25,7 @@ function CardList({ cards }: { cards: StatsCard[] }) {
     <ul>
       {cards.map((card) => (
         <li key={card.card_id}>
-          <CardLink name={card.name} imageUrl={card.image_url} />
+          <CardLink name={card.name} imageUrl={card.image_url} backImageUrl={card.back_image_url} />
         </li>
       ))}
     </ul>
@@ -37,8 +38,17 @@ function PairList({ pairs }: { pairs: [StatsCard, StatsCard][] }) {
     <ul>
       {pairs.map(([first, second]) => (
         <li key={`${first.card_id}-${second.card_id}`}>
-          <CardLink name={first.name} imageUrl={first.image_url} /> //{' '}
-          <CardLink name={second.name} imageUrl={second.image_url} />
+          <CardLink
+            name={first.name}
+            imageUrl={first.image_url}
+            backImageUrl={first.back_image_url}
+          />{' '}
+          //{' '}
+          <CardLink
+            name={second.name}
+            imageUrl={second.image_url}
+            backImageUrl={second.back_image_url}
+          />
         </li>
       ))}
     </ul>

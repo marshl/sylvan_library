@@ -70,10 +70,33 @@ def printing_image_url(printing: CardPrinting | None) -> str:
     """
     Gets the image URL of the front face of a printing
     """
-    face_printing = printing.face_printings.first() if printing else None
+    face_printing = (
+        printing.face_printings.order_by("card_face__side").first()
+        if printing
+        else None
+    )
     if not face_printing:
         return settings.STATIC_URL + "card_back.jpg"
     return face_printing_image_url(face_printing)
+
+
+def printing_back_image_url(printing: CardPrinting | None) -> str | None:
+    """
+    Gets the image URL of the back face of a two-faced printing (transform, modal double
+    faced etc.), or None if all its faces are on one image (split, adventure etc.) or
+    there's no image file for the back
+    """
+    if not printing:
+        return None
+    face_printings = list(printing.face_printings.order_by("card_face__side"))
+    if len(face_printings) < 2:
+        return None
+    front = face_printing_image_url(face_printings[0])
+    for face_printing in face_printings[1:]:
+        url = face_printing_image_url(face_printing)
+        if url != front and url != settings.STATIC_URL + "card_back.jpg":
+            return url
+    return None
 
 
 class CardFacePrintingSerializer(serializers.ModelSerializer):

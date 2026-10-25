@@ -15,7 +15,10 @@ from sylvan_library.cards.deck_text import BOARDS, get_board_text, get_deck_card
 from sylvan_library.cards.models.card import CardPrinting
 from sylvan_library.cards.models.colour import Colour
 from sylvan_library.cards.models.decks import Deck, DeckCard
-from sylvan_library.cards.serializers import printing_image_url
+from sylvan_library.cards.serializers import (
+    printing_back_image_url,
+    printing_image_url,
+)
 
 
 def owner_preferred_printing(deck_card: DeckCard) -> Optional[CardPrinting]:
@@ -61,6 +64,7 @@ class DeckCardSerializer(serializers.ModelSerializer):
     side = SerializerMethodField()
     icon = SerializerMethodField()
     image_url = SerializerMethodField()
+    back_image_url = SerializerMethodField()
 
     class Meta:
         model = DeckCard
@@ -75,6 +79,7 @@ class DeckCardSerializer(serializers.ModelSerializer):
             "side",
             "icon",
             "image_url",
+            "back_image_url",
         )
 
     def get_side(self, obj: DeckCard) -> Optional[str]:
@@ -84,8 +89,20 @@ class DeckCardSerializer(serializers.ModelSerializer):
     def get_icon(self, obj: DeckCard) -> Optional[str]:
         return deck_card_icon(obj)
 
+    def preferred_printing(self, obj: DeckCard) -> Optional[CardPrinting]:
+        """
+        The printing to show for a deck card, looked up once for both of its images
+        """
+        cache = self.__dict__.setdefault("_preferred_printings", {})
+        if obj.id not in cache:
+            cache[obj.id] = owner_preferred_printing(obj)
+        return cache[obj.id]
+
     def get_image_url(self, obj: DeckCard) -> str:
-        return printing_image_url(owner_preferred_printing(obj))
+        return printing_image_url(self.preferred_printing(obj))
+
+    def get_back_image_url(self, obj: DeckCard) -> Optional[str]:
+        return printing_back_image_url(self.preferred_printing(obj))
 
 
 class DeckListSerializer(serializers.ModelSerializer):

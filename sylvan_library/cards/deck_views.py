@@ -27,7 +27,10 @@ from sylvan_library.cards.models.card import Card
 from sylvan_library.cards.models.colour import Colour
 from sylvan_library.cards.models.decks import Deck, DeckCard
 from sylvan_library.cards.models.user import UserProps
-from sylvan_library.cards.serializers import printing_image_url
+from sylvan_library.cards.serializers import (
+    printing_back_image_url,
+    printing_image_url,
+)
 
 
 DECK_SORTS = {
@@ -207,6 +210,7 @@ def _stats_card(entry: dict) -> dict:
         "card_id": entry["card"].id,
         "name": entry["card"].name,
         "image_url": printing_image_url(entry["preferred_printing"]),
+        "back_image_url": printing_back_image_url(entry["preferred_printing"]),
     }
 
 
