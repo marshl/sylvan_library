@@ -1,12 +1,3 @@
-:root {
-  color-scheme: dark;
-}
-
-.ms-cost.inactive {
-  color: #beb9b2;
-  background-color: #151515;
-}
-
 /* Saga chapter icons: a light hexagon with a dark numeral, like on the card. mana-font
    makes the hexagon near-black, which disappears on the dark background, and quotes its
    whole numeral font list as one name, so the serif font never applies. */
@@ -22,30 +13,10 @@
   font-weight: bold;
 }
 
-.unselectable {
-  -webkit-user-select: none; /* Safari */
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* IE10+/Edge */
-  user-select: none; /* Standard */
-}
-
-body {
-  margin: 0;
-}
-
 *,
 :after,
 :before {
   box-sizing: inherit;
-}
-
-.main-layout {
-  box-sizing: border-box;
-  background: #f4f4f4;
-}
-
-.main-layout .body-content {
-  max-width: 1280px;
 }
 
 html {
@@ -96,9 +67,6 @@ body {
 }
 
 .text-input input {
-  /*-webkit-appearance: textfield;*/
-  /*-moz-appearance: textfield;*/
-  /*appearance: textfield;*/
   margin: 0;
   background: #333;
   padding: 6px 10px;
@@ -110,11 +78,6 @@ body {
   color: #ddd;
   height: auto;
   line-height: normal;
-}
-
-.select2,
-.select2-container {
-  color: black;
 }
 
 .select-group select {

@@ -20,8 +20,6 @@ html {
   min-height: 100vh;
 }
 
-.set-table {
-}
 .set-table tr:nth-child(2n) {
   background-color: #333;
 }
@@ -39,23 +37,4 @@ html {
 
 .set-table thead {
   background: none;
-}
-
-.indent a::before {
-  content: '↳';
-  color: #ddd;
-  margin-right: 1em;
-}
-
-.indent-1 a::before {
-  margin-left: 1em;
-}
-.indent-2 a::before {
-  margin-left: 2em;
-}
-.indent-3 a::before {
-  margin-left: 3em;
-}
-.indent-4 a::before {
-  margin-left: 4em;
 }

@@ -22,10 +22,6 @@
   color: #fff;
 }
 
-.action-bar-row:last-child {
-  margin: 0;
-}
-
 .header-search-container {
   background: hsla(0, 0%, 100%, 0.15);
   border-radius: 3px;
@@ -82,20 +78,7 @@
   margin: 0 0 5px;
 }
 
-.filter-link {
-  transition: 0.3s;
-  cursor: hand;
-  border-bottom: 1px solid rgba(0, 146, 214, 0.7);
-}
-
-.filter-link:hover {
-  color: #333;
-  background-color: #0092d6;
-  border-radius: 2px;
-}
-
 .search-result-list {
-  flex-flow: column wrap;
   margin: 0 15px 20px;
   display: flex;
   flex-flow: column wrap;
@@ -133,10 +116,6 @@
   line-height: 20px;
   margin: 0 0 5px;
   font-size: 14px;
-}
-
-.action-bar .select-group {
-  margin-left: 15px;
 }
 
 .result-count-container {
