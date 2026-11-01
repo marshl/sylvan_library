@@ -10,6 +10,7 @@ from typing import Optional
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Sum, IntegerField, Case, When
+from django.db.models.functions import Coalesce
 
 from sylvan_library.bitfield import BitField
 from sylvan_library.cards.models.colour import Colour
@@ -365,7 +366,11 @@ class CardPrinting(models.Model):
         Metaclass for CardPrinting
         """
 
-        ordering = ["set__release_date", "set__name", "numerical_number"]
+        ordering = [
+            Coalesce("original_release_date", "set__release_date"),
+            "set__name",
+            "numerical_number",
+        ]
 
     def __str__(self):
         return f"{self.card} in {self.set.code} ({self.number})"
