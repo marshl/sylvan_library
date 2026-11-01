@@ -111,3 +111,4 @@ node_modules/
 .mypy_cache/
 /sylvan_library/frontend/static/frontend/main.js
 /sylvan_library/frontend/static/
+/sylvan_library/website/static/card_images/
