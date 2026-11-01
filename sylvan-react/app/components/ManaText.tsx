@@ -85,7 +85,7 @@ function LoyaltyCost({ cost }: { cost: string }) {
   if (!match) return <>{cost}</>;
   const [, sign, number] = match;
   const direction = MINUS_SYMBOLS.includes(sign) ? 'down' : sign === '+' ? 'up' : 'zero';
-  return <i className={`ms ms-loyalty-${number.toLowerCase()} ms-3x ms-loyalty-${direction}`} />;
+  return <i className={`ms ms-loyalty-${number.toLowerCase()} ms-2x ms-loyalty-${direction}`} />;
 }
 
 const ROMAN: Record<string, number> = { I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6 };
