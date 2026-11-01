@@ -172,7 +172,6 @@ export default function SearchResult({
               src={fp.image_url}
               alt={card.name}
               width={100}
-              loading="lazy"
             />
           ))}
         </span>
