@@ -174,7 +174,9 @@ def card_prefetches(user: AbstractBaseUser | None) -> list:
     each printing gets the user's owned count added up by the database as
     user_owned_count, and only localised faces with a downloaded image are fetched.
     """
-    printings = CardPrinting.objects.select_related("set", "rarity")
+    printings = CardPrinting.objects.select_related("set", "rarity").order_by(
+        *CardPrinting._meta.ordering
+    )
     if user:
         printings = printings.annotate(
             user_owned_count=Sum(
