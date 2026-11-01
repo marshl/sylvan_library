@@ -141,7 +141,7 @@ body {
 }
 
 .subtitle {
-  line-height: 20px;
+  line-height: 1em;
   font-weight: 300;
   font-size: 15px;
   margin: 0;
