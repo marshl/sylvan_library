@@ -2,21 +2,32 @@
 Card ownership parameters
 """
 
+import operator
 from typing import List
 
 from django.db import connection
-from django.db.models import Q, Sum, Subquery, OuterRef
-from django.db.models.functions import Coalesce
+from django.db.models import Exists, OuterRef, Q, Sum
 
-from sylvan_library.cards.models.card import Card, CardPrinting
+from sylvan_library.cards.models.card import UserOwnedCard
 from sylvan_library.cardsearch.parameters.base_parameters import (
     CardSearchNumericalParameter,
     CardSearchContext,
     QueryContext,
     QueryValidationError,
     CardSearchBinaryParameter,
+    OPERATOR_MAPPING,
     ParameterArgs,
 )
+
+
+# The comparison function for each search operator
+OPERATOR_FUNCTIONS = {
+    "<": operator.lt,
+    "<=": operator.le,
+    "=": operator.eq,
+    ">=": operator.ge,
+    ">": operator.gt,
+}
 
 
 class CardOwnershipCountParam(CardSearchNumericalParameter):
@@ -50,63 +61,47 @@ class CardOwnershipCountParam(CardSearchNumericalParameter):
         super().validate(query_context)
 
     def query(self, query_context: QueryContext) -> Q:
-
         assert self.operator in ("<", "<=", "=", ">=", ">")
-        filter_condition = {f"ownership_count{self.get_filter_operator()}": self.number}
 
+        # Ownerships are matched to the printing in a printing search, or to any printing
+        # of the card in a card search
         if query_context.search_mode == CardSearchContext.PRINTING:
-            printings = CardPrinting.objects.annotate(
-                ownership_count=Coalesce(
-                    Sum(
-                        "localisations__ownerships__count",
-                        filter=Q(localisations__ownerships__owner=query_context.user),
-                    ),
-                    0,
-                )
-            )
+            outer_field = "id"
+            ownership_field = "card_localisation__card_printing_id"
+        else:
+            outer_field = "card_id"
+            ownership_field = "card_localisation__card_printing__card_id"
+        ownerships = UserOwnedCard.objects.filter(owner=query_context.user, count__gt=0)
+
+        # Owning any and owning none are the common searches, and checking whether an
+        # ownership exists for each row is much cheaper than adding up the counts
+        exists = Exists(ownerships.filter(**{ownership_field: OuterRef(outer_field)}))
+        if (self.operator, self.number) in ((">=", 1), (">", 0)):
+            return Q(exists, _negated=self.negated)
+
+        if (self.operator, self.number) in (("=", 0), ("<=", 0), ("<", 1)):
+            return Q(exists, _negated=not self.negated)
+
+        # Otherwise total up the user's ownerships once, which only touches the rows
+        # they own. Anything they don't own has a total of 0, so when 0 matches the
+        # condition, search for everything except the owned rows that don't match.
+        compare = OPERATOR_FUNCTIONS[self.operator]
+        totals = (
+            ownerships.values(ownership_field)
+            .annotate(total=Sum("count"))
+            .values(ownership_field)
+        )
+        condition = {f"total{OPERATOR_MAPPING[self.operator]}": self.number}
+        if compare(0, self.number):
             return Q(
-                id__in=printings.filter(**filter_condition).values("id"),
-                _negated=self.negated,
+                **{f"{outer_field}__in": totals.exclude(**condition)},
+                _negated=not self.negated,
             )
 
-        # Create a subquery to calculate the total ownership count for each card
-        # for the given user.
-        ownership_subquery = (
-            Card.objects.filter(pk=OuterRef("pk"))
-            .annotate(
-                total_count=Sum(
-                    "printings__localisations__ownerships__count",
-                    filter=Q(
-                        printings__localisations__ownerships__owner=query_context.user
-                    ),
-                )
-            )
-            .values("total_count")
+        return Q(
+            **{f"{outer_field}__in": totals.filter(**condition)},
+            _negated=self.negated,
         )
-
-        # Annotate the main queryset with the ownership count, coalescing nulls to 0
-        annotated_cards = Card.objects.annotate(
-            ownership_count=Coalesce(Subquery(ownership_subquery), 0)
-        )
-
-        # Get the IDs of the cards that match the condition
-        card_ids = annotated_cards.filter(**filter_condition).values_list(
-            "id", flat=True
-        )
-
-        return Q(card_id__in=card_ids, _negated=self.negated)
-
-    def get_filter_operator(self) -> str:
-        """
-        Returns the Django ORM filter operator corresponding to the user's input.
-        """
-        return {
-            "<": "__lt",
-            "<=": "__lte",
-            "=": "",
-            ">=": "__gte",
-            ">": "__gt",
-        }[self.operator]
 
     def get_pretty_str(self, query_context: QueryContext) -> str:
         """
