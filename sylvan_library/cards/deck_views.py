@@ -17,6 +17,7 @@ from sylvan_library.cards.deck_serializers import (
     DeckDetailSerializer,
     DeckListSerializer,
     DeckWriteSerializer,
+    owner_preferred_printing,
 )
 from sylvan_library.cards.deck_stats import (
     get_colour_info,
@@ -27,12 +28,12 @@ from sylvan_library.cards.deck_stats import (
 from sylvan_library.cards.models.card import Card
 from sylvan_library.cards.models.colour import Colour
 from sylvan_library.cards.models.decks import Deck, DeckCard
+from sylvan_library.cards.models.rarity import Rarity
 from sylvan_library.cards.models.user import UserProps
 from sylvan_library.cards.serializers import (
     printing_back_image_url,
     printing_image_url,
 )
-
 
 DECK_SORTS = {
     "newest": ("-date_created", "-last_modified", "-id"),
@@ -100,8 +101,10 @@ class DeckViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == "list":
             return DeckListSerializer
+
         if self.action in ("create", "update", "partial_update"):
             return DeckWriteSerializer
+
         return DeckDetailSerializer
 
     def perform_create(self, serializer: DeckWriteSerializer) -> None:
@@ -163,6 +166,39 @@ class DeckViewSet(viewsets.ModelViewSet):
                     ("land_symbols", deck.get_land_symbol_counts()),
                 )
             }
+        )
+
+    @action(detail=True, url_path="rarity-weights")
+    def rarity_weights(self, request: Request, pk=None) -> Response:
+        """
+        The number of each rarity in the deck's cards
+        """
+        deck: Deck = self.get_object()
+        rarities = {rarity.symbol: 0 for rarity in Rarity.objects.all()}
+        for deck_card in deck.cards.exclude(card__faces__supertypes__name="Basic"):
+            printing = owner_preferred_printing(deck_card)
+            if printing is None:
+                printing = deck_card.card.printings.first()
+            rarities[printing.rarity.symbol] += deck_card.count
+
+        colours = {
+            "C": "#D8D0CD",
+            "U": "#707883",
+            "R": "#a58e4a",
+            "M": "#bf4427",
+        }
+
+        return Response(
+            [
+                {
+                    "symbol": rarity.symbol,
+                    "count": rarities.get(rarity.symbol, 0),
+                    "name": rarity.name,
+                    "chart_colour": colours.get(rarity.symbol, None),
+                }
+                for rarity in Rarity.objects.order_by("display_order").all()
+                if rarities.get(rarity.symbol)
+            ]
         )
 
 

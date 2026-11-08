@@ -4,7 +4,8 @@ import { descriptionHtml, linkifyHtml } from '../html';
 import type { DeckCard, DeckDetail } from '../types';
 import { useApi } from '../useApi';
 import CardLink from './CardLink';
-import ColourBars from './ColourBars';
+import ColourBars from './StatBars';
+import StatBars from './StatBars';
 
 function DeckCardRow({ deckCard }: { deckCard: DeckCard }) {
   return (
@@ -54,9 +55,7 @@ export default function DeckView({ deckId }: { deckId: number }) {
         <div className="field-container">
           {deck.format_display} · {deck.date_created}
         </div>
-        <div className="deck-colour-bars">
-          <ColourBars deckId={deck.id} />
-        </div>
+        <StatBars deckId={deck.id} />
       </div>
       <div className="group-container">
         <div className="deck-card-list">

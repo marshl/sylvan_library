@@ -120,7 +120,7 @@ export interface DeckDetail extends DeckSummary {
   boards: Record<BoardKey, string>;
 }
 
-export interface ColourCount {
+export interface StatCount {
   count: number;
   name: string;
   symbol: string;
@@ -128,6 +128,6 @@ export interface ColourCount {
 }
 
 export interface ColourWeights {
-  mana_symbols: ColourCount[];
-  land_symbols: ColourCount[];
+  mana_symbols: StatCount[];
+  land_symbols: StatCount[];
 }

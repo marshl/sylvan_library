@@ -117,47 +117,47 @@
   padding-left: 16px;
 }
 
-.colour-bars {
+.stat-bars {
   margin: 0;
   min-width: 220px;
 }
 
 /* Keeps the space the bars will take while they load */
-.colour-bars-loading {
+.stat-bars-loading {
   height: 52px;
 }
 
-.colour-bar {
+.stat-bar {
   display: flex;
   align-items: center;
   gap: 8px;
   margin: 4px 0;
 }
 
-.colour-bar .colour-bar-label {
+.stat-bar .stat-bar-label {
   width: 44px;
   flex-shrink: 0;
   color: var(--colour-text-muted);
 }
 
-.colour-bar-track {
+.stat-bar-track {
   position: relative;
   flex: 1;
 }
 
-.colour-bar-segments {
+.stat-bar-segments {
   display: flex;
   gap: 2px;
   height: 20px;
 }
 
-.colour-bar-empty {
+.stat-bar-empty {
   flex: 1;
   background: var(--colour-border);
   border-radius: 4px;
 }
 
-.colour-bar-segment {
+.stat-bar-segment {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -168,23 +168,23 @@
   white-space: nowrap;
 }
 
-.colour-bar-segment:first-child {
+.stat-bar-segment:first-child {
   border-radius: 4px 0 0 4px;
 }
 
-.colour-bar-segment:last-child {
+.stat-bar-segment:last-child {
   border-radius: 0 4px 4px 0;
 }
 
-.colour-bar-segment:only-child {
+.stat-bar-segment:only-child {
   border-radius: 4px;
 }
 
-.colour-bar-segment.hovered {
+.stat-bar-segment.hovered {
   outline: 1px solid var(--colour-text);
 }
 
-.colour-bar .chart-tooltip {
+.stat-bar .chart-tooltip {
   bottom: 100%;
   left: 0;
   margin-bottom: 4px;
@@ -192,7 +192,7 @@
   z-index: 10;
 }
 
-.colour-bars .colour-bars-caption {
+.stat-bars .stat-bars-caption {
   font-size: 12px;
   color: var(--colour-text-muted);
 }

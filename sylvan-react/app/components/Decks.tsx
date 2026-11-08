@@ -4,7 +4,7 @@ import { descriptionHtml, linkifyHtml } from '../html';
 import type { DeckSummary, Paginated } from '../types';
 import { useApi } from '../useApi';
 import CardNameInput from './CardNameInput';
-import ColourBars from './ColourBars';
+import ColourBars from './StatBars';
 import Pager from './Pager';
 import RequireLogin from './RequireLogin';
 
