@@ -431,9 +431,29 @@ class SearchApiTestCase(TestCase):
         DeckCard.objects.create(deck=deck, card=self.bolt, count=4)
         DeckCard.objects.create(deck=deck, card=self.goblin_king, count=2)
         self.assertEqual(
-            self.result_names(f"deck:{deck.id}"), ["Goblin King", "Lightning Bolt"]
+            self.result_names(f"deck:{deck.id}", logged_in=True),
+            ["Goblin King", "Lightning Bolt"],
         )
-        self.assertEqual(self.result_names(f"deck:{deck.id} s:prm"), ["Lightning Bolt"])
+        self.assertEqual(
+            self.result_names(f"deck:{deck.id} s:prm", logged_in=True),
+            ["Lightning Bolt"],
+        )
+
+    def test_deck_of_another_user(self) -> None:
+        other_user = get_user_model().objects.create_user(username="someone else")
+        deck = Deck.objects.create(
+            name="Burn",
+            owner=other_user,
+            format="modern",
+            date_created=datetime.date.today(),
+            is_private=True,
+        )
+        DeckCard.objects.create(deck=deck, card=self.bolt, count=4)
+        self.assertEqual(self.result_names(f"deck:{deck.id}", logged_in=True), [])
+        self.assertEqual(
+            self.search(f"deck:{deck.id}")["error_message"],
+            "Can't search by deck when not logged in",
+        )
 
     def test_universes_beyond_with_a_printing_parameter(self) -> None:
         self.assertEqual(
