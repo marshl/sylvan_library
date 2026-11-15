@@ -64,6 +64,8 @@ from sylvan_library.cardsearch.parameters.card_set_parameters import (
     CardLegalityParam,
     CardDateParam,
     CardIsUniversesBeyondParam,
+    CardIsNewArtParam,
+    CardIsNewPrintParam,
 )
 from sylvan_library.cardsearch.parameters.card_type_parameters import (
     CardGenericTypeParam,
@@ -104,6 +106,8 @@ SEARCH_PARAMETERS: List[Type[CardSearchParameter]] = [
     CardInSetParam,
     CardIsCommanderParam,
     CardIsHybridParam,
+    CardIsNewArtParam,
+    CardIsNewPrintParam,
     CardIsPhyrexianParam,
     CardIsReprintParam,
     CardIsUniversesBeyondParam,
@@ -140,9 +144,7 @@ SEARCH_PARAMETERS: List[Type[CardSearchParameter]] = [
 ]
 
 
-def param_parser(
-    name: str, keywords: List[str], operators: List[str]
-) -> Callable[
+def param_parser(name: str, keywords: List[str], operators: List[str]) -> Callable[
     [Callable[[ParameterArgs], CardSearchTreeNode]],
     Callable[[ParameterArgs], CardSearchTreeNode],
 ]:

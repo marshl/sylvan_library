@@ -307,3 +307,58 @@ class CardIsUniversesBeyondParam(CardSearchBinaryParameter):
         return (
             "the cards " + ("aren't" if self.negated else "are") + " Universes Beyond"
         )
+
+
+class CardIsNewPrintParam(CardSearchBinaryParameter):
+    """
+    Parameter for whether a printing is the first printing of that card.
+    """
+
+    @classmethod
+    def get_is_keywords(cls) -> list[str]:
+        return ["reprint", "new"]
+
+    @classmethod
+    def get_parameter_name(cls) -> str:
+        return "is reprint"
+
+    def query(self, query_context: QueryContext) -> Q:
+        is_new = self.value == "new"
+        return Q(search_metadata__is_new_print=is_new, _negated=self.negated)
+
+    def get_pretty_str(self, query_context: QueryContext) -> str:
+        is_new = self.value == "new"
+        return (
+            "the cards "
+            + ("aren't" if self.negated else "are")
+            + " "
+            + ("not reprints" if is_new else "reprints")
+        )
+
+
+class CardIsNewArtParam(CardSearchParameter):
+    """
+    Parameter for whether a printing is the first printing with that art.
+    """
+
+    @classmethod
+    def get_search_operators(cls) -> List[str]:
+        return [":"]
+
+    @classmethod
+    def get_search_keywords(cls) -> List[str]:
+        return ["new"]
+
+    @classmethod
+    def get_parameter_name(cls) -> str:
+        return "is new art"
+
+    def validate(self, query_context: QueryContext) -> None:
+        if self.value != "art":
+            raise QueryValidationError(f'Unknown new search for "{self.value}"')
+
+    def query(self, query_context: QueryContext) -> Q:
+        return Q(search_metadata__is_new_art=True, _negated=self.negated)
+
+    def get_pretty_str(self, query_context: QueryContext) -> str:
+        return "the cards " + ("aren't" if self.negated else "are") + " new art"
