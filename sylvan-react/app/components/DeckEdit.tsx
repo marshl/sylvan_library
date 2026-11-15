@@ -1,6 +1,7 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useBlocker, useNavigate } from 'react-router';
 import { ApiError, fetchJson, isAbortError } from '../api';
+import { type BuildingDeck, useBuildingDeck } from '../buildingDeck';
 import { descriptionHtml } from '../html';
 import type { BoardKey, DeckDetail } from '../types';
 import { useApi } from '../useApi';
@@ -273,6 +274,7 @@ function DeleteDeckButton({
 
 function DeckForm({ deckId, initial }: { deckId: number | null; initial: DeckFormState }) {
   const navigate = useNavigate();
+  const { start: startBuilding } = useBuildingDeck();
   const options = useApi<DeckOptions>('/api/cards/deck-options/');
   const [form, setForm] = useState<DeckFormState>(initial);
   const [savedForm, setSavedForm] = useState<DeckFormState>(initial);
@@ -295,6 +297,41 @@ function DeckForm({ deckId, initial }: { deckId: number | null; initial: DeckFor
       dirty && !leaving.current && currentLocation.pathname !== nextLocation.pathname,
   );
 
+  // Cards can be added from the search page in another tab, so when the window gets
+  // focus the boards are reloaded if the deck's cards have changed since they were last
+  // loaded or saved here, unless there are changes here that would be lost
+  const dirtyRef = useRef(dirty);
+  dirtyRef.current = dirty;
+  const knownCards = useRef<string | null>(null);
+  const fetchCardCounts = useCallback(
+    async (id: number) =>
+      JSON.stringify((await fetchJson<BuildingDeck>(`/api/cards/deck/${id}/card-counts/`)).cards),
+    [],
+  );
+  useEffect(() => {
+    if (deckId === null) return;
+    const id = deckId;
+    fetchCardCounts(id)
+      .then((cards) => (knownCards.current = cards))
+      .catch(() => {});
+    async function reloadBoards() {
+      if (dirtyRef.current || knownCards.current === null) return;
+      try {
+        const cards = await fetchCardCounts(id);
+        if (cards === knownCards.current) return;
+        const { boards } = await fetchJson<DeckDetail>(`/api/cards/deck/${id}/`);
+        if (dirtyRef.current) return;
+        knownCards.current = cards;
+        setForm((f) => ({ ...f, boards }));
+        setSavedForm((f) => ({ ...f, boards }));
+      } catch {
+        // The boards stay as they are
+      }
+    }
+    window.addEventListener('focus', reloadBoards);
+    return () => window.removeEventListener('focus', reloadBoards);
+  }, [deckId, fetchCardCounts]);
+
   useEffect(() => {
     if (!dirty) return;
     function warnBeforeUnload(e: BeforeUnloadEvent) {
@@ -312,7 +349,7 @@ function DeckForm({ deckId, initial }: { deckId: number | null; initial: DeckFor
     function onKeyDown(e: KeyboardEvent) {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
         e.preventDefault();
-        saveRef.current(true);
+        saveRef.current('edit');
       }
     }
     window.addEventListener('keydown', onKeyDown);
@@ -371,7 +408,11 @@ function DeckForm({ deckId, initial }: { deckId: number | null; initial: DeckFor
     navigate(to, { replace });
   }
 
-  async function save(continueEditing: boolean) {
+  /**
+   * Saves the deck, then either stays on the editor, goes to the deck's page, or starts
+   * building the deck from the search page
+   */
+  async function save(then: 'edit' | 'view' | 'build') {
     if (saving) return;
     const sent = form;
     setSaving(true);
@@ -387,8 +428,14 @@ function DeckForm({ deckId, initial }: { deckId: number | null; initial: DeckFor
       );
       setSkipValidation(false);
       setSavedForm(sent);
-      if (!continueEditing) {
+      fetchCardCounts(id)
+        .then((cards) => (knownCards.current = cards))
+        .catch(() => {});
+      if (then === 'view') {
         leave(`/decks/${id}`);
+      } else if (then === 'build') {
+        await startBuilding(id);
+        leave('/search');
       } else if (deckId === null) {
         leave(`/decks/${id}/edit`, true);
       } else {
@@ -415,7 +462,7 @@ function DeckForm({ deckId, initial }: { deckId: number | null; initial: DeckFor
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        save(true);
+        save('edit');
       }}
     >
       <div className="group-container">
@@ -629,9 +676,18 @@ function DeckForm({ deckId, initial }: { deckId: number | null; initial: DeckFor
               type="button"
               className="action-button"
               disabled={saving}
-              onClick={() => save(false)}
+              onClick={() => save('view')}
             >
               Save &amp; view deck
+            </button>
+            <button
+              type="button"
+              className="action-button"
+              disabled={saving}
+              title="Save, then add cards to this deck from the search page"
+              onClick={() => save('build')}
+            >
+              Save &amp; build in search
             </button>
             <Link
               className="action-button secondary"

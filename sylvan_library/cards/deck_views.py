@@ -3,6 +3,10 @@ API views for decks
 """
 
 import random
+from typing import Dict
+
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import transaction
 
 from django.db.models import Count, Q, QuerySet
 from django.http import QueryDict
@@ -14,6 +18,7 @@ from rest_framework.response import Response
 
 from sylvan_library.cards.deck_serializers import (
     card_is_sideways,
+    DeckCardChangeSerializer,
     DeckCheckSerializer,
     DeckDetailSerializer,
     DeckListSerializer,
@@ -26,7 +31,11 @@ from sylvan_library.cards.deck_stats import (
     get_unused_commanders,
     get_unused_partner_commanders,
 )
-from sylvan_library.cards.deck_text import check_deck_text
+from sylvan_library.cards.deck_text import (
+    BOARDS,
+    check_deck_text,
+    validate_card_for_deck,
+)
 from sylvan_library.cards.models.card import Card
 from sylvan_library.cards.models.colour import Colour
 from sylvan_library.cards.models.decks import Deck, DeckCard
@@ -36,6 +45,26 @@ from sylvan_library.cards.serializers import (
     printing_back_image_url,
     printing_image_url,
 )
+
+
+def deck_card_counts(deck: Deck) -> dict:
+    """
+    The deck's name and board sizes, and how many of each card are in each board, keyed
+    by card ID
+    """
+    cards: Dict[int, Dict[str, int]] = {}
+    board_counts = {board: 0 for board in BOARDS}
+    for card_id, board, count in deck.cards.values_list("card_id", "board", "count"):
+        cards.setdefault(card_id, {})[board] = count
+        board_counts[board] += count
+    return {
+        "id": deck.id,
+        "name": deck.name,
+        "is_prototype": deck.is_prototype,
+        "board_counts": board_counts,
+        "cards": cards,
+    }
+
 
 DECK_SORTS = {
     "newest": ("-date_created", "-last_modified", "-id"),
@@ -165,6 +194,51 @@ class DeckViewSet(viewsets.ModelViewSet):
                 for row in counts
             ]
         )
+
+    @action(detail=True, url_path="card-counts")
+    def card_counts(self, request: Request, pk=None) -> Response:
+        """
+        How many of each card are in each of the deck's boards, for showing next to
+        search results while the deck is being built
+        """
+        return Response(deck_card_counts(self.get_object()))
+
+    @action(detail=True, methods=["post"])
+    def cards(self, request: Request, pk=None) -> Response:
+        """
+        Adds copies of a card to one of the deck's boards, or takes them out, without
+        checking the deck against its format. Returns the deck's new card counts.
+        """
+        deck: Deck = self.get_object()
+        serializer = DeckCardChangeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        card = serializer.validated_data["card"]
+        board = serializer.validated_data["board"]
+        change = serializer.validated_data["change"]
+        try:
+            validate_card_for_deck(card)
+        except DjangoValidationError as error:
+            return Response(
+                {"card": error.messages}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        with transaction.atomic():
+            deck_card = (
+                deck.cards.select_for_update().filter(card=card, board=board).first()
+            )
+            if deck_card is None:
+                if change > 0:
+                    DeckCard.objects.create(
+                        deck=deck, card=card, board=board, count=change
+                    )
+            elif deck_card.count + change > 0:
+                deck_card.count += change
+                deck_card.save()
+            else:
+                deck_card.delete()
+            # Updates last_modified
+            deck.save()
+        return Response(deck_card_counts(deck))
 
     @action(detail=True, url_path="colour-weights")
     def colour_weights(self, request: Request, pk=None) -> Response:

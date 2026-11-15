@@ -484,3 +484,89 @@
     column-count: 1;
   }
 }
+
+/* The deck being built from the search page, shown under the top bar */
+.building-deck-bar {
+  position: sticky;
+  top: 60px;
+  z-index: 50;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  align-items: center;
+  margin-bottom: 1em;
+  padding: 8px 16px;
+  background: var(--colour-panel);
+  border: 1px solid var(--colour-brand-hover);
+  border-radius: 6px;
+}
+
+.building-deck-bar a {
+  color: var(--colour-link);
+}
+
+.building-deck-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-left: auto;
+}
+
+/* Add and remove buttons on search results while a deck is being built */
+.deck-build-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  /* Lined up with the card text, which is inset by the faces' padding */
+  margin: 6px 10px;
+}
+
+.deck-build-board {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--colour-text-muted);
+}
+
+.deck-build-board.in-deck {
+  color: var(--colour-text);
+}
+
+.deck-build-board button {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: 3px;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--colour-text);
+  background: var(--colour-brand-raised);
+  cursor: pointer;
+}
+
+.deck-build-board button:hover:not(:disabled) {
+  background: var(--colour-brand-hover);
+}
+
+.deck-build-board button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.deck-build-count {
+  min-width: 1.5em;
+  text-align: center;
+  font-weight: 600;
+}
+
+@media (max-width: 700px) {
+  /* The top bar scrolls away on phones, so the building bar does too */
+  .building-deck-bar {
+    position: static;
+  }
+
+  .building-deck-actions {
+    margin-left: 0;
+  }
+}

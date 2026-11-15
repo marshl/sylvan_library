@@ -9,6 +9,7 @@ import {
 
 import type { Route } from './+types/root';
 import SiteLayout from './components/Layout';
+import { BuildingDeckProvider } from './buildingDeck';
 import { UserProvider } from './user';
 import 'keyrune/css/keyrune.min.css';
 import 'mana-font/css/mana.min.css';
@@ -60,9 +61,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <UserProvider>
-      <SiteLayout>
-        <Outlet />
-      </SiteLayout>
+      <BuildingDeckProvider>
+        <SiteLayout>
+          <Outlet />
+        </SiteLayout>
+      </BuildingDeckProvider>
     </UserProvider>
   );
 }

@@ -414,6 +414,77 @@ class DeckCheckTestCase(TestCase):
         )
 
 
+class DeckCardChangeTestCase(TestCase):
+    """
+    Tests for adding cards to a deck one at a time, as from the search page
+    """
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.user = create_test_user()
+        cls.bolt = create_test_card({"name": "Lightning Bolt"})
+        cls.token = create_test_card({"name": "Goblin", "is_token": True})
+        cls.deck = Deck.objects.create(
+            owner=cls.user,
+            name="Burn",
+            format="modern",
+            date_created=datetime.date(2020, 1, 1),
+            is_prototype=True,
+        )
+
+    def change(self, card: Card, board: str, change: int, user=None):
+        client = APIClient()
+        client.force_authenticate(user or self.user)
+        return client.post(
+            f"/api/cards/deck/{self.deck.id}/cards/",
+            {"card": card.id, "board": board, "change": change},
+            format="json",
+        )
+
+    def test_add_and_remove(self) -> None:
+        self.change(self.bolt, "main", 1)
+        response = self.change(self.bolt, "main", 2)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["cards"], {str(self.bolt.id): {"main": 3}})
+        self.assertEqual(response.json()["board_counts"]["main"], 3)
+
+        self.change(self.bolt, "side", 1)
+        response = self.change(self.bolt, "main", -3)
+        self.assertEqual(response.json()["cards"], {str(self.bolt.id): {"side": 1}})
+        self.assertFalse(self.deck.cards.filter(board="main").exists())
+
+    def test_remove_missing_card(self) -> None:
+        response = self.change(self.bolt, "main", -1)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["cards"], {})
+
+    def test_tokens_not_allowed(self) -> None:
+        response = self.change(self.token, "main", 1)
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(self.deck.cards.exists())
+
+    def test_other_users_deck(self) -> None:
+        other_user = get_user_model().objects.create(username="someone else")
+        self.assertEqual(self.change(self.bolt, "main", 1, other_user).status_code, 404)
+        self.assertFalse(self.deck.cards.exists())
+
+    def test_card_counts(self) -> None:
+        self.change(self.bolt, "main", 4)
+        client = APIClient()
+        client.force_authenticate(self.user)
+        response = client.get(f"/api/cards/deck/{self.deck.id}/card-counts/")
+        self.assertEqual(
+            response.json(),
+            {
+                "id": self.deck.id,
+                "name": "Burn",
+                "is_prototype": True,
+                "board_counts": {"main": 4, "side": 0, "maybe": 0, "acquire": 0},
+                "cards": {str(self.bolt.id): {"main": 4}},
+            },
+        )
+
+
 class CardIsSidewaysTestCase(TestCase):
     """
     Tests for which cards are printed sideways

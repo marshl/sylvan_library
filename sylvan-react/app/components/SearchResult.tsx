@@ -3,6 +3,7 @@ import { fetchJson } from '../api';
 import { isTypingTarget } from '../keyboard';
 import type { Card, CardFace, CardPrinting, SearchResult as Result } from '../types';
 import CardResultDetails from './CardResultDetails';
+import DeckBuildButtons from './DeckBuildButtons';
 import RulesText, { ManaSymbols } from './ManaText';
 
 const ROTATING_LAYOUTS = ['split', 'aftermath', 'planar'];
@@ -201,6 +202,7 @@ export default function SearchResult({
           ))}
           <SetSymbols card={card} selected={printing} onSelect={(p) => setPrintingId(p.id)} />
         </div>
+        <DeckBuildButtons cardId={card.id} cardName={card.name} />
         <CardResultDetails
           cardId={card.id}
           printingId={printing.id}

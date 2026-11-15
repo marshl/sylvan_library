@@ -303,3 +303,18 @@ class DeckCheckSerializer(serializers.Serializer):
                 f"Unknown boards: {', '.join(sorted(unknown))}"
             )
         return boards
+
+
+class DeckCardChangeSerializer(serializers.Serializer):
+    """
+    Adds copies of a card to one of a deck's boards, or takes them out
+    """
+
+    card = serializers.PrimaryKeyRelatedField(queryset=Card.objects.all())
+    board = serializers.ChoiceField(choices=BOARDS)
+    change = serializers.IntegerField()
+
+    def validate_change(self, change: int) -> int:
+        if change == 0:
+            raise serializers.ValidationError("The change can't be 0")
+        return change

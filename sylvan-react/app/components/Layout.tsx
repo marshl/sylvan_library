@@ -1,4 +1,5 @@
 import React from 'react';
+import BuildingDeckBar from './BuildingDeckBar';
 import TopBar from './TopBar';
 
 interface LayoutProps {
@@ -10,7 +11,10 @@ export default function Layout({ children }: LayoutProps) {
     <div className="main-layout">
       <TopBar />
       <div className="body-content">
-        <div className="main-content">{children}</div>
+        <div className="main-content">
+          <BuildingDeckBar />
+          {children}
+        </div>
       </div>
       <p className="site-footer">
         Wizards of the Coast, Magic: The Gathering, and their logos are trademarks of Wizards of the

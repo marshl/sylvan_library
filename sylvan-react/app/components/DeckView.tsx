@@ -1,5 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
+import { useBuildingDeck } from '../buildingDeck';
 import { descriptionHtml, linkifyHtml } from '../html';
 import type { DeckCard, DeckDetail } from '../types';
 import { useApi } from '../useApi';
@@ -38,6 +39,8 @@ function DeckCardRow({ deckCard }: { deckCard: DeckCard }) {
 
 export default function DeckView({ deckId }: { deckId: number }) {
   const { data: deck, loading, error } = useApi<DeckDetail>(`/api/cards/deck/${deckId}/`);
+  const { deck: building, start: startBuilding } = useBuildingDeck();
+  const navigate = useNavigate();
 
   if (error) return <div className="error">Error: {error}</div>;
   if (loading || !deck) return <div>Loading...</div>;
@@ -104,6 +107,18 @@ export default function DeckView({ deckId }: { deckId: number }) {
           <Link className="action-button" to={`/decks/${deck.id}/edit`}>
             Edit
           </Link>
+          {building?.id !== deck.id && (
+            <button
+              type="button"
+              className="action-button"
+              onClick={async () => {
+                await startBuilding(deck.id);
+                navigate('/search');
+              }}
+            >
+              Build in search
+            </button>
+          )}
         </div>
       </div>
     </div>

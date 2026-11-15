@@ -94,6 +94,30 @@ def cards_by_name(names: List[str]) -> Dict[str, Card]:
     return {name: cards[0] for name, cards in matches.items() if len(cards) == 1}
 
 
+def validate_card_for_deck(card: Card) -> None:
+    """
+    Checks that a card can be put in a deck at all
+    :raises: ValidationError if it can't
+    """
+    if card.is_token:
+        raise ValidationError(f'You can\'t put the token "{card.name}" in a deck')
+
+    if card.layout in ("scheme", "planar", "vanguard", "emblem"):
+        raise ValidationError(
+            f'You can\'t put the {card.layout} card "{card.name}" in a deck'
+        )
+
+    # It doesn't make sense to have the back half of a meld card in a deck (which is stored as a separate card)
+    if (
+        card.layout == "meld"
+        and card.faces.count() == 1
+        and card.faces.first().side == "b"
+    ):
+        raise ValidationError(
+            f"Reverse side meld cards like {card.name} are not allowed"
+        )
+
+
 def card_from_text(
     count: int,
     card_name: str,
@@ -170,20 +194,7 @@ def card_from_text(
         except Card.MultipleObjectsReturned as ex:
             raise ValidationError(f'Card "{card_name}" matches too many cards: {ex}')
 
-    if card.layout in ("scheme", "planar", "vanguard", "emblem"):
-        raise ValidationError(
-            f'You can\'t put the {card.layout} card "{card.name}" in a deck'
-        )
-
-    # It doesn't make sense to have the back half of a meld card in a deck (which is stored as a separate card)
-    if (
-        card.layout == "meld"
-        and card.faces.count() == 1
-        and card.faces.first().side == "b"
-    ):
-        raise ValidationError(
-            f"Reverse side meld cards like {card.name} are not allowed"
-        )
+    validate_card_for_deck(card)
 
     deck_card = DeckCard(card=card, count=count, board=board, deck=deck)
     if options["is_commander"]:
