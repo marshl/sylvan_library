@@ -167,19 +167,6 @@
   outline: none;
 }
 
-.delete-button {
-  background: var(--colour-danger);
-  color: var(--colour-text);
-  border: none;
-  border-radius: 3px;
-  padding: 4px 10px;
-  cursor: pointer;
-}
-
-.delete-button:hover:not(:disabled) {
-  background: var(--colour-danger-hover);
-}
-
 .deck-filters .row {
   padding-bottom: 1em;
 }
@@ -249,6 +236,27 @@
   max-width: 400px;
 }
 
+.deck-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75em;
+  margin: 0.25em 0 1em;
+  color: var(--colour-text-soft);
+}
+
+.deck-format {
+  padding: 0.15em 0.6em;
+  border: 1px solid var(--colour-border);
+  border-radius: 1em;
+  color: var(--colour-text);
+  font-weight: 600;
+}
+
+.deck-description {
+  margin-bottom: 1em;
+}
+
 .deck-board-title {
   font-weight: bold;
 }
@@ -263,9 +271,131 @@
   white-space: nowrap;
 }
 
+.tab-container .tab .tab-count {
+  color: var(--colour-text-muted);
+}
+
+.tab-container .tab .tab-problems {
+  color: var(--colour-problem);
+}
+
+.tab-list .deck-checking {
+  display: inline-block;
+  margin-left: 8px;
+  list-style: none;
+}
+
+.deck-check-status {
+  margin-bottom: 8px;
+}
+
+.deck-check-status.format-ok {
+  color: var(--colour-ok);
+}
+
+.line-error {
+  color: var(--colour-problem);
+}
+
+.line-matched {
+  color: var(--colour-warning);
+}
+
+.deck-line-issues {
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.deck-line-issues li {
+  margin-bottom: 2px;
+}
+
+.board-text {
+  width: 100%;
+  overflow: hidden;
+  resize: none;
+}
+
+.deck-settings summary {
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.deck-settings[open] summary {
+  margin-bottom: 1em;
+}
+
+.deck-settings summary .subtitle {
+  font-weight: normal;
+}
+
+.unsaved-changes {
+  color: var(--colour-warning);
+}
+
+/* Stays at the bottom of the window while the board text is scrolled */
+.deck-save-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  margin-bottom: 0;
+  border-top: 1px solid var(--colour-border);
+  box-shadow: 0 -4px 12px rgb(0 0 0 / 40%);
+}
+
 .deck-save-row {
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+}
+
+.deck-save-bar .action-button {
+  margin: 0;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.deck-save-bar .action-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.deck-save-bar .action-button.primary {
+  background: var(--colour-accent);
+}
+
+.deck-save-bar .action-button.primary:hover:not(:disabled) {
+  background: var(--colour-link);
+}
+
+.deck-save-bar .action-button.secondary {
+  background: transparent;
+  outline: 1px solid var(--colour-border-strong);
+  outline-offset: -1px;
+}
+
+.deck-save-bar .action-button.secondary:hover {
+  background: var(--colour-surface-hover);
+}
+
+.deck-save-bar .action-button.danger {
+  background: var(--colour-danger);
+}
+
+.deck-save-bar .action-button.danger:hover:not(:disabled) {
+  background: var(--colour-danger-hover);
+}
+
+.deck-save-bar kbd {
+  margin-left: 6px;
+  padding: 1px 5px;
+  font-family: inherit;
+  font-size: 11px;
+  border: 1px solid rgb(255 255 255 / 40%);
+  border-radius: 3px;
+  opacity: 0.85;
 }
 
 .deck-save-row .deck-delete {
@@ -279,16 +409,15 @@
 }
 
 @media (max-width: 700px) {
-  /* Form rows stack, with their fields full width. The save buttons stay in a row. */
+  /* Phones rarely have a keyboard for the save shortcut */
+  .deck-save-bar kbd {
+    display: none;
+  }
+
+  /* Form rows stack, with their fields full width */
   .group-container .row {
     flex-direction: column;
     gap: 1em;
-  }
-
-  .group-container .row.deck-save-row {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: flex-start;
   }
 
   .group-container .field-container {

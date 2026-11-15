@@ -379,8 +379,6 @@ class Deck(models.Model):
         Validates that this deck has a commander card
         :param validate_type: The card type that the commander should be
         """
-        assert self.format in ("edh",)
-
         commanders = self.cards.filter(is_commander=True)
         if not commanders.exists():
             raise ValidationError("A commander deck should have at least one commander")

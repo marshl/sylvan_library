@@ -33,4 +33,10 @@
   --colour-danger-hover: #a33434;
   --colour-banned: red;
   --colour-restricted: darkorange;
+
+  /* Deck text checks: lines that can't be read, lines read as a different card, and
+     decks that follow their format's rules */
+  --colour-problem: #ff8a80;
+  --colour-warning: #f0b84a;
+  --colour-ok: #81c995;
 }

@@ -212,7 +212,9 @@ class DeckWriteSerializer(serializers.ModelSerializer):
     exclude_colours = serializers.PrimaryKeyRelatedField(
         queryset=Colour.objects.all(), many=True, required=False
     )
-    boards = serializers.DictField(child=serializers.CharField(allow_blank=True))
+    boards = serializers.DictField(
+        child=serializers.CharField(allow_blank=True, trim_whitespace=False)
+    )
     skip_validation = serializers.BooleanField(default=False, write_only=True)
 
     class Meta:
@@ -282,3 +284,22 @@ class DeckWriteSerializer(serializers.ModelSerializer):
 
         self.instance = deck
         return deck
+
+
+class DeckCheckSerializer(serializers.Serializer):
+    """
+    The parts of a deck being edited that are needed to check its card text
+    """
+
+    format = serializers.ChoiceField(choices=Deck.FORMAT_CHOICES, allow_blank=True)
+    boards = serializers.DictField(
+        child=serializers.CharField(allow_blank=True, trim_whitespace=False)
+    )
+
+    def validate_boards(self, boards: dict) -> dict:
+        unknown = set(boards) - set(BOARDS)
+        if unknown:
+            raise serializers.ValidationError(
+                f"Unknown boards: {', '.join(sorted(unknown))}"
+            )
+        return boards

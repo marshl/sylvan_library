@@ -11,6 +11,7 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from sylvan_library.cards.deck_serializers import card_is_sideways
+from sylvan_library.cards.deck_text import parse_card_text
 from sylvan_library.cards.models.card import (
     Card,
     CardFace,
@@ -323,6 +324,93 @@ class DeckListTestCase(TestCase):
                 {"value": "standard", "label": "Standard", "count": 2},
                 {"value": "modern", "label": "Modern", "count": 1},
             ],
+        )
+
+
+class DeckCheckTestCase(TestCase):
+    """
+    Tests for checking a deck's card text while it's being edited
+    """
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.user = create_test_user()
+        create_test_card({"name": "Lightning Bolt"})
+        create_test_card({"name": "Llanowar Elves"})
+
+    def check(self, boards: Dict[str, str], deck_format: str = "") -> dict:
+        client = APIClient()
+        client.force_authenticate(self.user)
+        response = client.post(
+            "/api/cards/deck/check/",
+            {"boards": boards, "format": deck_format},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        return response.json()
+
+    def test_counts_and_issues(self) -> None:
+        result = self.check(
+            {
+                "main": "Creatures\n4x Llanowar Elves\n\n3 lightning bolt\n2x Lightnig Bolt",
+                "side": "1 bolt",
+            }
+        )
+        self.assertEqual(result["boards"]["main"]["count"], 7)
+        self.assertEqual(
+            result["boards"]["main"]["issues"],
+            [{"line": 5, "error": 'Unknown card "Lightnig Bolt"'}],
+        )
+        self.assertEqual(result["boards"]["side"]["count"], 1)
+        self.assertEqual(
+            result["boards"]["side"]["issues"],
+            [{"line": 1, "matched": "Lightning Bolt"}],
+        )
+        self.assertEqual(result["boards"]["maybe"], {"count": 0, "issues": []})
+        self.assertEqual(result["format_errors"], [])
+
+    def test_names_starting_with_x(self) -> None:
+        self.assertEqual(
+            parse_card_text("1 Xira Arien *CMDR*"),
+            (1, "Xira Arien", {"is_commander": True}),
+        )
+        self.assertEqual(
+            parse_card_text("4x Lightning Bolt"),
+            (4, "Lightning Bolt", {"is_commander": False}),
+        )
+        self.assertEqual(
+            parse_card_text("4 x Lightning Bolt"),
+            (4, "Lightning Bolt", {"is_commander": False}),
+        )
+
+    def test_format_errors(self) -> None:
+        result = self.check({"main": "8 Lightning Bolt"}, "modern")
+        self.assertEqual(
+            result["format_errors"],
+            ["You have over 4 of the following cards: Lightning Bolt"],
+        )
+
+    def test_nothing_saved(self) -> None:
+        self.check({"main": "60 Lightning Bolt"}, "modern")
+        self.assertFalse(Deck.objects.exists())
+        self.assertFalse(DeckCard.objects.exists())
+
+    def test_save_errors_name_the_line(self) -> None:
+        client = APIClient()
+        client.force_authenticate(self.user)
+        response = client.post(
+            "/api/cards/deck/",
+            {
+                "name": "Burn",
+                "format": "casual",
+                "date_created": "2026-01-01",
+                "boards": {"main": "4 Lightning Bolt", "side": "\n1 Shock"},
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()["cards"], ['Side line 2: Unknown card "Shock"']
         )
 
 

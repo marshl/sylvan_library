@@ -14,6 +14,7 @@ from rest_framework.response import Response
 
 from sylvan_library.cards.deck_serializers import (
     card_is_sideways,
+    DeckCheckSerializer,
     DeckDetailSerializer,
     DeckListSerializer,
     DeckWriteSerializer,
@@ -25,6 +26,7 @@ from sylvan_library.cards.deck_stats import (
     get_unused_commanders,
     get_unused_partner_commanders,
 )
+from sylvan_library.cards.deck_text import check_deck_text
 from sylvan_library.cards.models.card import Card
 from sylvan_library.cards.models.colour import Colour
 from sylvan_library.cards.models.decks import Deck, DeckCard
@@ -123,6 +125,23 @@ class DeckViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"id": serializer.instance.id})
+
+    @action(detail=False, methods=["post"])
+    def check(self, request: Request) -> Response:
+        """
+        Checks the card text of a deck being edited without saving it: which lines
+        can't be read, which were matched to a differently named card, how many cards
+        each board has and which format rules the deck breaks
+        """
+        serializer = DeckCheckSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(
+            check_deck_text(
+                serializer.validated_data["boards"],
+                serializer.validated_data["format"],
+                request.user,
+            )
+        )
 
     @action(detail=False)
     def formats(self, request: Request) -> Response:
