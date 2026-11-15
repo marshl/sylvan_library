@@ -4,6 +4,7 @@ import { ApiError, fetchJson, isAbortError } from '../api';
 import { descriptionHtml } from '../html';
 import type { BoardKey, DeckDetail } from '../types';
 import { useApi } from '../useApi';
+import BoardTextInput from './BoardTextInput';
 import RichTextEditor from './RichTextEditor';
 
 interface DeckOptions {
@@ -522,13 +523,14 @@ function DeckForm({ deckId, initial }: { deckId: number | null; initial: DeckFor
             isPrototype={form.is_prototype}
           />
           <BoardIssues issues={check?.boards[board].issues ?? []} onSelectLine={selectLine} />
-          <textarea
-            ref={boardInput}
+          <BoardTextInput
+            key={board}
+            textareaRef={boardInput}
             className="board-text"
-            aria-label={`${board} board`}
+            ariaLabel={`${board} board`}
             rows={20}
             value={boardText}
-            onChange={(e) => update('boards', { ...form.boards, [board]: e.target.value })}
+            onChange={(text) => update('boards', { ...form.boards, [board]: text })}
           />
         </div>
       </div>

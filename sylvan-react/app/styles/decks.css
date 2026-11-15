@@ -311,6 +311,36 @@
   margin-bottom: 2px;
 }
 
+.board-text-input {
+  position: relative;
+}
+
+.card-suggestions {
+  position: absolute;
+  z-index: 10;
+  min-width: 220px;
+  max-width: calc(100% - 16px);
+  margin: 2px 0 0;
+  padding: 4px 0;
+  list-style: none;
+  background: var(--colour-panel);
+  border: 1px solid var(--colour-border-strong);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 50%);
+}
+
+.card-suggestions li {
+  padding: 3px 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.card-suggestions li.highlighted {
+  background: var(--colour-brand-raised);
+}
+
 .board-text {
   width: 100%;
   overflow: hidden;
