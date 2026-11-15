@@ -5,7 +5,7 @@ hard/expensive to search for at run time
 
 from django.db import models
 
-from sylvan_library.cards.models.card import CardFace, Card
+from sylvan_library.cards.models.card import CardFace, Card, CardPrinting
 
 
 class CardSearchMetadata(models.Model):
@@ -19,6 +19,15 @@ class CardSearchMetadata(models.Model):
 
     def __str__(self):
         return f"{self.card} Search Metadata"
+
+
+class CardPrintingSearchMetadata(models.Model):
+    card_printing = models.OneToOneField(
+        CardPrinting, related_name="search_metadata", on_delete=models.CASCADE
+    )
+
+    is_new_art = models.BooleanField(default=False)
+    is_new_print = models.BooleanField(default=False)
 
 
 class CardFaceSearchMetadata(models.Model):

@@ -6,8 +6,17 @@ from sylvan_library.cardsearch.colours import (
     RE_GENERIC_MANA,
     MANA_SYMBOLS,
 )
-from sylvan_library.cards.models.card import CardFace, Card
-from sylvan_library.cardsearch.models import CardFaceSearchMetadata, CardSearchMetadata
+from sylvan_library.cards.models.card import (
+    CardFace,
+    Card,
+    CardPrinting,
+    CardFacePrinting,
+)
+from sylvan_library.cardsearch.models import (
+    CardFaceSearchMetadata,
+    CardSearchMetadata,
+    CardPrintingSearchMetadata,
+)
 from sylvan_library.cardsearch.sort_key import get_sort_key
 
 logger = logging.getLogger("django")
@@ -153,8 +162,52 @@ def is_card_universes_beyond(card: Card) -> bool:
     """
     Return whether a card has only universes beyond printings
     A card printed at least once outside a Universe Beyond set can be considered
-    to be Universe sWithin
+    to be Universes Within
     :param card: The card to check
     :return: Whether it is only universes beyond
     """
     return all(printing.is_universes_beyond for printing in card.printings.all())
+
+
+def build_metadata_for_card_printing(card_printing: CardPrinting) -> bool:
+    if hasattr(card_printing, "search_metadata"):
+        metadata = card_printing.search_metadata
+        changed = False
+    else:
+        metadata = CardPrintingSearchMetadata(card_printing=card_printing)
+        changed = True
+
+    is_new_print = is_printing_new(card_printing)
+    if metadata.is_new_print != is_new_print:
+        changed = True
+        metadata.is_new_print = is_new_print
+
+    is_new_art = is_printing_new_art(card_printing)
+    if metadata.is_new_art != is_new_art:
+        changed = True
+        metadata.is_new_art = is_new_art
+
+    if changed:
+        metadata.save()
+    return changed
+
+
+def is_printing_new_art(card_printing: CardPrinting) -> bool:
+    illustration_ids = CardFacePrinting.objects.filter(
+        card_printing=card_printing
+    ).values_list("scryfall_illustration_id", flat=True)
+    first_similar_art = card_printing.card.printings.filter(
+        face_printings__scryfall_illustration_id__in=illustration_ids
+    ).first()
+    if not first_similar_art:
+        return False
+
+    return first_similar_art.set_id == card_printing.set_id
+
+
+def is_printing_new(card_printing: CardPrinting) -> bool:
+    first_printing = card_printing.card.printings.first()
+    if not first_printing:
+        return False
+
+    return first_printing.set_id == card_printing.set_id

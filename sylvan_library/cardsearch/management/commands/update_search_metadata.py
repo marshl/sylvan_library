@@ -12,8 +12,9 @@ from django.db import transaction
 from sylvan_library.cardsearch.search_metadata import (
     build_metadata_for_card_face,
     build_metadata_for_card,
+    build_metadata_for_card_printing,
 )
-from sylvan_library.cards.models.card import CardFace, Card
+from sylvan_library.cards.models.card import CardFace, Card, CardPrinting
 
 logger = logging.getLogger("django")
 
@@ -38,15 +39,21 @@ class Command(BaseCommand):
         if options.get("cardname"):
             cards = Card.objects.filter(name__in=options["cardname"])
             card_faces = CardFace.objects.filter(card__name__in=options["cardname"])
+            card_printings = CardPrinting.objects.filter(
+                card__name__in=options["cardname"]
+            )
         else:
             cards = Card.objects.all()
             card_faces = CardFace.objects.all()
+            card_printings = CardPrinting.objects.all()
 
         card_face_count = card_faces.count()
         card_count = cards.count()
+        card_printing_count = card_printings.count()
 
         card_face_change_count = 0
         card_change_count = 0
+        card_printing_change_count = 0
 
         with transaction.atomic():
             for idx, card_face in enumerate(
@@ -81,4 +88,23 @@ class Command(BaseCommand):
                         idx + 1,
                         card_count,
                         card_change_count,
+                    )
+
+            for idx, card_printing in enumerate(
+                card_printings.prefetch_related(
+                    "search_metadata",
+                ).select_related("card")
+            ):
+                card_printing_change_count += build_metadata_for_card_printing(
+                    card_printing
+                )
+                if (
+                    idx % int(math.ceil(card_count / 10)) == 0
+                    or idx == card_printing_count
+                ):
+                    logger.info(
+                        "Indexed %s of %s card printings (%s card printings changed)",
+                        idx + 1,
+                        card_printing_count,
+                        card_printing_change_count,
                     )
