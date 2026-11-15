@@ -248,6 +248,7 @@ class CardMissingPauperParam(CardSearchBinaryParameter):
 
             include_rarities = ["C"]
             exclude_rarities = ["R", "M"]
+            exclude_sets = ("30A", "SLZ", "FCA", "LTR", "LTC")
 
             if self.value in ["missing-pauper", "missingpauper", "nopauper"]:
                 exclude_rarities.append("U")
@@ -288,8 +289,9 @@ JOIN cards_cardlocalisation
   ON cards_cardprinting.id = cards_cardlocalisation.card_printing_id
 WHERE cards_rarity.symbol = ANY(%(include_rarities)s)
 AND NOT cards_set.is_online_only
-AND cards_set.code NOT IN ('30A')
+AND cards_set.code NOT IN %(exclude_sets)s
 AND cards_set.release_date >= (SELECT release_date FROM cards_set WHERE cards_set.code = 'EXO')
+AND NOT cards_set.is_online_only
 
 EXCEPT
 
@@ -313,6 +315,7 @@ AND cards_rarity.symbol = ANY(%(include_rarities)s)
                     "user_id": query_context.user.id,
                     "include_rarities": include_rarities,
                     "exclude_rarities": exclude_rarities,
+                    "exclude_sets": exclude_sets,
                 },
             )
             rows = cursor.fetchall()
