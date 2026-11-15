@@ -4,8 +4,16 @@ import { descriptionHtml, linkifyHtml } from '../html';
 import type { DeckCard, DeckDetail } from '../types';
 import { useApi } from '../useApi';
 import CardLink from './CardLink';
-import ColourBars from './StatBars';
 import StatBars from './StatBars';
+
+function formatDate(isoDate: string): string {
+  // Parsed as local midnight so the date doesn't shift with the timezone
+  return new Date(`${isoDate}T00:00`).toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
 
 function DeckCardRow({ deckCard }: { deckCard: DeckCard }) {
   return (
@@ -43,18 +51,19 @@ export default function DeckView({ deckId }: { deckId: number }) {
             {deck.name} {deck.is_prototype && <em>[prototype]</em>}
           </h1>
           {deck.subtitle && <h2>{deck.subtitle}</h2>}
+          <div className="deck-meta">
+            <span className="deck-format">{deck.format_display}</span>
+            <span>Created {formatDate(deck.date_created)}</span>
+          </div>
         </div>
         {deck.description && (
           // The description is HTML the owner wrote in the deck editor, and only
           // the owner can see the deck
           <div
-            className="field-container rich-text"
+            className="field-container rich-text deck-description"
             dangerouslySetInnerHTML={{ __html: linkifyHtml(descriptionHtml(deck.description)) }}
           />
         )}
-        <div className="field-container">
-          {deck.format_display} · {deck.date_created}
-        </div>
         <StatBars deckId={deck.id} />
       </div>
       <div className="group-container">
