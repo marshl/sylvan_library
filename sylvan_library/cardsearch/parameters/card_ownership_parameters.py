@@ -248,7 +248,7 @@ class CardMissingPauperParam(CardSearchBinaryParameter):
 
             include_rarities = ["C"]
             exclude_rarities = ["R", "M"]
-            exclude_sets = ("30A", "SLZ", "FCA", "LTR", "LTC")
+            exclude_sets = ("30A", "SLZ")
 
             if self.value in ["missing-pauper", "missingpauper", "nopauper"]:
                 exclude_rarities.append("U")
@@ -292,6 +292,7 @@ AND NOT cards_set.is_online_only
 AND cards_set.code NOT IN %(exclude_sets)s
 AND cards_set.release_date >= (SELECT release_date FROM cards_set WHERE cards_set.code = 'EXO')
 AND NOT cards_set.is_online_only
+AND NOT cards_cardprinting.is_universes_beyond
 
 EXCEPT
 
