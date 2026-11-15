@@ -47,14 +47,18 @@ class SearchResult:
     def __init__(self, card: Card, printing_ids: Collection[int]):
         """
         :param card: The card, with its printings prefetched
-        :param printing_ids: The printings that can be shown, from which the newest
-        non-promotional printing is picked
+        :param printing_ids: The printings that can be shown. The newest
+        non-promotional one is picked, out of the ones the user owns if they own any.
         """
         self.card = card
         printings = sorted(
             (p for p in card.printings.all() if p.id in printing_ids),
             key=lambda p: (p.set.release_date, -(p.numerical_number or 0)),
         )
+        # user_owned_count is only added to the printings when the user is logged in
+        owned = [p for p in printings if getattr(p, "user_owned_count", None)]
+        if owned:
+            printings = owned
         non_promo = [p for p in printings if p.set.type != "promo"]
         self.selected_printing: Optional[CardPrinting] = (
             (non_promo or printings)[-1] if printings else None

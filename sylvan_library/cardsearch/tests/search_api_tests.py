@@ -320,6 +320,17 @@ class SearchApiTestCase(TestCase):
         result = self.search("bolt")["results"][0]
         self.assertEqual(result["selected_printing"]["set"]["code"], "M10")
 
+    def test_selected_printing_is_newest_owned(self) -> None:
+        result = self.search("bolt", logged_in=True)["results"][0]
+        self.assertEqual(result["selected_printing"]["set"]["code"], "LEA")
+        # Elves aren't owned, so the newest printing is picked as usual
+        result = self.search("elves", logged_in=True)["results"][0]
+        self.assertEqual(result["selected_printing"]["set"]["code"], "M10")
+
+    def test_selected_printing_owned_must_match_search(self) -> None:
+        result = self.search("bolt s:m10", logged_in=True)["results"][0]
+        self.assertEqual(result["selected_printing"]["set"]["code"], "M10")
+
     def test_selected_printing_matches_set_search(self) -> None:
         result = self.search("bolt s:lea")["results"][0]
         self.assertEqual(result["selected_printing"]["set"]["code"], "LEA")
